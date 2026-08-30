@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.egg-info/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+.env.local
+*.env
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+tsconfig.tsbuildinfo
+out/
+.vercel/
+
+# Data & reports
+eval/reports/*
+!eval/reports/.gitkeep
+knowledge/sources/*.pdf
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

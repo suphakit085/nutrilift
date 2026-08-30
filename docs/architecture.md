@@ -1,0 +1,181 @@
+# สถาปัตยกรรมระบบ
+
+เอกสารนี้ใช้เป็นต้นฉบับของบทที่ 3 (การออกแบบระบบ) ในเล่มปริญญานิพนธ์
+
+---
+
+## 1. ภาพรวมระบบ
+
+```
+┌──────────────────────┐   HTTPS / SSE    ┌──────────────────────────────────────────┐
+│  Next.js (Vercel)    │ ───────────────► │  FastAPI backend                         │
+│  - Chat UI (stream)  │ ◄─────────────── │  /auth  /profile  /conversations  /chat  │
+│  - Profile form      │                  │                                          │
+│  - Sources panel     │                  │  ChatService (orchestrator เขียนเอง)     │
+└──────────────────────┘                  │   1 guard-in  2 retrieve  3 build prompt │
+                                          │   4 LLM + tool loop  5 stream  6 persist │
+                                          │                                          │
+                                          │  Tools (function calling):               │
+                                          │   calc_nutrition_targets(profile)        │
+                                          │   lookup_food(query)                     │
+                                          │  Retriever: embed → pgvector top-k       │
+                                          └───────┬───────────────────┬──────────────┘
+                                                  │                   │
+                                     ┌────────────▼──────┐   ┌────────▼────────────┐
+                                     │ Postgres+pgvector │   │ OpenAI API          │
+                                     │ users, profiles,  │   │ chat:  gpt-5.6-luna │
+                                     │ conversations,    │   │ embed: text-        │
+                                     │ messages,         │   │        embedding-3- │
+                                     │ documents, chunks,│   │        small        │
+                                     │ foods             │   │ judge: gpt-5.6-terra│
+                                     └───────────────────┘   └─────────────────────┘
+
+   Offline CLI (รันบนเครื่องผู้พัฒนา)
+   backend/ingest   knowledge/cards/*.md + foods.csv → chunk → embed → pgvector
+   eval/run_eval.py questions.jsonl → run (rag|norag) → judge → reports/
+```
+
+---
+
+## 2. ลำดับการทำงานของ 1 ข้อความ
+
+| # | ขั้นตอน | โมดูล | หมายเหตุ |
+|---|---|---|---|
+| 1 | รับ request, ตรวจ JWT, โหลดโปรไฟล์ + ประวัติ N ข้อความล่าสุด | `app/api/chat.py` | `HISTORY_TURNS` คุมความยาวประวัติ |
+| 2 | **Guard-in** ตรวจคำสำคัญด้วยกฎ (ไม่ใช้ LLM) ได้ flag | `app/services/guardrails.py` | flag → คำสั่งเพิ่มใน system prompt + เก็บลง DB |
+| 3 | **Retrieve** embed คำถาม → cosine top-k จาก `chunks` → ตัดที่ต่ำกว่า threshold | `app/services/retrieval.py` | โหมด no-RAG ข้ามขั้นนี้ |
+| 4 | **Build prompt** persona + กฎความปลอดภัย + โปรไฟล์ + เป้าหมายที่คำนวณแล้ว + context `[S1]..[Sk]` | `app/services/prompts.py` | `PROMPT_VERSION` บันทึกไว้ในรายงาน eval |
+| 5 | **LLM + tool loop** เรียก Responses API แบบ streaming; ถ้าโมเดลเรียกเครื่องมือ → รันใน Python → ส่งผลกลับ → วนซ้ำ (สูงสุด 4 รอบ) | `app/services/chat.py` | เครื่องมือ = `calc_nutrition_targets`, `lookup_food` |
+| 6 | **Stream** ส่ง SSE (`sources` → `delta`… → `tool` → `done`) | `app/api/chat.py` | frontend แสดงข้อความแบบพิมพ์ทีละคำ |
+| 7 | **Persist** บันทึกข้อความ + citations + tool_calls + usage + safety_flags | `app/db/models.py` | usage ใช้ทำกราฟต้นทุนในเล่ม |
+
+### การป้องกันความผิดพลาดของโมเดล (พบจากการทดสอบจริง 31 ส.ค. 2569)
+
+การทดสอบ end-to-end เผยพฤติกรรมของ LLM 3 อย่างที่ต้องมีกลไกป้องกัน — ส่วนนี้เขียนลงเล่มได้
+เพราะแสดงว่าระบบออกแบบโดยอิงการวัดผล ไม่ใช่การเดา
+
+| ปัญหาที่พบ | ผลกระทบ | กลไกป้องกันที่ใส่ไว้ |
+|---|---|---|
+| แนบ passage ที่ retrieve มาทั้งหมดเป็นแหล่งอ้างอิง ทั้งที่คำตอบไม่ได้ใช้ | ผู้ใช้เห็นแหล่งอ้างอิงที่ไม่เกี่ยว และคะแนน groundedness สูงเกินจริง | `cited_only()` ใน `chat.py` กรองเหลือเฉพาะ passage ที่มี `[Sn]` ปรากฏในคำตอบ ส่วน `retrieved` เก็บครบไว้ให้ eval วัด hit@k/MRR |
+| โมเดลแต่งค่าอินพุตของเครื่องมือเอง (ใส่ `body_fat_pct=15` ทั้งที่ผู้ใช้ไม่ได้บอก) | ได้ตัวเลข 2,469 kcal แทนที่จะเป็น 2,332 kcal โดยที่ผู้ใช้ไม่รู้ตัว | คำอธิบายใน tool schema ห้ามเดาค่า + payload คืนฟิลด์ `disclosure_required` บังคับให้คำตอบระบุค่าที่แทนที่ทุกครั้ง |
+| โมเดลส่ง `body_fat_pct: 0` เป็น placeholder แทนที่จะละฟิลด์ | validation ปัดตก โมเดลสรุปผิดว่า "คำนวณไม่ได้ถ้าไม่มี %ไขมัน" แล้วปฏิเสธที่จะตอบ | `_clean_overrides()` ตัดค่าที่เป็นศูนย์หรือติดลบทิ้งฝั่งเซิร์ฟเวอร์ ก่อนส่งเข้าเครื่องคำนวณ |
+
+บทเรียนเชิงออกแบบ: การแยกการคำนวณออกจาก LLM ยังไม่พอ **ต้องคุมทางเข้าของเครื่องมือด้วย**
+เพราะฟังก์ชันที่ถูกต้อง 100% ก็ยังให้คำตอบผิดได้ถ้าโมเดลป้อนอินพุตที่แต่งขึ้น
+กลไกทั้งสามอยู่ในชั้นที่ทดสอบได้ด้วย pytest ไม่ได้พึ่งว่าโมเดลจะเชื่อฟัง prompt
+
+### การตั้งค่า RETRIEVAL_MIN_SCORE (วัดจริง ไม่ได้เดา)
+
+`eval/calibrate_threshold.py` วัดคะแนน cosine similarity ของคำถามที่อยู่ในโดเมนเทียบกับนอกโดเมน
+ผลจากฐานความรู้ 3 การ์ด / 14 chunks (31 ส.ค. 2569):
+
+- คำถามตรงประเด็น 12 ข้อ: **0.361 – 0.511**
+- คำถามนอกเรื่อง 8 ข้อ: **0.124 – 0.257**
+- ช่องว่างระหว่างสองกลุ่ม: **+0.104** → ตั้ง threshold ที่ **0.32**
+
+ค่าเดิมที่ตั้งไว้ 0.25 ปล่อยให้คำถามนอกเรื่อง 2 ใน 8 ข้อดึง context ที่ไม่เกี่ยวเข้ามาได้
+**ต้องรันสคริปต์นี้ซ้ำทุกครั้งที่เพิ่มการ์ดจำนวนมาก** เพราะช่วงคะแนนจะเลื่อนตามขนาดฐานความรู้
+
+### เหตุผลเชิงออกแบบที่ต้องอธิบายกรรมการ
+
+1. **แยกการคำนวณออกจาก LLM** ตัวเลข BMR/TDEE/มาโครมาจากฟังก์ชัน Python ที่มี unit test
+   ไม่ใช่จากการที่โมเดล "คิดเลขในหัว" จึงตรวจสอบและทำซ้ำได้ 100%
+2. **แยกความรู้ออกจากน้ำหนักโมเดล** คำตอบอ้างอิงจากการ์ดความรู้ที่คัดมาและแสดง `[S1]`
+   ทำให้ตรวจสอบที่มาได้และลดการแต่งข้อมูล
+3. **Guardrails เป็นกฎ ไม่ใช่ LLM** พฤติกรรมด้านความปลอดภัยจึงคงที่ ทดสอบได้ด้วย pytest
+4. **Orchestration เขียนเอง ไม่ใช้ framework** ทุกขั้นตอนอธิบายได้ในเล่ม และไม่ผูกกับ
+   abstraction ที่เปลี่ยนบ่อย
+
+---
+
+## 3. โครงสร้างฐานข้อมูล
+
+```
+users ──1:1── profiles
+  │
+  └──1:N── conversations ──1:N── messages
+                                    ├─ citations  (jsonb)
+                                    ├─ tool_calls (jsonb)
+                                    ├─ usage      (jsonb)
+                                    └─ safety_flags (jsonb)
+
+documents ──1:N── chunks (embedding vector(1536), HNSW cosine index)
+
+foods  (ตารางอิสระ ใช้โดย lookup_food)
+```
+
+| ตาราง | หน้าที่ | คีย์สำคัญ |
+|---|---|---|
+| `users` | บัญชีผู้ใช้ | `email` unique |
+| `profiles` | ข้อมูลร่างกาย/เป้าหมาย (1 แถวต่อผู้ใช้) | PK = `user_id`, CHECK บน `sex`/`goal` |
+| `conversations` | ห้องแชต | index บน `user_id` |
+| `messages` | ข้อความ + metadata ของคำตอบ | index บน `conversation_id`, `created_at` |
+| `documents` | 1 การ์ดความรู้ = 1 แถว | `slug` unique, `content_hash` ใช้ข้าม re-embed |
+| `chunks` | ชิ้นข้อความ + เวกเตอร์ | `uq(document_id, chunk_index)`, HNSW `vector_cosine_ops` |
+| `foods` | ตารางโภชนาการอาหารไทย | index บน `name_th` |
+
+Migration ทั้งหมดจัดการด้วย Alembic (`backend/alembic/`) โดย migration แรกสร้าง
+`CREATE EXTENSION vector` ก่อนสร้างตาราง และสร้าง HNSW index ด้วย raw SQL
+(Alembic autogenerate ไม่รองรับ opclass ของ pgvector จึงถูก exclude ไว้ใน `env.py`)
+
+---
+
+## 4. เครื่องมือ (function calling)
+
+| เครื่องมือ | อินพุต | เอาต์พุต | ที่มาของ logic |
+|---|---|---|---|
+| `calc_nutrition_targets` | override ของ `weight_kg`, `height_cm`, `body_fat_pct`, `goal`, `activity_level` (ที่เหลือใช้จากโปรไฟล์) | BMR, TDEE, พลังงานเป้าหมาย + ช่วง, โปรตีน/คาร์บ/ไขมัน (g), คำเตือน, รายการอ้างอิง | `app/services/nutrition.py` (pure functions + 21 unit tests) |
+| `lookup_food` | `query` ชื่อเมนู | รายการสูงสุด 5 เมนู พร้อม kcal/มาโครต่อหน่วยเสิร์ฟ หรือ `found=false` | `app/services/foods.py` (query ตาราง `foods`) |
+
+สูตรที่ใช้: BMR = Mifflin-St Jeor (หรือ Katch-McArdle เมื่อทราบ %ไขมัน),
+TDEE = BMR × activity factor (1.2-1.9),
+พลังงานเป้าหมาย = TDEE × (1 + ค่าปรับตามเป้าหมาย: cut −15…−20%, bulk +10…+15%),
+โปรตีน 1.6-2.2 g/kg (cut ใช้ช่วงบน), ไขมัน 0.8-1.0 g/kg แต่ไม่ต่ำกว่า 20% ของพลังงาน,
+คาร์โบไฮเดรตคือพลังงานส่วนที่เหลือ
+
+---
+
+## 5. ฐานความรู้และ RAG
+
+- ต้นทาง: `knowledge/cards/*.md` — การ์ดความรู้ภาษาไทยที่ผู้ทำสรุปจากแหล่งปฐมภูมิ
+  (frontmatter: `slug, title, topic, sources[]`)
+- Chunking: ตัดตามหัวข้อ `#` แล้วซอยต่อที่ย่อหน้าให้ใกล้ 1,200 ตัวอักษร overlap ~150
+  และเติมชื่อการ์ด + หัวข้อไว้ต้น chunk เพื่อให้ embedding มีบริบท
+- Embedding: `text-embedding-3-small` (1,536 มิติ)
+- Retrieval: cosine similarity, top-k = 6, ตัดที่ similarity < 0.32 (ค่าที่ได้จากการวัด ดูหัวข้อด้านบน)
+- Citation: chunk ที่ผ่านเกณฑ์ถูกใส่หมายเลข `[S1]..[Sk]` ใน prompt และส่งกลับ frontend
+  ผ่าน SSE event `sources` (แสดงว่ากำลังค้นจากอะไร) จากนั้น event `done` ส่งเฉพาะรายการที่
+  คำตอบอ้างอิงจริง แผงด้านขวาจะแคบลงเหลือเฉพาะแหล่งที่ถูกใช้
+- Re-index: `python -m ingest` จะ embed ใหม่เฉพาะการ์ดที่ `content_hash` เปลี่ยน
+
+---
+
+## 6. การประเมินผล
+
+| วิธี | สคริปต์ | ตัวชี้วัด |
+|---|---|---|
+| Retrieval | `eval/run_eval.py` | hit-rate@k, MRR (เทียบ `relevant_doc_slugs`) |
+| คุณภาพคำตอบอัตโนมัติ | `eval/run_eval.py --judge` | correctness / completeness / groundedness (1-5), อัตรา hallucination |
+| RAG vs no-RAG | `--mode both` | เปรียบเทียบรายข้อ (paired) → Wilcoxon signed-rank |
+| ความปลอดภัย | หมวด `safety`, `out-of-scope` | สัดส่วนที่ปฏิเสธ/ส่งต่อได้เหมาะสม |
+| ผู้เชี่ยวชาญ | `*_expert.csv` (blinded) | คะแนน correctness/usefulness จากผู้เชี่ยวชาญ |
+| ผู้ใช้จริง | แบบสอบถาม | SUS + ความพึงพอใจ |
+
+Judge ใช้โมเดลคนละตัวกับ generator (`JUDGE_MODEL` = `gpt-5.6-terra`,
+generator = `gpt-5.6-luna`) และไม่เห็นว่าเป็นคำตอบจากโหมดใด
+ไฟล์ `*_expert.csv` สลับตำแหน่ง A/B แบบสุ่มด้วย seed คงที่ และเก็บ mapping ไว้ใน `*_expert_key.csv`
+
+---
+
+## 7. เทคโนโลยีและเหตุผล
+
+| ชั้น | เลือกใช้ | เหตุผล |
+|---|---|---|
+| Frontend | Next.js (App Router, TS) + Tailwind | SSE ง่าย, deploy Vercel ฟรี |
+| Backend | FastAPI + SQLAlchemy 2 + Alembic | ecosystem Python เหมาะกับงาน RAG/eval |
+| DB | Postgres + pgvector | เก็บทั้ง relational และ vector ในที่เดียว ลดชิ้นส่วนระบบ |
+| Auth | JWT (passlib bcrypt + python-jose) | ไม่ผูก vendor, อธิบายในเล่มได้ครบ |
+| LLM | OpenAI Responses API | รองรับ function calling + streaming + structured output ในที่เดียว |
+
+ราคา ณ 30 ส.ค. 2569 (developers.openai.com): `gpt-5.6-luna` $0.20/$1.20,
+`gpt-5.6-terra` $2.00/$12.00, `text-embedding-3-small` $0.02 ต่อ 1M tokens
