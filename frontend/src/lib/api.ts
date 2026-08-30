@@ -173,6 +173,53 @@ export type ChatStreamHandlers = {
   onError?: (message: string) => void;
 };
 
+export type SSEFrame = { event: string; payload: Record<string, unknown> };
+
+/**
+ * Split a raw SSE buffer into complete frames.
+ *
+ * Frames are separated by a blank line, but a network chunk can end anywhere -
+ * mid-frame, mid-line, or even mid-UTF-8-character. Whatever follows the last
+ * blank line is therefore incomplete and is handed back as `rest` to be
+ * prepended to the next chunk.
+ *
+ * Line endings are normalised first because the server (sse-starlette) writes
+ * CRLF: a parser that splits on "\n\n" alone finds zero frames in its output
+ * and the chat silently renders nothing at all. Normalising the whole buffer
+ * on every call also handles a chunk that ends between the CR and the LF - the
+ * lone CR survives in `rest` and pairs up with the LF that starts the next one.
+ *
+ * Split out of `streamChat` so this can be unit-tested against realistic chunk
+ * boundaries; it is the one piece of the client that a passing type-check does
+ * not exercise at all.
+ */
+export function parseSSEFrames(buffer: string): {
+  frames: SSEFrame[];
+  rest: string;
+} {
+  const parts = buffer.replace(/\r\n/g, "\n").split("\n\n");
+  const rest = parts.pop() ?? "";
+  const frames: SSEFrame[] = [];
+
+  for (const part of parts) {
+    let event = "message";
+    const dataLines: string[] = [];
+    for (const line of part.split("\n")) {
+      if (line.startsWith("event:")) event = line.slice(6).trim();
+      else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+    }
+    if (!dataLines.length) continue;
+
+    try {
+      frames.push({ event, payload: JSON.parse(dataLines.join("\n")) });
+    } catch {
+      // A frame we cannot parse is dropped rather than killing the stream.
+    }
+  }
+
+  return { frames, rest };
+}
+
 /**
  * POST a message and consume the SSE response.
  * Returns an abort function.
@@ -215,26 +262,10 @@ export function streamChat(
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
 
-        // SSE frames are separated by a blank line.
-        const frames = buffer.split("\n\n");
-        buffer = frames.pop() ?? "";
+        const { frames, rest } = parseSSEFrames(buffer);
+        buffer = rest;
 
-        for (const frame of frames) {
-          let eventName = "message";
-          const dataLines: string[] = [];
-          for (const line of frame.split("\n")) {
-            if (line.startsWith("event:")) eventName = line.slice(6).trim();
-            else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
-          }
-          if (!dataLines.length) continue;
-
-          let payload: Record<string, unknown>;
-          try {
-            payload = JSON.parse(dataLines.join("\n"));
-          } catch {
-            continue;
-          }
-
+        for (const { event: eventName, payload } of frames) {
           switch (eventName) {
             case "sources":
               handlers.onSources?.((payload.sources ?? []) as Citation[]);

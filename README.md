@@ -65,6 +65,7 @@ npm run dev                        # http://localhost:3000
 | สร้าง migration ใหม่ | `.venv/Scripts/alembic.exe revision --autogenerate -m "..."` |
 | เช็กว่า model กับ DB ตรงกัน | `.venv/Scripts/alembic.exe check` |
 | นำความรู้เข้า | `.venv/Scripts/python.exe -m ingest` |
+| รันเทส frontend | `npm test` (จาก `frontend/`) |
 
 รันการประเมิน (จาก root ของ repo):
 
