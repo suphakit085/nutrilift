@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     # on-topic queries scored 0.377-0.474, off-topic 0.135-0.257 -> 0.32 sits in the
     # gap. Re-run that script whenever the knowledge base grows substantially.
     retrieval_min_score: float = 0.32
+    # How far below the best-matching chunk a sibling chunk may score and
+    # still be included. Only applies once the domain gate above has passed.
+    retrieval_relative_window: float = 0.10
     history_turns: int = 8
 
     @property

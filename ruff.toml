@@ -1,0 +1,18 @@
+# Shared lint config for the whole repo (backend/ and eval/).
+# Kept at the root so `ruff check .` from anywhere resolves the same rules -
+# eval/ was silently unlinted while this lived in backend/pyproject.toml.
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RUF", "ISC"]
+# B008: FastAPI's documented pattern is `x = Depends(...)` in the signature default.
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+"backend/alembic/versions/*" = ["E501", "I001", "UP007", "UP035", "W291"]
+
+[lint.isort]
+# Without this, moving the config to the repo root made ruff treat the
+# backend packages as third-party and merge them into the stdlib block.
+known-first-party = ["app", "ingest", "judge_prompts"]

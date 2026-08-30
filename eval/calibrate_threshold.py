@@ -83,13 +83,13 @@ def main() -> int:
         off_scores: list[tuple[float, str]] = []
 
         for query in on_topic:
-            score, slug, heading = top_score(db, query)
+            score, slug, _ = top_score(db, query)
             on_scores.append((score, query))
             if args.verbose:
                 print(f"  on  {score:6.3f}  {slug:<26} {query}")
 
         for query in OFF_TOPIC_QUERIES:
-            score, slug, heading = top_score(db, query)
+            score, slug, _ = top_score(db, query)
             off_scores.append((score, query))
             if args.verbose:
                 print(f"  off {score:6.3f}  {slug:<26} {query}")
@@ -118,7 +118,8 @@ def main() -> int:
         leaked = sum(1 for s, _ in off_scores if s >= threshold)
         marker = "  <-- ค่าปัจจุบัน" if abs(threshold - settings.retrieval_min_score) < 1e-9 else ""
         print(
-            f"  {threshold:>9.2f}  {kept:>10}/{len(on_scores):<7}  {leaked:>12}/{len(off_scores):<7}{marker}"
+            f"  {threshold:>9.2f}  {kept:>10}/{len(on_scores):<7}  "
+            f"{leaked:>12}/{len(off_scores):<7}{marker}"
         )
     print()
 

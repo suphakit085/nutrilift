@@ -41,20 +41,50 @@ class Passage:
         }
 
 
+def score_cutoff(best_score: float, threshold: float, window: float) -> float | None:
+    """The minimum score a chunk needs to be kept, or ``None`` to keep nothing.
+
+    Split out as a pure function so the two-stage filtering rule is unit-tested
+    rather than only observable through a live database and embedding calls.
+    """
+    if best_score < threshold:
+        return None
+    return best_score - window
+
+
 def search(
     db: Session,
     query: str,
     *,
     top_k: int | None = None,
     min_score: float | None = None,
+    relative_window: float | None = None,
 ) -> list[Passage]:
-    """Return the top-k most similar chunks above ``min_score``.
+    """Return the chunks most similar to ``query``.
 
     Score is cosine similarity in [-1, 1]; pgvector's ``cosine_distance`` returns
     ``1 - similarity``, so we convert back for readability in the UI and reports.
+
+    Filtering happens in two stages, because "is this question in our domain?"
+    and "which chunks are relevant to it?" are different questions and a single
+    flat cutoff answers them badly:
+
+    1. **Domain gate** - if even the best chunk scores below ``min_score``, the
+       question is outside the knowledge base and nothing is returned.
+    2. **Relative window** - otherwise, keep every chunk within
+       ``relative_window`` of the best score, so a strong match brings the rest
+       of its card along.
+
+    A single flat cutoff at 0.32 measurably hurt: for "ครีเอทีนกินยังไง ต้องโหลดไหม"
+    it kept only the myth-busting chunk (0.361) and discarded the section holding
+    the actual dosage (0.306), so the bot answered that it had no dosage data
+    while the card plainly did.
     """
     k = top_k if top_k is not None else settings.retrieval_top_k
     threshold = min_score if min_score is not None else settings.retrieval_min_score
+    window = (
+        relative_window if relative_window is not None else settings.retrieval_relative_window
+    )
 
     query_vector = embed_text(query)
     distance = Chunk.embedding.cosine_distance(query_vector).label("distance")
@@ -65,11 +95,17 @@ def search(
         .order_by(distance)
         .limit(k)
     ).all()
+    if not rows:
+        return []
+
+    scored = [(chunk, document, 1.0 - float(dist)) for chunk, document, dist in rows]
+    cutoff = score_cutoff(scored[0][2], threshold, window)
+    if cutoff is None:
+        return []
 
     passages: list[Passage] = []
-    for chunk, document, dist in rows:
-        score = 1.0 - float(dist)
-        if score < threshold:
+    for chunk, document, score in scored:
+        if score < cutoff:
             continue
         passages.append(
             Passage(

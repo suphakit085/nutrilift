@@ -34,7 +34,6 @@ from app.db.session import SessionLocal  # noqa: E402
 from app.services.chat import collect_answer  # noqa: E402
 from app.services.llm import get_client  # noqa: E402
 from app.services.prompts import PROMPT_VERSION  # noqa: E402
-
 from judge_prompts import (  # noqa: E402
     JUDGE_SCHEMA,
     JUDGE_SYSTEM,
@@ -84,7 +83,12 @@ def retrieval_metrics(citations: list[dict], relevant: list[str]) -> dict:
     are excluded from the aggregate - they are marked ``applicable=False``.
     """
     if not relevant:
-        return {"applicable": False, "hit": None, "reciprocal_rank": None, "n_retrieved": len(citations)}
+        return {
+            "applicable": False,
+            "hit": None,
+            "reciprocal_rank": None,
+            "n_retrieved": len(citations),
+        }
 
     retrieved = [c.get("document_slug") for c in citations]
     rank = next((i + 1 for i, slug in enumerate(retrieved) if slug in relevant), None)
@@ -177,7 +181,13 @@ def run_one(session, question: dict, use_rag: bool, judge: bool) -> dict:
     retrieved = result.get("retrieved") or []
     # hit-rate/MRR measure the retriever, so they score everything it returned;
     # `citations` is the narrower set the answer actually referenced.
-    metrics = retrieval_metrics(retrieved, question.get("relevant_doc_slugs") or [])
+    # In the no-RAG arm retrieval never runs, so the metric is undefined rather
+    # than zero - scoring it as a miss would understate the ablation baseline.
+    metrics = (
+        retrieval_metrics(retrieved, question.get("relevant_doc_slugs") or [])
+        if use_rag
+        else {"applicable": False, "hit": None, "reciprocal_rank": None, "n_retrieved": 0}
+    )
     usage = result.get("usage") or {}
 
     row = {
@@ -205,7 +215,7 @@ def run_one(session, question: dict, use_rag: bool, judge: bool) -> dict:
     if judge:
         try:
             row.update(judge_answer(question, row["answer"]))
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             row["judge_error"] = str(exc)
     return row
 
@@ -217,7 +227,10 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
     lines.append(f"- judge model: `{settings.judge_model}`")
     lines.append(f"- embedding model: `{settings.embed_model}`")
     lines.append(f"- prompt version: `{PROMPT_VERSION}`")
-    lines.append(f"- retrieval: top_k={settings.retrieval_top_k}, min_score={settings.retrieval_min_score}")
+    lines.append(
+        f"- retrieval: top_k={settings.retrieval_top_k}, "
+        f"min_score={settings.retrieval_min_score}"
+    )
     lines.append(f"- จำนวนคำถาม: {len(rows) // max(len(modes), 1)}")
     lines.append("")
 
@@ -228,7 +241,8 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
     lines.append("## สรุปรวมต่อโหมด")
     lines.append("")
     lines.append(
-        "| โหมด | n | correctness | completeness | groundedness | hallucination | hit@k | MRR | cost (USD) |"
+        "| โหมด | n | correctness | completeness | groundedness "
+        "| hallucination | hit@k | MRR | cost (USD) |"
     )
     lines.append("|---|---|---|---|---|---|---|---|---|")
     for mode in modes:
@@ -243,7 +257,7 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
             f"| {mean([r.get('groundedness') for r in subset])} "
             f"| {round(sum(halluc) / len(halluc), 3) if halluc else '-'} "
             f"| {round(sum(hits) / len(hits), 3) if hits else '-'} "
-            f"| {mean([r.get('reciprocal_rank') for r in applicable])} "
+            f"| {mean([r.get('reciprocal_rank') for r in applicable]) or '-'} "
             f"| {round(sum(r.get('cost_usd', 0) for r in subset), 4)} |"
         )
 
