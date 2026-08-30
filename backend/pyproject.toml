@@ -20,6 +20,8 @@ dependencies = [
     "sse-starlette>=2.1",
     "python-frontmatter>=1.1",
     "tiktoken>=0.8",
+    "pythainlp>=5.0",
+    "pypdf>=5.0",
     "email-validator>=2.2",
 ]
 

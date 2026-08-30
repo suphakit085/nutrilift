@@ -1,7 +1,12 @@
-"""Dense retrieval over the knowledge-card chunks stored in pgvector."""
+"""Retrieval over the knowledge-card chunks stored in pgvector.
+
+Dense (embedding) ranking, optionally fused with BM25 - see services/bm25.py
+for why the lexical half was added.
+"""
 
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict, dataclass
 
 from sqlalchemy import select
@@ -10,6 +15,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.models import Chunk, Document
 from app.services.llm import embed_text
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -39,6 +46,34 @@ class Passage:
             "score": round(self.score, 4),
             "source_refs": self.source_refs,
         }
+
+
+def _fuse_with_bm25(query: str, kept: list[tuple]) -> list[tuple]:
+    """Re-order accepted candidates by fusing dense rank with a BM25 rank.
+
+    The index is built over just these candidates rather than the whole corpus.
+    That is deliberate: the dense stage has already decided what is in scope, and
+    BM25's job here is only to settle the order among them - which is exactly
+    where dense retrieval was failing as the base grew.
+    """
+    from app.services.bm25 import BM25Index, rank_desc, reciprocal_rank_fusion
+
+    texts = [chunk.content for chunk, _, _ in kept]
+    try:
+        lexical = BM25Index.build(texts).score(query)
+    except Exception:
+        logger.exception("BM25 scoring failed; falling back to dense order")
+        return kept
+
+    dense_rank = rank_desc([score for _, _, score in kept])
+    lexical_rank = rank_desc(lexical)
+    if not lexical_rank:
+        # No query term appears in any candidate; dense order is all we have.
+        return kept
+
+    fused = reciprocal_rank_fusion([dense_rank, lexical_rank])
+    order = sorted(range(len(kept)), key=lambda i: fused.get(i, 0.0), reverse=True)
+    return [kept[i] for i in order]
 
 
 def score_cutoff(best_score: float, threshold: float, window: float) -> float | None:
@@ -79,6 +114,12 @@ def search(
     it kept only the myth-busting chunk (0.361) and discarded the section holding
     the actual dosage (0.306), so the bot answered that it had no dosage data
     while the card plainly did.
+
+    Ranking is hybrid when ``settings.retrieval_hybrid`` is on: the dense
+    candidates are re-ordered by fusing them with a BM25 ranking of the same
+    candidates. The gate above still runs on the *dense* score, so the
+    calibration in eval/calibrate_threshold.py keeps its meaning; only the order
+    within an accepted set changes.
     """
     k = top_k if top_k is not None else settings.retrieval_top_k
     threshold = min_score if min_score is not None else settings.retrieval_min_score
@@ -89,11 +130,14 @@ def search(
     query_vector = embed_text(query)
     distance = Chunk.embedding.cosine_distance(query_vector).label("distance")
 
+    # Over-fetch so BM25 has candidates the dense ranking placed just outside
+    # top-k; without this, fusion can only reorder what dense already liked.
+    fetch = k * settings.retrieval_candidate_multiplier if settings.retrieval_hybrid else k
     rows = db.execute(
         select(Chunk, Document, distance)
         .join(Document, Chunk.document_id == Document.id)
         .order_by(distance)
-        .limit(k)
+        .limit(fetch)
     ).all()
     if not rows:
         return []
@@ -103,10 +147,19 @@ def search(
     if cutoff is None:
         return []
 
+    if settings.retrieval_hybrid and len(scored) > 1:
+        # Fuse over *all* candidates, not just those inside the dense window.
+        # Applying the window first defeats the purpose: the chunk BM25 is meant
+        # to rescue is usually the one dense ranked just too low to survive it.
+        # Measured on the five questions dense was failing, windowing first
+        # rescued 1 of 5; fusing first rescued 4 of 5, with off-domain queries
+        # still returning nothing.
+        kept = _fuse_with_bm25(query, scored)[:k]
+    else:
+        kept = [item for item in scored if item[2] >= cutoff][:k]
+
     passages: list[Passage] = []
-    for chunk, document, score in scored:
-        if score < cutoff:
-            continue
+    for chunk, document, score in kept:
         passages.append(
             Passage(
                 label=f"S{len(passages) + 1}",

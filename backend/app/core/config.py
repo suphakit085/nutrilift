@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     # How far below the best-matching chunk a sibling chunk may score and
     # still be included. Only applies once the domain gate above has passed.
     retrieval_relative_window: float = 0.10
+    # Fuse dense ranking with BM25 over the same candidates. Turned on after
+    # hit@k fell to 0.833 at 12 cards; see services/bm25.py for the numbers.
+    retrieval_hybrid: bool = True
+    # How many extra candidates to fetch for BM25 to reorder.
+    retrieval_candidate_multiplier: int = 3
     history_turns: int = 8
 
     # --- rate limiting -------------------------------------------------
