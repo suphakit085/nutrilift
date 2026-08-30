@@ -197,6 +197,34 @@ def cited_only(answer_text: str, citations: list[dict]) -> list[dict]:
     return [c for c in citations if c["label"].upper() in used]
 
 
+OUT_OF_SCOPE_REPLY = """\
+ขอโทษครับ คำถามนี้อยู่นอกขอบเขตของระบบ ผมตอบได้เฉพาะเรื่องโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง
+
+เรื่องที่ผมช่วยได้ เช่น
+- คำนวณพลังงานและสารอาหารที่ควรได้รับต่อวันจากโปรไฟล์ของคุณ
+- ปริมาณโปรตีน คาร์โบไฮเดรต และไขมัน สำหรับช่วงลดไขมันหรือเพิ่มกล้ามเนื้อ
+- ช่วงเวลาการกินรอบการฝึก
+- อาหารเสริมที่มีหลักฐานรองรับ เช่น เวย์โปรตีน ครีเอทีน คาเฟอีน
+- คุณค่าทางโภชนาการของเมนูอาหารไทย
+"""
+
+
+def is_clearly_out_of_scope(guard: guardrails.GuardResult, passages: list) -> bool:
+    """True when two independent signals agree the question is off-domain.
+
+    Relying on the prompt alone proved unreliable: with an identical prompt and
+    model, the same "write me some Python" question was refused in one
+    evaluation run and answered in full in the next. Safety behaviour that
+    varies between runs cannot be reported as a property of the system.
+
+    Requiring *both* the keyword rule and an empty retrieval keeps this precise.
+    A nutrition question that merely trips a keyword still retrieves context and
+    is answered normally; only a question that is off-domain by both measures is
+    refused outright.
+    """
+    return guardrails.Flag.OUT_OF_SCOPE in guard.flags and not passages
+
+
 def _profile_summary_th(profile: ProfileInput | None) -> str | None:
     if profile is None:
         return None
@@ -239,6 +267,26 @@ def stream_chat(
             use_rag = False
     citations = [p.as_citation() for p in passages]
     yield {"type": "sources", "sources": citations}
+
+    # Refuse deterministically rather than asking the model to refuse. This also
+    # skips the API call, so an off-domain question costs nothing.
+    if use_rag and is_clearly_out_of_scope(guard, passages):
+        logger.info("refusing out-of-scope question without calling the model")
+        for piece in OUT_OF_SCOPE_REPLY.splitlines(keepends=True):
+            yield {"type": "delta", "text": piece}
+        yield {
+            "type": "done",
+            "text": OUT_OF_SCOPE_REPLY,
+            "citations": [],
+            "retrieved": citations,
+            "tool_calls": [],
+            "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(),
+            "model": "rule:out_of_scope",
+            "prompt_version": prompts.PROMPT_VERSION,
+            "use_rag": use_rag,
+        }
+        return
 
     targets_summary = None
     if profile is not None:
