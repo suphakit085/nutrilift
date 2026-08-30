@@ -5,6 +5,7 @@
 
 - **ความคืบหน้าและงานที่เหลือ → [`TASKS.md`](TASKS.md)**
 - สถาปัตยกรรมและเหตุผลเชิงออกแบบ → [`docs/architecture.md`](docs/architecture.md)
+- งานที่เกี่ยวข้อง / แชตบอทแนวเดียวกันใช้ข้อมูลจากไหน → [`docs/related-work.md`](docs/related-work.md)
 - ฐานความรู้และวิธีเพิ่มการ์ด → [`knowledge/README.md`](knowledge/README.md)
 - บรรณานุกรม/เช็กลิสต์เอกสาร → [`knowledge/SOURCES.md`](knowledge/SOURCES.md)
 
