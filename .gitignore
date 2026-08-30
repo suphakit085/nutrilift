@@ -23,7 +23,10 @@ out/
 # Data & reports
 eval/reports/*
 !eval/reports/.gitkeep
-knowledge/sources/*.pdf
+# Source documents and anything derived from them belong to their publishers
+# (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
+knowledge/sources/*
+!knowledge/sources/.gitkeep
 
 # OS / editors
 .DS_Store
