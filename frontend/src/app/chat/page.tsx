@@ -149,6 +149,21 @@ export default function ChatPage() {
     setError("");
   }
 
+  async function removeConversation(id: string) {
+    // Deliberately not window.confirm(): a native modal blocks the whole page.
+    // The row is removed optimistically and restored if the request fails.
+    const previous = conversations;
+    setConversations((list) => list.filter((c) => c.id !== id));
+    if (activeId === id) startNew();
+
+    try {
+      await api.deleteConversation(id);
+    } catch (err) {
+      setConversations(previous);
+      setError(`ลบห้องแชตไม่สำเร็จ: ${(err as Error).message}`);
+    }
+  }
+
   function logout() {
     setToken(null);
     router.replace("/login");
@@ -167,17 +182,29 @@ export default function ChatPage() {
 
         <nav className="mt-4 flex-1 space-y-1 overflow-y-auto">
           {conversations.map((conversation) => (
-            <button
+            <div
               key={conversation.id}
-              onClick={() => openConversation(conversation.id)}
-              className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm transition ${
+              className={`group flex items-center gap-1 rounded-lg pr-1 transition ${
                 activeId === conversation.id
                   ? "bg-accent-soft text-accent"
                   : "text-muted hover:bg-background hover:text-foreground"
               }`}
             >
-              {conversation.title}
-            </button>
+              <button
+                onClick={() => openConversation(conversation.id)}
+                className="min-w-0 flex-1 truncate px-3 py-2 text-left text-sm"
+              >
+                {conversation.title}
+              </button>
+              <button
+                onClick={() => removeConversation(conversation.id)}
+                aria-label={`ลบห้องแชต ${conversation.title}`}
+                title="ลบห้องแชตนี้"
+                className="shrink-0 rounded px-2 py-1 text-xs opacity-0 transition group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 focus:opacity-100"
+              >
+                ลบ
+              </button>
+            </div>
           ))}
         </nav>
 
@@ -200,7 +227,8 @@ export default function ChatPage() {
       {/* conversation */}
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-6 py-3">
-          <h1 className="font-semibold">โค้ชนัท</h1>
+          <h1 className="font-semibold">NutriLift</h1>
+          <span className="hidden text-xs text-muted sm:inline">ผู้ช่วย: โค้ชนัท</span>
           <Link href="/profile" className="text-sm text-accent hover:underline md:hidden">
             โปรไฟล์
           </Link>

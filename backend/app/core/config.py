@@ -43,6 +43,17 @@ class Settings(BaseSettings):
     retrieval_relative_window: float = 0.10
     history_turns: int = 8
 
+    # --- rate limiting -------------------------------------------------
+    # Every chat turn costs money, so these are a spend ceiling as much as an
+    # abuse control. Tuned for a class-sized SUS study (20-30 users).
+    rate_limit_chat_per_hour: int = 20
+    rate_limit_chat_per_day: int = 60
+    # Hard cap across all users combined, so total daily spend is bounded even
+    # if many accounts are created.
+    rate_limit_chat_global_per_day: int = 1500
+    # Login/register attempts per IP, to blunt password guessing.
+    rate_limit_auth_per_15min: int = 10
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

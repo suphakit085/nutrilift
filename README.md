@@ -1,4 +1,4 @@
-# แชตบอทแนะนำโภชนาการสำหรับเวทเทรนนิ่ง
+# NutriLift — แชตบอทแนะนำโภชนาการสำหรับเวทเทรนนิ่ง
 
 โปรเจกจบ: แชตบอทภาษาไทยที่ตอบคำถามโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง
 โดย **อ้างอิงฐานความรู้ที่คัดมา (RAG)** และ **คำนวณพลังงาน/สารอาหารด้วยโค้ด ไม่ใช่ด้วย LLM**
@@ -96,6 +96,9 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 | `RETRIEVAL_TOP_K` / `RETRIEVAL_MIN_SCORE` | `6` / `0.32` | min_score = ประตูขอบเขต ได้จาก `eval/calibrate_threshold.py` รันซ้ำเมื่อเพิ่มการ์ดเยอะ ๆ |
 | `RETRIEVAL_RELATIVE_WINDOW` | `0.10` | เก็บ chunk ที่คะแนนห่างจากตัวที่ดีที่สุดไม่เกินค่านี้ |
 | `HISTORY_TURNS` | `8` | จำนวนรอบสนทนาที่ส่งกลับเข้า prompt |
+| `RATE_LIMIT_CHAT_PER_HOUR` / `_PER_DAY` | `20` / `60` | จำกัดต่อผู้ใช้ ป้องกันบิล API บาน |
+| `RATE_LIMIT_CHAT_GLOBAL_PER_DAY` | `1500` | เพดานรวมทุกผู้ใช้ต่อวัน = เพดานค่าใช้จ่าย |
+| `RATE_LIMIT_AUTH_PER_15MIN` | `10` | จำกัดการล็อกอิน/สมัคร ต่อ IP |
 
 ---
 

@@ -249,7 +249,22 @@ export function streamChat(
       );
 
       if (!response.ok || !response.body) {
-        handlers.onError?.(`เชื่อมต่อไม่สำเร็จ (${response.status})`);
+        // The server explains rate limits and quota exhaustion in `detail`;
+        // showing only the status code would leave the user with no idea how
+        // long to wait or what went wrong.
+        let detail = `เชื่อมต่อไม่สำเร็จ (${response.status})`;
+        try {
+          const body = await response.json();
+          if (typeof body?.detail === "string") detail = body.detail;
+        } catch {
+          /* not a JSON error body */
+        }
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        if (Number.isFinite(retryAfter) && retryAfter > 0) {
+          const minutes = Math.ceil(retryAfter / 60);
+          detail += ` (ลองใหม่ได้ในอีกประมาณ ${minutes} นาที)`;
+        }
+        handlers.onError?.(detail);
         return;
       }
 

@@ -13,7 +13,7 @@ from app.core.config import settings
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(
-    title="Nutrition Chatbot API",
+    title="NutriLift API",
     description="แชตบอทให้ความรู้ด้านโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง (RAG + เครื่องคำนวณ)",
     version="0.1.0",
 )

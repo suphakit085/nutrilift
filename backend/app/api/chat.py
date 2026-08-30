@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
-from app.api.deps import get_current_user, profile_to_input
+from app.api.deps import get_current_user, profile_to_input, rate_limit_chat
 from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut
 from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
@@ -83,7 +83,7 @@ def _owned_conversation(db: Session, user: User, conversation_id: uuid.UUID) -> 
 def chat(
     conversation_id: uuid.UUID,
     payload: ChatRequest,
-    user: User = Depends(get_current_user),
+    user: User = Depends(rate_limit_chat),
     db: Session = Depends(get_db),
 ) -> EventSourceResponse:
     """Stream one assistant turn as Server-Sent Events.

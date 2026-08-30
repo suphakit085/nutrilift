@@ -1,5 +1,5 @@
 [project]
-name = "nutrition-chatbot-backend"
+name = "nutrilift-backend"
 version = "0.1.0"
 description = "Backend for a Thai weight-training nutrition chatbot (RAG + deterministic calculators)"
 requires-python = ">=3.11"
