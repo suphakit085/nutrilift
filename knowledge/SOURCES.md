@@ -10,11 +10,15 @@
 
 ดาวน์โหลดไฟล์ไว้ที่ `knowledge/sources/` (โฟลเดอร์นี้ถูก gitignore ไว้ ไม่ขึ้น GitHub)
 
+**สถานะไฟล์ (31 ส.ค. 2569):** งานวิจัย open access ทั้ง 12 ฉบับดาวน์โหลดครบแล้ว
+PMC บล็อกการโหลดอัตโนมัติ — ช่องทางที่ใช้ได้จริงคือ **Europe PMC**:
+`https://europepmc.org/articles/<PMCID>?pdf=render` (ตรวจชื่อเรื่องกับต้นฉบับแล้วทุกไฟล์)
+
 ---
 
 ## 1. เอกสารอ้างอิงของไทย
 
-- [ ] **ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563 (Thai DRI)**
+- [~] **ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563 (Thai DRI)**
   สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข
   ✅ หน้าดาวน์โหลด: https://nutrition2.anamai.moph.go.th/th/dri/176096
   ✅ ไฟล์ `DRI2563.pdf` ~37 MB (มีผู้ดาวน์โหลดแล้วราว 2,869 ครั้ง)
@@ -57,6 +61,17 @@
   5. เผื่อไว้: หนังสือ **Thai Food Composition Tables 2015** ฉบับพิมพ์ อาจมีในห้องสมุด มข.
      ซึ่งเป็นแหล่งเดียวกันและอ้างอิงได้เหมือนกัน
 
+- [~] **ระบบสืบค้นคุณค่าทางโภชนาการ (NSS) — กรมอนามัย** ⭐ เจอใหม่ เป็นทางเลือกคู่กับ INMU
+  ✅ https://thaifcd.anamai.moph.go.th/nss/index.php
+  ✅ มีไฟล์ตารางรวมทั้งชุด: `DOH-nutrition-table-2018.pdf` (**148 หน้า, 86 MB**)
+  https://thaifcd.anamai.moph.go.th/nss/pdf/ตารางคุณค่า%202018.pdf
+  ⚠️ เป็นไฟล์สแกนทั้งเล่ม ไม่มี text layer — คัดค่าลง `foods.csv` ต้องอ่านด้วยตา
+  ข้อดี: เป็นเอกสารราชการเผยแพร่สาธารณะไฟล์เดียวจบ ไม่ต้องกดค้นทีละเมนูแบบเว็บ INMU
+
+- [~] **คู่มือธงโภชนาการ** — สำนักโภชนาการ กรมอนามัย (2564)
+  ✅ https://nutrition2.anamai.moph.go.th/th/book/201525 → `ThongPhochanakan-manual.pdf` (14 หน้า)
+  ⚠️ ไฟล์สแกน ไม่มี text layer
+
 - [ ] **ASEAN Food Composition Database** (สำรอง ถ้าเมนูไหนไม่มีใน Thai FCD)
   🔎 https://inmu.mahidol.ac.th/aseanfoods/doc/OnlineASEAN_FCD_V1_2014.pdf
 
@@ -77,17 +92,17 @@
 - [x] **Aragon AA, et al.** ISSN position stand: diets and body composition. *JISSN.* 2017;14:16.
   🔎 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5470183/
   → `cards/energy-balance-cut-bulk.md`
-- [ ] **Kerksick CM, et al.** ISSN position stand: nutrient timing. *JISSN.* 2017;14:33.
+- [~] **Kerksick CM, et al.** ISSN position stand: nutrient timing. *JISSN.* 2017;14:33.
   🔎 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5596471/ · DOI 10.1186/s12970-017-0189-4
   → การ์ด `nutrient-timing`
-- [ ] **Guest NS, et al.** ISSN position stand: caffeine and exercise performance. *JISSN.* 2021;18:1.
+- [~] **Guest NS, et al.** ISSN position stand: caffeine and exercise performance. *JISSN.* 2021;18:1.
   🔎 https://pmc.ncbi.nlm.nih.gov/articles/PMC7777221 · DOI 10.1186/s12970-020-00383-4
   → การ์ด `caffeine` (คาเฟอีน 3–6 mg/kg ก่อนออกกำลังกายราว 60 นาที)
 - [ ] **Thomas DT, Erdman KA, Burke LM.** ACSM/AND/DC Joint Position Statement:
   Nutrition and Athletic Performance. *Med Sci Sports Exerc.* 2016;48(3):543-568.
   🔎 ค้นจาก PubMed: https://pubmed.ncbi.nlm.nih.gov/26891166/
   ⚠️ วารสารนี้ไม่ open access — ใช้สิทธิ์ห้องสมุด มข. หรือขอผ่านอาจารย์ที่ปรึกษา
-- [ ] **Kerksick CM, et al.** ISSN exercise & sports nutrition review update. *JISSN.* 2018;15:38.
+- [~] **Kerksick CM, et al.** ISSN exercise & sports nutrition review update. *JISSN.* 2018;15:38.
   🔎 ค้นจาก PMC — เป็นหนึ่งในเอกสารที่งานวิจัยประเมินแชตบอทใช้เป็นเกณฑ์ตัดสิน (ดู `docs/related-work.md`)
 
 ## 3. งานวิจัยเฉพาะเรื่อง
@@ -103,14 +118,14 @@
   (เกินดุลพลังงาน ~10–20% · เพิ่มน้ำหนัก ~0.25–0.5%/สัปดาห์)
 - [x] **Mifflin MD, St Jeor ST, et al.** A new predictive equation for resting energy expenditure.
   *Am J Clin Nutr.* 1990;51(2):241-247. 🔎 https://pubmed.ncbi.nlm.nih.gov/2305711/
-- [ ] **Schoenfeld BJ, Aragon AA.** How much protein can the body use in a single meal?
+- [~] **Schoenfeld BJ, Aragon AA.** How much protein can the body use in a single meal?
   *JISSN.* 2018;15:10. 🔎 ค้นจาก PMC → การ์ด `protein-per-meal-myth`
   ⚠️ **สำคัญ** — เป็นที่มาของตัวเลข 0.4 g/kg ต่อมื้อ ซึ่งเดิมการ์ดโปรตีนอ้างผิดว่ามาจาก ISSN
-- [ ] **Antonio J, et al.** Common questions and misconceptions about creatine supplementation.
+- [~] **Antonio J, et al.** Common questions and misconceptions about creatine supplementation.
   *JISSN.* 2021;18:13. 🔎 ค้นจาก PMC
-- [ ] **Trexler ET, Smith-Ryan AE, Norton LE.** Metabolic adaptation to weight loss.
+- [~] **Trexler ET, Smith-Ryan AE, Norton LE.** Metabolic adaptation to weight loss.
   *JISSN.* 2014;11:7. 🔎 ค้นจาก PMC → การ์ด `metabolic-adaptation`
-- [ ] **Aragon AA, Schoenfeld BJ.** Nutrient timing revisited: is there a post-exercise anabolic
+- [~] **Aragon AA, Schoenfeld BJ.** Nutrient timing revisited: is there a post-exercise anabolic
   window? *JISSN.* 2013;10:5. ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC3577439/
   → ใช้กับการ์ด `anabolic-window-myth`
 
@@ -118,7 +133,7 @@
 
 รายละเอียดและการวิเคราะห์อยู่ใน [`docs/related-work.md`](../docs/related-work.md)
 
-- [ ] **PLOS One (2025)** — ประเมินความรู้ด้านโภชนาการการกีฬาของแชตบอท LLM
+- [~] **PLOS One (2025)** — ประเมินความรู้ด้านโภชนาการการกีฬาของแชตบอท LLM
   ✅ https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0325982
 - [ ] **Luangaphirom T, et al.** ThaiNutriChat. *Multimedia Systems.* 2024;30(5):298.
   🔎 https://link.springer.com/article/10.1007/s00530-024-01495-6 (ต้องใช้สิทธิ์ห้องสมุด)
