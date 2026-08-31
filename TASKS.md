@@ -12,7 +12,7 @@
 | ด้าน | ความคืบหน้า |
 |---|---|
 | ระบบ (โค้ด) | ▓▓▓▓▓▓▓▓▓▓ ~95% (เหลือ deploy) |
-| ฐานความรู้ | ▓▓▓▓░░░░░░ 13 / 25–35 การ์ด |
+| ฐานความรู้ | ▓▓▓▓▓░░░░░ 16 / 25–35 การ์ด |
 | ฐานข้อมูลอาหาร | ▓▓▓▓▓▓▓▓▓░ **339 แถว · ข้อมูลจริง 312** (เกินเป้า 150–300) |
 | ชุดคำถามทดสอบ | ▓▓▓▓░░░░░░ 33 / 80–100 |
 | การประเมินผล | ▓▓▓▓▓░░░░░ อัตโนมัติเสร็จ · ผู้เชี่ยวชาญ/SUS ยังไม่เริ่ม |
@@ -37,11 +37,15 @@
   - [x] embed + ค้นด้วย pgvector + แสดง `[S1]` citation
   - [x] กรองแหล่งอ้างอิงให้เหลือเฉพาะที่คำตอบใช้จริง
   - [x] กรองสองชั้น (ประตูขอบเขต + หน้าต่างสัมพัทธ์)
-  - [~] **เขียนการ์ดความรู้ (13 / เป้าใหม่ 25–35)** — protein, protein-per-meal-myth, energy,
+  - [~] **เขียนการ์ดความรู้ (16 / เป้าใหม่ 25–35)** — protein, protein-per-meal-myth, energy,
         creatine, creatine-myths, nutrient-timing, caffeine, sodium-water, fiber,
-        calcium-iron-vitd, intermittent-fasting, metabolic-adaptation, thai-food-guide
+        calcium-iron-vitd, intermittent-fasting, metabolic-adaptation, thai-food-guide,
+        hmb, beta-alanine, unproven-muscle-supplements
         (31 ส.ค. 2569: เพิ่ม `thai-food-guide` จากคู่มือธงโภชนาการ กรมอนามัย — สัดส่วน 5 หมู่,
-        ตาราง 3 ระดับพลังงาน, หน่วยตวงครัวเรือน)
+        ตาราง 3 ระดับพลังงาน, หน่วยตวงครัวเรือน; ขยาย `nutrient-timing` ด้วยกรอบปฏิบัติ 3-4 ชม.
+        รอบมื้อฝึก; เพิ่ม `hmb`, `beta-alanine` (มีหลักฐานหนักแน่น ยังไม่มีการ์ดคุม), และ
+        `unproven-muscle-supplements` รวมสารเสริมยอดฮิตที่หลักฐานไม่สนับสนุน 7 ตัว
+        — ทั้งหมดจาก ISSN review update 2018)
 - [~] **5. ฐานข้อมูลอาหารไทย** — ข้อมูลจริงแล้ว 312 จาก 339 แถว
   - [x] ตาราง `foods` + `lookup_food` tool + ingest จาก CSV
   - [x] **ดึงข้อมูลจริงจาก ASEAN Food Composition Database (INMU) ได้ 308 รายการ**

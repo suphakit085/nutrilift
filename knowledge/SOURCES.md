@@ -108,8 +108,11 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
   Nutrition and Athletic Performance. *Med Sci Sports Exerc.* 2016;48(3):543-568.
   🔎 ค้นจาก PubMed: https://pubmed.ncbi.nlm.nih.gov/26891166/
   ⚠️ วารสารนี้ไม่ open access — ใช้สิทธิ์ห้องสมุด มข. หรือขอผ่านอาจารย์ที่ปรึกษา
-- [~] **Kerksick CM, et al.** ISSN exercise & sports nutrition review update. *JISSN.* 2018;15:38.
+- [x] **Kerksick CM, et al.** ISSN exercise & sports nutrition review update. *JISSN.* 2018;15:38.
   🔎 ค้นจาก PMC — เป็นหนึ่งในเอกสารที่งานวิจัยประเมินแชตบอทใช้เป็นเกณฑ์ตัดสิน (ดู `docs/related-work.md`)
+  → การ์ด `hmb`, `beta-alanine`, `unproven-muscle-supplements` (31 ส.ค. 2569 — เอกสาร 57 หน้า
+  ครอบคลุมหลายหัวข้อ ดึงมาเฉพาะส่วนที่ยังไม่มีการ์ดคุมอยู่ก่อนแล้ว ส่วนที่เหลือ เช่น พลังงาน/คาร์บ/
+  ไขมันสำหรับนักกีฬาทั่วไป ไม่ตรงขอบเขตเวทเทรนนิ่งเฉพาะทางของโปรเจกนี้ จึงยังไม่แยกเป็นการ์ด)
 
 ## 3. งานวิจัยเฉพาะเรื่อง
 
@@ -127,13 +130,14 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
 - [~] **Schoenfeld BJ, Aragon AA.** How much protein can the body use in a single meal?
   *JISSN.* 2018;15:10. 🔎 ค้นจาก PMC → การ์ด `protein-per-meal-myth`
   ⚠️ **สำคัญ** — เป็นที่มาของตัวเลข 0.4 g/kg ต่อมื้อ ซึ่งเดิมการ์ดโปรตีนอ้างผิดว่ามาจาก ISSN
-- [~] **Antonio J, et al.** Common questions and misconceptions about creatine supplementation.
-  *JISSN.* 2021;18:13. 🔎 ค้นจาก PMC
-- [~] **Trexler ET, Smith-Ryan AE, Norton LE.** Metabolic adaptation to weight loss.
+- [x] **Antonio J, et al.** Common questions and misconceptions about creatine supplementation.
+  *JISSN.* 2021;18:13. 🔎 ค้นจาก PMC → การ์ด `creatine`, `creatine-myths`
+- [x] **Trexler ET, Smith-Ryan AE, Norton LE.** Metabolic adaptation to weight loss.
   *JISSN.* 2014;11:7. 🔎 ค้นจาก PMC → การ์ด `metabolic-adaptation`
-- [~] **Aragon AA, Schoenfeld BJ.** Nutrient timing revisited: is there a post-exercise anabolic
+- [x] **Aragon AA, Schoenfeld BJ.** Nutrient timing revisited: is there a post-exercise anabolic
   window? *JISSN.* 2013;10:5. ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC3577439/
-  → ใช้กับการ์ด `anabolic-window-myth`
+  → การ์ด `nutrient-timing` (31 ส.ค. 2569: ขยายหัวข้อ "หน้าต่างอนาโบลิก" ด้วยกรอบปฏิบัติ
+  3-4 ชม. ระหว่างมื้อก่อน/หลังฝึก, ปริมาณ 0.4-0.5 g/kg LBM ต่อมื้อ, และผลของอายุ/ประสบการณ์ฝึก)
 
 ## 4. งานวิจัยเกี่ยวกับแชตบอทโภชนาการ (สำหรับบทที่ 2)
 
