@@ -16,14 +16,17 @@ class Settings(BaseSettings):
     )
 
     # Gemini
-    # llm_model's free tier is capped at 20 requests/day *per project*, verified
-    # live on 2026-08-31 (a 429 RESOURCE_EXHAUSTED names the exact figure) - a
-    # single eval run or a few minutes of manual testing exhausts it. Google
-    # does not publish per-model free-tier numbers; the authoritative current
-    # value for this project is only in the dashboard: aistudio.google.com/rate-limit.
-    # See docs/architecture.md for the implication for eval/SUS-testing pacing.
+    # gemini-3.5-flash's free tier is capped at 20 requests/day *per project*,
+    # verified live on 2026-08-31 (a 429 RESOURCE_EXHAUSTED names the exact
+    # figure) - a single eval run or a few minutes of manual testing exhausts
+    # it. Switched the default to the lite variant, which sits in its own
+    # quota bucket (untouched by that cap) and is ~4-5x cheaper on the paid
+    # tier if this ever moves off free. Google does not publish per-model
+    # free-tier numbers; the authoritative current value for this project is
+    # only in the dashboard: aistudio.google.com/rate-limit. See
+    # docs/architecture.md for the full tradeoff and eval/SUS-pacing notes.
     gemini_api_key: str = ""
-    llm_model: str = "gemini-3.5-flash"
+    llm_model: str = "gemini-3.5-flash-lite"
     # gemini-2.5-flash/-lite were retired for this project (404 "no longer
     # available to new users") after this project's key was created - confirmed
     # live on 2026-08-31, not just a stale training-data name. gemini-3.6-flash

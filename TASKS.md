@@ -125,9 +125,12 @@
       `gemini-2.5-flash`/`-lite` ถูกเลิกใช้กับโปรเจกต์นี้แล้ว (404) จึงเปลี่ยน `JUDGE_MODEL` เป็น
       `gemini-3.6-flash` — รายละเอียดและผลกระทบต่อแผน eval/SUS ดู
       [`docs/architecture.md`](docs/architecture.md) หัวข้อ "Gemini free tier"
-- [ ] **รัน eval harness ใหม่ด้วย Gemini** — ค้างเพราะโควตา `gemini-3.5-flash` (20/วัน) หมดจาก
-      smoke test ตอนย้ายระบบไปแล้ว ต้องรอโควตารีเซ็ต แล้วบันทึกผลเป็น baseline-v3 แทนที่ตัวเลข
-      OpenAI-era ในหัวข้อ 8 ของ `docs/architecture.md` (ดูหมายเหตุที่ใส่ไว้ตรงนั้น)
+- [x] **แก้เพดาน 20 requests/วัน** — เปลี่ยน `LLM_MODEL` เป็น `gemini-3.5-flash-lite` (คนละ quota
+      bucket จาก `gemini-3.5-flash` ที่โควตาหมด, ถูกกว่า ~4-5 เท่าบน paid tier) smoke test รอบสองผ่าน
+      ครบไม่ติด 429 เลย (RAG+citations, tool calling ทั้ง 2 เครื่องมือ, safety flag)
+- [ ] **รัน eval harness เต็มชุดด้วย `gemini-3.5-flash-lite`** — ยังไม่ได้รัน บันทึกผลเป็น baseline-v3
+      แทนที่ตัวเลข OpenAI-era ในหัวข้อ 8 ของ `docs/architecture.md` (ดูหมายเหตุที่ใส่ไว้ตรงนั้น) —
+      คุณภาพคำตอบของ flash-lite เทียบกับ flash เต็มรุ่นยังไม่ได้วัดเป็นตัวเลข ควรดูผลรอบนี้ประกอบด้วย
 
 ---
 
@@ -151,11 +154,12 @@
 1. **ดาวน์โหลดเอกสารตามลิงก์ใน `knowledge/SOURCES.md` → เขียนการ์ดความรู้** ← คอขวดตัวจริง
 2. เปิดหน้าเว็บดูด้วยตาสักรอบ (`npm run dev` → localhost:3000) ตรวจการจัดวาง
 3. **แทนข้อมูล `foods.csv` ด้วยของจริง**
-4. รอโควตา `gemini-3.5-flash` รีเซ็ต → รัน eval เต็มชุดด้วย Gemini (baseline-v3) → ขยายชุดคำถามเป็น
-   80–100 (`RETRIEVAL_MIN_SCORE` recalibrate ไปที่ 0.63 แล้ว ไม่ต้องรัน `calibrate_threshold.py` ซ้ำ
-   จนกว่าจะเปลี่ยนโมเดล embedding อีก หรือฐานความรู้โตขึ้นมาก)
-5. deploy → เก็บ SUS + ให้ผู้เชี่ยวชาญตรวจ (rate limiting พร้อมแล้ว) — ถ้าเพดาน 20 req/วันของ
-   `gemini-3.5-flash` เป็นคอขวดตอนเก็บ SUS จริง (20–30 คนพร้อมกัน) ให้พิจารณา paid tier ช่วงสั้น ๆ
+4. รัน eval เต็มชุดด้วย `gemini-3.5-flash-lite` (baseline-v3) → ขยายชุดคำถามเป็น 80–100
+   (`RETRIEVAL_MIN_SCORE` recalibrate ไปที่ 0.63 แล้ว ไม่ต้องรัน `calibrate_threshold.py` ซ้ำ
+   จนกว่าจะเปลี่ยนโมเดล embedding อีก หรือฐานความรู้โตขึ้นมาก) — ถ้าเจอ 429 ระหว่างรัน ให้เว้นจังหวะ
+   ข้ามวัน เพราะยังไม่รู้เพดาน RPD ที่แท้จริงของ flash-lite
+5. deploy → เก็บ SUS + ให้ผู้เชี่ยวชาญตรวจ (rate limiting พร้อมแล้ว) — ถ้าเพดาน request/วันของ
+   `gemini-3.5-flash-lite` เป็นคอขวดตอนเก็บ SUS จริง (20–30 คนพร้อมกัน) ให้พิจารณา paid tier ช่วงสั้น ๆ
    เฉพาะช่วงเก็บข้อมูล
 6. เขียนเล่ม (ใช้ `docs/architecture.md` เป็นต้นฉบับบทที่ 3)
 
