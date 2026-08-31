@@ -314,25 +314,25 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 หมูสันใน,Pork tenderloin,เนื้อสัตว์,100 กรัม,100,116,21.8,0,3.2,0,ASEAN-FCD-2014-INMU:AAF204
 หมูสามชั้น,Pork belly,เนื้อสัตว์,100 กรัม,100,518,9.3,0.0,53.0,0.0,TOVERIFY-INMU
 เนื้อวัวไม่ติดมัน,Lean beef,เนื้อสัตว์,100 กรัม,100,187,26.0,0.0,9.0,0.0,TOVERIFY-INMU
-ปลานิลนึ่ง,Steamed tilapia,เนื้อสัตว์,100 กรัม,100,128,26.0,0.0,2.7,0.0,TOVERIFY-INMU
+ปลานิลต้ม,Boiled tilapia,เนื้อสัตว์,100 กรัม,100,123,21.4,0.0,4.2,0.0,ASEAN-FCD-2014-INMU:AAG221
 ปลาแซลมอน,Salmon,เนื้อสัตว์,100 กรัม,100,208,20.0,0.0,13.0,0.0,TOVERIFY-INMU
 กุ้งต้ม,Boiled shrimp,เนื้อสัตว์,100 กรัม,100,99,24.0,0.2,0.3,0.0,TOVERIFY-INMU
-ไข่ไก่ต้ม,Boiled egg,ไข่-นม,1 ฟอง,50,78,6.3,0.6,5.3,0.0,TOVERIFY-INMU
+ไข่ไก่ต้ม,Boiled egg,ไข่-นม,1 ฟอง,50,80,6.6,0.8,5.6,0.0,ASEAN-FCD-2014-INMU:PHH003(ราคาดิบ ใช้แทนค่าต้มได้ เพราะไข่แทบไม่เปลี่ยนสารอาหารเมื่อต้ม)
 ไข่ขาวต้ม,Boiled egg white,ไข่-นม,1 ฟอง,33,17,3.6,0.4,0.1,0,ASEAN-FCD-2014-INMU:THH1(ราคาดิบ ใช้แทนค่าต้มได้ เพราะไข่ขาวแทบไม่เปลี่ยนสารอาหารเมื่อต้ม)
 ไข่ดาว,Fried egg,ไข่-นม,1 ฟอง,55,120,6.5,0.6,10.0,0.0,TOVERIFY-INMU
-นมจืดพร่องมันเนย,Low-fat milk,ไข่-นม,1 กล่อง 250 มล.,250,120,8.0,12.0,4.0,0.0,TOVERIFY-INMU
-โยเกิร์ตรสธรรมชาติ,Plain yogurt,ไข่-นม,1 ถ้วย,150,90,5.0,10.0,3.5,0.0,TOVERIFY-INMU
+นมจืดพร่องมันเนย,Low-fat milk,ไข่-นม,1 กล่อง 250 มล.,250,110,8.5,10.3,4.0,0.0,DOH-NSS-2018:09024
+โยเกิร์ตรสธรรมชาติ,Plain yogurt,ไข่-นม,1 ถ้วย,150,161,5.7,20.9,6.0,0.0,DOH-NSS-2018:09035
 เต้าหู้ขาวแข็ง,Firm tofu,โปรตีนพืช,100 กรัม,100,144,15.8,4.3,8.7,1.2,TOVERIFY-INMU
 ถั่วเหลืองต้ม,Boiled soybeans,โปรตีนพืช,100 กรัม,100,173,16.6,9.9,9.0,6.0,TOVERIFY-INMU
 เวย์โปรตีนไอโซเลท,Whey protein isolate,อาหารเสริม,1 สกู๊ป,30,110,25.0,1.0,0.5,0.0,TOVERIFY-LABEL
-ข้าวมันไก่,Chicken rice,จานเดียว,1 จาน,350,596,26.0,68.0,24.0,1.5,TOVERIFY-INMU
+ข้าวมันไก่,Chicken rice,จานเดียว,1 จาน,350,767,18.8,98.0,33.3,0.0,DOH-NSS-2018:11045
 ข้าวผัดกุ้ง,Shrimp fried rice,จานเดียว,1 จาน,300,520,20.0,70.0,17.0,2.0,TOVERIFY-INMU
-ข้าวกะเพราไก่ไข่ดาว,Basil chicken rice with fried egg,จานเดียว,1 จาน,350,620,29.0,66.0,26.0,2.5,TOVERIFY-INMU
+ข้าวกะเพราไก่,Basil chicken rice,จานเดียว,1 จาน,350,609,31.3,77.7,19.2,0.0,DOH-NSS-2018:11063
 ผัดไทยกุ้งสด,Pad Thai with shrimp,จานเดียว,1 จาน,300,600,20.0,80.0,21.0,3.0,TOVERIFY-INMU
-ส้มตำไทย,Green papaya salad,กับข้าว,1 จาน,200,120,3.0,22.0,2.5,4.0,TOVERIFY-INMU
+ส้มตำปู-กุ้ง,Papaya salad with crab and dried shrimp,กับข้าว,1 จาน,200,170,7.4,25.6,4.2,3.2,DOH-NSS-2018:11090
 ต้มยำกุ้งน้ำใส,Clear tom yum goong,กับข้าว,1 ถ้วย,250,95,12.0,6.0,2.5,1.5,TOVERIFY-INMU
-ลาบหมู,Minced pork larb,กับข้าว,1 จาน,150,230,18.0,7.0,15.0,2.0,TOVERIFY-INMU
-ไก่ทอด,Fried chicken,กับข้าว,1 ชิ้น,100,290,22.0,10.0,18.0,0.5,TOVERIFY-INMU
+ลาบคั่วหมู,Spicy roasted minced pork salad,กับข้าว,1 จาน,150,263,19.5,2.8,18.2,0.0,DOH-NSS-2018:11184
+ไก่ทอดกระเทียมพริกไทย,Fried chicken with garlic and pepper,กับข้าว,1 ชิ้น,100,186,18.4,5.7,10.0,0.0,DOH-NSS-2018:11102
 แกงเขียวหวานไก่,Green curry with chicken,กับข้าว,1 ถ้วย,200,240,14.0,10.0,17.0,2.0,TOVERIFY-INMU
 ผัดผักรวม,Stir-fried mixed vegetables,กับข้าว,1 จาน,150,110,3.0,10.0,7.0,3.5,TOVERIFY-INMU
 กล้วยน้ำว้า,Cultivated banana,ผลไม้,1 ผล,70,70,0.8,17.0,0.2,1.5,TOVERIFY-INMU
