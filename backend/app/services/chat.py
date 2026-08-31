@@ -199,8 +199,13 @@ def _execute_tool(db: Session, profile: ProfileInput | None, name: str, args: di
 # ---------------------------------------------------------------------------
 
 
-#: Matches the [S1] / [S2] markers the model is instructed to write.
-_CITATION_RE = re.compile(r"\[\s*(S\d{1,2})\s*\]")
+#: Matches the contents of any [...] bracket; individual Sn markers are pulled
+#: out of that content below. The model sometimes packs several markers into
+#: one bracket (e.g. "[S2, S6]") rather than writing "[S2][S6]", so matching
+#: a single "S\d{1,2}" per bracket would silently drop every marker after the
+#: first.
+_BRACKET_RE = re.compile(r"\[([^\]]+)\]")
+_LABEL_TOKEN_RE = re.compile(r"^S\d{1,2}$")
 
 
 def cited_only(answer_text: str, citations: list[dict]) -> list[dict]:
@@ -209,7 +214,11 @@ def cited_only(answer_text: str, citations: list[dict]) -> list[dict]:
     Labels the model invents that were never retrieved are ignored. Order
     follows the original retrieval ranking, not the order of first mention.
     """
-    used = {label.upper() for label in _CITATION_RE.findall(answer_text.upper())}
+    used: set[str] = set()
+    for bracket in _BRACKET_RE.findall(answer_text.upper()):
+        for token in re.split(r"[,\s;]+", bracket.strip()):
+            if _LABEL_TOKEN_RE.match(token):
+                used.add(token)
     return [c for c in citations if c["label"].upper() in used]
 
 

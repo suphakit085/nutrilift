@@ -64,3 +64,19 @@ def test_does_not_match_other_bracketed_text():
     """Markdown links and bracketed notes must not be read as citations."""
     answer = "ดูเพิ่มเติม [ฐานข้อมูลอาหาร] และ [S2]"
     assert labels(cited_only(answer, PASSAGES)) == ["S2"]
+
+
+def test_multiple_markers_in_one_bracket_comma_separated():
+    """The model sometimes writes "[S1, S3]" instead of "[S1][S3]"."""
+    answer = "ตามข้อมูล [S1, S3]"
+    assert labels(cited_only(answer, PASSAGES)) == ["S1", "S3"]
+
+
+def test_multiple_markers_in_one_bracket_no_space():
+    answer = "ตามข้อมูล [S1,S3]"
+    assert labels(cited_only(answer, PASSAGES)) == ["S1", "S3"]
+
+
+def test_multiple_markers_in_one_bracket_space_separated():
+    answer = "ตามข้อมูล [S1 S3]"
+    assert labels(cited_only(answer, PASSAGES)) == ["S1", "S3"]
