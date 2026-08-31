@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import statistics
 import sys
 import time
@@ -29,6 +30,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
+from google.genai import errors as genai_errors  # noqa: E402
 from google.genai import types  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
@@ -48,6 +50,20 @@ QUESTIONS_PATH = Path(__file__).parent / "questions.jsonl"
 REPORTS_DIR = Path(__file__).parent / "reports"
 
 SAFETY_CATEGORIES = {"safety", "out-of-scope"}
+
+#: gemini-3.5-flash-lite's free tier turned out to be capped per *minute* (15
+#: requests), not per day like gemini-3.5-flash - confirmed live on 2026-08-31
+#: when a from-scratch eval run lost 28/33 no-RAG generations and 17/33 judge
+#: calls to bare 429s. The error body names the exact wait, so retry on it
+#: instead of treating a transient rate limit as a real failure.
+MAX_RATE_LIMIT_RETRIES = 5
+DEFAULT_RETRY_DELAY_S = 20.0
+_RETRY_DELAY_RE = re.compile(r"retry in ([\d.]+)s")
+
+
+def _retry_delay_seconds(message: str) -> float:
+    match = _RETRY_DELAY_RE.search(message)
+    return float(match.group(1)) + 2.0 if match else DEFAULT_RETRY_DELAY_S
 
 #: Migrated to Gemini's free tier on 2026-08-31 (see docs/architecture.md) - all
 #: models this project uses cost $0 under the free tier, so this records the
@@ -110,16 +126,29 @@ def retrieval_metrics(citations: list[dict], relevant: list[str]) -> dict:
 
 
 def _judge_call(system: str, user: str, schema: dict) -> dict:
-    response = get_client().models.generate_content(
-        model=settings.judge_model,
-        contents=[types.Content(role="user", parts=[types.Part.from_text(text=user)])],
-        config=types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type="application/json",
-            response_json_schema=schema,
-        ),
-    )
-    return json.loads(response.text)
+    for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+        try:
+            response = get_client().models.generate_content(
+                model=settings.judge_model,
+                contents=[types.Content(role="user", parts=[types.Part.from_text(text=user)])],
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    response_mime_type="application/json",
+                    response_json_schema=schema,
+                ),
+            )
+            return json.loads(response.text)
+        except genai_errors.ClientError as exc:
+            if exc.code != 429 or attempt == MAX_RATE_LIMIT_RETRIES:
+                raise
+            delay = _retry_delay_seconds(str(exc))
+            print(
+                f"    [judge] 429, retrying in {delay:.0f}s "
+                f"({attempt + 1}/{MAX_RATE_LIMIT_RETRIES})",
+                flush=True,
+            )
+            time.sleep(delay)
+    raise RuntimeError("unreachable")
 
 
 def judge_answer(question: dict, answer: str) -> dict:
@@ -152,15 +181,31 @@ def judge_answer(question: dict, answer: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
+def _collect_answer_with_retry(session, *, user_message: str, use_rag: bool) -> dict:
+    result: dict = {}
+    for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+        result = collect_answer(
+            session, user_message=user_message, profile=None, history=[], use_rag=use_rag
+        )
+        message = result.get("message") or ""
+        is_rate_limit = result.get("type") == "error" and (
+            "429" in message or "RESOURCE_EXHAUSTED" in message
+        )
+        if not is_rate_limit or attempt == MAX_RATE_LIMIT_RETRIES:
+            return result
+        delay = _retry_delay_seconds(message)
+        print(
+            f"    [generate] 429, retrying in {delay:.0f}s "
+            f"({attempt + 1}/{MAX_RATE_LIMIT_RETRIES})",
+            flush=True,
+        )
+        time.sleep(delay)
+    return result
+
+
 def run_one(session, question: dict, use_rag: bool, judge: bool) -> dict:
     started = time.perf_counter()
-    result = collect_answer(
-        session,
-        user_message=question["question"],
-        profile=None,
-        history=[],
-        use_rag=use_rag,
-    )
+    result = _collect_answer_with_retry(session, user_message=question["question"], use_rag=use_rag)
     latency = time.perf_counter() - started
 
     if result.get("type") == "error":
