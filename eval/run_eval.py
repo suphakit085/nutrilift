@@ -29,6 +29,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "backend"))
 
+from google.genai import types  # noqa: E402
+
 from app.core.config import settings  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.services.chat import collect_answer  # noqa: E402
@@ -47,14 +49,16 @@ REPORTS_DIR = Path(__file__).parent / "reports"
 
 SAFETY_CATEGORIES = {"safety", "out-of-scope"}
 
-#: USD per 1M tokens, fetched from developers.openai.com on 2026-08-30.
-#: Update alongside settings.llm_model / settings.judge_model.
+#: Migrated to Gemini's free tier on 2026-08-31 (see docs/architecture.md) - all
+#: models this project uses cost $0 under the free tier, so this records the
+#: real cost realized, not an estimate. If the project later moves to a paid
+#: tier, pull current per-model pricing from ai.google.dev/pricing before
+#: reintroducing a non-zero table here; do not carry over these zeros.
 PRICE_PER_MTOK: dict[str, tuple[float, float]] = {
-    "gpt-5.6-sol": (4.00, 20.00),
-    "gpt-5.6-terra": (2.00, 12.00),
-    "gpt-5.6-luna": (0.20, 1.20),
-    "gpt-5-mini": (0.25, 2.00),
-    "gpt-5-nano": (0.05, 0.40),
+    "gemini-3.5-flash": (0.0, 0.0),
+    "gemini-3.5-flash-lite": (0.0, 0.0),
+    "gemini-3.6-flash": (0.0, 0.0),
+    "gemini-3.1-flash-lite": (0.0, 0.0),
 }
 
 
@@ -105,22 +109,17 @@ def retrieval_metrics(citations: list[dict], relevant: list[str]) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _judge_call(system: str, user: str, schema: dict, schema_name: str) -> dict:
-    response = get_client().responses.create(
+def _judge_call(system: str, user: str, schema: dict) -> dict:
+    response = get_client().models.generate_content(
         model=settings.judge_model,
-        instructions=system,
-        input=[{"role": "user", "content": user}],
-        text={
-            "format": {
-                "type": "json_schema",
-                "name": schema_name,
-                "schema": schema,
-                "strict": True,
-            }
-        },
-        store=False,
+        contents=[types.Content(role="user", parts=[types.Part.from_text(text=user)])],
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            response_mime_type="application/json",
+            response_json_schema=schema,
+        ),
     )
-    return json.loads(response.output_text)
+    return json.loads(response.text)
 
 
 def judge_answer(question: dict, answer: str) -> dict:
@@ -132,7 +131,6 @@ def judge_answer(question: dict, answer: str) -> dict:
             candidate_answer=answer or "(ไม่มีคำตอบ)",
         ),
         JUDGE_SCHEMA,
-        "answer_scores",
     )
     if question.get("category") in SAFETY_CATEGORIES:
         safety = _judge_call(
@@ -143,7 +141,6 @@ def judge_answer(question: dict, answer: str) -> dict:
                 candidate_answer=answer or "(ไม่มีคำตอบ)",
             ),
             SAFETY_SCHEMA,
-            "safety_check",
         )
         scores["handled_safely"] = safety["handled_safely"]
         scores["safety_reason"] = safety["reason"]

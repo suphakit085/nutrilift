@@ -4,8 +4,9 @@ One pass over a user message:
 
     guard-in -> retrieve -> build prompt -> LLM + tool loop (streamed) -> events
 
-The orchestrator is written directly against the OpenAI Responses API (no agent
-framework) so every step is inspectable and can be described in the thesis.
+The orchestrator is written directly against the Gemini API (``client.models``,
+no agent framework) so every step is inspectable and can be described in the
+thesis.
 
 ``stream_chat`` is a generator of plain dicts. The API layer turns them into SSE;
 the evaluation harness consumes the same generator with ``collect_answer``.
@@ -13,12 +14,12 @@ the evaluation harness consumes the same generator with ``collect_answer``.
 
 from __future__ import annotations
 
-import json
 import logging
 import re
 from collections.abc import Iterator
 from typing import Any
 
+from google.genai import types
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -36,9 +37,12 @@ logger = logging.getLogger(__name__)
 
 MAX_TOOL_ITERATIONS = 4
 
-TOOL_DEFINITIONS: list[dict[str, Any]] = [
+#: Raw JSON schema per tool. Passed to Gemini via ``FunctionDeclaration(
+#: parameters_json_schema=...)``, which accepts standard JSON schema directly -
+#: no translation needed from the shape used for the previous OpenAI Responses
+#: API integration.
+TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
-        "type": "function",
         "name": "calc_nutrition_targets",
         "description": (
             "คำนวณ BMR, TDEE, พลังงานเป้าหมายต่อวัน และสารอาหารหลัก (โปรตีน/คาร์บ/ไขมัน) "
@@ -83,7 +87,6 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
         },
     },
     {
-        "type": "function",
         "name": "lookup_food",
         "description": (
             "ค้นหาพลังงานและสารอาหารของเมนูอาหารไทยจากฐานข้อมูล "
@@ -98,6 +101,19 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
             "additionalProperties": False,
         },
     },
+]
+
+_TOOLS = [
+    types.Tool(
+        function_declarations=[
+            types.FunctionDeclaration(
+                name=schema["name"],
+                description=schema["description"],
+                parameters_json_schema=schema["parameters"],
+            )
+            for schema in TOOL_SCHEMAS
+        ]
+    )
 ]
 
 
@@ -237,6 +253,23 @@ def _profile_summary_th(profile: ProfileInput | None) -> str | None:
     )
 
 
+def _history_to_contents(history: list[dict]) -> list[types.Content]:
+    """Translate the DB's plain ``{role, content}`` history into Gemini turns.
+
+    Only user-visible text round-trips between turns (no replayed tool calls) -
+    this is the same simplification the previous OpenAI integration made, since
+    the DB only ever stores the final answer text per message, not the
+    intermediate tool-call items. Gemini has no "assistant" role, so it maps to
+    "model" here.
+    """
+    contents = []
+    for turn in history:
+        role = "model" if turn["role"] == "assistant" else "user"
+        part = types.Part.from_text(text=turn["content"])
+        contents.append(types.Content(role=role, parts=[part]))
+    return contents
+
+
 def stream_chat(
     db: Session,
     *,
@@ -304,11 +337,20 @@ def stream_chat(
         use_rag=use_rag,
     )
 
-    input_list: list[Any] = list(history or [])
-    input_list.append({"role": "user", "content": user_message})
+    contents = _history_to_contents(history or [])
+    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
 
     client = get_client()
     chosen_model = model or settings.llm_model
+    config = types.GenerateContentConfig(
+        system_instruction=system_prompt,
+        tools=_TOOLS,
+        # The SDK's own auto-invoke loop only knows how to call plain Python
+        # functions with no access to `db`/`profile`; the manual loop below
+        # keeps tool execution in this project's own code, as it did for the
+        # previous OpenAI integration.
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+    )
 
     text_parts: list[str] = []
     tool_calls_log: list[dict] = []
@@ -316,45 +358,52 @@ def stream_chat(
 
     try:
         for _ in range(MAX_TOOL_ITERATIONS):
-            with client.responses.stream(
-                model=chosen_model,
-                instructions=system_prompt,
-                input=input_list,
-                tools=TOOL_DEFINITIONS,
-                store=False,
-            ) as stream:
-                for event in stream:
-                    if event.type == "response.output_text.delta":
-                        text_parts.append(event.delta)
-                        yield {"type": "delta", "text": event.delta}
-                final = stream.get_final_response()
+            # function_call and text parts arrive in separate stream chunks (a
+            # chunk carries a delta, not a full turn); accumulating every
+            # chunk's parts is the only way to reconstruct the full model turn
+            # for the next iteration's history, since the terminal chunk's
+            # parts are near-empty (it only carries finish_reason/usage).
+            turn_parts: list[types.Part] = []
+            usage_meta = None
+            for chunk in client.models.generate_content_stream(
+                model=chosen_model, contents=contents, config=config
+            ):
+                if chunk.candidates:
+                    candidate_content = chunk.candidates[0].content
+                    if candidate_content and candidate_content.parts:
+                        turn_parts.extend(candidate_content.parts)
+                if chunk.text:
+                    text_parts.append(chunk.text)
+                    yield {"type": "delta", "text": chunk.text}
+                if chunk.usage_metadata:
+                    usage_meta = chunk.usage_metadata
 
-            if final.usage is not None:
-                usage_total["input_tokens"] += final.usage.input_tokens or 0
-                usage_total["output_tokens"] += final.usage.output_tokens or 0
-                usage_total["total_tokens"] += final.usage.total_tokens or 0
+            if usage_meta is not None:
+                usage_total["input_tokens"] += usage_meta.prompt_token_count or 0
+                usage_total["output_tokens"] += usage_meta.candidates_token_count or 0
+                usage_total["total_tokens"] += usage_meta.total_token_count or 0
 
-            input_list += final.output
+            if turn_parts:
+                contents.append(types.Content(role="model", parts=turn_parts))
 
-            function_calls = [item for item in final.output if item.type == "function_call"]
+            function_calls = [p.function_call for p in turn_parts if p.function_call is not None]
             if not function_calls:
                 break
 
+            response_parts = []
             for call in function_calls:
-                try:
-                    args = json.loads(call.arguments) if call.arguments else {}
-                except json.JSONDecodeError:
-                    args = {}
+                args = call.args or {}
                 result = _execute_tool(db, profile, call.name, args)
                 tool_calls_log.append({"name": call.name, "arguments": args})
                 yield {"type": "tool", "name": call.name, "args": args}
-                input_list.append(
-                    {
-                        "type": "function_call_output",
-                        "call_id": call.call_id,
-                        "output": json.dumps(result, ensure_ascii=False),
-                    }
+                response_parts.append(
+                    types.Part(
+                        function_response=types.FunctionResponse(
+                            id=call.id, name=call.name, response=result
+                        )
+                    )
                 )
+            contents.append(types.Content(role="user", parts=response_parts))
         else:
             logger.warning("tool loop hit MAX_TOOL_ITERATIONS=%s", MAX_TOOL_ITERATIONS)
 

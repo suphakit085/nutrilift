@@ -15,11 +15,25 @@ class Settings(BaseSettings):
         env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore"
     )
 
-    # OpenAI
-    openai_api_key: str = ""
-    llm_model: str = "gpt-5.6-luna"
-    judge_model: str = "gpt-5.6-terra"
-    embed_model: str = "text-embedding-3-small"
+    # Gemini
+    # llm_model's free tier is capped at 20 requests/day *per project*, verified
+    # live on 2026-08-31 (a 429 RESOURCE_EXHAUSTED names the exact figure) - a
+    # single eval run or a few minutes of manual testing exhausts it. Google
+    # does not publish per-model free-tier numbers; the authoritative current
+    # value for this project is only in the dashboard: aistudio.google.com/rate-limit.
+    # See docs/architecture.md for the implication for eval/SUS-testing pacing.
+    gemini_api_key: str = ""
+    llm_model: str = "gemini-3.5-flash"
+    # gemini-2.5-flash/-lite were retired for this project (404 "no longer
+    # available to new users") after this project's key was created - confirmed
+    # live on 2026-08-31, not just a stale training-data name. gemini-3.6-flash
+    # is Google's stated replacement and sits in its own quota bucket, separate
+    # from llm_model - which also keeps the judge from sharing a quota with the
+    # generator it is judging.
+    judge_model: str = "gemini-3.6-flash"
+    embed_model: str = "gemini-embedding-001"
+    # 1536, not the model's 3072 default - matched to the existing pgvector
+    # column so switching providers needed no schema migration or index rebuild.
     embed_dim: int = 1536
 
     # Database
@@ -34,10 +48,16 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     retrieval_top_k: int = 6
     # Cosine-similarity floor for a chunk to be used as context.
-    # Calibrated on 2026-08-31 with eval/calibrate_threshold.py (14 chunks, 3 cards):
-    # on-topic queries scored 0.377-0.474, off-topic 0.135-0.257 -> 0.32 sits in the
-    # gap. Re-run that script whenever the knowledge base grows substantially.
-    retrieval_min_score: float = 0.32
+    # Re-calibrated on 2026-08-31 after the OpenAI -> Gemini migration (embedding
+    # model changed, so the whole similarity scale shifted - a 1536-dim OpenAI
+    # vector and a 1536-dim Gemini vector are not comparable). Measured with
+    # eval/calibrate_threshold.py over 12 cards: on-topic queries scored
+    # 0.662-0.846, off-topic 0.516-0.606 -> 0.63 sits in the gap. The previous
+    # OpenAI-era value (0.32) would pass every off-topic query under Gemini's
+    # embeddings, silently breaking the out-of-scope refusal. Re-run that script
+    # whenever the knowledge base grows substantially or the embedding model
+    # changes again.
+    retrieval_min_score: float = 0.63
     # How far below the best-matching chunk a sibling chunk may score and
     # still be included. Only applies once the domain gate above has passed.
     retrieval_relative_window: float = 0.10

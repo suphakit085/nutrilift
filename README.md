@@ -31,7 +31,7 @@ python -m venv .venv
 .venv/Scripts/python.exe -m pip install -e ".[dev]"     # Windows
 # source .venv/bin/activate && pip install -e ".[dev]"  # macOS / Linux
 
-cp .env.example .env        # แล้วใส่ OPENAI_API_KEY กับ JWT_SECRET ของจริง
+cp .env.example .env        # แล้วใส่ GEMINI_API_KEY กับ JWT_SECRET ของจริง
 .venv/Scripts/alembic.exe upgrade head
 .venv/Scripts/python.exe -m uvicorn app.main:app --reload --port 8000
 ```
@@ -88,13 +88,13 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 
 | ตัวแปร | ค่าเริ่มต้น | หมายเหตุ |
 |---|---|---|
-| `OPENAI_API_KEY` | — | **ต้องใส่** |
-| `LLM_MODEL` | `gpt-5.6-luna` | โมเดลที่ใช้ตอบ (ถูกที่สุดที่คุณภาพยังพอ) |
-| `JUDGE_MODEL` | `gpt-5.6-terra` | โมเดลให้คะแนนใน eval (ต้องคนละตัวกับ generator) |
-| `EMBED_MODEL` / `EMBED_DIM` | `text-embedding-3-small` / `1536` | ถ้าเปลี่ยนโมเดล ต้องแก้ `EMBED_DIM` และ re-index ใหม่ทั้งหมด |
+| `GEMINI_API_KEY` | — | **ต้องใส่** (ฟรี, จาก aistudio.google.com) |
+| `LLM_MODEL` | `gemini-3.5-flash` | โมเดลที่ใช้ตอบ — **free tier จำกัด 20 requests/วันต่อโปรเจกต์** (ยืนยันจริงจาก error 429 เมื่อ 31 ส.ค. 2569) เช็กเพดานปัจจุบันที่ aistudio.google.com/rate-limit |
+| `JUDGE_MODEL` | `gemini-3.6-flash` | โมเดลให้คะแนนใน eval (ต้องคนละตัวกับ generator, คนละ quota bucket ด้วย) |
+| `EMBED_MODEL` / `EMBED_DIM` | `gemini-embedding-001` / `1536` | ถ้าเปลี่ยนโมเดล ต้องแก้ `EMBED_DIM` และ re-index ใหม่ทั้งหมด (`ingest --rebuild`) |
 | `DATABASE_URL` | postgres ใน docker | |
 | `JWT_SECRET` | — | **ต้องเปลี่ยน** ก่อน deploy |
-| `RETRIEVAL_TOP_K` / `RETRIEVAL_MIN_SCORE` | `6` / `0.32` | min_score = ประตูขอบเขต ได้จาก `eval/calibrate_threshold.py` รันซ้ำเมื่อเพิ่มการ์ดเยอะ ๆ |
+| `RETRIEVAL_TOP_K` / `RETRIEVAL_MIN_SCORE` | `6` / `0.63` | min_score = ประตูขอบเขต ได้จาก `eval/calibrate_threshold.py` — ต้องรันซ้ำทุกครั้งที่เปลี่ยนโมเดล embedding เพราะสเกลคะแนนไม่เทียบกันข้ามโมเดล ไม่ใช่แค่เมื่อเพิ่มการ์ดเยอะ ๆ |
 | `RETRIEVAL_RELATIVE_WINDOW` | `0.10` | เก็บ chunk ที่คะแนนห่างจากตัวที่ดีที่สุดไม่เกินค่านี้ |
 | `HISTORY_TURNS` | `8` | จำนวนรอบสนทนาที่ส่งกลับเข้า prompt |
 | `RATE_LIMIT_CHAT_PER_HOUR` / `_PER_DAY` | `20` / `60` | จำกัดต่อผู้ใช้ ป้องกันบิล API บาน |
@@ -132,9 +132,11 @@ docs/             architecture.md
 
 ดูรายการงานและความคืบหน้าแบบละเอียดที่ [`TASKS.md`](TASKS.md)
 
-สรุปสั้น: ระบบใช้งานได้ครบทุกเส้นทางแล้ว (ทดสอบกับ OpenAI จริง 31 ส.ค. 2569)
-งานที่เหลือส่วนใหญ่เป็นการเขียนเนื้อหา — การ์ดความรู้ 3/60+ และ `foods.csv`
-ยังเป็นค่าชั่วคราวทุกแถว
+สรุปสั้น: ระบบย้ายจาก OpenAI ไป **Gemini free tier** แล้ว (ทดสอบ end-to-end กับ Gemini จริง
+31 ส.ค. 2569 — RAG พร้อมอ้างอิง, tool calling, ปฏิเสธนอกขอบเขต, safety flag ผ่านหมด)
+เหตุผลของการย้าย งบ/ความเป็นส่วนตัว/เพดาน request ที่ตรวจพบจริง ดู
+[`docs/architecture.md`](docs/architecture.md#gemini-free-tier)
+งานที่เหลือส่วนใหญ่เป็นการเขียนเนื้อหา — การ์ดความรู้ 12 ใบ และ `foods.csv` 312/339 แถวเป็นค่าจริงแล้ว
 
 ---
 

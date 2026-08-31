@@ -16,7 +16,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "bcrypt<4.1",
     "python-multipart>=0.0.17",
-    "openai>=1.60",
+    "google-genai>=2.20",
     "sse-starlette>=2.1",
     "python-frontmatter>=1.1",
     "tiktoken>=0.8",

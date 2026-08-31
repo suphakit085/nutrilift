@@ -116,6 +116,18 @@
       19 เทสต์ · ยืนยันจริงว่าบล็อกก่อนเรียก LLM และไม่เขียนลง DB
 - [x] ปรับชื่อในโค้ดเป็น **NutriLift** (คง 'โค้ชนัท' ไว้เป็นชื่อผู้ช่วยใน system prompt)
 - [x] ปุ่มลบห้องแชตใน UI (ลบแบบ optimistic คืนค่าถ้าลบไม่สำเร็จ ไม่ใช้ window.confirm ที่บล็อกหน้า)
+- [x] **ย้าย LLM provider จาก OpenAI ไป Gemini free tier ทั้งระบบ (31 ส.ค. 2569)** — เครดิต OpenAI
+      หมด ผู้ใช้เลือก Gemini free tier แทนการเติมเงิน แก้ `llm.py`/`chat.py`/`eval/run_eval.py`,
+      re-embed การ์ดทั้ง 12 ใบ (เวกเตอร์ OpenAI เทียบกับ Gemini ไม่ได้แม้มิติเท่ากัน), recalibrate
+      `RETRIEVAL_MIN_SCORE` 0.32→0.63 (สเกล cosine similarity เปลี่ยนไปตามโมเดล embedding), smoke test
+      ผ่านครบ (RAG+citations, tool calling ทั้งแบบ precomputed และ override, ปฏิเสธนอกขอบเขต, safety flag)
+      ⚠️ **พบเพดาน 20 requests/วันของ `gemini-3.5-flash` จริงระหว่างทดสอบ** (error 429) และ
+      `gemini-2.5-flash`/`-lite` ถูกเลิกใช้กับโปรเจกต์นี้แล้ว (404) จึงเปลี่ยน `JUDGE_MODEL` เป็น
+      `gemini-3.6-flash` — รายละเอียดและผลกระทบต่อแผน eval/SUS ดู
+      [`docs/architecture.md`](docs/architecture.md) หัวข้อ "Gemini free tier"
+- [ ] **รัน eval harness ใหม่ด้วย Gemini** — ค้างเพราะโควตา `gemini-3.5-flash` (20/วัน) หมดจาก
+      smoke test ตอนย้ายระบบไปแล้ว ต้องรอโควตารีเซ็ต แล้วบันทึกผลเป็น baseline-v3 แทนที่ตัวเลข
+      OpenAI-era ในหัวข้อ 8 ของ `docs/architecture.md` (ดูหมายเหตุที่ใส่ไว้ตรงนั้น)
 
 ---
 
@@ -139,8 +151,12 @@
 1. **ดาวน์โหลดเอกสารตามลิงก์ใน `knowledge/SOURCES.md` → เขียนการ์ดความรู้** ← คอขวดตัวจริง
 2. เปิดหน้าเว็บดูด้วยตาสักรอบ (`npm run dev` → localhost:3000) ตรวจการจัดวาง
 3. **แทนข้อมูล `foods.csv` ด้วยของจริง**
-4. ขยายชุดคำถามเป็น 80–100 → รัน `calibrate_threshold.py` ใหม่ → รัน eval ใหม่
-5. deploy → เก็บ SUS + ให้ผู้เชี่ยวชาญตรวจ (rate limiting พร้อมแล้ว)
+4. รอโควตา `gemini-3.5-flash` รีเซ็ต → รัน eval เต็มชุดด้วย Gemini (baseline-v3) → ขยายชุดคำถามเป็น
+   80–100 (`RETRIEVAL_MIN_SCORE` recalibrate ไปที่ 0.63 แล้ว ไม่ต้องรัน `calibrate_threshold.py` ซ้ำ
+   จนกว่าจะเปลี่ยนโมเดล embedding อีก หรือฐานความรู้โตขึ้นมาก)
+5. deploy → เก็บ SUS + ให้ผู้เชี่ยวชาญตรวจ (rate limiting พร้อมแล้ว) — ถ้าเพดาน 20 req/วันของ
+   `gemini-3.5-flash` เป็นคอขวดตอนเก็บ SUS จริง (20–30 คนพร้อมกัน) ให้พิจารณา paid tier ช่วงสั้น ๆ
+   เฉพาะช่วงเก็บข้อมูล
 6. เขียนเล่ม (ใช้ `docs/architecture.md` เป็นต้นฉบับบทที่ 3)
 
 **เอกสารอ้างอิง:** สถาปัตยกรรม [`docs/architecture.md`](docs/architecture.md) ·

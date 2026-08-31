@@ -21,14 +21,14 @@
                                           │  Retriever: embed → pgvector top-k       │
                                           └───────┬───────────────────┬──────────────┘
                                                   │                   │
-                                     ┌────────────▼──────┐   ┌────────▼────────────┐
-                                     │ Postgres+pgvector │   │ OpenAI API          │
-                                     │ users, profiles,  │   │ chat:  gpt-5.6-luna │
-                                     │ conversations,    │   │ embed: text-        │
-                                     │ messages,         │   │        embedding-3- │
-                                     │ documents, chunks,│   │        small        │
-                                     │ foods             │   │ judge: gpt-5.6-terra│
-                                     └───────────────────┘   └─────────────────────┘
+                                     ┌────────────▼──────┐   ┌────────▼────────────────┐
+                                     │ Postgres+pgvector │   │ Gemini API (free tier)  │
+                                     │ users, profiles,  │   │ chat:  gemini-3.5-flash │
+                                     │ conversations,    │   │ embed: gemini-          │
+                                     │ messages,         │   │        embedding-001   │
+                                     │ documents, chunks,│   │ judge: gemini-3.6-flash │
+                                     │ foods             │   └─────────────────────────┘
+                                     └───────────────────┘
 
    Offline CLI (รันบนเครื่องผู้พัฒนา)
    backend/ingest   knowledge/cards/*.md + foods.csv → chunk → embed → pgvector
@@ -267,8 +267,13 @@ TDEE = BMR × activity factor (1.2-1.9),
   (frontmatter: `slug, title, topic, sources[]`)
 - Chunking: ตัดตามหัวข้อ `#` แล้วซอยต่อที่ย่อหน้าให้ใกล้ 1,200 ตัวอักษร overlap ~150
   และเติมชื่อการ์ด + หัวข้อไว้ต้น chunk เพื่อให้ embedding มีบริบท
-- Embedding: `text-embedding-3-small` (1,536 มิติ)
-- Retrieval: cosine similarity, top-k = 6, ตัดที่ similarity < 0.32 (ค่าที่ได้จากการวัด ดูหัวข้อด้านบน)
+- Embedding: `gemini-embedding-001` เรียกด้วย `output_dimensionality=1536` (โมเดล default คือ 3,072 มิติ
+  แต่ปักไว้ที่ 1,536 ให้ตรงกับคอลัมน์ pgvector เดิม ไม่ต้อง migrate schema ตอนย้าย provider) — ยังส่ง
+  `task_type` แยกกันระหว่างตอน index (`RETRIEVAL_DOCUMENT`) กับตอนค้น (`RETRIEVAL_QUERY`) ซึ่ง OpenAI
+  ไม่มีความสามารถนี้
+- Retrieval: cosine similarity, top-k = 6, ตัดที่ similarity < 0.63 (ค่าที่ได้จากการวัด ดูหัวข้อด้านบน —
+  ค่านี้เปลี่ยนจาก 0.32 หลังย้ายจาก OpenAI มา Gemini เพราะสเกล cosine similarity ของโมเดล embedding
+  แต่ละตัวไม่เทียบกันได้ ต้องรัน `eval/calibrate_threshold.py` ใหม่ทุกครั้งที่เปลี่ยนโมเดล embedding)
 - Citation: chunk ที่ผ่านเกณฑ์ถูกใส่หมายเลข `[S1]..[Sk]` ใน prompt และส่งกลับ frontend
   ผ่าน SSE event `sources` (แสดงว่ากำลังค้นจากอะไร) จากนั้น event `done` ส่งเฉพาะรายการที่
   คำตอบอ้างอิงจริง แผงด้านขวาจะแคบลงเหลือเฉพาะแหล่งที่ถูกใช้
@@ -287,8 +292,9 @@ TDEE = BMR × activity factor (1.2-1.9),
 | ผู้เชี่ยวชาญ | `*_expert.csv` (blinded) | คะแนน correctness/usefulness จากผู้เชี่ยวชาญ |
 | ผู้ใช้จริง | แบบสอบถาม | SUS + ความพึงพอใจ |
 
-Judge ใช้โมเดลคนละตัวกับ generator (`JUDGE_MODEL` = `gpt-5.6-terra`,
-generator = `gpt-5.6-luna`) และไม่เห็นว่าเป็นคำตอบจากโหมดใด
+Judge ใช้โมเดลคนละตัวกับ generator (`JUDGE_MODEL` = `gemini-3.6-flash`,
+generator = `gemini-3.5-flash`) และไม่เห็นว่าเป็นคำตอบจากโหมดใด — โมเดลทั้งสองอยู่คนละ quota bucket
+บน Gemini free tier ด้วย จึงไม่แย่ง request กัน
 ไฟล์ `*_expert.csv` สลับตำแหน่ง A/B แบบสุ่มด้วย seed คงที่ และเก็บ mapping ไว้ใน `*_expert_key.csv`
 
 ---
@@ -301,14 +307,45 @@ generator = `gpt-5.6-luna`) และไม่เห็นว่าเป็น�
 | Backend | FastAPI + SQLAlchemy 2 + Alembic | ecosystem Python เหมาะกับงาน RAG/eval |
 | DB | Postgres + pgvector | เก็บทั้ง relational และ vector ในที่เดียว ลดชิ้นส่วนระบบ |
 | Auth | JWT (passlib bcrypt + python-jose) | ไม่ผูก vendor, อธิบายในเล่มได้ครบ |
-| LLM | OpenAI Responses API | รองรับ function calling + streaming + structured output ในที่เดียว |
+| LLM | Gemini API (`google-genai` SDK, `client.models`) | รองรับ function calling + streaming + structured output ในที่เดียว, free tier พอสำหรับงบโปรเจกจบ |
 
-ราคา ณ 30 ส.ค. 2569 (developers.openai.com): `gpt-5.6-luna` $0.20/$1.20,
-`gpt-5.6-terra` $2.00/$12.00, `text-embedding-3-small` $0.02 ต่อ 1M tokens
+### Gemini free tier
+
+ย้ายจาก OpenAI มา Gemini free tier เมื่อ 31 ส.ค. 2569 (เครดิต OpenAI ของผู้ทำหมด และเลือกใช้ Gemini
+free tier แทนการเติมเงิน) ระบบทุกจุดที่เรียก LLM (chat, judge, embedding) ผ่าน `client.models` ของ
+`google-genai` ล้วน ไม่ใช้ framework agent ใด ๆ เหมือนเดิม
+
+ข้อจำกัดที่ต้องระบุในเล่มเป็นข้อจำกัดของงาน (ไม่ใช่แค่บันทึกทางเทคนิค):
+
+- **นโยบายข้อมูล**: บน free tier กูเกิลอาจนำ prompt/response ไปพัฒนาผลิตภัณฑ์ และมีทีมรีวิวโดยมนุษย์
+  อ่านได้ (paid tier ไม่มีข้อนี้) ซึ่งมีนัยสำคัญเพราะระบบนี้มี guardrails ที่ตั้งใจดักคำถามอ่อนไหวด้าน
+  สุขภาพ (โรคประจำตัว, พฤติกรรมการกินผิดปกติ, ผู้เยาว์, การตั้งครรภ์) — ข้อความเหล่านี้จึงอาจถูกมนุษย์อ่าน
+  ได้ในบางกรณี ต้องระบุเป็นข้อจำกัดของระบบให้ผู้ใช้ทราบ (เช่นใน consent/disclaimer ก่อนเริ่มแชต)
+- **เพดาน request ต่อวัน**: ยืนยันจริงด้วย error 429 เมื่อ 31 ส.ค. 2569 ว่า `gemini-3.5-flash`
+  (ตัว generator หลัก) จำกัดที่ **20 requests/วันต่อโปรเจกต์** บน free tier — เพดานนี้ผูกกับ
+  โปรเจกต์+โมเดล ไม่ใช่ต่อผู้ใช้ปลายทาง หมายความว่าการทดสอบมือปกติไม่กี่นาที หรือการรัน
+  `eval/run_eval.py` หนึ่งรอบ ก็ใช้โควตาหมดวันได้ทันที เพดานที่แท้จริง ณ ขณะใดขณะหนึ่งดูได้ที่
+  aistudio.google.com/rate-limit เท่านั้น กูเกิลไม่ประกาศตัวเลขนี้เป็นเอกสารสาธารณะ
+  - ผลต่อแผนงาน: **ต้องเว้นจังหวะการรัน eval แบบเต็มชุด** (80-100 ข้อ × 2 โหมด × judge) ข้ามหลายวัน
+    หรือขอ/พิจารณาต่อคิวใช้ paid tier เฉพาะช่วงรัน eval ใหญ่และช่วงเก็บข้อมูล SUS (20-30 คน) ซึ่งใช้
+    request มากในเวลาสั้น ๆ — ไม่เหมาะกับเพดาน 20/วันนี้
+  - โมเดลอื่น (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3.6-flash`) มี quota bucket
+    แยกกัน ยังไม่ได้วัดเพดานที่แน่นอนของแต่ละตัว — ถ้าโควตา `gemini-3.5-flash` เป็นคอขวดถาวร
+    ให้พิจารณาสลับ `LLM_MODEL` ไปใช้ตัว lite แทน แต่ต้องประเมินคุณภาพคำตอบใหม่ (ตัวเลขในหัวข้อ 8
+    เป็นผลจาก OpenAI ยังไม่ใช่ Gemini)
+- **โมเดลถูกยกเลิกระหว่างทาง**: `gemini-2.5-flash`/`gemini-2.5-flash-lite` ที่ตั้งใจใช้เป็น judge ตอนแรก
+  ใช้ไม่ได้กับโปรเจกต์นี้แล้ว (404 "no longer available to new users" ยืนยันจริง 31 ส.ค. 2569) กูเกิล
+  แนะนำให้ใช้ `gemini-3.6-flash` แทน จึงเปลี่ยน `JUDGE_MODEL` เป็นค่านี้
 
 ---
 
-## 8. ผลการประเมินเบื้องต้น (baseline-v2, 31 ส.ค. 2569)
+## 8. ผลการประเมินเบื้องต้น (baseline-v2, 31 ส.ค. 2569 — ผลจาก OpenAI ยังไม่ได้รันซ้ำหลังย้าย Gemini)
+
+> **หมายเหตุ:** ตัวเลขทั้งหมดในหัวข้อนี้มาจากรอบที่ระบบยังใช้ OpenAI (`gpt-5.6-luna` / `gpt-5.6-terra`)
+> หลังย้ายไป Gemini free tier (ดูหัวข้อ 7) โมเดล embedding และ generator เปลี่ยนทั้งคู่ ทำให้ตัวเลขนี้
+> **ใช้เทียบข้ามระบบไม่ได้โดยตรง** ยังไม่ได้รันซ้ำด้วย Gemini เพราะโควตา `gemini-3.5-flash` (20
+> requests/วัน) หมดไปกับการทดสอบ smoke test ตอนย้ายระบบแล้วในวันเดียวกัน ต้องรันใหม่เมื่อโควตารีเซ็ต
+> แล้วบันทึกเป็น baseline-v3 แทนที่หัวข้อนี้
 
 ชุดคำถาม 15 ข้อ (ยังไม่ครบ 80-100 ตามแผน) generator `gpt-5.6-luna`, judge `gpt-5.6-terra`,
 prompt `v1.2.0`, retrieval top_k=6 / min_score=0.32 / window=0.10

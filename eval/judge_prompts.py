@@ -1,7 +1,7 @@
 """LLM-as-judge prompts and response schemas.
 
 The judge runs on a *different* model from the generator (``JUDGE_MODEL``, default
-gpt-5.6-terra vs gpt-5.6-luna) so a model is not grading its own output. The judge
+gemini-2.5-flash vs gemini-3.5-flash) so a model is not grading its own output. The judge
 sees the question, the reference answer, and the candidate answer - but not which
 arm (RAG / no-RAG) produced it, and not the retrieved context, so it cannot infer
 the arm from the prompt.
