@@ -104,10 +104,13 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
 - [~] **Guest NS, et al.** ISSN position stand: caffeine and exercise performance. *JISSN.* 2021;18:1.
   🔎 https://pmc.ncbi.nlm.nih.gov/articles/PMC7777221 · DOI 10.1186/s12970-020-00383-4
   → การ์ด `caffeine` (คาเฟอีน 3–6 mg/kg ก่อนออกกำลังกายราว 60 นาที)
-- [ ] **Thomas DT, Erdman KA, Burke LM.** ACSM/AND/DC Joint Position Statement:
+- [x] **Thomas DT, Erdman KA, Burke LM.** ACSM/AND/DC Joint Position Statement:
   Nutrition and Athletic Performance. *Med Sci Sports Exerc.* 2016;48(3):543-568.
-  🔎 ค้นจาก PubMed: https://pubmed.ncbi.nlm.nih.gov/26891166/
-  ⚠️ วารสารนี้ไม่ open access — ใช้สิทธิ์ห้องสมุด มข. หรือขอผ่านอาจารย์ที่ปรึกษา
+  ✅ ได้ผ่านสิทธิ์ห้องสมุด มข. (Ovid — Khon Kaen University Journals@Ovid) 31 ส.ค. 2569
+  → ขยายการ์ด `energy-balance-cut-bulk` ด้วยแนวคิด Energy Availability (EA) และ RED-S
+  ⚠️ เอกสาร 26 หน้าส่วนใหญ่เป็นโภชนาการกีฬาแบบทั่วไป/กีฬาความอดทน (carb loading, hydration
+  ระหว่างแข่งนาน, altitude, ความร้อน/เย็น) ซึ่งอยู่นอกขอบเขตเวทเทรนนิ่งของโปรเจกนี้ จึงดึงมาเฉพาะ
+  ส่วน EA/RED-S ที่เกี่ยวกับความปลอดภัยตอน cut เท่านั้น
 - [x] **Kerksick CM, et al.** ISSN exercise & sports nutrition review update. *JISSN.* 2018;15:38.
   🔎 ค้นจาก PMC — เป็นหนึ่งในเอกสารที่งานวิจัยประเมินแชตบอทใช้เป็นเกณฑ์ตัดสิน (ดู `docs/related-work.md`)
   → การ์ด `hmb`, `beta-alanine`, `unproven-muscle-supplements` (31 ส.ค. 2569 — เอกสาร 57 หน้า

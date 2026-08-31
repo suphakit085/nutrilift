@@ -45,7 +45,10 @@
         ตาราง 3 ระดับพลังงาน, หน่วยตวงครัวเรือน; ขยาย `nutrient-timing` ด้วยกรอบปฏิบัติ 3-4 ชม.
         รอบมื้อฝึก; เพิ่ม `hmb`, `beta-alanine` (มีหลักฐานหนักแน่น ยังไม่มีการ์ดคุม), และ
         `unproven-muscle-supplements` รวมสารเสริมยอดฮิตที่หลักฐานไม่สนับสนุน 7 ตัว
-        — ทั้งหมดจาก ISSN review update 2018)
+        — ทั้งหมดจาก ISSN review update 2018; ขยาย `energy-balance-cut-bulk` ด้วยแนวคิด
+        Energy Availability (EA) และ RED-S จาก ACSM/AND/DC 2016 Joint Position Statement
+        — เอกสารตัวนี้ได้มาผ่านสิทธิ์ห้องสมุด มข. หลังจากรอมานาน ส่วนใหญ่ของเอกสารเป็นโภชนาการ
+        กีฬาความอดทน/ทั่วไปซึ่งนอกขอบเขต ดึงมาแค่ส่วน EA/RED-S ที่เกี่ยวความปลอดภัยตอน cut)
 - [~] **5. ฐานข้อมูลอาหารไทย** — ข้อมูลจริงแล้ว 312 จาก 339 แถว
   - [x] ตาราง `foods` + `lookup_food` tool + ingest จาก CSV
   - [x] **ดึงข้อมูลจริงจาก ASEAN Food Composition Database (INMU) ได้ 308 รายการ**
