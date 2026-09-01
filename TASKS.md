@@ -150,9 +150,14 @@
 - [x] **แก้เพดาน 20 requests/วัน** — เปลี่ยน `LLM_MODEL` เป็น `gemini-3.5-flash-lite` (คนละ quota
       bucket จาก `gemini-3.5-flash` ที่โควตาหมด, ถูกกว่า ~4-5 เท่าบน paid tier) smoke test รอบสองผ่าน
       ครบไม่ติด 429 เลย (RAG+citations, tool calling ทั้ง 2 เครื่องมือ, safety flag)
-- [ ] **รัน eval harness เต็มชุดด้วย `gemini-3.5-flash-lite`** — ยังไม่ได้รัน บันทึกผลเป็น baseline-v3
-      แทนที่ตัวเลข OpenAI-era ในหัวข้อ 8 ของ `docs/architecture.md` (ดูหมายเหตุที่ใส่ไว้ตรงนั้น) —
-      คุณภาพคำตอบของ flash-lite เทียบกับ flash เต็มรุ่นยังไม่ได้วัดเป็นตัวเลข ควรดูผลรอบนี้ประกอบด้วย
+- [~] **รัน eval harness ด้วย `gemini-3.5-flash-lite` — กำลังแก้ปัญหาโควตาระหว่างทาง (1 ก.ย. 2569)**
+      รอบแรก (`--mode both`) เสียคำตอบไป 28/33 no-RAG และ judge score ไป 17/33 rag จาก 429 ดิบ ๆ
+      เพิ่ม retry-with-backoff ใน `eval/run_eval.py` แล้ว แต่รอบสองยังติดอยู่ที่คำถามแรก — เปิด
+      dashboard (aistudio.google.com/rate-limit) ดูจึงพบว่า **`gemini-3.6-flash` (judge เดิม) เพดาน
+      แค่ 20 requests/วัน และใช้ไปแล้ว 21/20 (เกิน)** ไม่ใช่ปัญหาต่อนาทีที่ retry แก้ได้ เปลี่ยน
+      `JUDGE_MODEL` เป็น `gemini-3.1-flash-lite` แทน (dashboard โชว์ 1/500 ต่อวัน แทบไม่ได้ใช้เลย)
+      ตารางเพดานเต็มที่ยืนยันแล้วจาก dashboard ดู `docs/architecture.md` หัวข้อ "Gemini free tier"
+      ยังไม่ได้รันจนจบ ต้องลองใหม่อีกรอบด้วย judge model ใหม่
 
 ---
 

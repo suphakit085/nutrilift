@@ -90,7 +90,7 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 |---|---|---|
 | `GEMINI_API_KEY` | — | **ต้องใส่** (ฟรี, จาก aistudio.google.com) |
 | `LLM_MODEL` | `gemini-3.5-flash-lite` | โมเดลที่ใช้ตอบ — เปลี่ยนจาก `gemini-3.5-flash` เมื่อพบว่า free tier ของตัวนั้นจำกัดแค่ 20 requests/วันต่อโปรเจกต์ (ยืนยันจริงจาก error 429 เมื่อ 31 ส.ค. 2569) ตัว lite อยู่คนละ quota bucket และถูกกว่า ~4-5 เท่าถ้าต้องจ่ายเงิน เช็กเพดานปัจจุบันที่ aistudio.google.com/rate-limit |
-| `JUDGE_MODEL` | `gemini-3.6-flash` | โมเดลให้คะแนนใน eval (ต้องคนละตัวกับ generator, คนละ quota bucket ด้วย) |
+| `JUDGE_MODEL` | `gemini-3.1-flash-lite` | โมเดลให้คะแนนใน eval (ต้องคนละตัวกับ generator, คนละ quota bucket ด้วย) — เปลี่ยนจาก `gemini-3.6-flash` เพราะตัวนั้นติดเพดาน**แค่ 20 requests/วัน** เจอจริงจาก dashboard ตอนรัน eval (1 ก.ย. 2569) |
 | `EMBED_MODEL` / `EMBED_DIM` | `gemini-embedding-001` / `1536` | ถ้าเปลี่ยนโมเดล ต้องแก้ `EMBED_DIM` และ re-index ใหม่ทั้งหมด (`ingest --rebuild`) |
 | `DATABASE_URL` | postgres ใน docker | |
 | `JWT_SECRET` | — | **ต้องเปลี่ยน** ก่อน deploy |

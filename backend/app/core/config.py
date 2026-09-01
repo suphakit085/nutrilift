@@ -29,11 +29,17 @@ class Settings(BaseSettings):
     llm_model: str = "gemini-3.5-flash-lite"
     # gemini-2.5-flash/-lite were retired for this project (404 "no longer
     # available to new users") after this project's key was created - confirmed
-    # live on 2026-08-31, not just a stale training-data name. gemini-3.6-flash
-    # is Google's stated replacement and sits in its own quota bucket, separate
-    # from llm_model - which also keeps the judge from sharing a quota with the
+    # live on 2026-08-31, not just a stale training-data name. Tried Google's
+    # stated replacement gemini-3.6-flash next, but its free tier caps at only
+    # 20 requests/*day* (confirmed via the aistudio.google.com/rate-limit
+    # dashboard on 2026-09-01, showing 21/20 used) - a single eval run's judge
+    # calls exhausted it, and unlike a per-minute cap there is no retry-and-wait
+    # that fixes a per-day one same-day. Switched to gemini-3.1-flash-lite,
+    # which the same dashboard showed essentially untouched (1/500 daily,
+    # 1/15 per-minute) and which still sits in its own quota bucket separate
+    # from llm_model, keeping the judge from sharing a quota with the
     # generator it is judging.
-    judge_model: str = "gemini-3.6-flash"
+    judge_model: str = "gemini-3.1-flash-lite"
     embed_model: str = "gemini-embedding-001"
     # 1536, not the model's 3072 default - matched to the existing pgvector
     # column so switching providers needed no schema migration or index rebuild.
