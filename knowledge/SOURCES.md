@@ -146,7 +146,7 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
   → การ์ด `nutrient-timing` (31 ส.ค. 2569: ขยายหัวข้อ "หน้าต่างอนาโบลิก" ด้วยกรอบปฏิบัติ
   3-4 ชม. ระหว่างมื้อก่อน/หลังฝึก, ปริมาณ 0.4-0.5 g/kg LBM ต่อมื้อ, และผลของอายุ/ประสบการณ์ฝึก)
 
-## 3b. เอกสารใหม่ที่หาเพิ่ม (1 ก.ย. 2569) — ยังไม่ได้อ่าน/สรุปเป็นการ์ด
+## 3b. เอกสารใหม่ที่หาเพิ่ม (1-2 ก.ย. 2569) — ครบทุกฉบับแล้ว ทุกใบเขียนเป็นการ์ดแล้ว
 
 เอกสารเดิมที่มีไฟล์อยู่แล้วใช้ครบหมดแล้ว (ดู TASKS.md) จึงค้นหาเอกสารใหม่เพื่อเติมหัวข้อที่ยังไม่มี
 การ์ดคุมตามตาราง "รายการการ์ดที่วางแผนไว้" ด้านล่าง — ตรวจ open access จริงทุกฉบับแล้ว (fetch หน้า
@@ -178,6 +178,45 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
   ingest + ทดสอบ retrieval ผ่าน (เคยเจอเอกสารที่ตรงหัวข้อกว่านี้ — Therdyothin et al. 2025,
   *Nutrition Reviews* 83(2):e131-e143 — แต่ติด paywall จึงไม่ใช้)
 
+**รอบที่ 2 (2 ก.ย. 2569)** — หาเพิ่มอีก 5 ฉบับเพื่อให้ครบทุกหัวข้อในตาราง "รายการการ์ดที่วางแผนไว้"
+ตรวจ open access จริงทุกฉบับเช่นเดิม
+
+- [x] **Ramirez-Campillo R, Andrade DC, Clemente FM, Afonso J, Perez-Castilla A, Gentil P.** A
+  proposed model to test the hypothesis of exercise-induced localized fat reduction (spot
+  reduction), including a systematic review with meta-analysis. *Hum Mov.* 2022;23(3):1-14.
+  ✅ https://hummov.awf.wroc.pl/A-proposed-model-to-test-the-hypothesis-of-exercise-induced-localized-fat-reduction,143162,0,2.html
+  DOI 10.5114/hm.2022.110373 (open access, เว็บทางการของวารสาร)
+  → การ์ด `fat-loss-myths` ส่วน spot reduction — 13 การศึกษา 1,158 คน ไม่พบความต่างมีนัยสำคัญ
+  (pooled ES -0.03, 95%CI -0.10 ถึง 0.05)
+- [x] **Liu HY, Eso AA, Cook N, O'Neill HM, Albarqouni L.** Meal timing and anthropometric and
+  metabolic outcomes: a systematic review and meta-analysis. *JAMA Netw Open.* 2024;7(11):e2442163.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC11530941/ · DOI 10.1001/jamanetworkopen.2024.42163
+  (CC BY) → การ์ด `fat-loss-myths` ส่วนคาร์บตอนกลางคืน — 29 RCT 2,485 คน พบกินแคลอรี่ช่วงเช้า
+  มากกว่าลดน้ำหนักได้มากกว่าจริง (1.75 กก.) แต่หลักฐานความเชื่อมั่นต่ำ ไม่ได้แยกดูเฉพาะคาร์บ
+- [x] **Trabelsi K, Stannard SR, Ghlissi Z, et al.** Effect of fed- versus fasted state resistance
+  training during Ramadan on body composition and selected metabolic parameters in bodybuilders.
+  *J Int Soc Sports Nutr.* 2013;10:23. ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC3639860/
+  DOI 10.1186/1550-2783-10-23 (CC BY) → การ์ด `fasted-training`
+- [x] **Schoenfeld BJ, Aragon AA, Wilborn CD, Krieger JW, Sonmez GT.** Body composition changes
+  associated with fasted versus non-fasted aerobic exercise. *J Int Soc Sports Nutr.* 2014;11:54.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC4242477/ (open access)
+  → การ์ด `fasted-training` (คู่กับ Trabelsi ด้านบน — คนละโหมดออกกำลังกาย เวท vs แอโรบิก)
+- [x] **Han Q, Xiang M, An N, Tan Q, Shao J, Wang Q.** Effects of vitamin D3 supplementation on
+  strength of lower and upper extremities in athletes: an updated systematic review and
+  meta-analysis of RCTs. *Front Nutr.* 2024;11:1381301.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC11163122/ · DOI 10.3389/fnut.2024.1381301 (CC BY)
+  → การ์ด `vitamin-d-athletes` — 10 RCT นักกีฬา 354 คน ไม่พบว่าเพิ่มความแข็งแรงโดยรวมชัดเจน
+  (มีนัยสำคัญเฉพาะแรงหดตัวต้นขา) แม้จะแก้ระดับวิตามินดีในเลือดได้จริง
+- [x] **กรมอนามัย กระทรวงสาธารณสุข.** นโยบาย "หวานปกติ เท่ากับ หวาน 50%" 11 ก.พ. 2569 (รายงาน
+  ผ่าน ThaiPR.NET, สสส., และ South China Morning Post ที่อ้างผลสำรวจของสำนักโภชนาการ)
+  ✅ https://www.thaipr.net/health/3692342 · https://www.scmp.com/news/asia/southeast-asia/article/3343216/thailand-cuts-back-sugar-coffee-and-tea-tackle-health-crisis
+  → การ์ด `thai-drinks-sugar` — ตัวเลขน้ำตาลจริงจากผลสำรวจ (กาแฟเย็น 650ml ~9 ช้อนชา,
+  ชานมไข่มุก 300ml ~12 ช้อนชา) เป็นแหล่งข่าวที่รายงานผลสำรวจหน่วยงานรัฐ ไม่ใช่เอกสารวิชาการต้นฉบับ
+  โดยตรง — ระบุไว้ชัดในการ์ดว่าเป็นค่าเฉลี่ยจากการสำรวจ
+
+**การ์ด `thai-food-eating-out`** ไม่ได้ใช้เอกสารภายนอกใหม่ — ใช้ตัวเลขจริงจากฐานข้อมูล
+`foods.csv` ของระบบเอง (ซึ่งมีที่มาสืบย้อนได้ทีละแถวอยู่แล้วตาม `knowledge/README.md`)
+
 ## 4. งานวิจัยเกี่ยวกับแชตบอทโภชนาการ (สำหรับบทที่ 2)
 
 รายละเอียดและการวิเคราะห์อยู่ใน [`docs/related-work.md`](../docs/related-work.md)
@@ -195,10 +234,10 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
 
 | หมวด (`topic`) | การ์ดที่ตั้งใจเขียน |
 |---|---|
-| `energy` | สมดุลพลังงาน ✅, การปรับแคลอรี่เมื่อน้ำหนักนิ่ง, metabolic adaptation, refeed/diet break |
+| `energy` | สมดุลพลังงาน ✅, การปรับแคลอรี่เมื่อน้ำหนักนิ่ง ✅, metabolic adaptation ✅, refeed/diet break ✅ (ทั้งหมดอยู่ใน `energy-balance-cut-bulk` + `metabolic-adaptation`) |
 | `protein` | ปริมาณโปรตีน ✅, โปรตีนต่อมื้อ ✅, โปรตีนพืชกับวีแกน ✅, เวย์เทียบถั่วเหลือง ✅ |
-| `timing` | anabolic window, กินก่อน-หลังเล่น, ฝึกเช้าตอนท้องว่าง, IF กับการเล่นเวท |
-| `supplement` | ครีเอทีน ✅, คาเฟอีน ✅, เบต้าอะลานีน ✅, BCAA/EAA ✅, วิตามินดี ✅, โอเมก้า-3 ✅, สิ่งที่ไม่คุ้มเงิน ✅ |
-| `thai-food` | เมนูตามสั่งโปรตีนสูง, อาหารคลีนแบบไทย, การสั่งอาหารนอกบ้านช่วง cut, น้ำตาลแฝงในเครื่องดื่ม |
-| `myth` | คาร์บตอนเย็นทำให้อ้วน, กินโปรตีนเกิน 30 g เสียเปล่า, spot reduction, เหงื่อออกมาก = เผาผลาญมาก |
-| `safety` | สัญญาณอันตรายของการลดน้ำหนักเร็วเกินไป, ทำไมไม่แนะนำสารต้องห้าม, เมื่อไหร่ควรพบแพทย์ |
+| `timing` | anabolic window ✅ (`nutrient-timing`), กินก่อน-หลังเล่น ✅, ฝึกเช้าตอนท้องว่าง ✅ (`fasted-training`), IF กับการเล่นเวท ✅ (`intermittent-fasting`) |
+| `supplement` | ครีเอทีน ✅, คาเฟอีน ✅, เบต้าอะลานีน ✅, BCAA/EAA ✅, วิตามินดี ✅ (DRI ทั่วไปใน `calcium-iron-vitd` + มุมนักกีฬาใน `vitamin-d-athletes`), โอเมก้า-3 ✅, สิ่งที่ไม่คุ้มเงิน ✅ |
+| `thai-food` | ธงโภชนาการ ✅ (`thai-food-guide`), เมนูตามสั่งโปรตีนสูง/การสั่งอาหารนอกบ้านช่วง cut ✅ (`thai-food-eating-out` — รวม "อาหารคลีนแบบไทย" ไว้ในนี้ด้วยแทนที่จะแยกการ์ด), น้ำตาลแฝงในเครื่องดื่ม ✅ (`thai-drinks-sugar`) |
+| `myth` | คาร์บตอนเย็นทำให้อ้วน ✅, กินโปรตีนเกิน 30 g เสียเปล่า ✅ (`protein-per-meal-myth`), spot reduction ✅, เหงื่อออกมาก = เผาผลาญมาก ✅ (3 อย่างแรกรวมในการ์ดเดียว `fat-loss-myths`) |
+| `safety` | สัญญาณอันตรายของการลดน้ำหนักเร็วเกินไป, ทำไมไม่แนะนำสารต้องห้าม, เมื่อไหร่ควรพบแพทย์ — จัดการผ่าน guardrails แบบ rule-based ในโค้ดแทน ไม่ใช่ RAG card (ดู `app/services/guardrails.py`) จึงไม่ใช่คอขวดของฐานความรู้ |
