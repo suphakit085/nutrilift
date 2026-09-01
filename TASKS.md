@@ -88,24 +88,29 @@
   - [x] โครงสร้างไฟล์ + เฉลย + `relevant_doc_slugs` ครบทุกข้อ
   - [ ] **ขยายเป็น 80–100 ข้อ**
   - [ ] ให้อาจารย์/นักกำหนดอาหารรับรองเฉลย
-- [x] **Retrieval metrics** — hit@k = 1.00, MRR = 0.938
+- [x] **Retrieval metrics** — hit@k = 1.00, MRR = 0.856 (baseline-v3, Gemini)
 - [x] **คุณภาพคำตอบอัตโนมัติ** — correctness / completeness / groundedness / hallucination
-- [x] **เปรียบเทียบ RAG vs no-RAG** — RAG ชนะทุกตัวชี้วัด ไม่มีข้อไหนแย่ลง
+- [~] **เปรียบเทียบ RAG vs no-RAG** — เฉพาะ RAG เสร็จแล้ว (5.0 ทุกด้าน) กำลังรัน no-RAG แยกอยู่
+      (1 ก.ย. 2569) หลังจากรอบก่อนที่รันสองโหมดพร้อมกันชนโควตาจนข้อมูลใช้ไม่ได้
 - [ ] **ผู้เชี่ยวชาญให้คะแนน blind** — ระบบสร้างไฟล์ `*_expert.csv` ให้แล้ว รอส่งให้ผู้เชี่ยวชาญ
 - [x] **สืบค้นงานที่เกี่ยวข้องสำหรับบทที่ 2** → [`docs/related-work.md`](docs/related-work.md)
 - [ ] **SUS + ความพึงพอใจจากผู้ใช้จริง 20–30 คน** — ต้อง deploy ก่อน
 
-### ผลล่าสุด (final-v7 — 12 การ์ด, 33 คำถาม, ฐานอาหารจริง 308 รายการ)
+### ผลล่าสุด (baseline-v3 — 16 การ์ด, 33 คำถาม, Gemini free tier, 1 ก.ย. 2569)
 
 | ตัวชี้วัด | RAG | ไม่ใช้ RAG |
 |---|---|---|
-| correctness | **4.85** | 4.52 |
-| groundedness | **4.39** | 3.12 |
-| hit@k | **0.967** | — |
-| hallucination | 0% | 0% |
-| ปฏิเสธคำถามเสี่ยงได้เหมาะสม | 100% | 100% |
+| correctness | **5.0** | รอผล |
+| groundedness | **5.0** | รอผล |
+| hit@k | **1.00** | — |
+| hallucination | 0% | รอผล |
+| ปฏิเสธคำถามเสี่ยงได้เหมาะสม | 100% (4/4) | รอผล |
+
+รันสะอาดครบ 33/33 ไม่มี generation/judge error เลย หลังแก้ retry-with-backoff ครบ 3 จุด
+(generator/judge/embedding) รายละเอียดปัญหาโควตาที่เจอระหว่างทางดู `docs/architecture.md` หัวข้อ 7-8
 
 ⚠️ n=33 ยังไม่พอทำ Wilcoxon ให้มีอำนาจทางสถิติ ต้องรันซ้ำเมื่อคำถามครบ 80–100
+⚠️ คะแนนเต็ม 5.0 ทุกด้านควรตีความระวัง — อาจแปลว่าชุดคำถามยังไม่ครอบคลุมกรณีขอบพอ ไม่ใช่ระบบไม่มีจุดพลาดเลย
 
 ---
 
@@ -150,14 +155,14 @@
 - [x] **แก้เพดาน 20 requests/วัน** — เปลี่ยน `LLM_MODEL` เป็น `gemini-3.5-flash-lite` (คนละ quota
       bucket จาก `gemini-3.5-flash` ที่โควตาหมด, ถูกกว่า ~4-5 เท่าบน paid tier) smoke test รอบสองผ่าน
       ครบไม่ติด 429 เลย (RAG+citations, tool calling ทั้ง 2 เครื่องมือ, safety flag)
-- [~] **รัน eval harness ด้วย `gemini-3.5-flash-lite` — กำลังแก้ปัญหาโควตาระหว่างทาง (1 ก.ย. 2569)**
-      รอบแรก (`--mode both`) เสียคำตอบไป 28/33 no-RAG และ judge score ไป 17/33 rag จาก 429 ดิบ ๆ
-      เพิ่ม retry-with-backoff ใน `eval/run_eval.py` แล้ว แต่รอบสองยังติดอยู่ที่คำถามแรก — เปิด
-      dashboard (aistudio.google.com/rate-limit) ดูจึงพบว่า **`gemini-3.6-flash` (judge เดิม) เพดาน
-      แค่ 20 requests/วัน และใช้ไปแล้ว 21/20 (เกิน)** ไม่ใช่ปัญหาต่อนาทีที่ retry แก้ได้ เปลี่ยน
-      `JUDGE_MODEL` เป็น `gemini-3.1-flash-lite` แทน (dashboard โชว์ 1/500 ต่อวัน แทบไม่ได้ใช้เลย)
-      ตารางเพดานเต็มที่ยืนยันแล้วจาก dashboard ดู `docs/architecture.md` หัวข้อ "Gemini free tier"
-      ยังไม่ได้รันจนจบ ต้องลองใหม่อีกรอบด้วย judge model ใหม่
+- [~] **รัน eval harness ด้วย `gemini-3.5-flash-lite`** — โหมด RAG เสร็จสมบูรณ์แล้ว (1 ก.ย. 2569,
+      baseline-v3, 33/33 ข้อ ไม่มี error เลย) กำลังรันโหมด no-RAG แยกอยู่
+      แก้ปัญหาโควตาไป 3 รอบกว่าจะได้ผลสะอาด: (1) เพิ่ม retry-with-backoff ใน `eval/run_eval.py`
+      (2) เปลี่ยน `JUDGE_MODEL` จาก `gemini-3.6-flash` (พบจริงจาก dashboard ว่าเพดานแค่ 20 req/วัน
+      ใช้เกินไปแล้ว 21/20) เป็น `gemini-3.1-flash-lite` (3) เพิ่ม retry ให้ `embed_texts()` ใน
+      `app/services/llm.py` ด้วย เพราะ embedding โดนโควตาจนทำให้ 12/33 ข้อ retrieval ล้มเหลวเงียบ ๆ
+      (บั๊กนี้กระทบ production จริงด้วย ไม่ใช่แค่ eval) รายละเอียดครบดู `docs/architecture.md`
+      หัวข้อ "Gemini free tier" และหัวข้อ 8
 
 ---
 
