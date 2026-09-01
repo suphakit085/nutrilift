@@ -357,6 +357,20 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
         f"min_score={settings.retrieval_min_score}"
     )
     lines.append(f"- จำนวนคำถาม: {len(rows) // max(len(modes), 1)}")
+
+    # A run that dies partway (a hard daily quota 429, a crash) still writes a
+    # report, and the scores below are means over the rows that *have* scores.
+    # Without this banner the table reads as a clean full run: a 40-question
+    # run where 34 rows hit 429 and one was scored still printed "n=40" beside
+    # a perfect 5.0/5.0/5.0. Say so at the top, before any number is read.
+    failed = [r for r in rows if r.get("error")]
+    if failed:
+        lines.append("")
+        lines.append(
+            f"> ⚠️ **ผลชุดนี้ไม่สมบูรณ์ — {len(failed)} จาก {len(rows)} แถวรันไม่สำเร็จ** "
+            "(ดูคอลัมน์ `error` ในไฟล์ `_answers.csv`) "
+            "ตัวเลขด้านล่างคิดจากเฉพาะแถวที่ให้คะแนนได้ ห้ามนำไปใช้สรุปผลจนกว่าจะรันครบ"
+        )
     lines.append("")
 
     def mean(values: list) -> float | None:
@@ -366,7 +380,7 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
     lines.append("## สรุปรวมต่อโหมด")
     lines.append("")
     lines.append(
-        "| โหมด | n | correctness | completeness | groundedness "
+        "| โหมด | ให้คะแนนได้ / ทั้งหมด | correctness | completeness | groundedness "
         "| hallucination | hit@k | MRR | cost (USD) |"
     )
     lines.append("|---|---|---|---|---|---|---|---|---|")
@@ -375,8 +389,12 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
         applicable = [r for r in subset if r.get("retrieval_applicable")]
         hits = [1 if r.get("retrieval_hit") else 0 for r in applicable]
         halluc = [r["hallucination_detected"] for r in subset if "hallucination_detected" in r]
+        # n is the number of rows the scores actually come from, not the number
+        # attempted - reporting the latter beside a mean of the former is what
+        # made a 1-row result look like a 40-question one.
+        scored = [r for r in subset if isinstance(r.get("correctness"), (int, float))]
         lines.append(
-            f"| {mode} | {len(subset)} "
+            f"| {mode} | {len(scored)} / {len(subset)} "
             f"| {mean([r.get('correctness') for r in subset])} "
             f"| {mean([r.get('completeness') for r in subset])} "
             f"| {mean([r.get('groundedness') for r in subset])} "
