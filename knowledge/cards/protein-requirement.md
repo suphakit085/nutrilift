@@ -9,6 +9,7 @@ sources:
   - "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384."
   - "Thomas DT, Erdman KA, Burke LM. American College of Sports Medicine Joint Position Statement: Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568."
   - "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20."
+  - "Mendes B, Correia J, Santos I, Schoenfeld B, Swinton P, Mendonca G. Effects of plant- versus animal-based proteins on muscle protein synthesis: a systematic review with meta-analysis. SportRxiv. 2025. doi:10.51224/SRXIV.526."
 ---
 
 # ปริมาณโปรตีนต่อวันที่แนะนำ
@@ -49,8 +50,11 @@ timing สำหรับค่าด้านบนของช่วง สำ
 
 "โปรตีนคุณภาพดี" หมายถึงโปรตีนที่มีกรดอะมิโนจำเป็นครบและมีลิวซีน (leucine) เพียงพอ
 ราว 2.5-3 กรัมต่อมื้อ เช่น เนื้อสัตว์ ไข่ นม เวย์โปรตีน ปลา สำหรับผู้ที่กินมังสวิรัติหรือวีแกน
-ควรผสมแหล่งโปรตีนหลายชนิด (ถั่วเหลือง ถั่วต่าง ๆ ธัญพืช) และอาจต้องกินปริมาณรวมสูงขึ้นเล็กน้อย
-เพราะโปรตีนพืชมีการย่อยดูดซึมและสัดส่วนกรดอะมิโนด้อยกว่าโปรตีนสัตว์
+งาน meta-analysis ปี 2025 พบว่าความต่างระหว่างโปรตีนพืชกับโปรตีนสัตว์ต่อการกระตุ้นสร้าง
+กล้ามเนื้อมีขนาดเล็กมากในคนอายุน้อย (ความต่างชัดเจนเฉพาะในผู้สูงอายุ) จึงไม่ใช่เรื่องที่ต้อง
+กังวลมากถ้ากินโปรตีนรวมต่อวันครบเป้า แนวทางที่ยังแนะนำคือผสมแหล่งโปรตีนพืชหลายชนิด
+(ถั่วเหลือง ถั่วต่าง ๆ ธัญพืช) เพื่อให้ได้กรดอะมิโนจำเป็นครบทุกตัว — รายละเอียดดูการ์ด
+`plant-protein` และ `soy-protein`
 
 # แหล่งโปรตีนในอาหารไทยที่หาง่าย
 

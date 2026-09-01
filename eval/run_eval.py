@@ -6,6 +6,13 @@ Run from the repo root with the backend venv:
     backend/.venv/Scripts/python.exe eval/run_eval.py --mode norag
     backend/.venv/Scripts/python.exe eval/run_eval.py --mode both --judge
 
+Every (question, mode) row is flushed to <run_id>_answers.csv as soon as it's
+computed. If a run gets cut off (a hard daily-quota 429, a crash, Ctrl+C),
+continue it later without recomputing the rows already on disk:
+
+    backend/.venv/Scripts/python.exe eval/run_eval.py --mode both --judge \\
+        --run-id baseline-v4 --resume
+
 Outputs (in eval/reports/):
     <run_id>_answers.csv   one row per (question, mode) with scores
     <run_id>_summary.md    aggregate table, ready to paste into the thesis
@@ -76,6 +83,82 @@ PRICE_PER_MTOK: dict[str, tuple[float, float]] = {
     "gemini-3.6-flash": (0.0, 0.0),
     "gemini-3.1-flash-lite": (0.0, 0.0),
 }
+
+
+#: Fixed column order for the answers CSV. Rows are now flushed one at a time as
+#: they're computed (see --resume), so the header has to be written up front
+#: rather than derived from the union of all rows the way a one-shot end-of-run
+#: write could - the row shape varies (error vs success, --judge on/off, safety-
+#: category questions get two extra judge fields).
+CSV_FIELDNAMES = [
+    "id", "category", "mode", "question", "answer",
+    "n_retrieved", "retrieved_slugs", "n_citations", "cited_slugs",
+    "tools_used", "safety_flags", "retrieval_applicable", "retrieval_hit",
+    "reciprocal_rank", "input_tokens", "output_tokens", "cost_usd",
+    "latency_s", "error",
+    "correctness", "completeness", "groundedness", "hallucination_detected",
+    "rationale", "judge_error", "handled_safely", "safety_reason",
+]
+
+_INT_FIELDS = ("correctness", "completeness", "groundedness")
+_FLOAT_FIELDS = ("reciprocal_rank",)
+#: summarise() gates these on `"key" in row`, not just truthiness, because
+#: presence itself is meaningful (judge ran / question was safety-category).
+#: csv.DictWriter's restval="" fills every column for every row regardless, so
+#: a resumed row has to drop the key again when it round-trips empty.
+_BOOL_PRESENCE_FIELDS = ("hallucination_detected", "handled_safely")
+_BOOL_FIELDS = ("retrieval_applicable",)
+_BOOL_OR_NONE_FIELDS = ("retrieval_hit",)
+
+
+def _coerce_resumed_row(row: dict) -> dict:
+    """Undo csv.DictReader's all-strings so a resumed row aggregates in
+    summarise() exactly like a freshly computed one: ints for the judge scores,
+    real bools instead of the strings "True"/"False", and cost_usd/latency_s as
+    numbers so `sum()` doesn't choke on a mix of int 0 and str.
+    """
+    row = dict(row)
+    for key in _INT_FIELDS:
+        if row.get(key):
+            row[key] = int(row[key])
+    for key in _FLOAT_FIELDS:
+        if row.get(key):
+            row[key] = float(row[key])
+    row["cost_usd"] = float(row["cost_usd"]) if row.get("cost_usd") else 0.0
+    row["latency_s"] = float(row["latency_s"]) if row.get("latency_s") else 0.0
+    for key in _BOOL_PRESENCE_FIELDS:
+        if row.get(key) in ("True", "False"):
+            row[key] = row[key] == "True"
+        elif key in row:
+            del row[key]
+    for key in _BOOL_FIELDS:
+        if row.get(key) in ("True", "False"):
+            row[key] = row[key] == "True"
+    for key in _BOOL_OR_NONE_FIELDS:
+        row[key] = row[key] == "True" if row.get(key) in ("True", "False") else None
+    return row
+
+
+def _load_previous_answers(path: Path) -> list[dict]:
+    """Rows a prior (possibly interrupted) run already wrote for this run_id."""
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8-sig", newline="") as handle:
+        return [_coerce_resumed_row(r) for r in csv.DictReader(handle)]
+
+
+def _open_answers_writer(path: Path, *, resume: bool):
+    """Open the answers CSV for incremental writes: each row is flushed to disk
+    the moment it's computed, so an interrupted run (hard daily-quota 429,
+    crash, Ctrl+C) loses at most the one in-flight question, not every row
+    computed so far.
+    """
+    write_header = not (resume and path.exists())
+    handle = path.open("a" if resume else "w", encoding="utf-8-sig", newline="")
+    writer = csv.DictWriter(handle, fieldnames=CSV_FIELDNAMES, restval="", extrasaction="ignore")
+    if write_header:
+        writer.writeheader()
+    return handle, writer
 
 
 def load_questions() -> list[dict]:
@@ -406,7 +489,16 @@ def main() -> int:
     parser.add_argument("--judge", action="store_true", help="score answers with the judge model")
     parser.add_argument("--limit", type=int, help="only run the first N questions")
     parser.add_argument("--run-id", help="override the report file prefix")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="continue a previous --run-id: skip (id, mode) pairs already in "
+        "<run_id>_answers.csv instead of recomputing them. Use the same --mode "
+        "and --judge as the interrupted run.",
+    )
     args = parser.parse_args()
+    if args.resume and not args.run_id:
+        parser.error("--resume requires --run-id (the run to continue)")
 
     questions = load_questions()
     if args.limit:
@@ -415,19 +507,31 @@ def main() -> int:
     modes = ["rag", "norag"] if args.mode == "both" else [args.mode]
     run_id = args.run_id or datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    answers_path = REPORTS_DIR / f"{run_id}_answers.csv"
 
+    rows: list[dict] = _load_previous_answers(answers_path) if args.resume else []
+    done = {(r["id"], r["mode"]) for r in rows}
+    if done:
+        print(
+            f"resuming {run_id}: {len(done)} (question, mode) pair(s) already on disk",
+            flush=True,
+        )
+
+    handle, writer = _open_answers_writer(answers_path, resume=args.resume)
     session = SessionLocal()
-    rows: list[dict] = []
     try:
         for mode in modes:
             for index, question in enumerate(questions, start=1):
+                if (question["id"], mode) in done:
+                    continue
                 print(f"[{mode}] {index}/{len(questions)} {question['id']}", flush=True)
-                rows.append(run_one(session, question, mode == "rag", args.judge))
+                row = run_one(session, question, mode == "rag", args.judge)
+                rows.append(row)
+                writer.writerow(row)
+                handle.flush()
     finally:
         session.close()
-
-    answers_path = REPORTS_DIR / f"{run_id}_answers.csv"
-    _write_csv(answers_path, rows)
+        handle.close()
 
     summary_path = REPORTS_DIR / f"{run_id}_summary.md"
     summary_path.write_text(summarise(rows, modes), encoding="utf-8")

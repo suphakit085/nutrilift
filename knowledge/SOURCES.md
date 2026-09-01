@@ -146,6 +146,38 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
   → การ์ด `nutrient-timing` (31 ส.ค. 2569: ขยายหัวข้อ "หน้าต่างอนาโบลิก" ด้วยกรอบปฏิบัติ
   3-4 ชม. ระหว่างมื้อก่อน/หลังฝึก, ปริมาณ 0.4-0.5 g/kg LBM ต่อมื้อ, และผลของอายุ/ประสบการณ์ฝึก)
 
+## 3b. เอกสารใหม่ที่หาเพิ่ม (1 ก.ย. 2569) — ยังไม่ได้อ่าน/สรุปเป็นการ์ด
+
+เอกสารเดิมที่มีไฟล์อยู่แล้วใช้ครบหมดแล้ว (ดู TASKS.md) จึงค้นหาเอกสารใหม่เพื่อเติมหัวข้อที่ยังไม่มี
+การ์ดคุมตามตาราง "รายการการ์ดที่วางแผนไว้" ด้านล่าง — ตรวจ open access จริงทุกฉบับแล้ว (fetch หน้า
+บทความตรง ไม่ใช่แค่เดาจากผลค้นหา)
+
+- [x] **Ferrando AA, Wolfe RR, et al.** ISSN position stand: essential amino acid supplementation
+  on skeletal muscle and performance. *JISSN.* 2023;20(1):2263409.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC10561576/ · DOI 10.1080/15502783.2023.2263409 (CC BY 4.0)
+  → การ์ด `eaa` (1 ก.ย. 2569 — EAA vs BCAA, ปริมาณ 1.5-18g, ก่อน/หลังฝึก, ช่วง cut ต้องการ EAA
+  เพิ่ม 3 เท่า, ผู้สูงอายุ/anabolic resistance, ความปลอดภัย) ingest แล้ว ทดสอบ retrieval ภาษาไทย
+  3 คำถามผ่านหมด (score 0.72-0.81 เทียบ threshold 0.63)
+- [x] **Mendes B, Correia J, Santos I, Schoenfeld B, Swinton P, Mendonca G.** Effects of plant- vs
+  animal-based proteins on muscle protein synthesis: a systematic review with meta-analysis.
+  SportRxiv preprint, 2025. ✅ https://sportrxiv.org/index.php/server/preprint/view/526
+  DOI 10.51224/SRXIV.526 (preprint, เปิดอ่าน/ดาวน์โหลดฟรี ไม่มี paywall)
+  → การ์ด `plant-protein` (1 ก.ย. 2569) และแก้ประโยคที่ไม่มีแหล่งอ้างอิงกำกับใน
+  `protein-requirement.md` ให้มีที่มาแล้ว ingest + ทดสอบ retrieval ผ่าน
+- [x] **Zare R, Devrim-Lanpir A, et al.** Effect of soy protein supplementation on muscle
+  adaptations, metabolic and antioxidant status, hormonal response, and exercise performance:
+  a systematic review of RCTs. *Sports Medicine.* 2023;53(12):2417-2446.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC10687132/ · DOI 10.1007/s40279-023-01899-w (CC BY 4.0)
+  → การ์ด `soy-protein` (1 ก.ย. 2569) ingest + ทดสอบ retrieval ผ่าน
+- [x] **Cornish SM, Cordingley DM, et al.** Effects of omega-3 supplementation alone and combined
+  with resistance exercise on skeletal muscle in older adults: a systematic review and
+  meta-analysis. *Nutrients.* 2022;14(11):2221.
+  ✅ https://pmc.ncbi.nlm.nih.gov/articles/PMC9182791/ · DOI 10.3390/nu14112221 (CC BY 4.0)
+  → การ์ด `omega-3` (1 ก.ย. 2569) — เขียนให้ตรงขอบเขตประชากรจริง (ศึกษาเฉพาะผู้สูงอายุ ≥55 ปี
+  ระบุไว้ชัดตั้งแต่หัวข้อแรกของการ์ด ไม่กล่าวอ้างเกินหลักฐานว่าช่วยสร้างกล้ามในคนทั่วไป)
+  ingest + ทดสอบ retrieval ผ่าน (เคยเจอเอกสารที่ตรงหัวข้อกว่านี้ — Therdyothin et al. 2025,
+  *Nutrition Reviews* 83(2):e131-e143 — แต่ติด paywall จึงไม่ใช้)
+
 ## 4. งานวิจัยเกี่ยวกับแชตบอทโภชนาการ (สำหรับบทที่ 2)
 
 รายละเอียดและการวิเคราะห์อยู่ใน [`docs/related-work.md`](../docs/related-work.md)
@@ -164,9 +196,9 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
 | หมวด (`topic`) | การ์ดที่ตั้งใจเขียน |
 |---|---|
 | `energy` | สมดุลพลังงาน ✅, การปรับแคลอรี่เมื่อน้ำหนักนิ่ง, metabolic adaptation, refeed/diet break |
-| `protein` | ปริมาณโปรตีน ✅, โปรตีนต่อมื้อ, โปรตีนพืชกับวีแกน, เวย์/เคซีน/โปรตีนถั่วเหลือง |
+| `protein` | ปริมาณโปรตีน ✅, โปรตีนต่อมื้อ ✅, โปรตีนพืชกับวีแกน ✅, เวย์เทียบถั่วเหลือง ✅ |
 | `timing` | anabolic window, กินก่อน-หลังเล่น, ฝึกเช้าตอนท้องว่าง, IF กับการเล่นเวท |
-| `supplement` | ครีเอทีน ✅, คาเฟอีน, เบต้าอะลานีน, BCAA/EAA, วิตามินดี, โอเมก้า-3, สิ่งที่ไม่คุ้มเงิน |
+| `supplement` | ครีเอทีน ✅, คาเฟอีน ✅, เบต้าอะลานีน ✅, BCAA/EAA ✅, วิตามินดี ✅, โอเมก้า-3 ✅, สิ่งที่ไม่คุ้มเงิน ✅ |
 | `thai-food` | เมนูตามสั่งโปรตีนสูง, อาหารคลีนแบบไทย, การสั่งอาหารนอกบ้านช่วง cut, น้ำตาลแฝงในเครื่องดื่ม |
 | `myth` | คาร์บตอนเย็นทำให้อ้วน, กินโปรตีนเกิน 30 g เสียเปล่า, spot reduction, เหงื่อออกมาก = เผาผลาญมาก |
 | `safety` | สัญญาณอันตรายของการลดน้ำหนักเร็วเกินไป, ทำไมไม่แนะนำสารต้องห้าม, เมื่อไหร่ควรพบแพทย์ |
