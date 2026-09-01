@@ -28,6 +28,14 @@ eval/reports/*
 knowledge/sources/*
 !knowledge/sources/.gitkeep
 
+# Design canvas: the .dc.html artboards are the source and are tracked, but the
+# seeded page bundles a ~2.5 MB editor payload and is regenerated on every edit.
+design/*.html
+!design/*.dc.html
+
+# Local tooling state
+.claude/
+
 # OS / editors
 .DS_Store
 Thumbs.db

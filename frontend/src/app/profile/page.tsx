@@ -100,20 +100,28 @@ export default function ProfilePage() {
   }
 
   const inputClass =
-    "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent";
+    "mt-1.5 w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface";
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">โปรไฟล์ของฉัน</h1>
-        <Link href="/chat" className="text-sm text-accent hover:underline">
+    <main className="mx-auto max-w-3xl p-6 pb-16">
+      <header className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">โปรไฟล์ของฉัน</h1>
+          <p className="mt-1 text-sm text-muted">
+            ใช้คำนวณพลังงานและสารอาหารเฉพาะบุคคล
+          </p>
+        </div>
+        <Link
+          href="/chat"
+          className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+        >
           ไปหน้าแชต →
         </Link>
       </header>
 
       <form
         onSubmit={save}
-        className="space-y-5 rounded-2xl border border-border bg-surface p-6"
+        className="space-y-6 rounded-3xl border border-border bg-surface p-7"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
@@ -244,34 +252,39 @@ export default function ProfilePage() {
 
         <div>
           <span className="text-sm">ข้อจำกัดด้านอาหาร</span>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {RESTRICTION_OPTIONS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => toggleRestriction(item)}
-                className={`rounded-full border px-3 py-1 text-sm transition ${
-                  profile.restrictions.includes(item)
-                    ? "border-accent bg-accent-soft text-accent"
-                    : "border-border text-muted hover:text-foreground"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+          <p className="mt-0.5 text-xs text-muted">เลือกได้มากกว่า 1 ข้อ</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {RESTRICTION_OPTIONS.map((item) => {
+              const selected = profile.restrictions.includes(item);
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => toggleRestriction(item)}
+                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                    selected
+                      ? "border-accent bg-accent-soft font-medium text-accent"
+                      : "border-border bg-surface-sunken text-muted hover:border-accent/40 hover:text-foreground"
+                  }`}
+                >
+                  {item}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {error && (
-          <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-500">
+          <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 border-t border-border pt-6">
           <button
             type="submit"
-            className="rounded-lg bg-accent px-5 py-2.5 font-medium text-white transition hover:opacity-90"
+            className="rounded-full bg-cta px-7 py-3 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
           >
             บันทึกและคำนวณ
           </button>
@@ -286,36 +299,67 @@ export default function ProfilePage() {
 
 function TargetsCard({ targets }: { targets: Targets }) {
   const { macros } = targets;
-  return (
-    <section className="mt-6 rounded-2xl border border-border bg-surface p-6">
-      <h2 className="text-lg font-semibold">เป้าหมายพลังงานและสารอาหาร</h2>
-      <p className="mt-1 text-sm text-muted">
-        {targets.inputs.goal_label_th} · {targets.inputs.activity_label_th}
-      </p>
+  const total = targets.energy_target_kcal || 1;
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <Stat label={`BMR (${targets.bmr_formula})`} value={`${targets.bmr_kcal} kcal`} />
-        <Stat label="TDEE" value={`${targets.tdee_kcal} kcal`} />
-        <Stat
+  return (
+    <section className="mt-6 space-y-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          เป้าหมายต่อวันของคุณ
+        </h2>
+        <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+          {targets.inputs.goal_label_th}
+        </span>
+      </div>
+
+      {/* Energy row. The target is the number that actually drives decisions,
+          so it gets the filled treatment and the other two stay quiet. */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <EnergyStat label={`BMR · ${targets.bmr_formula}`} value={targets.bmr_kcal} />
+        <EnergyStat label="TDEE" value={targets.tdee_kcal} />
+        <EnergyStat
           label="พลังงานเป้าหมาย"
-          value={`${targets.energy_target_kcal} kcal`}
+          value={targets.energy_target_kcal}
           hint={`ช่วง ${targets.energy_target_range_kcal[0]}–${targets.energy_target_range_kcal[1]}`}
-          highlight
+          filled
         />
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <Stat label="โปรตีน" value={`${macros.protein_g} g`} hint={`${macros.protein_kcal} kcal`} />
-        <Stat label="คาร์โบไฮเดรต" value={`${macros.carb_g} g`} hint={`${macros.carb_kcal} kcal`} />
-        <Stat label="ไขมัน" value={`${macros.fat_g} g`} hint={`${macros.fat_kcal} kcal`} />
+      {/* Macro row. Each bar is that macro's share of the calorie target, so
+          the bars carry real information rather than being decoration. */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <MacroStat
+          label="โปรตีน"
+          grams={macros.protein_g}
+          kcal={macros.protein_kcal}
+          share={macros.protein_kcal / total}
+          bar="bg-macro-protein"
+          track="bg-macro-protein-soft"
+        />
+        <MacroStat
+          label="คาร์โบไฮเดรต"
+          grams={macros.carb_g}
+          kcal={macros.carb_kcal}
+          share={macros.carb_kcal / total}
+          bar="bg-macro-carb"
+          track="bg-macro-carb-soft"
+        />
+        <MacroStat
+          label="ไขมัน"
+          grams={macros.fat_g}
+          kcal={macros.fat_kcal}
+          share={macros.fat_kcal / total}
+          bar="bg-macro-fat"
+          track="bg-macro-fat-soft"
+        />
       </div>
 
       {targets.warnings.length > 0 && (
-        <ul className="mt-4 space-y-2">
+        <ul className="space-y-2">
           {targets.warnings.map((warning) => (
             <li
               key={warning}
-              className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-600"
+              className="rounded-2xl border border-macro-carb/30 bg-macro-carb-soft px-4 py-3 text-sm"
             >
               {warning}
             </li>
@@ -323,42 +367,98 @@ function TargetsCard({ targets }: { targets: Targets }) {
         </ul>
       )}
 
-      <details className="mt-4">
-        <summary className="cursor-pointer text-sm text-muted">
-          สูตรและแหล่งอ้างอิงที่ใช้คำนวณ
-        </summary>
-        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted">
-          {targets.references.map((reference) => (
-            <li key={reference}>{reference}</li>
-          ))}
-        </ul>
-      </details>
-
-      <p className="mt-4 text-xs text-muted">{targets.disclaimer}</p>
+      <div className="rounded-2xl border border-border bg-surface p-5">
+        <details>
+          <summary className="cursor-pointer text-sm font-medium">
+            สูตรและแหล่งอ้างอิงที่ใช้คำนวณ
+          </summary>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted">
+            {targets.references.map((reference) => (
+              <li key={reference}>{reference}</li>
+            ))}
+          </ul>
+        </details>
+        <p className="mt-4 border-t border-border pt-4 text-xs text-muted">
+          {targets.disclaimer}
+        </p>
+      </div>
     </section>
   );
 }
 
-function Stat({
+function EnergyStat({
   label,
   value,
   hint,
-  highlight,
+  filled,
 }: {
   label: string;
-  value: string;
+  value: number;
   hint?: string;
-  highlight?: boolean;
+  filled?: boolean;
 }) {
   return (
     <div
-      className={`rounded-xl border p-4 ${
-        highlight ? "border-accent bg-accent-soft/40" : "border-border"
+      className={`rounded-2xl p-5 transition ${
+        filled
+          ? "bg-cta text-cta-foreground"
+          : "border border-border bg-surface"
       }`}
     >
+      <div className={`text-xs ${filled ? "opacity-70" : "text-muted"}`}>
+        {label}
+      </div>
+      <div className="mt-3 flex items-baseline gap-1.5">
+        <span className="text-3xl font-semibold tracking-tight tabular-nums">
+          {value.toLocaleString()}
+        </span>
+        <span className={`text-sm ${filled ? "opacity-70" : "text-muted"}`}>
+          kcal
+        </span>
+      </div>
+      {hint && (
+        <div className={`mt-1 text-xs ${filled ? "opacity-70" : "text-muted"}`}>
+          {hint}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MacroStat({
+  label,
+  grams,
+  kcal,
+  share,
+  bar,
+  track,
+}: {
+  label: string;
+  grams: number;
+  kcal: number;
+  share: number;
+  bar: string;
+  track: string;
+}) {
+  const percent = Math.round(share * 100);
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-5">
       <div className="text-xs text-muted">{label}</div>
-      <div className="mt-1 text-xl font-semibold">{value}</div>
-      {hint && <div className="text-xs text-muted">{hint}</div>}
+      <div className="mt-3 flex items-baseline gap-1.5">
+        <span className="text-3xl font-semibold tracking-tight tabular-nums">
+          {grams}
+        </span>
+        <span className="text-sm text-muted">g</span>
+      </div>
+      <div className={`mt-4 h-1.5 w-full overflow-hidden rounded-full ${track}`}>
+        <div
+          className={`h-full rounded-full ${bar}`}
+          style={{ width: `${Math.min(percent, 100)}%` }}
+        />
+      </div>
+      <div className="mt-2 text-xs text-muted tabular-nums">
+        {kcal.toLocaleString()} kcal · {percent}% ของพลังงาน
+      </div>
     </div>
   );
 }

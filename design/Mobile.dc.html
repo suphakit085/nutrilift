@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap">
+  <style>
+    body { margin: 0; font-family: "Noto Sans Thai", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #6d8b3a; text-decoration: none; }
+    a:hover { color: #4f6729; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: #f3f0e9; color: #1f1d19;">
+
+  <!-- NAV -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="display: flex; width: 30px; height: 30px; align-items: center; justify-content: center; border-radius: 10px; background: #e8efd8;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+      </span>
+      <span style="font-size: 17px; font-weight: 700;">NutriLift</span>
+    </div>
+    <a href="#cta" style="border-radius: 999px; background: #1f1d19; padding: 14px 20px; font-size: 14px; font-weight: 600; color: #ffffff;">เริ่มใช้งาน</a>
+  </div>
+
+  <!-- HERO -->
+  <div style="padding: 26px 20px 0 20px;">
+    <span style="display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; background: #e8efd8; padding: 7px 14px; font-size: 13px; font-weight: 600; color: {{band}};">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      อ้างอิงงานวิจัยจริง ไม่เดาตัวเลข
+    </span>
+
+    <h1 style="margin: 18px 0 0 0; font-size: 38px; font-weight: 800; line-height: 1.18; letter-spacing: -0.02em; text-wrap: pretty;">
+      โภชนาการเวทเทรนนิ่ง<br>
+      <span style="color: {{band}};">ที่ตรวจสอบที่มาได้</span>
+    </h1>
+
+    <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.75; color: #56524b;">
+      ถามโค้ชนัทเรื่องกินได้ทุกอย่าง คำตอบมาจากการ์ดความรู้ที่สรุปจากงานวิจัยโภชนาการกีฬาและเอกสารกรมอนามัย
+      พร้อมแสดงแหล่งอ้างอิงทุกครั้ง
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
+      <a href="#cta" style="border-radius: 999px; background: #1f1d19; padding: 15px 24px; text-align: center; font-size: 16px; font-weight: 600; color: #ffffff;">เริ่มใช้งานฟรี</a>
+      <a href="#trust" style="border: 1.5px solid #d9d3c5; border-radius: 999px; padding: 14px 24px; text-align: center; font-size: 16px; font-weight: 600; color: #1f1d19;">ดูตัวอย่างคำตอบ</a>
+    </div>
+
+    <p style="margin: 14px 0 0 0; text-align: center; font-size: 13px; color: #6f6a5f;">ไม่มีค่าใช้จ่าย · ใช้ผ่านเบราว์เซอร์ได้เลย</p>
+
+    <!-- hero visual -->
+    <div style="position: relative; margin-top: 32px; padding-bottom: 212px;">
+      <div style="position: absolute; top: 24px; left: 40px; width: 270px; height: 270px; border-radius: 999px; background: #e8efd8;"></div>
+
+      <div style="position: relative; border-radius: 22px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px; box-shadow: 0 14px 34px rgba(31, 29, 25, 0.09);">
+        <div style="display: flex; justify-content: flex-end;">
+          <div style="border-radius: 18px 18px 5px 18px; background: #1f1d19; padding: 10px 15px; font-size: 14px; color: #ffffff;">ช่วง cut กินโปรตีนเท่าไหร่</div>
+        </div>
+        <div style="margin-top: 12px; border-radius: 18px 18px 18px 5px; border: 1px solid #e7e2d6; background: #faf8f4; padding: 14px 15px;">
+          <p style="margin: 0; font-size: 14px; line-height: 1.75;">
+            ช่วงลดไขมันแนะนำโปรตีน <strong style="font-weight: 700;">1.8–2.2 กรัม</strong> ต่อน้ำหนักตัว 1 กก. ต่อวัน
+            <span style="font-weight: 600; color: {{band}};">[S1]</span> เพื่อรักษามวลกล้ามเนื้อ
+            <span style="font-weight: 600; color: {{band}};">[S2]</span>
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid #e7e2d6; padding-top: 11px;">
+            <span style="border-radius: 8px; background: #e8efd8; padding: 4px 9px; font-size: 12px; color: #4f6729;">[S1] ปริมาณโปรตีนสำหรับผู้ฝึกเวท</span>
+            <span style="border-radius: 8px; background: #e8efd8; padding: 4px 9px; font-size: 12px; color: #4f6729;">[S2] สมดุลพลังงาน</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: absolute; bottom: 0; right: 8px; width: 220px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 17px; box-shadow: 0 14px 34px rgba(31, 29, 25, 0.12);">
+        <div style="font-size: 12px; color: #6f6a5f;">เป้าหมายวันนี้</div>
+        <div style="display: flex; align-items: baseline; gap: 5px; margin-top: 6px;">
+          <span style="font-size: 27px; font-weight: 700; letter-spacing: -0.02em;">2,180</span>
+          <span style="font-size: 13px; color: #6f6a5f;">kcal</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #56524b;"><span>โปรตีน</span><span style="font-weight: 600;">140 g</span></div>
+            <div style="height: 5px; margin-top: 5px; border-radius: 999px; background: #e8efd8;"><div style="height: 100%; width: 26%; border-radius: 999px; background: #6d8b3a;"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #56524b;"><span>คาร์โบไฮเดรต</span><span style="font-weight: 600;">260 g</span></div>
+            <div style="height: 5px; margin-top: 5px; border-radius: 999px; background: #f7e9d5;"><div style="height: 100%; width: 48%; border-radius: 999px; background: #c98a3c;"></div></div>
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #56524b;"><span>ไขมัน</span><span style="font-weight: 600;">63 g</span></div>
+            <div style="height: 5px; margin-top: 5px; border-radius: 999px; background: #e4ecf1;"><div style="height: 100%; width: 26%; border-radius: 999px; background: #7a94a8;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- curve -->
+  <svg viewBox="0 0 390 60" preserveAspectRatio="none" style="display: block; width: 100%; height: 60px; margin-top: 28px;">
+    <path d="M0,60 L0,26 C90,-4 250,44 390,10 L390,60 Z" fill="{{band}}"></path>
+  </svg>
+
+  <!-- FEATURES + STATS -->
+  <div style="background: {{band}}; padding: 0 20px 44px 20px;">
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-top: -34px;">
+
+      <div style="border-radius: 22px; background: #ffffff; padding: 22px; box-shadow: 0 12px 30px rgba(31, 29, 25, 0.11);">
+        <span style="display: flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 13px; background: #e8efd8;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6d8b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+        </span>
+        <h3 style="margin: 14px 0 0 0; font-size: 17px; font-weight: 700;">ทุกคำตอบมีแหล่งอ้างอิง</h3>
+        <p style="margin: 7px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">เห็นได้ว่าประโยคไหนมาจากงานวิจัยฉบับไหน</p>
+      </div>
+
+      <div style="border-radius: 22px; background: #ffffff; padding: 22px; box-shadow: 0 12px 30px rgba(31, 29, 25, 0.11);">
+        <span style="display: flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 13px; background: #f7e9d5;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c98a3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line><line x1="8" x2="8" y1="14" y2="14"></line><line x1="12" x2="12" y1="14" y2="14"></line><line x1="16" x2="16" y1="14" y2="14"></line><line x1="8" x2="8" y1="18" y2="18"></line><line x1="12" x2="12" y1="18" y2="18"></line></svg>
+        </span>
+        <h3 style="margin: 14px 0 0 0; font-size: 17px; font-weight: 700;">ตัวเลขคำนวณจากสูตร</h3>
+        <p style="margin: 7px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">Mifflin-St Jeor และ Katch-McArdle รันในโค้ดจริง ไม่ผ่านการเดาของ AI</p>
+      </div>
+
+      <div style="border-radius: 22px; background: #ffffff; padding: 22px; box-shadow: 0 12px 30px rgba(31, 29, 25, 0.11);">
+        <span style="display: flex; width: 42px; height: 42px; align-items: center; justify-content: center; border-radius: 13px; background: #e4ecf1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a94a8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M7 21h10"></path><path d="M11.5 3v4"></path><path d="M15 4.5v2.5"></path></svg>
+        </span>
+        <h3 style="margin: 14px 0 0 0; font-size: 17px; font-weight: 700;">อาหารไทยค่าจริง</h3>
+        <p style="margin: 7px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">จากตารางคุณค่าอาหารไทยของ INMU และกรมอนามัย</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 40px;">
+      <div style="text-align: center;">
+        <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">25</div>
+        <div style="margin-top: 2px; font-size: 13px; color: #dbe6c4;">การ์ดความรู้</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">329</div>
+        <div style="margin-top: 2px; font-size: 13px; color: #dbe6c4;">เมนูอาหารไทยค่าจริง</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">100</div>
+        <div style="margin-top: 2px; font-size: 13px; color: #dbe6c4;">คำถามในชุดทดสอบ</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 38px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">6</div>
+        <div style="margin-top: 2px; font-size: 13px; color: #dbe6c4;">หมวดกฎความปลอดภัย</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPICS -->
+  <div style="padding: 56px 20px 0 20px;">
+    <div style="text-align: center;">
+      <span style="font-size: 14px; font-weight: 600; color: {{band}};">หมวดความรู้</span>
+      <h2 style="margin: 8px 0 0 0; font-size: 30px; font-weight: 800; letter-spacing: -0.02em;">ถามได้ในเรื่องพวกนี้</h2>
+      <p style="margin: 10px 0 0 0; font-size: 15px; line-height: 1.7; color: #56524b;">
+        ทุกหมวดเขียนจากงานวิจัยและเอกสารอ้างอิงที่ระบุที่มาได้
+      </p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 26px;">
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #e8efd8;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6d8b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"></path><path d="m21 21-1-1"></path><path d="m3 3 1 1"></path><path d="m18 22 4-4"></path><path d="m2 6 4-4"></path><path d="m3 10 7-7"></path><path d="m14 21 7-7"></path></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">โปรตีนและมาโคร</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ควรกินเท่าไหร่ ต่อมื้อเท่าไหร่ โปรตีนพืชกับสัตว์ต่างกันไหม</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #f7e9d5;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c98a3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">พลังงาน cut / bulk</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ขาดดุลเท่าไหร่ถึงพอดี ทำไมน้ำหนักนิ่ง</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #e4ecf1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a94a8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">ช่วงเวลาการกิน</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ก่อน-หลังฝึกกินอะไร ฝึกตอนท้องว่างเสียกล้ามไหม</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #e8efd8;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6d8b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">อาหารเสริม</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ครีเอทีน เวย์ คาเฟอีน EAA — ตัวไหนมีหลักฐาน</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #f7e9d5;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c98a3c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M7 21h10"></path><path d="M11.5 3v4"></path><path d="M15 4.5v2.5"></path></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">อาหารไทย</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ข้าวกะเพราไก่กี่แคล น้ำตาลแฝงในชานมไข่มุก</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; border-radius: 20px; border: 1px solid #e7e2d6; background: #ffffff; padding: 18px;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; background: #e4ecf1;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a94a8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" x2="12.01" y1="17" y2="17"></line></svg>
+        </span>
+        <div>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700;">ความเชื่อผิด ๆ</h3>
+          <p style="margin: 5px 0 0 0; font-size: 13px; line-height: 1.65; color: #56524b;">ลดไขมันเฉพาะจุด คาร์บตอนดึก โปรตีนเกิน 30 กรัมเสียเปล่า</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRUST -->
+  <div id="trust" style="padding: 62px 20px 0 20px;">
+    <span style="font-size: 14px; font-weight: 600; color: {{band}};">ทำไมตัวเลขถึงเชื่อได้</span>
+    <h2 style="margin: 8px 0 0 0; font-size: 30px; font-weight: 800; line-height: 1.22; letter-spacing: -0.02em;">แยกการคำนวณออกจาก AI</h2>
+    <p style="margin: 14px 0 0 0; font-size: 15px; line-height: 1.8; color: #56524b;">
+      แชตบอททั่วไปให้โมเดลคิดเลขเอง ซึ่งผิดได้โดยไม่มีใครรู้ ระบบนี้ให้โมเดลเรียกเครื่องคำนวณที่เขียนเป็นโค้ด
+      แล้วรายงานผลตามนั้น ตัวเลขจึงตรวจย้อนได้ทุกตัว
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 22px;">
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span style="font-size: 15px; line-height: 1.6;">BMR ด้วย Mifflin-St Jeor หรือ Katch-McArdle เมื่อมี %ไขมัน</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span style="font-size: 15px; line-height: 1.6;">ค่าอาหารดึงจากฐานข้อมูล ไม่ให้โมเดลเดาแคลอรี่เมนู</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span style="font-size: 15px; line-height: 1.6;">ถ้าฐานความรู้ไม่ครอบคลุม จะบอกตรง ๆ ว่าไม่มีข้อมูลพอ</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 26px; border-radius: 24px; border: 1px solid #e7e2d6; background: #ffffff; padding: 22px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span style="font-size: 17px; font-weight: 700;">เป้าหมายต่อวัน</span>
+        <span style="border-radius: 999px; background: #e8efd8; padding: 5px 12px; font-size: 12px; font-weight: 600; color: #4f6729;">ลดไขมัน</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 18px;">
+        <div style="border-radius: 15px; border: 1px solid #e7e2d6; padding: 12px;">
+          <div style="font-size: 12px; color: #6f6a5f;">BMR</div>
+          <div style="margin-top: 5px; font-size: 17px; font-weight: 700;">1,674</div>
+        </div>
+        <div style="border-radius: 15px; border: 1px solid #e7e2d6; padding: 12px;">
+          <div style="font-size: 12px; color: #6f6a5f;">TDEE</div>
+          <div style="margin-top: 5px; font-size: 17px; font-weight: 700;">2,594</div>
+        </div>
+        <div style="border-radius: 15px; background: #1f1d19; padding: 12px;">
+          <div style="font-size: 12px; color: rgba(255, 255, 255, 0.68);">เป้าหมาย</div>
+          <div style="margin-top: 5px; font-size: 17px; font-weight: 700; color: #ffffff;">2,180</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 13px; margin-top: 18px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;"><span style="color: #56524b;">โปรตีน</span><span style="font-weight: 600;">140 g · 26%</span></div>
+          <div style="height: 6px; margin-top: 6px; border-radius: 999px; background: #e8efd8;"><div style="height: 100%; width: 26%; border-radius: 999px; background: #6d8b3a;"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;"><span style="color: #56524b;">คาร์โบไฮเดรต</span><span style="font-weight: 600;">260 g · 48%</span></div>
+          <div style="height: 6px; margin-top: 6px; border-radius: 999px; background: #f7e9d5;"><div style="height: 100%; width: 48%; border-radius: 999px; background: #c98a3c;"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px;"><span style="color: #56524b;">ไขมัน</span><span style="font-weight: 600;">63 g · 26%</span></div>
+          <div style="height: 6px; margin-top: 6px; border-radius: 999px; background: #e4ecf1;"><div style="height: 100%; width: 26%; border-radius: 999px; background: #7a94a8;"></div></div>
+        </div>
+      </div>
+      <p style="margin: 18px 0 0 0; border-top: 1px solid #e7e2d6; padding-top: 14px; font-size: 12px; line-height: 1.7; color: #6f6a5f;">
+        ตัวอย่างจากชาย 25 ปี 175 ซม. 70 กก. ออกกำลังกายปานกลาง
+      </p>
+    </div>
+
+    <div style="margin-top: 26px; border-top: 1px solid #e0dacc; padding-top: 20px;">
+      <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: #6f6a5f;">ฐานความรู้สรุปจาก</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px;">
+        <span style="border-radius: 999px; border: 1px solid #e0dacc; padding: 7px 13px; font-size: 12px; color: #56524b;">ISSN Position Stands</span>
+        <span style="border-radius: 999px; border: 1px solid #e0dacc; padding: 7px 13px; font-size: 12px; color: #56524b;">ACSM / AND / DC</span>
+        <span style="border-radius: 999px; border: 1px solid #e0dacc; padding: 7px 13px; font-size: 12px; color: #56524b;">กรมอนามัย</span>
+        <span style="border-radius: 999px; border: 1px solid #e0dacc; padding: 7px 13px; font-size: 12px; color: #56524b;">INMU ม.มหิดล</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAFETY -->
+  <div style="padding: 62px 20px 0 20px;">
+    <div style="border-radius: 26px; border: 1px solid #e7e2d6; background: #ffffff; padding: 28px 22px;">
+      <span style="display: flex; width: 46px; height: 46px; align-items: center; justify-content: center; border-radius: 15px; background: #e8efd8;">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+      </span>
+      <h2 style="margin: 16px 0 0 0; font-size: 27px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;">รู้ว่าเรื่องไหนไม่ควรตอบ</h2>
+      <p style="margin: 12px 0 0 0; font-size: 15px; line-height: 1.75; color: #56524b;">
+        กฎความปลอดภัยเขียนเป็นเงื่อนไขในโค้ด ทำงานก่อนถึงโมเดลเสมอ ผลจึงเหมือนเดิมทุกครั้ง
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 11px; margin-top: 22px;">
+        <div style="border-radius: 18px; background: #faf8f4; padding: 18px;">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">ไม่ให้ขนาดยาหรือสารเร่งกล้าม</h3>
+          <p style="margin: 6px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">อธิบายความเสี่ยงและส่งต่อแพทย์ ไม่ให้วิธีใช้หรือแหล่งซื้อ</p>
+        </div>
+        <div style="border-radius: 18px; background: #faf8f4; padding: 18px;">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">โรคประจำตัว ตั้งครรภ์ อายุต่ำกว่า 18</h3>
+          <p style="margin: 6px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">เตือนชัดเจนและให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อนปรับอาหาร</p>
+        </div>
+        <div style="border-radius: 18px; background: #faf8f4; padding: 18px;">
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">ไม่แนะนำการอดอาหารรุนแรง</h3>
+          <p style="margin: 6px 0 0 0; font-size: 14px; line-height: 1.7; color: #56524b;">ไม่แนะนำพลังงานต่ำกว่า 1,200 kcal/วัน โดยไม่มีผู้เชี่ยวชาญดูแล</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div id="cta" style="padding: 56px 20px 0 20px;">
+    <div style="border-radius: 30px; background: {{band}}; padding: 44px 26px; text-align: center;">
+      <h2 style="margin: 0; font-size: 30px; font-weight: 800; line-height: 1.28; letter-spacing: -0.02em; color: #ffffff;">
+        กรอกโปรไฟล์ครั้งเดียว<br>แล้วเริ่มถามได้เลย
+      </h2>
+      <p style="margin: 12px 0 0 0; font-size: 15px; line-height: 1.7; color: #dbe6c4;">
+        ใช้เวลาไม่ถึงหนึ่งนาที ได้เป้าหมายพลังงานและมาโครของตัวเอง
+      </p>
+      <a href="#" style="display: block; margin-top: 26px; border-radius: 999px; background: #ffffff; padding: 15px 30px; font-size: 16px; font-weight: 600; color: #1f1d19;">เริ่มใช้งานฟรี</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="padding: 40px 20px 36px 20px;">
+    <div style="border-top: 1px solid #e0dacc; padding-top: 26px;">
+      <div style="display: flex; align-items: center; gap: 9px;">
+        <span style="display: flex; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 9px; background: #e8efd8;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{band}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+        </span>
+        <span style="font-size: 15px; font-weight: 700;">NutriLift</span>
+      </div>
+      <p style="margin: 12px 0 0 0; font-size: 12px; line-height: 1.8; color: #6f6a5f;">
+        ระบบนี้ให้ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์ ผู้ที่มีโรคประจำตัวควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อนปรับอาหาร
+      </p>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"band":{"editor":"color","default":"#3d5518","options":["#3d5518","#6d8b3a","#2f4a3f","#8a5a2b"],"section":"Theme"},"$preview":{"width":390,"height":5120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { band: this.props.band ?? '#3d5518' };
+  }
+}
+</script>
+</body>
+</html>

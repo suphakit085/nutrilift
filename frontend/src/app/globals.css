@@ -1,35 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f7f8;
+  /* Warm neutral base - cream instead of the blue-grey Tailwind default, so
+     cards read as "paper on a warm surface" rather than floating on grey. */
+  --background: #f3f0e9;
   --surface: #ffffff;
-  --border: #e4e4e7;
-  --foreground: #18181b;
-  --muted: #71717a;
-  --accent: #0f766e;
-  --accent-soft: #ccfbf1;
+  --surface-sunken: #faf8f4;
+  --border: #e7e2d6;
+  --foreground: #1f1d19;
+  /* Paragraph text sits between foreground and muted - `muted` is too light to
+     read a full sentence in, but headings shouldn't be the only dark text. */
+  --body: #56524b;
+  /* #8b857a read at only 3.2:1 on the cream background - below AA for normal
+     text, and it carries captions and the footer disclaimer. Darkened until it
+     clears 4.5:1 on both --background and --surface. */
+  --muted: #6f6a5f;
+
+  /* Sage green: dark enough for AA text contrast on the cream background. */
+  --accent: #6d8b3a;
+  --accent-soft: #e8efd8;
+
+  /* Deep green used for the landing page's full-bleed bands. Darker than
+     --accent so white text on it clears AA. */
+  --band: #3d5518;
+  --band-soft: #dbe6c4;
+
+  /* High-contrast CTA. The reference uses near-black pill buttons rather than
+     a saturated brand colour, which keeps the accent for state/emphasis. */
+  --cta: #1f1d19;
+  --cta-foreground: #ffffff;
+
+  /* Per-macro colours, used for the bars under each stat. Distinct hues so the
+     three macros stay tellable apart at a glance without needing labels. */
+  --macro-protein: #6d8b3a;
+  --macro-protein-soft: #e8efd8;
+  --macro-carb: #c98a3c;
+  --macro-carb-soft: #f7e9d5;
+  --macro-fat: #7a94a8;
+  --macro-fat-soft: #e4ecf1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0b0d;
-    --surface: #17171a;
-    --border: #2a2a2f;
-    --foreground: #ededf0;
-    --muted: #a1a1aa;
-    --accent: #2dd4bf;
-    --accent-soft: #134e4a;
+    --background: #16150f;
+    --surface: #1f1e18;
+    --surface-sunken: #191811;
+    --border: #302e25;
+    --foreground: #ecebe4;
+    --body: #bdb7a9;
+    --muted: #9d978a;
+
+    --accent: #a3c264;
+    --accent-soft: #2c3620;
+
+    --band: #2b3d11;
+    --band-soft: #c2d3a1;
+
+    --cta: #ecebe4;
+    --cta-foreground: #1f1d19;
+
+    --macro-protein: #a3c264;
+    --macro-protein-soft: #2c3620;
+    --macro-carb: #e0a862;
+    --macro-carb-soft: #3a2c19;
+    --macro-fat: #9db6c9;
+    --macro-fat-soft: #23303a;
   }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
   --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-body: var(--body);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-band: var(--band);
+  --color-band-soft: var(--band-soft);
+  --color-cta: var(--cta);
+  --color-cta-foreground: var(--cta-foreground);
+  --color-macro-protein: var(--macro-protein);
+  --color-macro-protein-soft: var(--macro-protein-soft);
+  --color-macro-carb: var(--macro-carb);
+  --color-macro-carb-soft: var(--macro-carb-soft);
+  --color-macro-fat: var(--macro-fat);
+  --color-macro-fat-soft: var(--macro-fat-soft);
   --font-sans: var(--font-thai), system-ui, sans-serif;
 }
 

@@ -32,81 +32,88 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8 shadow-sm">
-        <h1 className="text-xl font-semibold">NutriLift</h1>
-        <p className="mt-1 text-sm text-muted">
-          แชตบอทโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง
-        </p>
-
-        <div className="mt-6 flex rounded-lg border border-border p-1 text-sm">
-          {(["login", "register"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => {
-                setMode(value);
-                setError("");
-              }}
-              className={`flex-1 rounded-md py-1.5 transition ${
-                mode === value
-                  ? "bg-accent text-white"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              {value === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
-            </button>
-          ))}
+      <div className="w-full max-w-sm">
+        <div className="mb-7 text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-2xl">
+            🥗
+          </span>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">NutriLift</h1>
+          <p className="mt-1.5 text-sm text-muted">
+            แชตบอทโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง
+          </p>
         </div>
 
-        <form onSubmit={submit} className="mt-5 space-y-4">
-          <label className="block">
-            <span className="text-sm">อีเมล</span>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
-            />
-          </label>
+        <div className="rounded-3xl border border-border bg-surface p-7">
+          <div className="flex rounded-full bg-surface-sunken p-1 text-sm">
+            {(["login", "register"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setMode(value);
+                  setError("");
+                }}
+                className={`flex-1 rounded-full py-2 transition ${
+                  mode === value
+                    ? "bg-cta font-medium text-cta-foreground"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                {value === "login" ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
+              </button>
+            ))}
+          </div>
 
-          <label className="block">
-            <span className="text-sm">รหัสผ่าน</span>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
-            />
-            {mode === "register" && (
-              <span className="mt-1 block text-xs text-muted">
-                อย่างน้อย 8 ตัวอักษร
-              </span>
+          <form onSubmit={submit} className="mt-6 space-y-4">
+            <label className="block">
+              <span className="text-sm">อีเมล</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm">รหัสผ่าน</span>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface"
+              />
+              {mode === "register" && (
+                <span className="mt-1.5 block text-xs text-muted">
+                  อย่างน้อย 8 ตัวอักษร
+                </span>
+              )}
+            </label>
+
+            {error && (
+              <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+                {error}
+              </p>
             )}
-          </label>
 
-          {error && (
-            <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-500">
-              {error}
-            </p>
-          )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-full bg-cta py-3 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.99] disabled:opacity-40"
+            >
+              {busy
+                ? "กำลังดำเนินการ…"
+                : mode === "login"
+                  ? "เข้าสู่ระบบ"
+                  : "สมัครสมาชิก"}
+            </button>
+          </form>
+        </div>
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-lg bg-accent py-2.5 font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          >
-            {busy
-              ? "กำลังดำเนินการ…"
-              : mode === "login"
-                ? "เข้าสู่ระบบ"
-                : "สมัครสมาชิก"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-xs text-muted">
+        <p className="mt-6 text-center text-xs text-muted">
           ระบบนี้ให้ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
         </p>
       </div>
