@@ -8,12 +8,36 @@ tool-calling loop lives in services/chat.py exactly as it did for OpenAI.
 
 from __future__ import annotations
 
+import logging
+import re
+import time
 from functools import lru_cache
 from typing import Literal
 
 from google import genai
+from google.genai import errors as genai_errors
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+#: gemini-embedding-001's free tier has its own per-minute cap, hit live on
+#: 2026-09-01 during an eval run - every retrieval.search() call embeds the
+#: query, so a bare 429 here silently degrades a "with RAG" turn into an
+#: unsourced answer (chat.py's broad except just logs and falls back to
+#: use_rag=False). That's the right fallback for a real user's live turn, but
+#: it corrupted 12/33 rows of an eval baseline before this retry existed -
+#: retrying first, so the fallback only fires when the quota is genuinely
+#: unavailable rather than every time a burst of calls crosses the per-minute
+#: line.
+MAX_RATE_LIMIT_RETRIES = 5
+DEFAULT_RETRY_DELAY_S = 20.0
+_RETRY_DELAY_RE = re.compile(r"retry in ([\d.]+)s")
+
+
+def _retry_delay_seconds(message: str) -> float:
+    match = _RETRY_DELAY_RE.search(message)
+    return float(match.group(1)) + 2.0 if match else DEFAULT_RETRY_DELAY_S
 
 
 @lru_cache
@@ -42,13 +66,24 @@ def embed_texts(
         return []
     from google.genai import types
 
-    response = get_client().models.embed_content(
-        model=settings.embed_model,
-        contents=texts,
-        config=types.EmbedContentConfig(
-            output_dimensionality=settings.embed_dim, task_type=task_type
-        ),
-    )
+    config = types.EmbedContentConfig(output_dimensionality=settings.embed_dim, task_type=task_type)
+    for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+        try:
+            response = get_client().models.embed_content(
+                model=settings.embed_model, contents=texts, config=config
+            )
+            break
+        except genai_errors.ClientError as exc:
+            if exc.code != 429 or attempt == MAX_RATE_LIMIT_RETRIES:
+                raise
+            delay = _retry_delay_seconds(str(exc))
+            logger.warning(
+                "embed_content 429, retrying in %.0fs (%d/%d)",
+                delay,
+                attempt + 1,
+                MAX_RATE_LIMIT_RETRIES,
+            )
+            time.sleep(delay)
     # The batch endpoint has no per-item index to sort by; order is positional
     # and matches the input list (verified against the live API - see
     # docs/architecture.md's migration notes for the check that confirmed this).
