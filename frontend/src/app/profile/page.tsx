@@ -100,13 +100,13 @@ export default function ProfilePage() {
   }
 
   const inputClass =
-    "mt-1.5 w-full rounded-xl border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface";
+    "mt-1.5 w-full rounded-sm border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface";
 
   return (
     <main className="mx-auto max-w-3xl p-6 pb-16">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">โปรไฟล์ของฉัน</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">โปรไฟล์ของฉัน</h1>
           <p className="mt-1 text-sm text-muted">
             ใช้คำนวณพลังงานและสารอาหารเฉพาะบุคคล
           </p>
@@ -114,13 +114,13 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2">
           <Link
             href="/log"
-            className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+            className="rounded-md border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
           >
             บันทึกอาหาร
           </Link>
           <Link
             href="/chat"
-            className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+            className="rounded-md border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
           >
             ไปหน้าแชต →
           </Link>
@@ -129,11 +129,11 @@ export default function ProfilePage() {
 
       <form
         onSubmit={save}
-        className="space-y-6 rounded-3xl border border-border bg-surface p-7"
+        className="space-y-6 rounded-lg border border-border bg-surface p-7"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-sm">เพศ</span>
+            <span className="field-label text-xs text-muted">เพศ</span>
             <select
               value={profile.sex}
               onChange={(e) =>
@@ -147,7 +147,7 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm">ปีเกิด (ค.ศ.)</span>
+            <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ.)</span>
             <input
               type="number"
               required
@@ -160,7 +160,7 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm">ส่วนสูง (ซม.)</span>
+            <span className="field-label text-xs text-muted">ส่วนสูง (ซม.)</span>
             <input
               type="number"
               step="0.1"
@@ -174,7 +174,7 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm">น้ำหนัก (กก.)</span>
+            <span className="field-label text-xs text-muted">น้ำหนัก (กก.)</span>
             <input
               type="number"
               step="0.1"
@@ -188,9 +188,9 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm">
+            <span className="field-label text-xs text-muted">
               เปอร์เซ็นต์ไขมัน (ถ้าทราบ){" "}
-              <span className="text-muted">— ทำให้คำนวณแม่นขึ้น</span>
+              <span className="normal-case tracking-normal text-muted/80">— ทำให้คำนวณแม่นขึ้น</span>
             </span>
             <input
               type="number"
@@ -207,7 +207,7 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm">เล่นเวทกี่วัน/สัปดาห์</span>
+            <span className="field-label text-xs text-muted">เล่นเวทกี่วัน/สัปดาห์</span>
             <input
               type="number"
               min={0}
@@ -222,7 +222,7 @@ export default function ProfilePage() {
         </div>
 
         <label className="block">
-          <span className="text-sm">ระดับกิจกรรมโดยรวม</span>
+          <span className="field-label text-xs text-muted">ระดับกิจกรรมโดยรวม</span>
           <select
             value={profile.activity_level}
             onChange={(e) =>
@@ -242,7 +242,7 @@ export default function ProfilePage() {
         </label>
 
         <label className="block">
-          <span className="text-sm">เป้าหมาย</span>
+          <span className="field-label text-xs text-muted">เป้าหมาย</span>
           <select
             value={profile.goal}
             onChange={(e) =>
@@ -259,7 +259,7 @@ export default function ProfilePage() {
         </label>
 
         <div>
-          <span className="text-sm">ข้อจำกัดด้านอาหาร</span>
+          <span className="field-label text-xs text-muted">ข้อจำกัดด้านอาหาร</span>
           <p className="mt-0.5 text-xs text-muted">เลือกได้มากกว่า 1 ข้อ</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {RESTRICTION_OPTIONS.map((item) => {
@@ -270,7 +270,7 @@ export default function ProfilePage() {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => toggleRestriction(item)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                  className={`rounded-sm border px-4 py-2 text-sm transition ${
                     selected
                       ? "border-accent bg-accent-soft font-medium text-accent"
                       : "border-border bg-surface-sunken text-muted hover:border-accent/40 hover:text-foreground"
@@ -284,7 +284,7 @@ export default function ProfilePage() {
         </div>
 
         {error && (
-          <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+          <p className="rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}
@@ -292,7 +292,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3 border-t border-border pt-6">
           <button
             type="submit"
-            className="rounded-full bg-cta px-7 py-3 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
+            className="rounded-md bg-cta px-7 py-3 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
           >
             บันทึกและคำนวณ
           </button>
@@ -312,10 +312,10 @@ function TargetsCard({ targets }: { targets: Targets }) {
   return (
     <section className="mt-6 space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="font-display text-2xl font-bold tracking-tight">
           เป้าหมายต่อวันของคุณ
         </h2>
-        <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+        <span className="field-label border border-accent px-3 py-1.5 text-[11px] text-accent">
           {targets.inputs.goal_label_th}
         </span>
       </div>
@@ -367,7 +367,7 @@ function TargetsCard({ targets }: { targets: Targets }) {
           {targets.warnings.map((warning) => (
             <li
               key={warning}
-              className="rounded-2xl border border-macro-carb/30 bg-macro-carb-soft px-4 py-3 text-sm"
+              className="rounded-sm border border-macro-carb/30 bg-macro-carb-soft px-4 py-3 text-sm"
             >
               {warning}
             </li>
@@ -375,7 +375,7 @@ function TargetsCard({ targets }: { targets: Targets }) {
         </ul>
       )}
 
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-lg border border-border bg-surface p-5">
         <details>
           <summary className="cursor-pointer text-sm font-medium">
             สูตรและแหล่งอ้างอิงที่ใช้คำนวณ
@@ -407,25 +407,25 @@ function EnergyStat({
 }) {
   return (
     <div
-      className={`rounded-2xl p-5 transition ${
+      className={`rounded-lg p-5 transition ${
         filled
           ? "bg-cta text-cta-foreground"
           : "border border-border bg-surface"
       }`}
     >
-      <div className={`text-xs ${filled ? "opacity-70" : "text-muted"}`}>
+      <div className={`field-label text-[11px] ${filled ? "opacity-60" : "text-muted"}`}>
         {label}
       </div>
       <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-3xl font-semibold tracking-tight tabular-nums">
+        <span className="stat-figure text-3xl font-semibold">
           {value.toLocaleString()}
         </span>
-        <span className={`text-sm ${filled ? "opacity-70" : "text-muted"}`}>
+        <span className={`text-sm ${filled ? "opacity-60" : "text-muted"}`}>
           kcal
         </span>
       </div>
       {hint && (
-        <div className={`mt-1 text-xs ${filled ? "opacity-70" : "text-muted"}`}>
+        <div className={`mt-1 text-xs ${filled ? "opacity-60" : "text-muted"}`}>
           {hint}
         </div>
       )}
@@ -450,22 +450,23 @@ function MacroStat({
 }) {
   const percent = Math.round(share * 100);
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
-      <div className="text-xs text-muted">{label}</div>
+    <div className="rounded-lg border border-border bg-surface p-5">
+      <div className="field-label text-[11px] text-muted">{label}</div>
       <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-3xl font-semibold tracking-tight tabular-nums">
+        <span className="stat-figure text-3xl font-semibold">
           {grams}
         </span>
         <span className="text-sm text-muted">g</span>
       </div>
-      <div className={`mt-4 h-1.5 w-full overflow-hidden rounded-full ${track}`}>
+      <div className={`mt-4 h-1.5 w-full overflow-hidden rounded-sm ${track}`}>
         <div
-          className={`h-full rounded-full ${bar}`}
+          className={`h-full ${bar}`}
           style={{ width: `${Math.min(percent, 100)}%` }}
         />
       </div>
-      <div className="mt-2 text-xs text-muted tabular-nums">
-        {kcal.toLocaleString()} kcal · {percent}% ของพลังงาน
+      <div className="mt-2 text-xs text-muted">
+        <span className="stat-figure">{kcal.toLocaleString()} kcal</span> ·{" "}
+        <span className="stat-figure">{percent}%</span> ของพลังงาน
       </div>
     </div>
   );

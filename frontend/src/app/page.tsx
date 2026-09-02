@@ -6,9 +6,9 @@ import { getToken } from "@/lib/api";
 
 /** Icon tints reuse the macro palette so the landing page can't drift from the app. */
 const TINTS = {
-  green: "bg-accent-soft text-accent",
-  amber: "bg-macro-carb-soft text-macro-carb",
-  blue: "bg-macro-fat-soft text-macro-fat",
+  green: "bg-macro-protein text-white",
+  amber: "bg-macro-carb text-white",
+  blue: "bg-macro-fat text-white",
 } as const;
 
 type Tint = keyof typeof TINTS;
@@ -111,9 +111,9 @@ const SAMPLE = {
   tdee: "2,594",
   target: "2,180",
   macros: [
-    { label: "โปรตีน", grams: "140 g", share: 26, bar: "bg-macro-protein", track: "bg-macro-protein-soft" },
-    { label: "คาร์โบไฮเดรต", grams: "260 g", share: 48, bar: "bg-macro-carb", track: "bg-macro-carb-soft" },
-    { label: "ไขมัน", grams: "63 g", share: 26, bar: "bg-macro-fat", track: "bg-macro-fat-soft" },
+    { label: "โปรตีน", grams: "140g", share: 26, bar: "bg-macro-protein", track: "bg-macro-protein-soft" },
+    { label: "คาร์โบไฮเดรต", grams: "260g", share: 48, bar: "bg-macro-carb", track: "bg-macro-carb-soft" },
+    { label: "ไขมัน", grams: "63g", share: 26, bar: "bg-macro-fat", track: "bg-macro-fat-soft" },
   ],
 };
 
@@ -138,12 +138,12 @@ export default function LandingPage() {
   return (
     <main className="overflow-x-hidden bg-background text-foreground">
       {/* ---------- nav ---------- */}
-      <div className={`${SHELL} flex items-center justify-between py-5`}>
+      <div className={`${SHELL} flex items-center justify-between border-b border-border py-5`}>
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-band">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-cta text-cta-foreground">
             <LeafIcon className="h-[18px] w-[18px]" />
           </span>
-          <span className="text-lg font-bold tracking-tight">NutriLift</span>
+          <span className="font-display text-lg font-bold tracking-tight">NutriLift</span>
         </Link>
 
         <nav className="hidden items-center gap-8 text-[15px] text-body lg:flex">
@@ -157,7 +157,7 @@ export default function LandingPage() {
           {signedIn ? (
             <Link
               href="/chat"
-              className="rounded-full bg-cta px-6 py-3 text-[15px] font-semibold text-cta-foreground transition hover:opacity-85"
+              className="rounded-md bg-cta px-6 py-3 text-[15px] font-semibold text-cta-foreground transition hover:opacity-85"
             >
               ไปหน้าแชต
             </Link>
@@ -168,7 +168,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/login"
-                className="rounded-full bg-cta px-6 py-3 text-[15px] font-semibold text-cta-foreground transition hover:opacity-85"
+                className="rounded-md bg-cta px-6 py-3 text-[15px] font-semibold text-cta-foreground transition hover:opacity-85"
               >
                 เริ่มใช้งาน
               </Link>
@@ -178,20 +178,20 @@ export default function LandingPage() {
       </div>
 
       {/* ---------- hero ---------- */}
-      <section className={`${SHELL} grid gap-14 pt-10 lg:grid-cols-2 lg:items-center lg:gap-12 lg:pt-14`}>
+      <section className={`${SHELL} grid gap-14 pt-14 lg:grid-cols-2 lg:items-center lg:gap-12 lg:pt-20`}>
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-accent-soft px-4 py-2 text-sm font-semibold text-band">
-            <CheckIcon className="h-[15px] w-[15px]" />
+          <span className="field-label inline-flex items-center gap-2 border border-accent px-3 py-1.5 text-xs text-accent">
+            <CheckIcon className="h-[13px] w-[13px]" />
             อ้างอิงงานวิจัยจริง ไม่เดาตัวเลข
           </span>
 
           {/* "โภชนาการเวทเทรนนิ่ง" is one long unbreakable-looking compound - sized
               so it clears the column at every breakpoint instead of splitting
               mid-word. */}
-          <h1 className="mt-5 text-[34px] font-extrabold leading-[1.16] tracking-tight text-pretty sm:text-[42px] lg:text-[44px] xl:text-[50px]">
+          <h1 className="mt-5 font-display text-[34px] font-bold uppercase leading-[1.1] tracking-tight text-pretty sm:text-[42px] lg:text-[44px] xl:text-[50px]">
             โภชนาการเวทเทรนนิ่ง
             <br />
-            <span className="text-band">ที่ตรวจสอบที่มาได้</span>
+            <span className="text-accent">ที่ตรวจสอบที่มาได้</span>
           </h1>
 
           <p className="mt-5 max-w-[520px] text-[15px] leading-[1.75] text-body sm:text-[17px]">
@@ -202,13 +202,13 @@ export default function LandingPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href="/login"
-              className="rounded-full bg-cta px-9 py-4 text-center font-semibold text-cta-foreground transition hover:opacity-85 active:scale-[0.99]"
+              className="rounded-md bg-cta px-9 py-4 text-center font-semibold text-cta-foreground transition hover:opacity-85 active:scale-[0.99]"
             >
               เริ่มใช้งานฟรี
             </Link>
             <a
               href="#trust"
-              className="inline-flex items-center justify-center gap-2 rounded-full border-[1.5px] border-border px-8 py-4 font-semibold transition hover:border-accent hover:text-accent"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-border px-8 py-4 font-semibold transition hover:border-accent hover:text-accent"
             >
               ดูตัวอย่างคำตอบ
               <ArrowRightIcon className="h-4 w-4" />
@@ -220,28 +220,24 @@ export default function LandingPage() {
 
         {/* The product itself is the hero image - a real answer with its sources. */}
         <div className="relative">
-          {/* Sibling order does the layering: no z-index, so the cards below
-              paint over this without it dropping behind the page background. */}
-          <div className="absolute left-1/2 top-6 h-[280px] w-[280px] -translate-x-1/2 rounded-full bg-accent-soft sm:h-[380px] sm:w-[380px] lg:left-16 lg:translate-x-0" />
-
-          <div className="relative rounded-3xl border border-border bg-surface p-5 shadow-[0_18px_44px_rgba(31,29,25,0.09)] sm:p-6">
+          <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
             <div className="flex justify-end">
-              <div className="rounded-3xl rounded-br-lg bg-cta px-4 py-3 text-[15px] text-cta-foreground">
+              <div className="rounded-md bg-cta px-4 py-3 text-[15px] text-cta-foreground">
                 ช่วง cut ควรกินโปรตีนวันละเท่าไหร่
               </div>
             </div>
 
-            <div className="mt-3.5 rounded-3xl rounded-bl-lg border border-border bg-surface-sunken p-4">
+            <div className="mt-3.5 rounded-md border border-border bg-surface-sunken p-4">
               <p className="text-[15px] leading-[1.8]">
-                ช่วงลดไขมันแนะนำโปรตีน <strong className="font-bold">1.8–2.2 กรัม</strong> ต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน{" "}
-                <span className="font-semibold text-band">[S1]</span> เพื่อรักษามวลกล้ามเนื้อระหว่างขาดดุลพลังงาน{" "}
-                <span className="font-semibold text-band">[S2]</span>
+                ช่วงลดไขมันแนะนำโปรตีน <strong className="stat-figure font-semibold">1.8–2.2</strong> กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน{" "}
+                <span className="font-semibold text-accent">[S1]</span> เพื่อรักษามวลกล้ามเนื้อระหว่างขาดดุลพลังงาน{" "}
+                <span className="font-semibold text-accent">[S2]</span>
               </p>
               <div className="mt-3.5 flex flex-wrap gap-1.5 border-t border-border pt-3">
-                <span className="rounded-lg bg-accent-soft px-2.5 py-1 text-xs text-accent">
+                <span className="rounded-sm bg-accent-soft px-2.5 py-1 text-xs text-accent">
                   [S1] ปริมาณโปรตีนสำหรับผู้ฝึกเวท
                 </span>
-                <span className="rounded-lg bg-accent-soft px-2.5 py-1 text-xs text-accent">
+                <span className="rounded-sm bg-accent-soft px-2.5 py-1 text-xs text-accent">
                   [S2] สมดุลพลังงาน cut/bulk
                 </span>
               </div>
@@ -251,21 +247,21 @@ export default function LandingPage() {
           {/* Tucked under the answer card in normal flow rather than absolutely
               placed: the answer's height changes with the viewport, and an
               absolute card was covering its citation chips at some widths. */}
-          <div className="relative -mt-8 ml-auto w-[240px] rounded-3xl border border-border bg-surface p-5 shadow-[0_18px_44px_rgba(31,29,25,0.11)] sm:w-[280px]">
-            <div className="text-[13px] text-muted">เป้าหมายวันนี้</div>
+          <div className="relative -mt-px ml-auto w-[240px] rounded-lg border border-border bg-cta p-5 sm:w-[280px]">
+            <div className="field-label text-[11px] text-cta-foreground/60">เป้าหมายวันนี้</div>
             <div className="mt-2 flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold tracking-tight tabular-nums">{SAMPLE.target}</span>
-              <span className="text-sm text-muted">kcal</span>
+              <span className="stat-figure text-3xl font-semibold tracking-tight text-cta-foreground">{SAMPLE.target}</span>
+              <span className="text-sm text-cta-foreground/60">kcal</span>
             </div>
             <div className="mt-4 flex flex-col gap-3">
               {SAMPLE.macros.map((macro) => (
                 <div key={macro.label}>
-                  <div className="flex justify-between text-xs text-body">
+                  <div className="flex justify-between text-xs text-cta-foreground/70">
                     <span>{macro.label}</span>
-                    <span className="font-semibold">{macro.grams}</span>
+                    <span className="stat-figure font-semibold text-cta-foreground">{macro.grams}</span>
                   </div>
-                  <div className={`mt-1.5 h-1.5 overflow-hidden rounded-full ${macro.track}`}>
-                    <div className={`h-full rounded-full ${macro.bar}`} style={{ width: `${macro.share}%` }} />
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-sm bg-cta-foreground/15">
+                    <div className={`h-full ${macro.bar}`} style={{ width: `${macro.share}%` }} />
                   </div>
                 </div>
               ))}
@@ -274,41 +270,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ---------- curve into the band ---------- */}
-      <svg
-        viewBox="0 0 1440 110"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-        className="mt-10 block h-[64px] w-full text-band sm:h-[110px]"
-      >
-        <path d="M0,110 L0,44 C300,-6 860,74 1440,16 L1440,110 Z" fill="currentColor" />
-      </svg>
-
       {/* ---------- features + stats ---------- */}
-      <section id="features" className="bg-band pb-16 sm:pb-20">
+      <section id="features" className="mt-20 border-y border-border bg-band sm:mt-24">
         <div className={SHELL}>
-          <div className="-mt-14 grid gap-5 sm:-mt-16 md:grid-cols-3">
+          <div className="grid gap-px overflow-hidden border border-border/40 bg-border/40 md:grid-cols-3">
             {FEATURES.map(({ icon: Icon, tint, title, body }) => (
-              <div
-                key={title}
-                className="rounded-3xl bg-surface p-7 shadow-[0_14px_36px_rgba(31,29,25,0.1)]"
-              >
-                <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ${TINTS[tint]}`}>
-                  <Icon className="h-[22px] w-[22px]" />
+              <div key={title} className="bg-band p-7">
+                <span className={`flex h-11 w-11 items-center justify-center rounded-md ${TINTS[tint]}`}>
+                  <Icon className="h-[20px] w-[20px]" />
                 </span>
-                <h3 className="mt-4 text-lg font-bold">{title}</h3>
-                <p className="mt-2 text-[15px] leading-[1.7] text-body">{body}</p>
+                <h3 className="mt-4 font-display text-lg font-bold text-white">{title}</h3>
+                <p className="mt-2 text-[15px] leading-[1.7] text-band-soft/80">{body}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-14 grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 py-14 md:grid-cols-4 md:py-16">
             {STATS.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-4xl font-extrabold tracking-tight text-white tabular-nums sm:text-[46px]">
+                <div className="stat-figure text-4xl font-semibold text-white sm:text-[46px]">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm text-band-soft">{stat.label}</div>
+                <div className="field-label mt-1.5 text-[11px] text-band-soft/70">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -318,18 +301,18 @@ export default function LandingPage() {
       {/* ---------- topics ---------- */}
       <section id="topics" className={`${SHELL} pt-20 sm:pt-24`}>
         <div className="text-center">
-          <span className="text-[15px] font-semibold text-band">หมวดความรู้</span>
-          <h2 className="mt-2.5 text-3xl font-extrabold tracking-tight sm:text-[40px]">ถามได้ในเรื่องพวกนี้</h2>
+          <span className="field-label text-xs text-accent">หมวดความรู้</span>
+          <h2 className="mt-2.5 font-display text-3xl font-bold uppercase tracking-tight sm:text-[40px]">ถามได้ในเรื่องพวกนี้</h2>
           <p className="mx-auto mt-3 max-w-[560px] text-[15px] leading-[1.7] text-body sm:text-base">
             ทุกหมวดเขียนจากงานวิจัยและเอกสารอ้างอิงที่ระบุที่มาได้ ไม่ใช่ความรู้ทั่วไปที่โมเดลจำมา
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
           {TOPICS.map(({ icon: Icon, tint, title, body }) => (
-            <div key={title} className="rounded-3xl border border-border bg-surface p-6">
-              <span className={`flex h-11 w-11 items-center justify-center rounded-2xl ${TINTS[tint]}`}>
-                <Icon className="h-[21px] w-[21px]" />
+            <div key={title} className="bg-surface p-6">
+              <span className={`flex h-10 w-10 items-center justify-center rounded-md ${TINTS[tint]}`}>
+                <Icon className="h-[19px] w-[19px]" />
               </span>
               <h3 className="mt-4 text-[17px] font-bold">{title}</h3>
               <p className="mt-2 text-sm leading-[1.7] text-body">{body}</p>
@@ -341,8 +324,8 @@ export default function LandingPage() {
       {/* ---------- why the numbers are trustworthy ---------- */}
       <section id="trust" className={`${SHELL} grid gap-12 pt-20 sm:pt-24 lg:grid-cols-2 lg:items-center lg:gap-16`}>
         <div>
-          <span className="text-[15px] font-semibold text-band">ทำไมตัวเลขถึงเชื่อได้</span>
-          <h2 className="mt-2.5 text-3xl font-extrabold leading-[1.2] tracking-tight sm:text-[40px]">
+          <span className="field-label text-xs text-accent">ทำไมตัวเลขถึงเชื่อได้</span>
+          <h2 className="mt-2.5 font-display text-3xl font-bold uppercase leading-[1.15] tracking-tight sm:text-[40px]">
             แยกการคำนวณ
             <br />
             ออกจาก AI
@@ -355,17 +338,17 @@ export default function LandingPage() {
           <ul className="mt-7 flex flex-col gap-3.5">
             {TRUST_POINTS.map((point) => (
               <li key={point} className="flex items-start gap-3">
-                <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-band" />
+                <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
                 <span className="text-[15px] leading-[1.6] sm:text-base">{point}</span>
               </li>
             ))}
           </ul>
 
           <div className="mt-8 border-t border-border pt-6">
-            <div className="text-[13px] font-semibold tracking-wide text-muted">ฐานความรู้สรุปจาก</div>
+            <div className="field-label text-[11px] text-muted">ฐานความรู้สรุปจาก</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {SOURCES.map((source) => (
-                <span key={source} className="rounded-full border border-border px-4 py-2 text-[13px] text-body">
+                <span key={source} className="rounded-sm border border-border px-4 py-2 text-[13px] text-body">
                   {source}
                 </span>
               ))}
@@ -373,24 +356,24 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-border bg-surface p-6 shadow-[0_16px_40px_rgba(31,29,25,0.07)] sm:p-8">
+        <div className="rounded-lg border border-border bg-surface p-6 sm:p-8">
           <div className="flex items-baseline justify-between">
             <span className="text-lg font-bold sm:text-[19px]">เป้าหมายต่อวันของคุณ</span>
-            <span className="rounded-full bg-accent-soft px-3.5 py-1.5 text-xs font-semibold text-accent">ลดไขมัน</span>
+            <span className="field-label border border-accent px-3 py-1.5 text-[11px] text-accent">ลดไขมัน</span>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-border p-4">
-              <div className="text-xs text-muted">BMR</div>
-              <div className="mt-1.5 text-xl font-bold tracking-tight tabular-nums sm:text-[22px]">{SAMPLE.bmr}</div>
+          <div className="mt-5 grid grid-cols-3 gap-px overflow-hidden border border-border bg-border">
+            <div className="bg-surface p-4">
+              <div className="field-label text-[11px] text-muted">BMR</div>
+              <div className="stat-figure mt-1.5 text-xl font-semibold sm:text-[22px]">{SAMPLE.bmr}</div>
             </div>
-            <div className="rounded-2xl border border-border p-4">
-              <div className="text-xs text-muted">TDEE</div>
-              <div className="mt-1.5 text-xl font-bold tracking-tight tabular-nums sm:text-[22px]">{SAMPLE.tdee}</div>
+            <div className="bg-surface p-4">
+              <div className="field-label text-[11px] text-muted">TDEE</div>
+              <div className="stat-figure mt-1.5 text-xl font-semibold sm:text-[22px]">{SAMPLE.tdee}</div>
             </div>
-            <div className="rounded-2xl bg-cta p-4">
-              <div className="text-xs text-cta-foreground/70">เป้าหมาย</div>
-              <div className="mt-1.5 text-xl font-bold tracking-tight text-cta-foreground tabular-nums sm:text-[22px]">
+            <div className="bg-cta p-4">
+              <div className="field-label text-[11px] text-cta-foreground/60">เป้าหมาย</div>
+              <div className="stat-figure mt-1.5 text-xl font-semibold text-cta-foreground sm:text-[22px]">
                 {SAMPLE.target}
               </div>
             </div>
@@ -401,12 +384,12 @@ export default function LandingPage() {
               <div key={macro.label}>
                 <div className="flex justify-between text-[13px]">
                   <span className="text-body">{macro.label}</span>
-                  <span className="font-semibold tabular-nums">
+                  <span className="stat-figure font-semibold">
                     {macro.grams} · {macro.share}%
                   </span>
                 </div>
-                <div className={`mt-1.5 h-[7px] overflow-hidden rounded-full ${macro.track}`}>
-                  <div className={`h-full rounded-full ${macro.bar}`} style={{ width: `${macro.share}%` }} />
+                <div className={`mt-1.5 h-[7px] overflow-hidden rounded-sm ${macro.track}`}>
+                  <div className={`h-full ${macro.bar}`} style={{ width: `${macro.share}%` }} />
                 </div>
               </div>
             ))}
@@ -420,13 +403,13 @@ export default function LandingPage() {
 
       {/* ---------- safety ---------- */}
       <section id="safety" className={`${SHELL} pt-20 sm:pt-24`}>
-        <div className="rounded-[32px] border border-border bg-surface p-7 sm:p-12">
+        <div className="rounded-lg border border-border bg-surface p-7 sm:p-12">
           <div className="grid gap-10 lg:grid-cols-[420px_1fr] lg:gap-14">
             <div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-soft text-band">
-                <ShieldCheckIcon className="h-6 w-6" />
+              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-cta text-cta-foreground">
+                <ShieldCheckIcon className="h-5 w-5" />
               </span>
-              <h2 className="mt-5 text-[28px] font-extrabold leading-[1.25] tracking-tight sm:text-[34px]">
+              <h2 className="mt-5 font-display text-[28px] font-bold uppercase leading-[1.2] tracking-tight sm:text-[34px]">
                 รู้ว่าเรื่องไหน
                 <br className="hidden sm:block" /> ไม่ควรตอบ
               </h2>
@@ -436,9 +419,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-px overflow-hidden border border-border bg-border">
               {SAFETY.map((item) => (
-                <div key={item.title} className="rounded-3xl bg-surface-sunken p-5 sm:px-6">
+                <div key={item.title} className="bg-surface-sunken p-5 sm:px-6">
                   <h3 className="text-base font-bold">{item.title}</h3>
                   <p className="mt-2 text-[15px] leading-[1.7] text-body">{item.body}</p>
                 </div>
@@ -450,18 +433,18 @@ export default function LandingPage() {
 
       {/* ---------- closing CTA ---------- */}
       <section className={`${SHELL} pt-20 sm:pt-24`}>
-        <div className="rounded-[36px] bg-band px-6 py-14 text-center sm:px-14 sm:py-16">
-          <h2 className="text-[30px] font-extrabold leading-[1.25] tracking-tight text-white sm:text-[42px]">
+        <div className="rounded-lg bg-band px-6 py-14 text-center sm:px-14 sm:py-16">
+          <h2 className="font-display text-[30px] font-bold uppercase leading-[1.2] tracking-tight text-white sm:text-[42px]">
             กรอกโปรไฟล์ครั้งเดียว
             <br />
             แล้วเริ่มถามได้เลย
           </h2>
-          <p className="mx-auto mt-4 max-w-[480px] text-[15px] leading-[1.7] text-band-soft sm:text-[17px]">
+          <p className="mx-auto mt-4 max-w-[480px] text-[15px] leading-[1.7] text-band-soft/80 sm:text-[17px]">
             ใช้เวลาไม่ถึงหนึ่งนาที ได้เป้าหมายพลังงานและมาโครของตัวเอง พร้อมถามต่อได้ทันที
           </p>
           <Link
             href="/login"
-            className="mt-8 inline-block rounded-full bg-surface px-11 py-4 font-semibold text-foreground transition hover:opacity-90 active:scale-[0.99]"
+            className="mt-8 inline-block rounded-md bg-accent-loud px-11 py-4 font-semibold text-band transition hover:opacity-90 active:scale-[0.99]"
           >
             เริ่มใช้งานฟรี
           </Link>
@@ -473,10 +456,10 @@ export default function LandingPage() {
         <div className="flex flex-col justify-between gap-8 border-t border-border pt-8 sm:flex-row">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-accent-soft text-band">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
                 <LeafIcon className="h-4 w-4" />
               </span>
-              <span className="font-bold">NutriLift</span>
+              <span className="font-display font-bold">NutriLift</span>
             </div>
             <p className="mt-3 max-w-[420px] text-[13px] leading-[1.8] text-muted">
               ระบบนี้ให้ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์

@@ -84,14 +84,14 @@ export default function LogPage() {
     <main className="mx-auto max-w-3xl p-6 pb-16">
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">บันทึกอาหารประจำวัน</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">บันทึกอาหารประจำวัน</h1>
           <p className="mt-1 text-sm text-muted">
             เทียบยอดสะสมกับเป้าหมายที่คำนวณจากโปรไฟล์ของคุณ
           </p>
         </div>
         <Link
           href="/chat"
-          className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+          className="rounded-md border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
           ไปหน้าแชต →
         </Link>
@@ -101,7 +101,7 @@ export default function LogPage() {
         <button
           onClick={() => setDate((d) => shiftDate(d, -1))}
           aria-label="วันก่อนหน้า"
-          className="rounded-full border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
+          className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
           ◀
         </button>
@@ -109,19 +109,19 @@ export default function LogPage() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="rounded-xl border border-border bg-surface-sunken px-3.5 py-2 text-sm outline-none focus:border-accent focus:bg-surface"
+          className="rounded-sm border border-border bg-surface-sunken px-3.5 py-2 text-sm outline-none focus:border-accent focus:bg-surface"
         />
         <button
           onClick={() => setDate((d) => shiftDate(d, 1))}
           aria-label="วันถัดไป"
-          className="rounded-full border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
+          className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
           ▶
         </button>
         {date !== todayStr() && (
           <button
             onClick={() => setDate(todayStr())}
-            className="rounded-full bg-accent-soft px-4 py-2 text-sm font-medium text-accent transition hover:opacity-85"
+            className="rounded-md bg-accent-soft px-4 py-2 text-sm font-medium text-accent transition hover:opacity-85"
           >
             วันนี้
           </button>
@@ -129,7 +129,7 @@ export default function LogPage() {
       </div>
 
       {error && (
-        <p className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+        <p className="mb-6 rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
       )}
@@ -157,7 +157,7 @@ export default function LogPage() {
 function SummaryHero({ summary }: { summary: DailySummary }) {
   if (!summary.target) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-5">
+      <div className="rounded-lg border border-border bg-surface p-5">
         <p className="text-sm text-muted">
           ยังไม่ได้ตั้งเป้าหมาย —{" "}
           <Link href="/profile" className="text-accent hover:underline">
@@ -173,19 +173,22 @@ function SummaryHero({ summary }: { summary: DailySummary }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl bg-cta p-5 text-cta-foreground">
-        <div className="text-xs opacity-70">
+      <div className="rounded-lg bg-cta p-5 text-cta-foreground">
+        <div className="field-label text-[11px] opacity-60">
           {remainingKcal >= 0 ? "พลังงานคงเหลือวันนี้" : "พลังงานเกินเป้าวันนี้"}
         </div>
         <div className="mt-3 flex items-baseline gap-1.5">
-          <span className="text-3xl font-semibold tracking-tight tabular-nums">
+          <span className="stat-figure text-3xl font-semibold">
             {Math.abs(Math.round(remainingKcal)).toLocaleString()}
           </span>
-          <span className="text-sm opacity-70">kcal</span>
+          <span className="text-sm opacity-60">kcal</span>
         </div>
-        <div className="mt-1 text-xs opacity-70">
-          กินไป {Math.round(consumed.kcal).toLocaleString()} จากเป้า{" "}
-          {Math.round(target.kcal).toLocaleString()} kcal
+        <div className="mt-1 text-xs opacity-60">
+          กินไป{" "}
+          <span className="stat-figure">{Math.round(consumed.kcal).toLocaleString()}</span> จากเป้า{" "}
+          <span className="stat-figure">
+            {Math.round(target.kcal).toLocaleString()} kcal
+          </span>
         </div>
       </div>
 
@@ -233,27 +236,30 @@ function DiaryMacroStat({
   const over = consumedG - targetG;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
-      <div className="text-xs text-muted">{label}</div>
+    <div className="rounded-lg border border-border bg-surface p-5">
+      <div className="field-label text-[11px] text-muted">{label}</div>
       <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-3xl font-semibold tracking-tight tabular-nums">
+        <span className="stat-figure text-3xl font-semibold">
           {Math.round(consumedG)}
         </span>
-        <span className="text-sm text-muted">/ {Math.round(targetG)}g</span>
+        <span className="stat-figure text-sm text-muted">/ {Math.round(targetG)}g</span>
       </div>
-      <div className={`mt-4 h-1.5 w-full overflow-hidden rounded-full ${track}`}>
+      <div className={`mt-4 h-1.5 w-full overflow-hidden rounded-sm ${track}`}>
         <div
-          className={`h-full rounded-full ${bar}`}
+          className={`h-full ${bar}`}
           style={{ width: `${Math.min(percent, 100)}%` }}
         />
       </div>
-      <div className="mt-2 text-xs text-muted tabular-nums">
+      <div className="mt-2 text-xs text-muted">
         {over > 0 ? (
-          <span className="text-amber-600">
-            +{Math.round(over)}g เกินเป้า
+          <span>
+            <span className="stat-figure text-amber-600">+{Math.round(over)}g</span>{" "}
+            <span className="text-amber-600">เกินเป้า</span>
           </span>
         ) : (
-          `${percent}% ของเป้าหมาย`
+          <>
+            <span className="stat-figure">{percent}%</span> ของเป้าหมาย
+          </>
         )}
       </div>
     </div>
@@ -278,11 +284,11 @@ function MealSection({
   onChanged: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5">
+    <section className="rounded-lg border border-border bg-surface p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-2">
-          <h2 className="font-medium">{MEAL_LABELS[meal]}</h2>
-          <span className="text-xs text-muted tabular-nums">
+          <h2 className="font-display font-semibold">{MEAL_LABELS[meal]}</h2>
+          <span className="stat-figure text-xs text-muted">
             {Math.round(subtotalKcal).toLocaleString()} kcal
           </span>
         </div>
@@ -290,7 +296,7 @@ function MealSection({
           type="button"
           aria-pressed={isOpen}
           onClick={onToggleAdd}
-          className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+          className={`rounded-sm border px-3.5 py-1.5 text-xs font-medium transition ${
             isOpen
               ? "border-accent bg-accent-soft text-accent"
               : "border-border bg-surface-sunken text-muted hover:border-accent/40 hover:text-foreground"
@@ -356,12 +362,12 @@ function EntryRow({
   }
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-xl bg-surface-sunken px-3.5 py-2.5 text-sm">
+    <li className="flex items-center justify-between gap-3 rounded-md bg-surface-sunken px-3.5 py-2.5 text-sm">
       <div className="min-w-0">
         <div className="truncate">{entry.food_name_th}</div>
-        <div className="text-xs text-muted tabular-nums">
-          {entry.quantity_servings} × {entry.serving_desc} ·{" "}
-          {Math.round(entry.total_kcal)} kcal
+        <div className="text-xs text-muted">
+          <span className="stat-figure">{entry.quantity_servings}</span> × {entry.serving_desc} ·{" "}
+          <span className="stat-figure">{Math.round(entry.total_kcal)} kcal</span>
         </div>
       </div>
       {editing ? (
@@ -372,12 +378,12 @@ function EntryRow({
             min="0.1"
             value={qty}
             onChange={(e) => setQty(Number(e.target.value))}
-            className="w-16 rounded-lg border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-accent"
+            className="stat-figure w-16 rounded-sm border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-accent"
           />
           <button
             disabled={busy}
             onClick={saveQty}
-            className="rounded-lg bg-cta px-2.5 py-1 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
+            className="rounded-sm bg-cta px-2.5 py-1 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
           >
             บันทึก
           </button>
@@ -450,7 +456,7 @@ function AddFoodSearch({
   }
 
   return (
-    <div className="mt-3 rounded-xl border border-border bg-surface-sunken p-3.5">
+    <div className="mt-3 rounded-md border border-border bg-surface-sunken p-3.5">
       <input
         autoFocus
         value={query}
@@ -459,7 +465,7 @@ function AddFoodSearch({
           setSelected(null);
         }}
         placeholder="ค้นหาเมนู เช่น ข้าวผัดกุ้ง"
-        className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+        className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
       />
 
       {!selected && results.length > 0 && (
@@ -469,11 +475,11 @@ function AddFoodSearch({
               <button
                 type="button"
                 onClick={() => setSelected(food)}
-                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm transition hover:bg-surface"
+                className="flex w-full items-center justify-between rounded-sm px-2.5 py-2 text-left text-sm transition hover:bg-surface"
               >
                 <span className="truncate">{food.name_th}</span>
-                <span className="shrink-0 text-xs text-muted tabular-nums">
-                  {food.serving_desc} · {Math.round(food.kcal)} kcal
+                <span className="shrink-0 text-xs text-muted">
+                  {food.serving_desc} · <span className="stat-figure">{Math.round(food.kcal)} kcal</span>
                 </span>
               </button>
             </li>
@@ -490,13 +496,13 @@ function AddFoodSearch({
             min="0.1"
             value={qty}
             onChange={(e) => setQty(Number(e.target.value))}
-            className="w-16 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-accent"
+            className="stat-figure w-16 rounded-sm border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-accent"
           />
           <span className="shrink-0 text-xs text-muted">× {selected.serving_desc}</span>
           <button
             disabled={busy}
             onClick={add}
-            className="shrink-0 rounded-full bg-cta px-4 py-1.5 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
+            className="shrink-0 rounded-sm bg-cta px-4 py-1.5 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
           >
             เพิ่ม
           </button>

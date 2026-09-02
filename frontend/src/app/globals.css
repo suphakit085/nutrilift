@@ -1,70 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm neutral base - cream instead of the blue-grey Tailwind default, so
-     cards read as "paper on a warm surface" rather than floating on grey. */
-  --background: #f3f0e9;
+  /* Cool, hard neutrals - not the warm cream of a wellness-app palette.
+     A performance tool reads as equipment, not a spa. */
+  --background: #f0f2ee;
   --surface: #ffffff;
-  --surface-sunken: #faf8f4;
-  --border: #e7e2d6;
-  --foreground: #1f1d19;
-  /* Paragraph text sits between foreground and muted - `muted` is too light to
-     read a full sentence in, but headings shouldn't be the only dark text. */
-  --body: #56524b;
-  /* #8b857a read at only 3.2:1 on the cream background - below AA for normal
-     text, and it carries captions and the footer disclaimer. Darkened until it
-     clears 4.5:1 on both --background and --surface. */
-  --muted: #6f6a5f;
+  --surface-sunken: #e7ebe3;
+  /* Borders carry structure instead of shadows - visibly darker than a
+     typical hairline so cards read as built, not floating. */
+  --border: #c7cec0;
+  --foreground: #0c0f0a;
+  --body: #33362f;
+  /* #6f6a5f-class mutes read as "soft SaaS caption grey". This one is cooler
+     and darker, still clears 4.5:1 on --background and --surface (AA). */
+  --muted: #5a5e53;
 
-  /* Sage green: dark enough for AA text contrast on the cream background. */
-  --accent: #6d8b3a;
-  --accent-soft: #e8efd8;
+  /* Performance green: deeper and more saturated than a sage/pastel accent.
+     Used for text/icons/borders at this value; --accent-loud is the vivid
+     version reserved for dark surfaces and small high-energy accents. */
+  --accent: #2f6614;
+  --accent-soft: #dbe6cf;
+  --accent-loud: #8fe83c;
 
-  /* Deep green used for the landing page's full-bleed bands. Darker than
-     --accent so white text on it clears AA. */
-  --band: #3d5518;
-  --band-soft: #dbe6c4;
+  /* Near-black, not deep-green, for the full-bleed band - a stat readout,
+     not a foliage backdrop. */
+  --band: #0d1109;
+  --band-soft: #cdea9c;
 
-  /* High-contrast CTA. The reference uses near-black pill buttons rather than
-     a saturated brand colour, which keeps the accent for state/emphasis. */
-  --cta: #1f1d19;
+  --cta: #0c0f0a;
   --cta-foreground: #ffffff;
 
-  /* Per-macro colours, used for the bars under each stat. Distinct hues so the
-     three macros stay tellable apart at a glance without needing labels. */
-  --macro-protein: #6d8b3a;
-  --macro-protein-soft: #e8efd8;
-  --macro-carb: #c98a3c;
-  --macro-carb-soft: #f7e9d5;
-  --macro-fat: #7a94a8;
-  --macro-fat-soft: #e4ecf1;
+  /* Macro colours pushed to fuller saturation - a data legend, not a pastel
+     sticker set. */
+  --macro-protein: #2f6614;
+  --macro-protein-soft: #dbe6cf;
+  --macro-carb: #b35a00;
+  --macro-carb-soft: #f3ddc2;
+  --macro-fat: #235476;
+  --macro-fat-soft: #d6e3ea;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #16150f;
-    --surface: #1f1e18;
-    --surface-sunken: #191811;
-    --border: #302e25;
-    --foreground: #ecebe4;
-    --body: #bdb7a9;
-    --muted: #9d978a;
+    --background: #0b0d09;
+    --surface: #14170f;
+    --surface-sunken: #0f120b;
+    --border: #2b3023;
+    --foreground: #f1f3ec;
+    --body: #c7cabd;
+    --muted: #8d9184;
 
-    --accent: #a3c264;
-    --accent-soft: #2c3620;
+    --accent: #8fe83c;
+    --accent-soft: #22330f;
+    --accent-loud: #8fe83c;
 
-    --band: #2b3d11;
-    --band-soft: #c2d3a1;
+    --band: #000000;
+    --band-soft: #8fe83c;
 
-    --cta: #ecebe4;
-    --cta-foreground: #1f1d19;
+    --cta: #f1f3ec;
+    --cta-foreground: #0c0f0a;
 
-    --macro-protein: #a3c264;
-    --macro-protein-soft: #2c3620;
-    --macro-carb: #e0a862;
-    --macro-carb-soft: #3a2c19;
-    --macro-fat: #9db6c9;
-    --macro-fat-soft: #23303a;
+    --macro-protein: #8fe83c;
+    --macro-protein-soft: #22330f;
+    --macro-carb: #e8963c;
+    --macro-carb-soft: #3a2712;
+    --macro-fat: #6fb0dc;
+    --macro-fat-soft: #16283a;
   }
 }
 
@@ -78,6 +79,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-loud: var(--accent-loud);
   --color-band: var(--band);
   --color-band-soft: var(--band-soft);
   --color-cta: var(--cta);
@@ -89,9 +91,28 @@
   --color-macro-fat: var(--macro-fat);
   --color-macro-fat-soft: var(--macro-fat-soft);
   --font-sans: var(--font-thai), system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-thai), system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Numeric data readout - every kcal/gram/BMR/TDEE figure uses this class so
+   the "verifiable number" identity is consistent app-wide. */
+.stat-figure {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Small tracked-out uppercase label, the sports-data-readout convention for
+   a field name sitting above or beside a number. */
+.field-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }

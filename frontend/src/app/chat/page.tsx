@@ -173,13 +173,16 @@ export default function ChatPage() {
     <div className="flex h-screen">
       {/* sidebar */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface p-4 md:flex">
-        <div className="px-1 pb-4 pt-1">
-          <span className="text-lg font-semibold tracking-tight">NutriLift</span>
+        <div className="flex items-center gap-2.5 px-1 pb-4 pt-1">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
+            <LeafIcon className="h-4 w-4" />
+          </span>
+          <span className="font-display text-lg font-bold tracking-tight">NutriLift</span>
         </div>
 
         <button
           onClick={startNew}
-          className="rounded-full bg-cta py-2.5 text-sm font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
+          className="rounded-md bg-cta py-2.5 text-sm font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
         >
           + แชตใหม่
         </button>
@@ -188,7 +191,7 @@ export default function ChatPage() {
           {conversations.map((conversation) => (
             <div
               key={conversation.id}
-              className={`group flex items-center gap-1 rounded-xl pr-1 transition ${
+              className={`group flex items-center gap-1 rounded-sm pr-1 transition ${
                 activeId === conversation.id
                   ? "bg-accent-soft text-accent"
                   : "text-muted hover:bg-surface-sunken hover:text-foreground"
@@ -204,7 +207,7 @@ export default function ChatPage() {
                 onClick={() => removeConversation(conversation.id)}
                 aria-label={`ลบห้องแชต ${conversation.title}`}
                 title="ลบห้องแชตนี้"
-                className="shrink-0 rounded-lg px-2 py-1 text-xs opacity-0 transition group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 focus:opacity-100"
+                className="shrink-0 rounded-sm px-2 py-1 text-xs opacity-0 transition group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 focus:opacity-100"
               >
                 ลบ
               </button>
@@ -215,19 +218,19 @@ export default function ChatPage() {
         <div className="mt-4 space-y-0.5 border-t border-border pt-4 text-sm">
           <Link
             href="/log"
-            className="block rounded-xl px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
+            className="block rounded-sm px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
           >
             บันทึกอาหาร
           </Link>
           <Link
             href="/profile"
-            className="block rounded-xl px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
+            className="block rounded-sm px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
           >
             โปรไฟล์และเป้าหมาย
           </Link>
           <button
             onClick={logout}
-            className="block w-full rounded-xl px-3 py-2 text-left text-muted transition hover:bg-surface-sunken hover:text-foreground"
+            className="block w-full rounded-sm px-3 py-2 text-left text-muted transition hover:bg-surface-sunken hover:text-foreground"
           >
             ออกจากระบบ
           </button>
@@ -238,8 +241,8 @@ export default function ChatPage() {
       <main className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border px-6 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-soft text-sm">
-              🥗
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
+              <LeafIcon className="h-3.5 w-3.5" />
             </span>
             <span className="text-sm font-medium">โค้ชนัท</span>
           </div>
@@ -251,7 +254,7 @@ export default function ChatPage() {
         <div className="flex-1 space-y-5 overflow-y-auto p-6">
           {bubbles.length === 0 && (
             <div className="mx-auto max-w-lg pt-16">
-              <h2 className="text-3xl font-semibold leading-snug tracking-tight">
+              <h2 className="font-display text-3xl font-bold leading-snug tracking-tight">
                 วันนี้อยากรู้เรื่องอะไร
                 <br />
                 เกี่ยวกับโภชนาการ
@@ -264,7 +267,7 @@ export default function ChatPage() {
                   <button
                     key={suggestion}
                     onClick={() => send(suggestion)}
-                    className="group flex items-center justify-between rounded-2xl border border-border bg-surface px-5 py-3.5 text-left text-sm transition hover:border-accent hover:bg-accent-soft/40"
+                    className="group flex items-center justify-between rounded-md border border-border bg-surface px-5 py-3.5 text-left text-sm transition hover:border-accent hover:bg-accent-soft/40"
                   >
                     <span>{suggestion}</span>
                     <span className="text-muted transition group-hover:translate-x-0.5 group-hover:text-accent">
@@ -281,7 +284,7 @@ export default function ChatPage() {
           ))}
 
           {error && (
-            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+            <p className="rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
               {error}
             </p>
           )}
@@ -295,7 +298,7 @@ export default function ChatPage() {
           }}
           className="p-4"
         >
-          <div className="flex items-center gap-2 rounded-full border border-border bg-surface p-1.5 pl-5 transition focus-within:border-accent">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-surface p-1.5 pl-5 transition focus-within:border-accent">
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
@@ -305,7 +308,7 @@ export default function ChatPage() {
             <button
               type="submit"
               disabled={streaming || !input.trim()}
-              className="shrink-0 rounded-full bg-cta px-6 py-2.5 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98] disabled:opacity-30"
+              className="shrink-0 rounded-sm bg-cta px-6 py-2.5 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98] disabled:opacity-30"
             >
               ส่ง
             </button>
@@ -319,14 +322,16 @@ export default function ChatPage() {
       {/* sources */}
       <aside className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-surface p-5 lg:block">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-semibold">แหล่งอ้างอิงที่ใช้ตอบ</h2>
+          <h2 className="field-label text-xs text-muted">แหล่งอ้างอิงที่ใช้ตอบ</h2>
           {sources.length > 0 && (
-            <span className="text-xs text-muted">{sources.length} แหล่ง</span>
+            <span className="text-xs text-muted">
+              <span className="stat-figure">{sources.length}</span> แหล่ง
+            </span>
           )}
         </div>
 
         {sources.length === 0 ? (
-          <p className="mt-3 rounded-2xl bg-surface-sunken px-4 py-5 text-xs leading-relaxed text-muted">
+          <p className="mt-3 rounded-md bg-surface-sunken px-4 py-5 text-xs leading-relaxed text-muted">
             ยังไม่มีแหล่งอ้างอิง — จะแสดงเมื่อบอทตอบคำถามที่ใช้ฐานความรู้
           </p>
         ) : (
@@ -334,10 +339,10 @@ export default function ChatPage() {
             {sources.map((source) => (
               <li
                 key={source.label}
-                className="rounded-2xl border border-border bg-surface-sunken p-4 transition hover:border-accent/40"
+                className="rounded-md border border-border bg-surface-sunken p-4 transition hover:border-accent/40"
               >
                 <div className="flex items-start gap-2.5">
-                  <span className="mt-0.5 shrink-0 rounded-lg bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
+                  <span className="stat-figure mt-0.5 shrink-0 rounded-sm bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
                     {source.label}
                   </span>
                   <span className="text-sm font-medium leading-snug">
@@ -354,13 +359,13 @@ export default function ChatPage() {
                 {/* Relevance as a bar, not just a number - easier to compare
                     across sources at a glance. */}
                 <div className="mt-3 flex items-center gap-2">
-                  <div className="h-1 flex-1 overflow-hidden rounded-full bg-accent-soft">
+                  <div className="h-1 flex-1 overflow-hidden rounded-sm bg-accent-soft">
                     <div
-                      className="h-full rounded-full bg-accent"
+                      className="h-full bg-accent"
                       style={{ width: `${Math.min(source.score * 100, 100)}%` }}
                     />
                   </div>
-                  <span className="shrink-0 text-[11px] text-muted tabular-nums">
+                  <span className="stat-figure shrink-0 text-[11px] text-muted">
                     {(source.score * 100).toFixed(0)}%
                   </span>
                 </div>
@@ -385,7 +390,7 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
   if (bubble.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-3xl rounded-br-lg bg-cta px-5 py-3 text-cta-foreground">
+        <div className="max-w-[80%] rounded-lg rounded-br-sm bg-cta px-5 py-3 text-cta-foreground">
           {bubble.content}
         </div>
       </div>
@@ -394,11 +399,11 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[85%] rounded-3xl rounded-bl-lg border border-border bg-surface px-5 py-4">
+      <div className="max-w-[85%] rounded-lg rounded-bl-sm border border-border bg-surface px-5 py-4">
         {bubble.tools?.map((tool, index) => (
           <div
             key={index}
-            className="mb-2.5 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-xs text-accent"
+            className="mb-2.5 inline-flex items-center gap-1.5 rounded-sm bg-accent-soft px-3 py-1 text-xs text-accent"
           >
             <span className="animate-pulse">⚙</span>
             {TOOL_LABELS[tool] ?? tool}
@@ -415,9 +420,9 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
             {bubble.citations.map((citation) => (
               <span
                 key={citation.label}
-                className="rounded-lg bg-surface-sunken px-2.5 py-1 text-[11px] text-muted"
+                className="rounded-sm bg-surface-sunken px-2.5 py-1 text-[11px] text-muted"
               >
-                <span className="font-medium text-accent">[{citation.label}]</span>{" "}
+                <span className="stat-figure font-medium text-accent">[{citation.label}]</span>{" "}
                 {citation.title}
               </span>
             ))}
@@ -425,5 +430,23 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
         )}
       </div>
     </div>
+  );
+}
+
+function LeafIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.9}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </svg>
   );
 }
