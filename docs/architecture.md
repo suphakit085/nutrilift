@@ -219,15 +219,17 @@ embedding จับ "หัวข้อ" ได้ แต่ทำให้ค�
 ```
 users ──1:1── profiles
   │
-  └──1:N── conversations ──1:N── messages
-                                    ├─ citations  (jsonb)
-                                    ├─ tool_calls (jsonb)
-                                    ├─ usage      (jsonb)
-                                    └─ safety_flags (jsonb)
+  ├──1:N── conversations ──1:N── messages
+  │                                 ├─ citations  (jsonb)
+  │                                 ├─ tool_calls (jsonb)
+  │                                 ├─ usage      (jsonb)
+  │                                 └─ safety_flags (jsonb)
+  │
+  └──1:N── food_log_entries (snapshot ของ foods ณ เวลาที่บันทึก — ดูหัวข้อ 5.1)
 
 documents ──1:N── chunks (embedding vector(1536), HNSW cosine index)
 
-foods  (ตารางอิสระ ใช้โดย lookup_food)
+foods  (ตารางอิสระ ใช้โดย lookup_food และ /foods/search)
 ```
 
 | ตาราง | หน้าที่ | คีย์สำคัญ |
@@ -239,10 +241,30 @@ foods  (ตารางอิสระ ใช้โดย lookup_food)
 | `documents` | 1 การ์ดความรู้ = 1 แถว | `slug` unique, `content_hash` ใช้ข้าม re-embed |
 | `chunks` | ชิ้นข้อความ + เวกเตอร์ | `uq(document_id, chunk_index)`, HNSW `vector_cosine_ops` |
 | `foods` | ตารางโภชนาการอาหารไทย | index บน `name_th` |
+| `food_log_entries` | บันทึกอาหารประจำวันของผู้ใช้ (diary) | composite index `(user_id, logged_date)`, `food_id` nullable |
 
 Migration ทั้งหมดจัดการด้วย Alembic (`backend/alembic/`) โดย migration แรกสร้าง
 `CREATE EXTENSION vector` ก่อนสร้างตาราง และสร้าง HNSW index ด้วย raw SQL
 (Alembic autogenerate ไม่รองรับ opclass ของ pgvector จึงถูก exclude ไว้ใน `env.py`)
+
+### 3.1 บันทึกอาหารประจำวัน (Food Log) — ทำไม snapshot ไม่ join สด (2 ก.ย. 2569)
+
+**เดิมอยู่ในหมวด OUT OF SCOPE ของแผนโปรเจก** (เพื่อคุมขอบเขตให้ทำเสร็จได้ใน 1 เทอมคนเดียว) ผู้ใช้ขอเพิ่ม
+เป็นฟีเจอร์เต็มรูปแบบภายหลัง จึงย้ายมาเป็น MUST — ค้นเมนูจาก `foods` เพิ่มลงมื้อเช้า/กลางวัน/เย็น/ของว่าง
+เห็นยอดสะสมเทียบเป้าหมายที่คำนวณจากโปรไฟล์ แก้ไข/ลบ ดูย้อนหลังตามวันที่
+
+จุดออกแบบที่ต้องอธิบายกรรมการได้: **`food_log_entries` เก็บค่ามาโครเป็น snapshot ของ `foods` ณ เวลาที่
+บันทึก ไม่ใช่ join สดกับตาราง `foods`** เหตุผลมาจากพฤติกรรมจริงของ `backend/ingest/__main__.py::
+ingest_foods()` ที่ `DELETE FROM foods` แล้ว insert ทุกแถวใหม่ด้วย UUID ใหม่ **ทุกครั้ง** ที่รัน
+`python -m ingest` (เกิดขึ้นจริงแล้วหลายรอบ ดูประวัติ foods.csv 339→final-v7 ในหัวข้อ 5.1) ถ้า join สด
+การ re-ingest แต่ละครั้งจะทำให้ยอดของวันที่บันทึกไปแล้วขยับย้อนหลัง (ถ้าตัวเลขอาหารเปลี่ยน) หรือ FK
+แตกทันที (ถ้าไม่ตั้ง `ondelete`) หรือประวัติผู้ใช้หายเงียบทั้งหมด (ถ้าใช้ `ondelete=CASCADE`)
+
+การแก้: `food_log_entries` เก็บ `food_name_th`, `serving_desc`, `serving_g`, `serving_kcal`,
+`serving_protein_g/carb_g/fat_g` เป็นค่าคงที่ ณ ตอนบันทึก คำนวณยอดของแต่ละรายการจากคอลัมน์เหล่านี้ ×
+`quantity_servings` เท่านั้น ส่วน `food_id` เป็น `nullable` + `ON DELETE SET NULL` เก็บไว้แค่เป็น
+provenance link (ตรวจย้อนกลับได้ว่าตอนบันทึกอ้างอิงแถวไหน) ไม่ใช่แหล่งความจริงของตัวเลข — ยืนยันแล้วว่า
+รัน `python -m ingest --only foods` ซ้ำหลังมีการบันทึก entry ไม่กระทบตัวเลขที่บันทึกไปแล้วเลย
 
 ---
 
@@ -373,7 +395,8 @@ backend/.venv/Scripts/python.exe eval/run_eval.py --mode both --judge --run-id b
 
 ### ส่วนติดต่อผู้ใช้ (2 ก.ย. 2569)
 
-**5 หน้า** — `/` (landing), `/login`, `/profile`, `/chat` และ `/_not-found` ทั้งหมด prerender เป็น static
+**6 หน้า** — `/` (landing), `/login`, `/profile`, `/chat`, `/log` (บันทึกอาหารประจำวัน) และ
+`/_not-found` ทั้งหมด prerender เป็น static
 ได้ ยกเว้นส่วนที่ต้องอ่าน token ฝั่ง client
 
 **ระบบออกแบบเป็น CSS custom properties ใน `globals.css`** map เข้า Tailwind ผ่าน `@theme inline`

@@ -7,7 +7,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, chat, profile
+from app.api import auth, chat, food_log, foods, profile
 from app.core.config import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +28,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(profile.router)
+app.include_router(foods.router)
+app.include_router(food_log.router)
 app.include_router(chat.router)
 
 

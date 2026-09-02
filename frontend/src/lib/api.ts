@@ -124,6 +124,58 @@ export type Conversation = {
 
 export type ConversationDetail = Conversation & { messages: ChatMessage[] };
 
+export type FoodSearchResult = {
+  id: string;
+  name_th: string;
+  name_en: string | null;
+  category: string | null;
+  serving_desc: string;
+  serving_g: number;
+  kcal: number;
+  protein_g: number;
+  carb_g: number;
+  fat_g: number;
+  fiber_g: number | null;
+};
+
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+
+export type FoodLogEntry = {
+  id: string;
+  food_id: string | null;
+  food_name_th: string;
+  serving_desc: string;
+  serving_g: number;
+  serving_kcal: number;
+  serving_protein_g: number;
+  serving_carb_g: number;
+  serving_fat_g: number;
+  quantity_servings: number;
+  meal_type: MealType;
+  logged_date: string;
+  total_kcal: number;
+  total_protein_g: number;
+  total_carb_g: number;
+  total_fat_g: number;
+  created_at: string;
+};
+
+export type MacroTotals = {
+  kcal: number;
+  protein_g: number;
+  carb_g: number;
+  fat_g: number;
+};
+
+export type DailySummary = {
+  date: string;
+  entries_count: number;
+  consumed: MacroTotals;
+  target: MacroTotals | null;
+  remaining: MacroTotals | null;
+  by_meal: Record<MealType, MacroTotals>;
+};
+
 // --- endpoints -----------------------------------------------------------
 
 export const api = {
@@ -161,6 +213,40 @@ export const api = {
 
   deleteConversation: (id: string) =>
     request<void>(`/conversations/${id}`, { method: "DELETE" }),
+
+  searchFoods: (q: string, limit = 20) =>
+    request<FoodSearchResult[]>(
+      `/foods/search?q=${encodeURIComponent(q)}&limit=${limit}`,
+    ),
+
+  listFoodLog: (date: string) =>
+    request<FoodLogEntry[]>(`/food-log?date=${date}`),
+
+  getFoodLogSummary: (date: string) =>
+    request<DailySummary>(`/food-log/summary?date=${date}`),
+
+  addFoodLogEntry: (entry: {
+    food_id: string;
+    quantity_servings: number;
+    meal_type: MealType;
+    logged_date: string;
+  }) =>
+    request<FoodLogEntry>("/food-log", {
+      method: "POST",
+      body: JSON.stringify(entry),
+    }),
+
+  updateFoodLogEntry: (
+    id: string,
+    changes: Partial<Pick<FoodLogEntry, "quantity_servings" | "meal_type">>,
+  ) =>
+    request<FoodLogEntry>(`/food-log/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(changes),
+    }),
+
+  deleteFoodLogEntry: (id: string) =>
+    request<void>(`/food-log/${id}`, { method: "DELETE" }),
 };
 
 // --- streaming chat ------------------------------------------------------

@@ -214,6 +214,12 @@ export default function ChatPage() {
 
         <div className="mt-4 space-y-0.5 border-t border-border pt-4 text-sm">
           <Link
+            href="/log"
+            className="block rounded-xl px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
+          >
+            บันทึกอาหาร
+          </Link>
+          <Link
             href="/profile"
             className="block rounded-xl px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
           >

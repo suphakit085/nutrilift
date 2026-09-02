@@ -111,12 +111,20 @@ export default function ProfilePage() {
             ใช้คำนวณพลังงานและสารอาหารเฉพาะบุคคล
           </p>
         </div>
-        <Link
-          href="/chat"
-          className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
-        >
-          ไปหน้าแชต →
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/log"
+            className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+          >
+            บันทึกอาหาร
+          </Link>
+          <Link
+            href="/chat"
+            className="rounded-full border border-border px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
+          >
+            ไปหน้าแชต →
+          </Link>
+        </div>
       </header>
 
       <form

@@ -7,12 +7,13 @@ users, profiles, conversations, messages, documents, chunks, foods.
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
     CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -52,6 +53,9 @@ class User(Base):
         back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
     conversations: Mapped[list[Conversation]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    food_log_entries: Mapped[list[FoodLogEntry]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -189,3 +193,69 @@ class Food(Base):
     fat_g: Mapped[float] = mapped_column(Float, nullable=False)
     fiber_g: Mapped[float | None] = mapped_column(Float, nullable=True)
     source: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+
+class FoodLogEntry(Base):
+    """One row per food item a user adds to a given day's diary.
+
+    Macros are snapshotted from `foods` at creation time rather than joined
+    live. This is required, not just defensive: `python -m ingest --only
+    foods` runs `DELETE FROM foods` and re-inserts every row with a fresh
+    UUID (see ingest/__main__.py::ingest_foods) - a live join would make every
+    already-logged day's totals shift, or 404, the next time the food table
+    is regenerated. `food_id` is kept only as an optional provenance link.
+    """
+
+    __tablename__ = "food_log_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
+    )
+    food_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("foods.id", ondelete="SET NULL"), index=True, nullable=True
+    )
+
+    # Snapshot of the food row at the moment it was logged (see docstring above).
+    food_name_th: Mapped[str] = mapped_column(String(200), nullable=False)
+    serving_desc: Mapped[str] = mapped_column(String(100), nullable=False)
+    serving_g: Mapped[float] = mapped_column(Float, nullable=False)
+    serving_kcal: Mapped[float] = mapped_column(Float, nullable=False)
+    serving_protein_g: Mapped[float] = mapped_column(Float, nullable=False)
+    serving_carb_g: Mapped[float] = mapped_column(Float, nullable=False)
+    serving_fat_g: Mapped[float] = mapped_column(Float, nullable=False)
+
+    quantity_servings: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
+    meal_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    logged_date: Mapped[date] = mapped_column(Date, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    user: Mapped[User] = relationship(back_populates="food_log_entries")
+
+    __table_args__ = (
+        CheckConstraint("quantity_servings > 0", name="ck_food_log_entries_quantity_positive"),
+        CheckConstraint(
+            "meal_type IN ('breakfast','lunch','dinner','snack')",
+            name="ck_food_log_entries_meal_type",
+        ),
+        Index("ix_food_log_entries_user_date", "user_id", "logged_date"),
+    )
+
+    @property
+    def total_kcal(self) -> float:
+        return round(self.serving_kcal * self.quantity_servings, 1)
+
+    @property
+    def total_protein_g(self) -> float:
+        return round(self.serving_protein_g * self.quantity_servings, 1)
+
+    @property
+    def total_carb_g(self) -> float:
+        return round(self.serving_carb_g * self.quantity_servings, 1)
+
+    @property
+    def total_fat_g(self) -> float:
+        return round(self.serving_fat_g * self.quantity_servings, 1)
