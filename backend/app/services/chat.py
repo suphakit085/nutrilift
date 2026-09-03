@@ -411,6 +411,11 @@ def stream_chat(
         # guard_instructions / safety_flags as the text rules.
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
+    # Risk disclosed earlier in this conversation. Merged *after* the
+    # out-of-scope refusal above on purpose: that decision judges the question
+    # being asked now, and history must not rescue or condemn it.
+    guard = guardrails.combine(guard, guardrails.check_history(history or []))
+
     effective_goal = (targets or {}).get("effective_goal") or (profile.goal if profile else None)
     system_prompt = prompts.build_system_prompt(
         profile_summary=_profile_summary_th(profile),

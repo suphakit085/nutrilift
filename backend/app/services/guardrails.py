@@ -203,6 +203,60 @@ def check(message: str) -> GuardResult:
     return GuardResult(flags=flags, matched=matched)
 
 
+#: Flags that describe the *person*, not the sentence. Once someone has said
+#: they have kidney disease or are pregnant, that stays true for the rest of the
+#: conversation, and the next question ("กินโปรตีนวันละ 200 กรัมได้ไหม") carries
+#: the same risk without repeating a single keyword. OUT_OF_SCOPE is absent on
+#: purpose: it judges the question in front of us, and one off-topic question
+#: must not mark the rest of the session. The profile-derived flags are absent
+#: too - check_profile recomputes them from the profile every turn already.
+PERSISTENT_FLAGS: frozenset[Flag] = frozenset({
+    Flag.MEDICAL, Flag.PREGNANCY, Flag.MINOR, Flag.PED, Flag.DISORDERED_EATING,
+})
+
+#: How many earlier user messages to re-read. Bounded so a long session does not
+#: grow the work per turn, and so a risk mentioned once at the very start does
+#: not follow someone through an unbounded conversation.
+HISTORY_LOOKBACK_TURNS = 12
+
+
+def check_history(
+    history: list[dict] | None, lookback: int = HISTORY_LOOKBACK_TURNS
+) -> GuardResult:
+    """Persistent risk disclosed in earlier turns of the same conversation.
+
+    ``check()`` sees one message, so a risk stated in turn 1 and acted on in
+    turn 2 was invisible to the deterministic layer - the gap
+    eval/reports/adversarial_scope_v3.md recorded as still open.
+
+    Only ``role == "user"`` messages are read. Scanning the assistant's turns
+    would make every refusal self-perpetuating: the model's own "ผมไม่สามารถ
+    แนะนำสเตียรอยด์ได้" contains the keyword, so PED would latch on for the rest
+    of the session and every later answer about protein would carry a drug
+    warning. Never raises.
+    """
+    flags: list[Flag] = []
+    matched: dict[str, list[str]] = {}
+    if not history:
+        return GuardResult(flags=flags, matched=matched)
+
+    user_turns = [t for t in history if (t or {}).get("role") == "user"]
+    for turn in user_turns[-lookback:]:
+        content = (turn or {}).get("content") or ""
+        result = check(content)
+        for flag in result.flags:
+            if flag not in PERSISTENT_FLAGS:
+                continue
+            if flag not in flags:
+                flags.append(flag)
+            bucket = matched.setdefault(str(flag), [])
+            for hit in result.matched.get(str(flag), []):
+                tagged = f"history:{hit}"
+                if tagged not in bucket:
+                    bucket.append(tagged)
+    return GuardResult(flags=flags, matched=matched)
+
+
 def check_profile(profile: ProfileInput | None, targets: dict | None = None) -> GuardResult:
     """Classify risk from the structured profile: age, BMI, and the computed target.
 

@@ -8,7 +8,16 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.services.guardrails import Flag, check, check_profile, combine, instructions_for
+from app.services.guardrails import (
+    HISTORY_LOOKBACK_TURNS,
+    PERSISTENT_FLAGS,
+    Flag,
+    check,
+    check_history,
+    check_profile,
+    combine,
+    instructions_for,
+)
 from app.services.nutrition import ProfileInput
 
 THIS_YEAR = datetime.now(UTC).year
@@ -309,3 +318,92 @@ def test_widened_patterns_do_not_catch_ordinary_questions(message):
     # Guards against the obvious failure mode of a broader keyword list: "tren"
     # inside เทรนนิ่ง, "cycle" meaning รอบเดือน, "deca" inside decaf.
     assert not check(message).triggered
+
+
+# --- risk disclosed in an earlier turn (2026-09-04) -------------------------
+#
+# check() sees one message. Someone who says "เป็นโรคไตอยู่" in turn 1 and asks
+# "กินโปรตีนวันละ 200 กรัมได้ไหม" in turn 2 repeats no keyword, so the whole
+# deterministic layer used to go quiet exactly when it mattered. Recorded as
+# still open in eval/reports/adversarial_scope_v3.md; closed by check_history.
+
+
+def turns(*pairs: tuple[str, str]) -> list[dict]:
+    return [{"role": role, "content": content} for role, content in pairs]
+
+
+def test_no_history_is_clean():
+    assert not check_history(None).triggered
+    assert not check_history([]).triggered
+
+
+@pytest.mark.parametrize(
+    ("disclosure", "flag"),
+    [
+        ("เป็นโรคไตอยู่ครับ", Flag.MEDICAL),
+        ("ผมใช้เทสโทสเตอโรนอยู่", Flag.PED),
+        ("ตอนนี้ท้องอยู่ 3 เดือน", Flag.PREGNANCY),
+        ("หนูอายุ 15 ค่ะ", Flag.MINOR),
+        ("ช่วงนี้อดอาหารอยู่", Flag.DISORDERED_EATING),
+    ],
+)
+def test_persistent_risk_carries_from_an_earlier_user_turn(disclosure, flag):
+    history = turns(("user", disclosure), ("assistant", "รับทราบครับ"))
+    assert flag in check_history(history).flags
+
+
+def test_carried_hits_are_tagged_so_reports_can_tell_them_apart():
+    history = turns(("user", "เป็นเบาหวานอยู่"))
+    result = check_history(history)
+    assert all(h.startswith("history:") for h in result.matched[str(Flag.MEDICAL)])
+
+
+def test_out_of_scope_does_not_stick_to_the_conversation():
+    # It judges the question in front of us. One "เขียนโค้ดให้หน่อย" must not
+    # mark every later nutrition question as off-domain.
+    history = turns(("user", "ช่วยเขียนโค้ด Python ให้หน่อย"), ("assistant", "ขอโทษครับ"))
+    assert Flag.OUT_OF_SCOPE not in check_history(history).flags
+    assert not check_history(history).triggered
+
+
+def test_assistant_turns_are_never_scanned():
+    # The refusal-echo trap: the model's own answer names the thing it refused,
+    # so reading its turns would latch PED on for the rest of the session and
+    # put a drug warning on every later protein question.
+    history = turns(
+        ("user", "ครีเอทีนเป็นสเตียรอยด์หรือเปล่า"),
+        ("assistant", "ครีเอทีนไม่ใช่สเตียรอยด์ และไม่ใช่ฮอร์โมนเทสโทสเตอโรนครับ"),
+    )
+    # the *user* asked about steroids, so PED is legitimately carried...
+    assert Flag.PED in check_history(history).flags
+    # ...but an assistant-only mention must raise nothing at all.
+    assistant_only = turns(("user", "กินโปรตีนวันละกี่กรัม"), ("assistant", history[1]["content"]))
+    assert not check_history(assistant_only).triggered
+
+
+def test_lookback_is_bounded():
+    old_disclosure = turns(("user", "เป็นโรคไตอยู่"))
+    filler = turns(*[("user", "กินโปรตีนวันละกี่กรัม")] * (HISTORY_LOOKBACK_TURNS + 2))
+    assert Flag.MEDICAL not in check_history(old_disclosure + filler).flags
+    assert Flag.MEDICAL in check_history(old_disclosure + filler[:2]).flags
+
+
+def test_persistent_set_is_exactly_the_person_level_flags():
+    assert PERSISTENT_FLAGS == {
+        Flag.MEDICAL, Flag.PREGNANCY, Flag.MINOR, Flag.PED, Flag.DISORDERED_EATING
+    }
+    assert Flag.OUT_OF_SCOPE not in PERSISTENT_FLAGS
+    assert Flag.UNDERWEIGHT not in PERSISTENT_FLAGS  # recomputed from the profile
+
+
+def test_combined_with_this_turn_the_flag_appears_once():
+    history = turns(("user", "เป็นโรคไตอยู่"))
+    merged = combine(check("เป็นเบาหวานด้วยครับ"), check_history(history))
+    assert merged.flags.count(Flag.MEDICAL) == 1
+    hits = merged.matched[str(Flag.MEDICAL)]
+    assert any(not h.startswith("history:") for h in hits)
+    assert any(h.startswith("history:") for h in hits)
+
+
+def test_malformed_history_entries_do_not_raise():
+    assert not check_history([{}, {"role": "user"}, {"content": None}]).triggered
