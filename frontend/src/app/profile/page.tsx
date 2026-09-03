@@ -149,12 +149,24 @@ export default function ProfilePage() {
           <label className="block">
             <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ.) · 18 ปีขึ้นไป</span>
             {/* The server is the real gate (calc_nutrition_targets raises -> 422);
-                these bounds just stop the obvious case before a round-trip. */}
+                these bounds just stop the obvious case before a round-trip.
+                onInvalid/onInput replace the browser's built-in message, which
+                Chrome renders in English ("Value must be less than or equal to
+                2008.") regardless of the page language - the one bit of English
+                a Thai user would hit in the whole form. */}
             <input
               type="number"
               required
               min={new Date().getFullYear() - 100}
               max={new Date().getFullYear() - 18}
+              onInvalid={(e) =>
+                e.currentTarget.setCustomValidity(
+                  `บริการนี้สำหรับผู้ที่อายุ 18 ปีขึ้นไป กรุณากรอกปีเกิดไม่เกิน ${
+                    new Date().getFullYear() - 18
+                  }`,
+                )
+              }
+              onInput={(e) => e.currentTarget.setCustomValidity("")}
               value={profile.birth_year}
               onChange={(e) =>
                 setProfile({ ...profile, birth_year: Number(e.target.value) })

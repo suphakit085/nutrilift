@@ -500,7 +500,7 @@ def stream_chat(
 
     except Exception as exc:
         logger.exception("chat generation failed")
-        yield {"type": "error", "message": f"เกิดข้อผิดพลาดในการสร้างคำตอบ: {exc}"}
+        yield {"type": "error", "message": user_facing_error(exc)}
         return
 
     answer_text = "".join(text_parts)
@@ -521,6 +521,37 @@ def stream_chat(
         "prompt_version": prompts.PROMPT_VERSION,
         "use_rag": use_rag,
     }
+
+
+#: Provider failures the user can do something about, mapped to what they should
+#: do about it. Anything else falls through to a generic line.
+#:
+#: The raw exception used to be interpolated straight into the chat bubble, and a
+#: 429 put Google's entire error JSON on screen - quota metric names, the model
+#: id, rpc type urls, all in English inside a Thai UI (see the 4 ก.ย. 2569 UI
+#: walkthrough). None of it is actionable for the person reading it, and the
+#: model id and quota shape are ours, not theirs. The detail still goes to the
+#: log via logger.exception above.
+_ERROR_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
+    (("resource_exhausted", "429", "quota"),
+     "ตอนนี้ระบบใช้โควตาการตอบของวันนี้เต็มแล้ว ลองใหม่อีกครั้งในภายหลังนะครับ "
+     "(คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)"),
+    (("deadline_exceeded", "timeout", "timed out"),
+     "ระบบใช้เวลาตอบนานเกินไป ลองส่งคำถามอีกครั้งนะครับ"),
+    (("unauthenticated", "api key", "permission_denied", "401", "403"),
+     "ระบบเชื่อมต่อกับผู้ให้บริการโมเดลไม่ได้ กรุณาแจ้งผู้ดูแลระบบครับ"),
+    (("unavailable", "503", "500", "internal"),
+     "ผู้ให้บริการโมเดลขัดข้องชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่นะครับ"),
+)
+
+
+def user_facing_error(exc: Exception) -> str:
+    """A Thai sentence for the chat bubble. Never echoes the provider payload."""
+    haystack = f"{type(exc).__name__} {exc}".lower()
+    for needles, message in _ERROR_HINTS:
+        if any(n in haystack for n in needles):
+            return message
+    return "เกิดข้อผิดพลาดในการสร้างคำตอบ ลองส่งคำถามอีกครั้งนะครับ หากยังไม่ได้กรุณาแจ้งผู้ดูแลระบบ"
 
 
 def collect_answer(db: Session, **kwargs) -> dict:
