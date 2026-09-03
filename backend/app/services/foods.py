@@ -13,9 +13,24 @@ from app.db.models import Food
 
 MAX_RESULTS = 5
 
+#: Rows whose macros are still an estimate rather than a value read out of a
+#: composition table. `source` says so, but a bare "TOVERIFY-INMU" means nothing
+#: to the model, which would report the number as a database fact like any
+#: other. The meal planner already drops these rows; lookup_food kept handing
+#: them over unlabelled, so the two paths treated the same data differently.
+#: 10 of 339 rows (see knowledge/README.md).
+_ESTIMATE_SOURCE_PREFIX = "TOVERIFY"
+
+_ESTIMATE_WARNING = (
+    "รายการที่ estimated เป็น true ยังเป็นค่าประมาณ ไม่ได้อ่านจากตารางคุณค่าทางโภชนาการ "
+    "ถ้าจะรายงานตัวเลขของรายการนั้น ต้องบอกผู้ใช้ให้ชัดว่าเป็นค่าประมาณที่ยังไม่ได้ยืนยัน "
+    "และไม่ควรใช้ในการนับแคลอรี่อย่างจริงจัง"
+)
+
 
 def _row_to_dict(food: Food) -> dict:
     return {
+        "estimated": str(food.source or "").startswith(_ESTIMATE_SOURCE_PREFIX),
         "name_th": food.name_th,
         "name_en": food.name_en,
         "category": food.category,
@@ -82,12 +97,11 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
             ),
         }
 
-    return {
-        "query": q,
-        "found": True,
-        "results": [_row_to_dict(f) for f in rows],
-        "note": "ค่าต่อ 1 หน่วยเสิร์ฟตามที่ระบุใน serving_desc",
-    }
+    results = [_row_to_dict(f) for f in rows]
+    note = "ค่าต่อ 1 หน่วยเสิร์ฟตามที่ระบุใน serving_desc"
+    if any(r["estimated"] for r in results):
+        note += " · " + _ESTIMATE_WARNING
+    return {"query": q, "found": True, "results": results, "note": note}
 
 
 def all_foods(db: Session) -> list[dict]:
