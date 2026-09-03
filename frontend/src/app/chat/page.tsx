@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { AnswerText } from "@/components/AnswerText";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -410,8 +412,8 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
           </div>
         ))}
 
-        <div className="whitespace-pre-wrap leading-relaxed">
-          {bubble.content}
+        <div>
+          <AnswerText content={bubble.content} />
           {bubble.pending && <span className="animate-pulse">▌</span>}
         </div>
 
