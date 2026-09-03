@@ -571,8 +571,20 @@ def main() -> int:
     # A row that errored is not done. Treating it as done was how the
     # 2026-09-04 baseline-v7 run kept its 65 rate-limited failures across a
     # resume: they sat in the CSV, --resume skipped them, and the summary was
-    # computed from a set that could never fill in.
-    rows: list[dict] = [r for r in previous if not (r.get("error") or "").strip()]
+    # computed from a set that could never fill in. The same applies one level
+    # down: the same run answered Q027 fine but the judge hit a 503, so the row
+    # carried judge_error and no score. It is not done either - "ให้คะแนนได้
+    # 99/100" in the summary was that row.
+    def _is_done(row: dict) -> bool:
+        # _coerce_resumed_row turns the numeric columns back into ints, so these
+        # values are int | str | None depending on the column and the row.
+        if str(row.get("error") or "").strip():
+            return False  # generation failed
+        if args.judge and str(row.get("correctness") or "").strip() == "":
+            return False  # answered, but the judge never scored it (503, quota)
+        return True
+
+    rows: list[dict] = [r for r in previous if _is_done(r)]
     retryable = len(previous) - len(rows)
     done = {(r["id"], r["mode"]) for r in rows}
     if previous:
