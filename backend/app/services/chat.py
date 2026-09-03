@@ -363,7 +363,13 @@ def stream_chat(
     ``{"type": "done", ...}``                   once, with citations/usage/flags
     ``{"type": "error", "message": ...}``       on failure
     """
-    guard = guardrails.check(user_message)
+    # History is merged straight away so the refusal below sees a risk the user
+    # disclosed in an earlier turn - "เป็นโรคไตอยู่" in turn 1 then "กินโปรตีน
+    # 200 กรัมได้ไหม" in turn 2 is exactly the case the medical scope rule exists
+    # for, and the second message names nothing.
+    guard = guardrails.combine(
+        guardrails.check(user_message), guardrails.check_history(history or [])
+    )
 
     # Retrieval failure (embedding API down, DB unreachable) must not kill the
     # turn - fall back to answering without context and say so in the prompt.
@@ -397,6 +403,29 @@ def stream_chat(
         }
         return
 
+    # Disease, symptoms and medication are out of scope: refused by rule, not
+    # left to the model. Deterministic for the same reason the out-of-scope
+    # refusal is - a safety boundary that depends on what the model decides this
+    # run is not a boundary. Also skips the API call.
+    refusal = guardrails.refusal_reply(guard)
+    if refusal:
+        logger.info("refusing out-of-medical-scope question: %s", guard.as_json())
+        for piece in refusal.splitlines(keepends=True):
+            yield {"type": "delta", "text": piece}
+        yield {
+            "type": "done",
+            "text": refusal,
+            "citations": [],
+            "retrieved": citations,
+            "tool_calls": [],
+            "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(),
+            "model": "rule:medical_scope",
+            "prompt_version": prompts.PROMPT_VERSION,
+            "use_rag": use_rag,
+        }
+        return
+
     targets: dict | None = None
     targets_summary = None
     if profile is not None:
@@ -411,10 +440,6 @@ def stream_chat(
         # guard_instructions / safety_flags as the text rules.
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
-    # Risk disclosed earlier in this conversation. Merged *after* the
-    # out-of-scope refusal above on purpose: that decision judges the question
-    # being asked now, and history must not rescue or condemn it.
-    guard = guardrails.combine(guard, guardrails.check_history(history or []))
 
     effective_goal = (targets or {}).get("effective_goal") or (profile.goal if profile else None)
     system_prompt = prompts.build_system_prompt(

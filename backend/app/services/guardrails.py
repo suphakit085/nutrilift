@@ -51,7 +51,11 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         "dianabol", "winstrol", "stanozolol", "สตาโนโซลอล", "clenbuterol", "เคลนบูเทอรอล",
         "anavar", "oxandrolone", "ออกซานโดรโลน", "nandrolone", "แนนโดรโลน",
         "deca durabolin", "deca-durabolin", "primobolan", "masteron", "boldenone",
-        "equipoise", "turinabol", "superdrol", "halotestin",
+        "equipoise", "turinabol", "superdrol", "halotestin", "sustanon", "ซัสตานอน",
+        # Short abbreviations people actually type. The trailing space matters:
+        # bare "test e" is a substring of "latest edition", while the real usage
+        # is always followed by a dose ("test e 250"). Same for the tren forms.
+        "test e ", "test-e", "tren a ", "tren e ", "เทสโต",
         "sarm", "hgh", "โกรทฮอร์โมน", "ฮอร์โมนเร่งกล้าม",
         # protocol talk: someone planning a course rather than naming a compound
         "ขึ้น cycle", "cycle แรก", "จบ cycle", "รอบยา", "ขึ้นรอบยา", "post cycle", "pct",
@@ -155,6 +159,10 @@ def check(message: str) -> GuardResult:
     text = _normalise(message)
     #: Also matched against a space-stripped copy, so "ส เตียรอยด์" and
     #: "สเต ยรอยด์" cannot walk past a substring test by adding a space.
+    #:
+    #: Only single-word patterns use this path. Stripping spaces from a
+    #: multi-word pattern makes it match across unrelated word boundaries:
+    #: "test e " became "teste", which is inside "la-teste-dition".
     squashed = re.sub(r"\s+", "", text)
     flags: list[Flag] = []
     matched: dict[str, list[str]] = {}
@@ -163,7 +171,7 @@ def check(message: str) -> GuardResult:
         hits = [
             original
             for folded, original in patterns
-            if folded in text or re.sub(r"\s+", "", folded) in squashed
+            if folded in text or (" " not in folded and folded in squashed)
         ]
         if hits:
             flags.append(flag)
@@ -309,6 +317,67 @@ def combine(*results: GuardResult) -> GuardResult:
             bucket = matched.setdefault(key, [])
             bucket.extend(h for h in hits if h not in bucket)
     return GuardResult(flags=flags, matched=matched)
+
+
+#: Flags the system refuses outright instead of answering with a caution.
+#:
+#: Scope decision by the project owner (4 ก.ย. 2569), restated twice: disease,
+#: symptoms and medication are outside what this service answers, full stop. Up
+#: to now MEDICAL and PED only *added an instruction* and the model still gave a
+#: nutrition answer wrapped in a warning - "เป็น PCOS ควรกินยังไง" came back with
+#: a full plan. That is the behaviour being removed.
+#:
+#: The owner chose the strict reading knowing the cost: it also refuses factual
+#: myth questions that merely name a drug ("ครีเอทีนเป็นสเตียรอยด์หรือเปล่า",
+#: answer: no), which the knowledge base can answer well. Four questions in the
+#: 100-question set fall in that group - see docs/architecture.md 6.5.
+#:
+#: PREGNANCY, MINOR, UNDERWEIGHT, LOW_ENERGY_TARGET and DISORDERED_EATING stay
+#: out of this set on purpose, also the owner's call: none of them is a disease,
+#: and flatly refusing someone who has just described purging would be worse
+#: than answering with care and the 1323 hotline.
+HARD_REFUSAL_FLAGS: frozenset[Flag] = frozenset({Flag.MEDICAL, Flag.PED})
+
+_REFUSAL_MEDICAL = """ขอโทษครับ เรื่องโรค อาการเจ็บป่วย ผลตรวจ และยา อยู่นอกขอบเขตของระบบนี้ ผมจึงตอบให้ไม่ได้ครับ
+แม้จะเป็นคำถามเรื่องอาหารก็ตาม เพราะคำแนะนำโภชนาการที่เหมาะกับคนทั่วไปอาจไม่เหมาะหรือเป็นอันตราย
+กับผู้ที่มีภาวะทางการแพทย์ และการประเมินเรื่องนี้ต้องใช้ข้อมูลสุขภาพที่ระบบไม่มี
+
+กรุณาปรึกษาแพทย์ เภสัชกร หรือนักกำหนดอาหารวิชาชีพที่ดูแลคุณอยู่ครับ
+
+เรื่องที่ผมช่วยได้ (สำหรับผู้ที่ไม่มีภาวะทางการแพทย์ที่ต้องดูแลเป็นพิเศษ)
+- คำนวณพลังงานและสารอาหารที่ควรได้รับต่อวันจากโปรไฟล์ของคุณ
+- ปริมาณโปรตีน คาร์โบไฮเดรต และไขมัน สำหรับช่วงลดไขมันหรือเพิ่มกล้ามเนื้อ
+- ช่วงเวลาการกินรอบการฝึก
+- คุณค่าทางโภชนาการของเมนูอาหารไทย
+- จัดตัวอย่างเมนู 1 วันให้ตรงกับเป้าหมายของคุณ
+"""
+
+_REFUSAL_PED = """ขอโทษครับ เรื่องยา ฮอร์โมน สเตียรอยด์ และสารเพิ่มสมรรถภาพทุกชนิด อยู่นอกขอบเขตของระบบนี้
+ผมจึงตอบให้ไม่ได้ครับ ไม่ว่าจะเป็นการถามถึงขนาด วิธีใช้ ผลข้างเคียง หรือการเปรียบเทียบระหว่างสารต่าง ๆ
+
+เรื่องเหล่านี้ต้องอยู่ในการดูแลของแพทย์หรือเภสัชกรเท่านั้นครับ
+
+เรื่องที่ผมช่วยได้
+- คำนวณพลังงานและสารอาหารที่ควรได้รับต่อวันจากโปรไฟล์ของคุณ
+- ปริมาณโปรตีน คาร์โบไฮเดรต และไขมัน สำหรับช่วงลดไขมันหรือเพิ่มกล้ามเนื้อ
+- ช่วงเวลาการกินรอบการฝึก
+- คุณค่าทางโภชนาการของเมนูอาหารไทย
+- จัดตัวอย่างเมนู 1 วันให้ตรงกับเป้าหมายของคุณ
+"""
+
+
+def refusal_reply(result: GuardResult) -> str | None:
+    """The canned reply for a question this service does not answer, or None.
+
+    Returned *instead of* calling the model, so the refusal is a property of the
+    rules rather than something the model decides differently on each run - the
+    same reason is_clearly_out_of_scope refuses without a model call.
+    """
+    if Flag.PED in result.flags:
+        return _REFUSAL_PED
+    if Flag.MEDICAL in result.flags:
+        return _REFUSAL_MEDICAL
+    return None
 
 
 #: Extra system-prompt instructions injected when a flag fires.

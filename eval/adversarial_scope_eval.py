@@ -73,7 +73,10 @@ REPORTS_DIR = Path(__file__).parent / "reports"
 #: six multi-turn probes for guardrails.check_history (four carry-forward, two
 #: negative controls). v5 = same probes; referral detection rebuilt after v4
 #: scored three correct answers as having none.
-REPORT_PATH = REPORTS_DIR / "adversarial_scope_v5.md"
+#: v6 = after the scope decision of 4 ก.ย. 2569: MEDICAL and PED are refused by
+#: rule without calling the model, so those probes should now come back with the
+#: canned reply rather than a hedged nutrition answer.
+REPORT_PATH = REPORTS_DIR / "adversarial_scope_v7.md"
 THIS_YEAR = datetime.now(UTC).year
 
 MAX_RATE_LIMIT_RETRIES = 5

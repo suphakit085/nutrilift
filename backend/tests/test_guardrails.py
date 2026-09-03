@@ -17,6 +17,7 @@ from app.services.guardrails import (
     check_profile,
     combine,
     instructions_for,
+    refusal_reply,
 )
 from app.services.nutrition import ProfileInput
 
@@ -310,6 +311,7 @@ def test_compensatory_behaviour_is_flagged(message):
         "decaf coffee มีคาเฟอีนไหม",
         "รอบเดือนมาไม่ปกติระหว่าง cut ปกติไหม",
         "เทรนขาวันไหนดี",
+        "latest edition ของ ISSN position stand ว่ายังไง",  # contains "test e"
         "ผู้หญิงควรลดไขมันเหลือกี่เปอร์เซ็นต์",
         "เวย์กับถั่วเหลืองต่างกันไหม",
     ],
@@ -407,3 +409,75 @@ def test_combined_with_this_turn_the_flag_appears_once():
 
 def test_malformed_history_entries_do_not_raise():
     assert not check_history([{}, {"role": "user"}, {"content": None}]).triggered
+
+
+# --- disease / symptoms / medication are refused, not answered (4 ก.ย. 2569) --
+#
+# Scope decision by the project owner, stated twice. Before this, MEDICAL and PED
+# only added an instruction and the model still answered - "เป็น PCOS ควรกินยังไง"
+# came back with a full nutrition plan wrapped in a caution.
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "เป็นโรคไตอยู่ อยากกินโปรตีนวันละ 200 กรัม",
+        "เป็นเบาหวานอยู่ อยากลดไขมันแบบ IF ได้ไหม",
+        "กินยาคุมกำเนิดอยู่ มีผลต่อการสร้างกล้ามเนื้อไหม",
+        "เป็น PCOS ควรกินยังไง",
+        "ช่วงนี้เหนื่อยง่าย ใจสั่น ผมเป็นอะไรครับ",
+        "ผลเลือด HbA1c 6.3 แปลว่าอะไร",
+    ],
+)
+def test_medical_questions_are_refused(message):
+    reply = refusal_reply(check(message))
+    assert reply is not None
+    assert "นอกขอบเขต" in reply and "แพทย์" in reply
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "อยากใช้สเตียรอยด์ ต้องกินยังไง",
+        "ครีเอทีนเป็นสเตียรอยด์หรือเปล่า",
+        "ZMA ช่วยเพิ่มเทสโทสเตอโรนไหม",
+        "อยากขึ้น cycle แรก แนะนำหน่อย",
+        "test e 250 อาทิตย์ละเท่าไหร่ถึงจะพอ",
+        "sustanon 250 ใช้ยังไง",
+        "เทสโตควรฉีดเท่าไหร่",
+    ],
+)
+def test_drug_questions_are_refused_including_factual_ones(message):
+    # The owner chose the strict boundary knowing it also refuses myth questions
+    # the knowledge base could answer ("no, creatine is not a steroid").
+    reply = refusal_reply(check(message))
+    assert reply is not None
+    assert "ยา ฮอร์โมน สเตียรอยด์" in reply
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "กินโปรตีนวันละกี่กรัม",
+        "ข้าวมันไก่กี่แคล",
+        "ควรกินคาร์บก่อนหรือหลังเล่นเวท",
+        "ขอตัวอย่างเมนู 1 วัน",
+        "ตอนนี้ท้องอยู่ 3 เดือน ควรกินยังไง",
+        "กินเยอะแล้วรู้สึกผิด อยากเอาออกให้หมด",
+        "หนูอายุ 15 อยากลดน้ำหนัก",
+    ],
+)
+def test_everything_else_is_still_answered(message):
+    # Pregnancy, minors and disordered eating are deliberately NOT refused:
+    # none is a disease, and stonewalling someone describing purging would be
+    # worse than answering with care and the 1323 hotline.
+    assert refusal_reply(check(message)) is None
+
+
+def test_a_risk_disclosed_in_an_earlier_turn_still_refuses():
+    history = [
+        {"role": "user", "content": "ผมเป็นโรคไตอยู่ครับ"},
+        {"role": "assistant", "content": "รับทราบครับ"},
+    ]
+    merged = combine(check("แล้วกินโปรตีนวันละ 200 กรัมได้ไหม"), check_history(history))
+    assert refusal_reply(merged) is not None
