@@ -23,6 +23,12 @@ out/
 # Data & reports
 eval/reports/*
 !eval/reports/.gitkeep
+# Keep the written reports. They are the before/after evidence the thesis quotes
+# directly, and an LLM run cannot be reproduced byte-for-byte - once a "before"
+# state is lost it cannot be regenerated. The raw *_answers.csv stay out (~5 MB),
+# and *_expert_key.csv must never be committed: it maps the blinded A/B columns
+# back to rag/norag, so publishing it would destroy the blinding.
+!eval/reports/*.md
 # Source documents and anything derived from them belong to their publishers
 # (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
 knowledge/sources/*

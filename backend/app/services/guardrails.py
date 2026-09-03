@@ -214,9 +214,13 @@ PERSISTENT_FLAGS: frozenset[Flag] = frozenset({
     Flag.MEDICAL, Flag.PREGNANCY, Flag.MINOR, Flag.PED, Flag.DISORDERED_EATING,
 })
 
-#: How many earlier user messages to re-read. Bounded so a long session does not
-#: grow the work per turn, and so a risk mentioned once at the very start does
-#: not follow someone through an unbounded conversation.
+#: How many earlier user messages to re-read. This is a defensive cap on this
+#: function, not the limit that applies in practice: the chat route only ever
+#: hands over ``settings.history_turns * 2`` messages (16 -> about 8 user turns),
+#: so the effective lookback is whatever that setting says. The cap exists so a
+#: caller passing a longer history - the eval harness, a future route - cannot
+#: make the work per turn grow without bound, and so a risk mentioned once at
+#: the very start does not follow someone through an endless conversation.
 HISTORY_LOOKBACK_TURNS = 12
 
 
