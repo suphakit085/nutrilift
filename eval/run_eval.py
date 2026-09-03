@@ -64,6 +64,22 @@ SAFETY_CATEGORIES = {"safety", "out-of-scope"}
 #: calls to bare 429s. The error body names the exact wait, so retry on it
 #: instead of treating a transient rate limit as a real failure.
 MAX_RATE_LIMIT_RETRIES = 5
+
+#: Seconds to wait between questions.
+#:
+#: The retry loop below is a safety net, not a rate limiter. Without pacing the
+#: harness fires the next question the instant the previous one returns, which
+#: parks it permanently above the free tier's 15 requests/minute - and once you
+#: are over the cap, retrying cannot get you back under it. The 2026-09-04
+#: baseline-v7 run failed 65 of 200 questions that way, every one a
+#: per-minute 429 rather than the daily cap.
+#:
+#: Budget one question at a time: a plain question costs one generate call, one
+#: that triggers a tool costs two or three. Six seconds gives ten questions a
+#: minute, so even if every one called a tool the run stays under the ceiling.
+#: personalization_eval.py has paced itself like this since 2 ก.ย.; run_eval
+#: never got the same treatment.
+DEFAULT_QUESTION_DELAY_S = 6.0
 DEFAULT_RETRY_DELAY_S = 20.0
 _RETRY_DELAY_RE = re.compile(r"retry in ([\d.]+)s")
 
@@ -147,12 +163,27 @@ def _load_previous_answers(path: Path) -> list[dict]:
         return [_coerce_resumed_row(r) for r in csv.DictReader(handle)]
 
 
-def _open_answers_writer(path: Path, *, resume: bool):
+def _open_answers_writer(path: Path, *, resume: bool, keep: list[dict] | None = None):
     """Open the answers CSV for incremental writes: each row is flushed to disk
     the moment it's computed, so an interrupted run (hard daily-quota 429,
     crash, Ctrl+C) loses at most the one in-flight question, not every row
     computed so far.
+
+    On resume the file is rewritten with ``keep`` (the rows worth keeping)
+    rather than appended to, so a row that failed last time can be recomputed
+    without leaving its failed twin behind in the CSV.
     """
+    if resume and keep is not None:
+        handle = path.open("w", encoding="utf-8-sig", newline="")
+        writer = csv.DictWriter(
+            handle, fieldnames=CSV_FIELDNAMES, restval="", extrasaction="ignore"
+        )
+        writer.writeheader()
+        for row in keep:
+            writer.writerow(row)
+        handle.flush()
+        return handle, writer
+
     write_header = not (resume and path.exists())
     handle = path.open("a" if resume else "w", encoding="utf-8-sig", newline="")
     writer = csv.DictWriter(handle, fieldnames=CSV_FIELDNAMES, restval="", extrasaction="ignore")
@@ -508,6 +539,15 @@ def main() -> int:
     parser.add_argument("--limit", type=int, help="only run the first N questions")
     parser.add_argument("--run-id", help="override the report file prefix")
     parser.add_argument(
+        "--delay",
+        type=float,
+        default=DEFAULT_QUESTION_DELAY_S,
+        help=(
+            "seconds to wait between questions so the run stays under the free "
+            f"tier's 15 requests/minute (default {DEFAULT_QUESTION_DELAY_S})"
+        ),
+    )
+    parser.add_argument(
         "--resume",
         action="store_true",
         help="continue a previous --run-id: skip (id, mode) pairs already in "
@@ -527,15 +567,24 @@ def main() -> int:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     answers_path = REPORTS_DIR / f"{run_id}_answers.csv"
 
-    rows: list[dict] = _load_previous_answers(answers_path) if args.resume else []
+    previous: list[dict] = _load_previous_answers(answers_path) if args.resume else []
+    # A row that errored is not done. Treating it as done was how the
+    # 2026-09-04 baseline-v7 run kept its 65 rate-limited failures across a
+    # resume: they sat in the CSV, --resume skipped them, and the summary was
+    # computed from a set that could never fill in.
+    rows: list[dict] = [r for r in previous if not (r.get("error") or "").strip()]
+    retryable = len(previous) - len(rows)
     done = {(r["id"], r["mode"]) for r in rows}
-    if done:
+    if previous:
         print(
-            f"resuming {run_id}: {len(done)} (question, mode) pair(s) already on disk",
+            f"resuming {run_id}: {len(done)} pair(s) already answered"
+            + (f", {retryable} failed pair(s) will be retried" if retryable else ""),
             flush=True,
         )
 
-    handle, writer = _open_answers_writer(answers_path, resume=args.resume)
+    handle, writer = _open_answers_writer(
+        answers_path, resume=args.resume, keep=rows if args.resume else None
+    )
     session = SessionLocal()
     try:
         for mode in modes:
@@ -547,6 +596,11 @@ def main() -> int:
                 rows.append(row)
                 writer.writerow(row)
                 handle.flush()
+                # Pace the next question rather than relying on the retry loop;
+                # see DEFAULT_QUESTION_DELAY_S. Skipped after a question that
+                # already failed, since it burned its own backoff waiting.
+                if args.delay > 0 and not row.get("error"):
+                    time.sleep(args.delay)
     finally:
         session.close()
         handle.close()
