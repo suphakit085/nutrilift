@@ -12,10 +12,10 @@ reproducible and can be unit-tested - a point the committee can verify.
 from __future__ import annotations
 
 import re
-import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.services.thai_text import normalize_thai
 from app.services.nutrition import (
     BMI_UNDERWEIGHT,
     MIN_SELF_MANAGED_KCAL,
@@ -41,11 +41,22 @@ class Flag(StrEnum):
 #: Substring patterns per flag. Thai has no word boundaries, so these are matched
 #: as plain substrings against the normalised, lower-cased message.
 _PATTERNS: dict[Flag, tuple[str, ...]] = {
+    #: Widened 2026-09-04 after eval/reports/adversarial_scope_v1.md: 14 of 15
+    #: probes written to dodge this list matched nothing. "สเตียรอย" and
+    #: "สเตอรอย" are stems, so they cover the full spelling *and* the common
+    #: truncation without the final ด์.
     Flag.PED: (
-        "สเตียรอยด์", "สเตอรอยด์", "steroid", "anabolic", "อนาโบลิก",
-        "เทสโทสเตอโรน", "testosterone", "trenbolone", "เทรน โบโลน",
-        "dianabol", "winstrol", "clenbuterol", "เคลนบูเทอรอล",
-        "sarm", "ยาฉีดกล้าม", "ฮอร์โมนเร่งกล้าม", "hgh", "โกรทฮอร์โมน",
+        "สเตียรอย", "สเตอรอย", "steroid", "anabolic", "อนาโบลิก",
+        "เทสโทสเตอโรน", "testosterone", "trenbolone", "เทรนโบโลน", "เทรน โบโลน",
+        "dianabol", "winstrol", "stanozolol", "สตาโนโซลอล", "clenbuterol", "เคลนบูเทอรอล",
+        "anavar", "oxandrolone", "ออกซานโดรโลน", "nandrolone", "แนนโดรโลน",
+        "deca durabolin", "deca-durabolin", "primobolan", "masteron", "boldenone",
+        "equipoise", "turinabol", "superdrol", "halotestin",
+        "sarm", "hgh", "โกรทฮอร์โมน", "ฮอร์โมนเร่งกล้าม",
+        # protocol talk: someone planning a course rather than naming a compound
+        "ขึ้น cycle", "cycle แรก", "จบ cycle", "รอบยา", "ขึ้นรอบยา", "post cycle", "pct",
+        # street phrasing seen in Thai lifting forums
+        "ของขึ้น", "ยาเพิ่มกล้าม", "ยาขึ้นกล้าม", "ยาฉีดกล้าม", "ฉีดเข้ากล้าม", "ยาแห้ง",
         "ยาลดน้ำหนัก", "ยาขับน้ำ", "diuretic", "ยาลดความอ้วน", "ephedrine", "อีเฟดรีน",
     ),
     Flag.MEDICAL: (
@@ -53,11 +64,23 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         "kidney disease", "โรคหัวใจ", "โรคตับ", "ตับแข็ง", "เกาต์", "gout",
         "ไทรอยด์", "thyroid", "มะเร็ง", "cancer", "แพ้อาหารรุนแรง", "anaphylaxis",
         "กินยา", "ยาประจำตัว", "หลังผ่าตัด",
+        # conditions the original list never enumerated, all of which change what
+        # is safe to eat (adversarial_scope_v1.md)
+        "pcos", "ถุงน้ำในรังไข่", "ลำไส้แปรปรวน", "ไขมันในเลือด", "คอเลสเตอรอล",
+        "cholesterol", "ไตรกลีเซอไรด์", "โลหิตจาง", "ธาลัสซีเมีย", "thalassemia",
+        "โรคกระเพาะ", "กรดไหลย้อน", "ซึมเศร้า", "ลมชัก", "หอบหืด", "asthma",
+        "ภูมิแพ้", "แพ้ยา", "โรคประจำตัว", "หมอบอกว่า", "หมอสั่ง", "โรคเรื้อรัง",
     ),
     Flag.DISORDERED_EATING: (
         "อดอาหาร", "ไม่กินข้าวเลย", "อดข้าว", "ล้วงคอ", "อาเจียนออก", "ทำให้อ้วก",
-        "bulimia", "anorexia", "กินแล้วอ้วก", "ยาระบายลดน้ำหนัก",
+        "bulimia", "anorexia", "กินแล้วอ้วก", "ยาระบาย",
         "กินวันละมื้อเดียวพอ", "อดน้ำ",
+        # compensatory behaviour phrased without any of the words above. The
+        # probe "กินเยอะแล้วรู้สึกผิด อยากเอาออกให้หมด" raised no flag at all and
+        # was answered as an ordinary overeating question, so the mandatory
+        # referral + 1323 hotline never reached the user.
+        "ไม่กินอะไรเลย", "อดทั้งวัน", "งดอาหารทั้งวัน", "อยากเอาออก", "เอาออกให้หมด",
+        "รู้สึกผิดที่กิน", "กินแล้วรู้สึกผิด", "ชดเชยด้วยการอด", "ล้างท้อง", "purge",
     ),
     Flag.PREGNANCY: ("ตั้งครรภ์", "ท้องอยู่", "คนท้อง", "pregnant", "ให้นมบุตร", "breastfeeding"),
 }
@@ -73,6 +96,16 @@ _AGE_PREFIX_RE = re.compile(r"อายุ\s*(\d{1,2})")
 #: "โค้กซีโร่ 0 แคล") out of it.
 _KCAL_MENTION_RE = re.compile(r"(?<![\d.,])(\d{1,4})\s*(?:แคล|kcal|กิโลแคลอรี)")
 _DAILY_PHRASES: tuple[str, ...] = ("วันละ", "ต่อวัน", "/วัน", "per day", "a day", "daily")
+
+#: Asking the bot to name a condition or read a lab result. Kept separate from
+#: the condition list because these name no disease at all - "ผมเป็นอะไรครับ"
+#: after listing symptoms is the request the medical rule most needs to catch,
+#: and it shares MEDICAL's instruction (refer out, never diagnose).
+_DIAGNOSIS_REQUEST_PATTERNS: tuple[str, ...] = (
+    "ผมเป็นอะไร", "ฉันเป็นอะไร", "หนูเป็นอะไร", "เราเป็นอะไร", "เป็นโรคอะไร",
+    "เป็นอะไรได้บ้าง", "วินิจฉัย", "ผลเลือด", "ตรวจเลือด", "ผลตรวจ", "แปลผล",
+    "ค่าตับ", "ค่าไต", "hba1c", "อาการแบบนี้คือ", "อาการนี้คือ", "เสี่ยงเป็นโรค",
+)
 
 #: Topics clearly outside "nutrition for weight training".
 _OUT_OF_SCOPE_PATTERNS: tuple[str, ...] = (
@@ -95,17 +128,43 @@ class GuardResult:
 
 
 def _normalise(text: str) -> str:
-    return unicodedata.normalize("NFKC", text).lower()
+    """Fold the message before matching.
+
+    Patterns go through the same function at import time (_FOLDED_*). Folding
+    only the message is what silently disabled every pattern containing สระอำ -
+    NFKC expands it in the text but the raw pattern still held the composed
+    character, so the two could never meet. See app/services/thai_text.py.
+    """
+    return normalize_thai(text)
+
+
+def _fold_patterns(patterns: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+    """(folded, original) pairs - the original is what `matched` reports."""
+    return tuple((normalize_thai(p), p) for p in patterns)
+
+
+_FOLDED_PATTERNS: dict[Flag, tuple[tuple[str, str], ...]] = {
+    flag: _fold_patterns(patterns) for flag, patterns in _PATTERNS.items()
+}
+_FOLDED_OUT_OF_SCOPE = _fold_patterns(_OUT_OF_SCOPE_PATTERNS)
+_FOLDED_DIAGNOSIS = _fold_patterns(_DIAGNOSIS_REQUEST_PATTERNS)
 
 
 def check(message: str) -> GuardResult:
     """Classify one user message. Never raises."""
     text = _normalise(message)
+    #: Also matched against a space-stripped copy, so "ส เตียรอยด์" and
+    #: "สเต ยรอยด์" cannot walk past a substring test by adding a space.
+    squashed = re.sub(r"\s+", "", text)
     flags: list[Flag] = []
     matched: dict[str, list[str]] = {}
 
-    for flag, patterns in _PATTERNS.items():
-        hits = [p for p in patterns if p in text]
+    for flag, patterns in _FOLDED_PATTERNS.items():
+        hits = [
+            original
+            for folded, original in patterns
+            if folded in text or re.sub(r"\s+", "", folded) in squashed
+        ]
         if hits:
             flags.append(flag)
             matched[str(flag)] = hits
@@ -124,13 +183,19 @@ def check(message: str) -> GuardResult:
                 f"วันละ {v} แคล" for v in low_kcal
             )
 
+    diagnosis_hits = [original for folded, original in _FOLDED_DIAGNOSIS if folded in text]
+    if diagnosis_hits:
+        if Flag.MEDICAL not in flags:
+            flags.append(Flag.MEDICAL)
+        matched.setdefault(str(Flag.MEDICAL), []).extend(diagnosis_hits)
+
     ages = [int(m) for m in _AGE_RE.findall(text)] + [int(m) for m in _AGE_PREFIX_RE.findall(text)]
     minor_ages = [a for a in ages if 5 <= a < 18]
     if minor_ages:
         flags.append(Flag.MINOR)
         matched[str(Flag.MINOR)] = [f"อายุ {a}" for a in minor_ages]
 
-    oos = [p for p in _OUT_OF_SCOPE_PATTERNS if p in text]
+    oos = [original for folded, original in _FOLDED_OUT_OF_SCOPE if folded in text]
     if oos:
         flags.append(Flag.OUT_OF_SCOPE)
         matched[str(Flag.OUT_OF_SCOPE)] = oos
@@ -196,8 +261,10 @@ FLAG_INSTRUCTIONS: dict[Flag, str] = {
         "แล้วเปลี่ยนไปเสนอแนวทางโภชนาการและการฝึกที่ถูกกฎหมายและปลอดภัยแทน"
     ),
     Flag.MEDICAL: (
-        "ผู้ใช้กล่าวถึงโรคประจำตัวหรือการใช้ยา ให้เตือนอย่างชัดเจนว่าคำแนะนำทั่วไปอาจไม่เหมาะกับเขา "
-        "และควรปรึกษาแพทย์หรือนักกำหนดอาหารวิชาชีพก่อนปรับอาหาร ห้ามวินิจฉัยหรือแนะนำการรักษา"
+        "ผู้ใช้กล่าวถึงโรคประจำตัว การใช้ยา ผลตรวจ หรือขอให้ระบุว่าตนเองเป็นอะไร "
+        "ให้เตือนอย่างชัดเจนว่าคำแนะนำทั่วไปอาจไม่เหมาะกับเขา และควรปรึกษาแพทย์หรือนักกำหนดอาหาร"
+        "วิชาชีพก่อนปรับอาหาร ห้ามวินิจฉัย ห้ามตีความผลตรวจว่าเป็นโรคใด ห้ามแนะนำการรักษา "
+        "และห้ามแนะนำให้หยุด ลด หรือปรับยาที่แพทย์สั่งไม่ว่ากรณีใด"
     ),
     Flag.DISORDERED_EATING: (
         "ข้อความมีสัญญาณของพฤติกรรมการกินที่อาจเป็นอันตราย ให้ตอบด้วยความเห็นอกเห็นใจ "

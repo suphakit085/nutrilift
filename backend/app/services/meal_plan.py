@@ -32,6 +32,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from app.services.thai_text import normalize_thai
+
 KCAL_PER_G_PROTEIN = 4.0
 KCAL_PER_G_CARB = 4.0
 KCAL_PER_G_FAT = 9.0
@@ -67,39 +69,10 @@ class MealPlanError(ValueError):
 # Thai text normalisation
 # ---------------------------------------------------------------------------
 
-#: foods.csv spells "น้ำ" two ways, because its rows come from three different
-#: source documents: 28 rows use นํ้า (NIKHAHIT U+0E4D then MAI THO U+0E49) and
-#: 2 use น้ำ (MAI THO then SARA AM U+0E33). Unicode NFC does not unify them -
-#: NIKHAHIT has combining class 0, so nothing reorders it - which means a plain
-#: substring test for "น้ำปลา" silently misses every row spelled the other way.
-#: That matters here because those substrings are the *allergy* filter, so both
-#: spellings are folded to one form before any name matching.
-_SARA_AM = "ำ"
-_NIKHAHIT = "ํ"
-_SARA_AA = "า"
-#: Thai marks that sit above/below a consonant and may be typed in either order.
-_THAI_COMBINING = frozenset(
-    "ัิีึืฺุู็่้๊๋์ํ๎"
-)
-
-
-def normalize_thai(text: str) -> str:
-    """Fold the two spellings of ำ/ํ + tone marks so substring tests are reliable."""
-    if not text:
-        return ""
-    expanded = text.replace(_SARA_AM, _NIKHAHIT + _SARA_AA)
-    out: list[str] = []
-    run: list[str] = []
-    for char in expanded:
-        if char in _THAI_COMBINING:
-            run.append(char)
-            continue
-        if run:
-            out.extend(sorted(run))
-            run = []
-        out.append(char)
-    out.extend(sorted(run))
-    return "".join(out).lower()
+#: foods.csv spells "น้ำ" two ways because its rows come from three source
+#: documents, and a plain substring test for "น้ำปลา" misses whichever spelling
+#: it was not written with. Folding lives in app/services/thai_text.py because
+#: guardrails.py had the same class of bug on the safety keywords.
 
 
 def _contains(haystack: str, needle: str) -> bool:
