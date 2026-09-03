@@ -16,14 +16,20 @@ Two matrices, each holding everything else in the profile constant:
           loss and keeping muscle, does a bulk answer talk about a surplus and
           warn about dirty bulking, does a maintain answer say "eat at TDEE,
           recomposition" rather than pushing a deficit anyway.
-  sex   - one body (168 cm / 62 kg / 30 y / cut) as male and as female. The
-          knowledge base carries two sex-specific facts the answer *should*
-          reach for when relevant: iron RDA is 20 mg/day for women of
-          reproductive age vs 11.5 for men (card `calcium-iron-vitd`), and
-          menstrual disruption is a hallmark sign of low energy availability
-          (card `energy-balance-cut-bulk`). A woman's answer about "what to
-          watch while cutting" should mention iron; a man's answer must not
-          tell him to watch his periods.
+  sex   - one body (168 cm / 62 kg / cut) as a 30-year-old man, a 30-year-old
+          woman, and a 55-year-old woman. The third profile is what makes this
+          more than a two-way split: `prompts.sex_guidance_th` switches on age
+          as well as sex, because the Thai DRI iron table moves a woman from
+          20 mg/day to 10 mg/day after menopause and menstruation stops being
+          a usable low-energy sign. Without that profile the age branch had no
+          live coverage at all. The knowledge base carries the facts each
+          answer should reach for: the iron table (card `calcium-iron-vitd`),
+          menstrual disruption as a hallmark low-EA sign (card
+          `energy-balance-cut-bulk`), and the sex-specific body-fat floors -
+          5% for college men vs 12% for women in the wrestling minimum-weight
+          standard, with 17% proposed (card `body-fat-by-sex`, added because
+          v1 of this eval showed the system could only answer that question in
+          generalities).
 
 Checks are plain substring/regex against the answer text - no LLM judge. Each
 check is either *hard* (a mismatch is a failure and the script exits 1) or
@@ -57,8 +63,11 @@ from app.services.prompts import PROMPT_VERSION  # noqa: E402
 REPORTS_DIR = Path(__file__).parent / "reports"
 #: v1 = prompt v1.5.0 (goal guidance only): goal matrix clean, but both male
 #: "watch out for" answers mentioned menstrual disruption. v2 = prompt v1.6.0,
-#: after prompts.sex_guidance_th. Bump when the checks or the prompt change.
-REPORT_PATH = REPORTS_DIR / "goal_sex_personalization_v2.md"
+#: after prompts.sex_guidance_th. v3 = wider sex matrix - a post-menopause
+#: profile (the age branch had no live coverage) and the body-fat question that
+#: v1 could only answer in generalities, now backed by card body-fat-by-sex.
+#: Bump when the checks or the prompt change.
+REPORT_PATH = REPORTS_DIR / "goal_sex_personalization_v3.md"
 THIS_YEAR = datetime.now(UTC).year
 
 MAX_RATE_LIMIT_RETRIES = 5
@@ -101,18 +110,27 @@ def _goal_profile(goal: str) -> ProfileInput:
     )
 
 
-def _sex_profile(sex: str) -> ProfileInput:
+def _sex_profile(sex: str, age: int) -> ProfileInput:
     return ProfileInput(
-        sex=sex, birth_year=THIS_YEAR - 30, height_cm=168, weight_kg=62,  # type: ignore[arg-type]
+        sex=sex, birth_year=THIS_YEAR - age, height_cm=168, weight_kg=62,  # type: ignore[arg-type]
         activity_level="moderate", goal="cut", training_days=4,
     )
 
 
 GOAL_PROFILES: dict[str, ProfileInput] = {g: _goal_profile(g) for g in ("cut", "bulk", "maintain")}
-SEX_PROFILES: dict[str, ProfileInput] = {s: _sex_profile(s) for s in ("male", "female")}
+#: Same body throughout, so any difference in the answer comes from sex or age.
+SEX_PROFILES: dict[str, ProfileInput] = {
+    "male_30": _sex_profile("male", 30),
+    "female_30": _sex_profile("female", 30),
+    "female_55": _sex_profile("female", 55),
+}
 
 GOAL_LABEL = {"cut": "ลดไขมัน (cut)", "bulk": "เพิ่มกล้ามเนื้อ (bulk)", "maintain": "รักษาน้ำหนัก (maintain)"}
-SEX_LABEL = {"male": "ชาย", "female": "หญิง"}
+SEX_LABEL = {
+    "male_30": "ชาย 30 ปี",
+    "female_30": "หญิง 30 ปี (วัยเจริญพันธุ์)",
+    "female_55": "หญิง 55 ปี (หลังหมดประจำเดือน)",
+}
 
 
 # --------------------------------------------------------------------------
@@ -168,28 +186,40 @@ class SexMessage:
     #: free to answer without restating the target (v2 run: it did so twice and
     #: the answers were correct), so there it is reported, not required.
     require_number: bool = False
+    #: Which SEX_PROFILES this message is sent to. Not every message needs all
+    #: three - each extra pairing costs a live request against the free-tier
+    #: rate limit, so the post-menopause profile only runs where age matters.
+    profiles: tuple[str, ...] = ("male_30", "female_30")
 
 
 SEX_MESSAGES: list[SexMessage] = [
     SexMessage(
         text="ฉันควรกินกี่แคลอรี่ต่อวัน",
-        note="ตัวเลขล้วน: BMR ต่างกัน 166 kcal จากค่าคงที่เพศในสูตร Mifflin-St Jeor คำตอบต้องรายงานเลขของเพศตัวเอง",
+        note=(
+            "ตัวเลขล้วน: BMR ต่างกัน 166 kcal จากค่าคงที่เพศในสูตร Mifflin-St Jeor "
+            "คำตอบต้องรายงานเลขของเพศตัวเอง"
+        ),
         require_number=True,
     ),
     SexMessage(
         text="กำลัง cut อยู่ ควรระวังวิตามินหรือแร่ธาตุอะไรเป็นพิเศษไหม",
         note=(
-            "การ์ด calcium-iron-vitd: RDA ธาตุเหล็กหญิง 19-50 ปี = 20 มก./วัน (ชาย 11.5) และระบุว่า "
-            "\"ผู้หญิงที่ฝึกหนัก กินน้อย\" เป็นกลุ่มเสี่ยงเหล็กต่ำ — คำตอบของผู้ใช้หญิงควรหยิบเรื่องนี้ขึ้นมา"
+            "การ์ด calcium-iron-vitd: RDA ธาตุเหล็กหญิง 19-50 ปี = 20 มก./วัน, ชาย = 11.5, "
+            "หญิงหลังหมดประจำเดือน = 10 — ค่าของหญิงวัยเจริญพันธุ์ต้องไม่ถูกยกให้อีกสองโปรไฟล์"
         ),
+        profiles=("male_30", "female_30", "female_55"),
         checks={
-            "female": (
+            "female_30": (
                 Check("พูดถึงธาตุเหล็ก", ("ธาตุเหล็ก", "เหล็ก")),
                 Check("อ้างตัวเลข 20 มก.", ("20 มก", "20 มิลลิกรัม", "20 mg"), hard=False),
             ),
-            "male": (
+            "female_55": (
+                Check("ไม่ยกค่า 20 มก. ของหญิงวัยเจริญพันธุ์", ("20 มก", "20 มิลลิกรัม", "20 mg"), absent=True),
+                Check("อ้างค่าหลังหมดประจำเดือน 10 มก.", ("10 มก", "10 มิลลิกรัม", "10 mg"), hard=False),
+            ),
+            "male_30": (
                 Check("ไม่บอกผู้ใช้ชายให้สังเกตประจำเดือน", ("ประจำเดือน",), absent=True),
-                Check("ไม่ยกค่าเหล็กของหญิง (20 มก.) ให้ผู้ใช้ชาย", ("20 มก", "20 มิลลิกรัม", "20 mg"), absent=True, hard=False),
+                Check("ไม่ยกค่าเหล็กของหญิง (20 มก.)", ("20 มก", "20 มิลลิกรัม", "20 mg"), absent=True, hard=False),
             ),
         },
     ),
@@ -197,14 +227,39 @@ SEX_MESSAGES: list[SexMessage] = [
         text="จะรู้ได้ยังไงว่าฉันกินน้อยเกินไประหว่าง cut มีสัญญาณอะไรบ้าง",
         note=(
             "การ์ด energy-balance-cut-bulk ยก \"ประจำเดือนขาด/ไม่ปกติ\" เป็นสัญญาณแรกของ EA ต่ำ/RED-S "
-            "— สัญญาณนี้ใช้ได้กับผู้ใช้หญิงเท่านั้น"
+            "— ใช้ได้กับหญิงวัยเจริญพันธุ์เท่านั้น ไม่ใช่ผู้ชายและไม่ใช่หญิงหลังหมดประจำเดือน"
+        ),
+        profiles=("male_30", "female_30", "female_55"),
+        checks={
+            "female_30": (Check("ยกสัญญาณประจำเดือน", ("ประจำเดือน",)),),
+            "female_55": (
+                Check("ไม่ยกประจำเดือนเป็นสัญญาณของผู้ใช้คนนี้", ("ประจำเดือน",), absent=True),
+            ),
+            "male_30": (
+                Check("ไม่บอกผู้ใช้ชายให้สังเกตประจำเดือน", ("ประจำเดือน",), absent=True),
+            ),
+        },
+    ),
+    SexMessage(
+        text="อยากลดไขมันให้เห็นกล้ามชัด ควรลดเปอร์เซ็นต์ไขมันเหลือเท่าไหร่",
+        note=(
+            "คำถามที่ v1 ตอบได้แค่หลักการกว้าง ๆ เพราะไม่มีการ์ดรองรับ — เพิ่มการ์ด body-fat-by-sex "
+            "(4 ก.ย. 2569) แล้ว เกณฑ์ขั้นต่ำในวงการกีฬา: ชายมหาวิทยาลัย 5% เทียบหญิง 12% "
+            "และงานปี 2024 เสนอให้ยกของหญิงเป็น 17% (เปอร์เซ็นไทล์ที่ 5 ของนักกีฬาหญิง 1,683 คน) "
+            "การยกช่วง 10-12% ของผู้ชายให้ผู้ใช้หญิงคือคำแนะนำที่ต่ำกว่าเกณฑ์ขั้นต่ำของเธอเสียอีก"
         ),
         checks={
-            "female": (
-                Check("ยกสัญญาณประจำเดือน", ("ประจำเดือน",)),
+            "female_30": (
+                Check("ยกตัวเลขเกณฑ์ของผู้หญิง (12/17/20%)",
+                      ("17%", "17 %", "20%", "20 %", "12%", "12 %")),
+                Check("ไม่ยกช่วงของผู้ชายให้ผู้ใช้หญิง",
+                      ("10-12%", "10–12%", "8-10%", "8–10%", "6-13%"), absent=True),
+                Check("อ้างอิงฐานความรู้ (มี [S)", ("[s",), hard=False),
             ),
-            "male": (
-                Check("ไม่บอกผู้ใช้ชายให้สังเกตประจำเดือน", ("ประจำเดือน",), absent=True),
+            "male_30": (
+                Check("อ้างอิงฐานความรู้ (มี [S)", ("[s",)),
+                Check("ไม่ยกเกณฑ์ 17% ของผู้หญิงมาเป็นของผู้ใช้ชาย",
+                      ("คุณ 17%", "เหลือ 17%"), absent=True, hard=False),
             ),
         },
     ),
@@ -285,7 +340,7 @@ def main() -> int:
     for s, t in sex_truth.items():
         m = t["macros"]
         lines.append(
-            f"| {SEX_LABEL[s]} 30 ปี 168/62 · cut | {t['bmr_kcal']} | {t['tdee_kcal']} | "
+            f"| {SEX_LABEL[s]} · 168/62 cut | {t['bmr_kcal']} | {t['tdee_kcal']} | "
             f"**{t['energy_target_kcal']}** | {m['protein_g']} | {m['carb_g']} | {m['fat_g']} |"
         )
     cut_t, bulk_t, maint_t = (goal_truth[g] for g in ("cut", "bulk", "maintain"))
@@ -294,7 +349,7 @@ def main() -> int:
         and maint_t["energy_target_kcal"] == maint_t["tdee_kcal"]
     )
     record(direction_ok, True, "ground truth: cut < maintain == TDEE < bulk")
-    bmr_gap = sex_truth["male"]["bmr_kcal"] - sex_truth["female"]["bmr_kcal"]
+    bmr_gap = sex_truth["male_30"]["bmr_kcal"] - sex_truth["female_30"]["bmr_kcal"]
     record(bmr_gap == 166, True, f"ground truth: male-female BMR gap {bmr_gap} != 166")
     lines += [
         "",
@@ -302,7 +357,7 @@ def main() -> int:
         f"(= TDEE) < bulk {bulk_t['energy_target_kcal']} — {'✅' if direction_ok else '❌'} (hard)",
         f"- ช่องว่าง BMR ชาย−หญิง ร่างกายเดียวกัน: {bmr_gap} kcal (ค่าคงที่เพศของ Mifflin-St Jeor: +5 vs −161) "
         f"— {'✅' if bmr_gap == 166 else '❌'} (hard)",
-        f"- โปรตีนต่อวันชาย/หญิงเท่ากัน ({sex_truth['male']['macros']['protein_g']} g) เพราะคิดต่อกก. "
+        f"- โปรตีนต่อวันชาย/หญิงเท่ากัน ({sex_truth['male_30']['macros']['protein_g']} g) เพราะคิดต่อกก. "
         "น้ำหนักตัว ไม่ใช่ต่อเพศ — คำตอบที่ต่างกันตามเพศจึงต้องมาจากเนื้อหา ไม่ใช่ตัวเลขโปรตีน",
         "",
     ]
@@ -319,8 +374,10 @@ def main() -> int:
         print("\n=== sex matrix ===", flush=True)
         for sm in SEX_MESSAGES:
             sex_answers[sm.text] = {}
-            for s, p in SEX_PROFILES.items():
-                sex_answers[sm.text][s] = _run(session, SEX_LABEL[s], sm.text, p)
+            for key in sm.profiles:
+                sex_answers[sm.text][key] = _run(
+                    session, SEX_LABEL[key], sm.text, SEX_PROFILES[key]
+                )
     finally:
         session.close()
 
@@ -364,13 +421,13 @@ def main() -> int:
 
     # ---- sex matrix -------------------------------------------------------
     lines += [
-        "## 3. เพศต่างกัน → คำแนะนำต่างกันไหม (ร่างกายเดียวกัน 30 ปี 168 ซม. 62 กก. เป้าหมาย cut)",
+        "## 3. เพศ/อายุต่างกัน → คำแนะนำต่างกันไหม (ร่างกายเดียวกัน 168 ซม. 62 กก. เป้าหมาย cut)",
         "",
         "| ข้อความ | เพศ | พบเลขเป้าหมาย | การตรวจเฉพาะเพศ | ผล |",
         "|---|---|---|---|---|",
     ]
     for sm in SEX_MESSAGES:
-        for s, r in sex_answers[sm.text].items():
+        for s, r in sex_answers[sm.text].items():  # only the profiles it declared
             text = r["text"]
             target = sex_truth[s]["energy_target_kcal"]
             if "error" in r:
@@ -393,10 +450,14 @@ def main() -> int:
                     f"| {sm.text} | {SEX_LABEL[s]} | {num_cell} "
                     f"| {c.name} ({kind}) | {'✅' if ok else '❌'} {detail} |"
                 )
-    lines += ["", "ความคล้ายของคำตอบชาย↔หญิง (soft):", "", "| ข้อความ | ชาย↔หญิง |", "|---|---|"]
+    lines += ["", "ความคล้ายของคำตอบระหว่างโปรไฟล์ (soft):", "", "| ข้อความ | คู่ | Jaccard |", "|---|---|---|"]
     for sm in SEX_MESSAGES:
-        a = sex_answers[sm.text]
-        lines.append(f"| {sm.text} | {_trigram_jaccard(a['male']['text'], a['female']['text']):.2f} |")
+        answers = sex_answers[sm.text]
+        keys = [k for k in sm.profiles if k in answers]
+        for i, a in enumerate(keys):
+            for b in keys[i + 1 :]:
+                score = _trigram_jaccard(answers[a]["text"], answers[b]["text"])
+                lines.append(f"| {sm.text} | {SEX_LABEL[a]} ↔ {SEX_LABEL[b]} | {score:.2f} |")
     lines.append("")
 
     # ---- verdict ----------------------------------------------------------
