@@ -78,6 +78,27 @@ FAT_G_PER_KG: tuple[float, float] = (0.8, 1.0)
 #: Fat must supply at least this share of total energy (Helms 2014).
 MIN_FAT_ENERGY_SHARE = 0.20
 
+#: The service is for adults: below this age the calculator refuses to produce
+#: any target (NutritionInputError), which the profile route turns into a 422,
+#: so an under-18 profile cannot be saved in the first place. Until 2026-09-03
+#: the floor was 15 and a 15-year-old whose profile said goal=cut got a full
+#: ~17% deficit labelled "safe" (eval/reports/safety_personalization_v1.md),
+#: because the MINOR guardrail only read the message text. For rows written
+#: before the floor moved, guardrails.check_profile still raises MINOR from the
+#: stored birth_year and the chat path simply shows no numbers.
+MINOR_AGE_LIMIT = 18
+MAX_AGE = 100
+
+#: WHO underweight threshold. No cut target is issued below it: the
+#: energy-balance-cut-bulk card already says the already-lean should cut slower,
+#: and someone under the clinical threshold should not self-manage a cut at all.
+#: Only the *low* side of BMI is used for advice - the high side cannot separate
+#: muscle from fat and would mislabel exactly this app's users.
+BMI_UNDERWEIGHT = 18.5
+
+#: Self-managed intake floor (energy-balance-cut-bulk card, "ข้อควรระวัง").
+MIN_SELF_MANAGED_KCAL = 1200
+
 
 class NutritionInputError(ValueError):
     """Raised when profile input is outside the range these formulas are valid for."""
@@ -110,8 +131,11 @@ def _validate(p: ProfileInput) -> None:
     if p.activity_level not in ACTIVITY_FACTORS:
         raise NutritionInputError(f"activity_level ต้องเป็นหนึ่งใน {list(ACTIVITY_FACTORS)}")
     age = p.age()
-    if not 15 <= age <= 100:
-        raise NutritionInputError("สูตรนี้ใช้กับอายุ 15-100 ปีเท่านั้น")
+    if not MINOR_AGE_LIMIT <= age <= MAX_AGE:
+        raise NutritionInputError(
+            f"บริการนี้สำหรับผู้ที่อายุ {MINOR_AGE_LIMIT}-{MAX_AGE} ปี "
+            f"ผู้ที่อายุต่ำกว่า {MINOR_AGE_LIMIT} ปีควรปรึกษาแพทย์หรือนักกำหนดอาหารร่วมกับผู้ปกครอง"
+        )
     if not 120 <= p.height_cm <= 230:
         raise NutritionInputError("ส่วนสูงต้องอยู่ระหว่าง 120-230 ซม.")
     if not 30 <= p.weight_kg <= 300:
@@ -123,6 +147,16 @@ def _validate(p: ProfileInput) -> None:
 def lean_body_mass(weight_kg: float, body_fat_pct: float) -> float:
     """Fat-free mass in kg."""
     return weight_kg * (1.0 - body_fat_pct / 100.0)
+
+
+def bmi(weight_kg: float, height_cm: float) -> float:
+    """Body mass index, kg/m^2."""
+    height_m = height_cm / 100.0
+    return weight_kg / (height_m * height_m)
+
+
+def is_underweight(weight_kg: float, height_cm: float) -> bool:
+    return bmi(weight_kg, height_cm) < BMI_UNDERWEIGHT
 
 
 def bmr_mifflin_st_jeor(sex: Sex, weight_kg: float, height_cm: float, age: int) -> float:
@@ -158,13 +192,25 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     activity_factor = ACTIVITY_FACTORS[profile.activity_level]
     tdee = bmr * activity_factor
 
-    adj_low, adj_high = GOAL_ENERGY_ADJUSTMENT[profile.goal]
+    # --- goal: a cut is downgraded to maintenance when the profile is under the
+    # underweight threshold (age needs no branch here: _validate already refused
+    # anyone under 18). inputs.goal keeps what the user asked for; effective_goal
+    # is what the numbers were built from, and the warning below tells the model
+    # (and so the user) why they differ.
+    bmi_value = bmi(profile.weight_kg, profile.height_cm)
+    effective_goal: str = profile.goal
+    deficit_suppressed_reason: str | None = None
+    if profile.goal == "cut" and bmi_value < BMI_UNDERWEIGHT:
+        effective_goal = "maintain"
+        deficit_suppressed_reason = "underweight"
+
+    adj_low, adj_high = GOAL_ENERGY_ADJUSTMENT[effective_goal]
     kcal_low = tdee * (1 + adj_low)
     kcal_high = tdee * (1 + adj_high)
     kcal_target = (kcal_low + kcal_high) / 2
 
     # --- protein ---
-    p_low_per_kg, p_high_per_kg = PROTEIN_G_PER_KG[profile.goal]
+    p_low_per_kg, p_high_per_kg = PROTEIN_G_PER_KG[effective_goal]
     protein_g = profile.weight_kg * ((p_low_per_kg + p_high_per_kg) / 2)
     protein_kcal = protein_g * KCAL_PER_G_PROTEIN
 
@@ -194,9 +240,15 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "พลังงานเป้าหมายต่ำเกินกว่าจะรองรับโปรตีนและไขมันขั้นต่ำได้ "
             "ควรลดการขาดดุลพลังงานลง หรือปรึกษานักกำหนดอาหาร"
         )
-    if profile.goal == "cut" and kcal_target < 1200:
+    if deficit_suppressed_reason == "underweight":
         warnings.append(
-            "พลังงานเป้าหมายต่ำกว่า 1,200 kcal/วัน ซึ่งต่ำเกินไปสำหรับการลดไขมันด้วยตนเอง "
+            f"BMI {bmi_value:.1f} ต่ำกว่าเกณฑ์ {BMI_UNDERWEIGHT} (น้ำหนักน้อยกว่าเกณฑ์) "
+            "ระบบไม่กำหนดพลังงานขาดดุลให้ จึงปรับเป้าหมายพลังงานจากลดไขมันเป็นระดับรักษาน้ำหนัก "
+            "(เท่ากับ TDEE) ควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อนตัดสินใจลดไขมัน"
+        )
+    if kcal_target < MIN_SELF_MANAGED_KCAL:
+        warnings.append(
+            f"พลังงานเป้าหมายต่ำกว่า {MIN_SELF_MANAGED_KCAL:,} kcal/วัน ซึ่งต่ำเกินกว่าจะดูแลด้วยตนเอง "
             "แนะนำให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อน"
         )
 
@@ -215,6 +267,11 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "goal_label_th": GOAL_LABELS_TH[profile.goal],
             "restrictions": list(profile.restrictions),
         },
+        "bmi": round(bmi_value, 1),
+        "underweight": bmi_value < BMI_UNDERWEIGHT,
+        "effective_goal": effective_goal,
+        "effective_goal_label_th": GOAL_LABELS_TH[effective_goal],
+        "deficit_suppressed_reason": deficit_suppressed_reason,
         "bmr_kcal": round(bmr),
         "bmr_formula": bmr_formula,
         "bmr_reference": bmr_reference,
@@ -261,12 +318,26 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
 
 
 def summarize_targets_th(targets: dict) -> str:
-    """One-paragraph Thai summary, injected into the system prompt as user context."""
+    """Thai summary injected into the system prompt as user context.
+
+    Carries the calculator's ``warnings`` too. Before 2026-09-03 they were
+    dropped here, and since the prompt tells the model to use these numbers
+    without re-calling the tool, the model never saw them on the main path.
+    """
     m = targets["macros"]
     i = targets["inputs"]
-    return (
-        f"เป้าหมาย: {i['goal_label_th']} | BMR {targets['bmr_kcal']} kcal "
+    goal_text = i["goal_label_th"]
+    effective = targets.get("effective_goal")
+    if effective and effective != i["goal"]:
+        goal_text += f" → ระบบปรับเป็น {targets['effective_goal_label_th']}"
+    bmi_text = f" | BMI {targets['bmi']}" if "bmi" in targets else ""
+    line = (
+        f"เป้าหมาย: {goal_text}{bmi_text} | BMR {targets['bmr_kcal']} kcal "
         f"({targets['bmr_formula']}) | TDEE {targets['tdee_kcal']} kcal | "
         f"พลังงานเป้าหมาย {targets['energy_target_kcal']} kcal/วัน | "
         f"โปรตีน {m['protein_g']} g, คาร์บ {m['carb_g']} g, ไขมัน {m['fat_g']} g"
     )
+    warnings = targets.get("warnings") or []
+    if warnings:
+        line += "\nคำเตือนจากระบบคำนวณ (ต้องแจ้งผู้ใช้ให้ชัดเจน): " + " / ".join(warnings)
+    return line

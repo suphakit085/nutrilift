@@ -16,6 +16,14 @@ import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
 
+from app.services.nutrition import (
+    BMI_UNDERWEIGHT,
+    MIN_SELF_MANAGED_KCAL,
+    MINOR_AGE_LIMIT,
+    ProfileInput,
+    bmi,
+)
+
 
 class Flag(StrEnum):
     PED = "performance_enhancing_drugs"
@@ -24,6 +32,10 @@ class Flag(StrEnum):
     MINOR = "minor"
     PREGNANCY = "pregnancy"
     OUT_OF_SCOPE = "out_of_scope"
+    #: Profile-derived (see check_profile): BMI under the WHO threshold.
+    UNDERWEIGHT = "underweight"
+    #: Profile-derived: the computed energy target is under the self-managed floor.
+    LOW_ENERGY_TARGET = "low_energy_target"
 
 
 #: Substring patterns per flag. Thai has no word boundaries, so these are matched
@@ -45,7 +57,7 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
     Flag.DISORDERED_EATING: (
         "อดอาหาร", "ไม่กินข้าวเลย", "อดข้าว", "ล้วงคอ", "อาเจียนออก", "ทำให้อ้วก",
         "bulimia", "anorexia", "กินแล้วอ้วก", "ยาระบายลดน้ำหนัก",
-        "กินวันละมื้อเดียวพอ", "0 แคล", "อดน้ำ",
+        "กินวันละมื้อเดียวพอ", "อดน้ำ",
     ),
     Flag.PREGNANCY: ("ตั้งครรภ์", "ท้องอยู่", "คนท้อง", "pregnant", "ให้นมบุตร", "breastfeeding"),
 }
@@ -53,6 +65,14 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
 #: Age patterns like "อายุ 15", "15 ปี", "อายุ15ปี"
 _AGE_RE = re.compile(r"(?:อายุ\s*)?(\d{1,2})\s*(?:ปี|ขวบ|years? old|yo\b)")
 _AGE_PREFIX_RE = re.compile(r"อายุ\s*(\d{1,2})")
+
+#: A stated *daily* intake under the self-managed floor ("กินวันละ 800 แคล").
+#: Replaces the old bare "0 แคล" substring, which matched every amount ending in
+#: a zero - "800 แคล" fired (by luck), but so did "1500 แคล". Requiring a
+#: daily phrase keeps plain food facts ("ข้าวมันไก่ 600 แคล จริงไหม",
+#: "โค้กซีโร่ 0 แคล") out of it.
+_KCAL_MENTION_RE = re.compile(r"(?<![\d.,])(\d{1,4})\s*(?:แคล|kcal|กิโลแคลอรี)")
+_DAILY_PHRASES: tuple[str, ...] = ("วันละ", "ต่อวัน", "/วัน", "per day", "a day", "daily")
 
 #: Topics clearly outside "nutrition for weight training".
 _OUT_OF_SCOPE_PATTERNS: tuple[str, ...] = (
@@ -90,6 +110,20 @@ def check(message: str) -> GuardResult:
             flags.append(flag)
             matched[str(flag)] = hits
 
+    if any(p in text for p in _DAILY_PHRASES):
+        digits_only = re.sub(r"(?<=\d),(?=\d)", "", text)  # "1,000 แคล" -> "1000 แคล"
+        low_kcal = [
+            int(v)
+            for v in _KCAL_MENTION_RE.findall(digits_only)
+            if int(v) < MIN_SELF_MANAGED_KCAL
+        ]
+        if low_kcal:
+            if Flag.DISORDERED_EATING not in flags:
+                flags.append(Flag.DISORDERED_EATING)
+            matched.setdefault(str(Flag.DISORDERED_EATING), []).extend(
+                f"วันละ {v} แคล" for v in low_kcal
+            )
+
     ages = [int(m) for m in _AGE_RE.findall(text)] + [int(m) for m in _AGE_PREFIX_RE.findall(text)]
     minor_ages = [a for a in ages if 5 <= a < 18]
     if minor_ages:
@@ -101,6 +135,56 @@ def check(message: str) -> GuardResult:
         flags.append(Flag.OUT_OF_SCOPE)
         matched[str(Flag.OUT_OF_SCOPE)] = oos
 
+    return GuardResult(flags=flags, matched=matched)
+
+
+def check_profile(profile: ProfileInput | None, targets: dict | None = None) -> GuardResult:
+    """Classify risk from the structured profile: age, BMI, and the computed target.
+
+    ``check()`` only sees what the user typed *this turn*. A logged-in user's age
+    lives in ``profile.birth_year`` and is almost never repeated in the message,
+    so until 2026-09-03 the MINOR rule effectively never fired for real
+    profiles - every safety question in the eval set restated its risk in the
+    text, which is the only reason those runs looked clean
+    (eval/reports/safety_personalization_v1.md). ``matched`` entries are
+    prefixed ``profile:`` so reports can separate text-triggered from
+    profile-triggered flags. Never raises.
+    """
+    flags: list[Flag] = []
+    matched: dict[str, list[str]] = {}
+    if profile is None:
+        return GuardResult(flags=flags, matched=matched)
+
+    age = profile.age()
+    if age < MINOR_AGE_LIMIT:
+        flags.append(Flag.MINOR)
+        matched[str(Flag.MINOR)] = [f"profile:age={age}"]
+
+    if profile.height_cm > 0 and profile.weight_kg > 0:
+        value = bmi(profile.weight_kg, profile.height_cm)
+        if value < BMI_UNDERWEIGHT:
+            flags.append(Flag.UNDERWEIGHT)
+            matched[str(Flag.UNDERWEIGHT)] = [f"profile:bmi={value:.1f}"]
+
+    kcal = (targets or {}).get("energy_target_kcal")
+    if isinstance(kcal, (int, float)) and kcal < MIN_SELF_MANAGED_KCAL:
+        flags.append(Flag.LOW_ENERGY_TARGET)
+        matched[str(Flag.LOW_ENERGY_TARGET)] = [f"profile:energy_target_kcal={kcal}"]
+
+    return GuardResult(flags=flags, matched=matched)
+
+
+def combine(*results: GuardResult) -> GuardResult:
+    """Union of several results, first occurrence wins the ordering, no duplicates."""
+    flags: list[Flag] = []
+    matched: dict[str, list[str]] = {}
+    for result in results:
+        for flag in result.flags:
+            if flag not in flags:
+                flags.append(flag)
+        for key, hits in result.matched.items():
+            bucket = matched.setdefault(key, [])
+            bucket.extend(h for h in hits if h not in bucket)
     return GuardResult(flags=flags, matched=matched)
 
 
@@ -122,7 +206,19 @@ FLAG_INSTRUCTIONS: dict[Flag, str] = {
     ),
     Flag.MINOR: (
         "ผู้ใช้อาจอายุต่ำกว่า 18 ปี ห้ามแนะนำการลดพลังงานเพื่อลดน้ำหนักหรืออาหารเสริมใด ๆ "
-        "ให้เน้นการกินให้ครบหมู่ พลังงานเพียงพอต่อการเจริญเติบโต และให้ปรึกษาผู้ปกครองกับแพทย์"
+        "ให้เน้นการกินให้ครบหมู่ พลังงานเพียงพอต่อการเจริญเติบโต และให้ปรึกษาผู้ปกครองกับแพทย์ "
+        "บริการนี้ออกแบบสำหรับผู้ที่อายุ 18 ปีขึ้นไป ระบบจึงไม่คำนวณตัวเลขพลังงานหรือมาโครให้ "
+        "ห้ามประมาณตัวเลขเป้าหมายให้เองแม้ผู้ใช้จะขอ"
+    ),
+    Flag.UNDERWEIGHT: (
+        "โปรไฟล์ผู้ใช้มีค่า BMI ต่ำกว่า 18.5 (น้ำหนักน้อยกว่าเกณฑ์) ห้ามแนะนำการลดพลังงานหรือลดน้ำหนัก "
+        "แม้ผู้ใช้จะตั้งเป้าหมายลดไขมันไว้ ให้บอกตรง ๆ ว่าตัวเลขเป้าหมายที่ระบบให้เป็นระดับรักษาน้ำหนัก "
+        "อธิบายเหตุผลสั้น ๆ (เสี่ยงต่อมวลกล้ามเนื้อ ฮอร์โมน กระดูก และภาวะ EA ต่ำ) "
+        "และแนะนำให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อนตัดสินใจลดไขมัน"
+    ),
+    Flag.LOW_ENERGY_TARGET: (
+        "พลังงานเป้าหมายที่ระบบคำนวณได้ต่ำกว่า 1,200 kcal/วัน ต้องบอกผู้ใช้ชัดเจนว่าระดับนี้ไม่ควรทำ "
+        "ด้วยตนเอง แนะนำให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อนเริ่ม และห้ามแนะนำให้ลดต่ำกว่านี้อีก"
     ),
     Flag.PREGNANCY: (
         "ผู้ใช้ตั้งครรภ์หรือให้นมบุตร ห้ามแนะนำการลดพลังงานหรืออาหารเสริมเพื่อการลดไขมัน "

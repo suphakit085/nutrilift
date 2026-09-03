@@ -95,7 +95,15 @@ export type Targets = {
   warnings: string[];
   references: string[];
   disclaimer: string;
-  inputs: { goal_label_th: string; activity_label_th: string };
+  inputs: { goal: "cut" | "bulk" | "maintain"; goal_label_th: string; activity_label_th: string };
+  /** kg/m². Only the low side is used for advice - see nutrition.py BMI_UNDERWEIGHT. */
+  bmi: number;
+  underweight: boolean;
+  /** Goal the numbers were actually built from. Differs from inputs.goal when a
+   *  cut was downgraded to maintenance (underweight). */
+  effective_goal: "cut" | "bulk" | "maintain";
+  effective_goal_label_th: string;
+  deficit_suppressed_reason: "underweight" | null;
 };
 
 export type Citation = {

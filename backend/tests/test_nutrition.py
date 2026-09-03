@@ -176,3 +176,79 @@ def test_invalid_input_raises(overrides):
 
 def test_age_derived_from_birth_year():
     assert make_profile(birth_year=2001).age(NOW) == 25
+
+
+# --------------------------------------------------------------------------
+# Profile-level safety (2026-09-03): the service is for adults (18+), and a cut
+# is never prescribed to someone under the WHO underweight threshold.
+# inputs.goal keeps the request, effective_goal is what the numbers were built
+# from.
+# --------------------------------------------------------------------------
+
+THIS_YEAR = datetime.now(UTC).year
+
+
+@pytest.mark.parametrize("age", [17, 15, 10])
+def test_under_18_gets_no_numbers_at_all(age):
+    # Not downgraded, refused: the profile route turns this into a 422 so the
+    # row is never saved, and a legacy row shows no targets in chat.
+    with pytest.raises(NutritionInputError, match="18-100"):
+        calc_nutrition_targets(make_profile(birth_year=THIS_YEAR - age, goal="cut"))
+
+
+def test_exactly_18_is_accepted_with_normal_cut():
+    r = calc_nutrition_targets(make_profile(birth_year=THIS_YEAR - 18, goal="cut"))
+    assert r["effective_goal"] == "cut"
+    assert r["deficit_suppressed_reason"] is None
+    assert r["energy_target_kcal"] < r["tdee_kcal"]
+
+
+def test_underweight_cut_is_served_as_maintenance():
+    # 45 kg / 1.65^2 = 16.53
+    r = calc_nutrition_targets(
+        make_profile(sex="female", height_cm=165.0, weight_kg=45.0, goal="cut")
+    )
+    assert r["bmi"] == 16.5
+    assert r["underweight"] is True
+    assert r["effective_goal"] == "maintain"
+    assert r["deficit_suppressed_reason"] == "underweight"
+    assert r["energy_target_kcal"] == r["tdee_kcal"]
+    assert any("BMI" in w for w in r["warnings"])
+
+
+def test_normal_adult_cut_still_gets_deficit():
+    # 70 kg / 1.75^2 = 22.86
+    r = calc_nutrition_targets(make_profile(goal="cut"))
+    assert r["bmi"] == 22.9
+    assert r["underweight"] is False
+    assert r["effective_goal"] == "cut"
+    assert r["deficit_suppressed_reason"] is None
+    assert r["energy_target_kcal"] < r["tdee_kcal"]
+
+
+def test_low_target_warning_no_longer_requires_cut():
+    # female 25y, 30 kg, 120 cm, sedentary: BMR 764, TDEE 917 - under the
+    # 1,200 kcal floor even at maintenance, so the warning must still fire.
+    r = calc_nutrition_targets(
+        make_profile(
+            sex="female", weight_kg=30.0, height_cm=120.0,
+            activity_level="sedentary", goal="maintain",
+        )
+    )
+    assert r["energy_target_kcal"] < 1200
+    assert any("1,200" in w for w in r["warnings"])
+
+
+def test_summary_carries_warnings_and_effective_goal():
+    r = calc_nutrition_targets(
+        make_profile(sex="female", height_cm=165.0, weight_kg=45.0, goal="cut")
+    )
+    s = summarize_targets_th(r)
+    assert "ระบบปรับเป็น" in s
+    assert "คำเตือนจากระบบคำนวณ" in s
+    assert "BMI" in s
+
+
+def test_summary_has_no_warning_line_when_clean():
+    s = summarize_targets_th(calc_nutrition_targets(make_profile()))
+    assert "คำเตือน" not in s

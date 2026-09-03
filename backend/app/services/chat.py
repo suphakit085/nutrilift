@@ -24,9 +24,11 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
-from app.services.foods import lookup_food
+from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client
+from app.services.meal_plan import MealPlanError, build_day_plan
 from app.services.nutrition import (
+    GOAL_LABELS_TH,
     NutritionInputError,
     ProfileInput,
     calc_nutrition_targets,
@@ -81,6 +83,28 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "enum": ["sedentary", "light", "moderate", "active", "very_active"],
                     "description": "ส่งเฉพาะเมื่อผู้ใช้ระบุระดับกิจกรรมอื่นในข้อความ",
                 },
+            },
+            "required": [],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "suggest_day_menu",
+        "description": (
+            "จัดเมนูอาหาร 1 วัน (เช้า/กลางวัน/เย็น/ว่าง) พร้อมปริมาณที่รวมแล้วเข้าใกล้เป้าหมายพลังงานและ"
+            "มาโครของผู้ใช้ ใช้เครื่องมือนี้ทุกครั้งที่ผู้ใช้ขอตัวอย่างเมนู ตารางอาหาร หรือ 'ควรกินอะไรบ้าง' "
+            "ห้ามแต่งเมนูหรือกะปริมาณเอง เพราะเมนูคือผลรวม ถ้าเดาปริมาณเองตัวเลขรวมจะไม่ตรงกับเป้าหมายที่บอกผู้ใช้ไป "
+            "ระบบจะดึงเป้าหมายและข้อจำกัดอาหารจากโปรไฟล์ให้เอง ไม่ต้องส่งมา "
+            "ถ้าผู้ใช้ขอเมนูแบบอื่นหรือไม่ชอบเมนูที่ได้ ให้เรียกซ้ำโดยเพิ่ม variant ทีละ 1"
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "variant": {
+                    "type": "integer",
+                    "description": "0 = เมนูชุดแรก เพิ่มทีละ 1 เมื่อผู้ใช้ขอเมนูอื่น",
+                    "minimum": 0,
+                }
             },
             "required": [],
             "additionalProperties": False,
@@ -186,9 +210,51 @@ def _run_calc_tool(profile: ProfileInput | None, args: dict) -> dict:
     return result
 
 
+def _run_menu_tool(db: Session, profile: ProfileInput | None, args: dict) -> dict:
+    """Build a day's menu for the stored profile.
+
+    Targets come from ``calc_nutrition_targets`` rather than from the model, so
+    a menu can never be built against numbers the model made up - and a profile
+    the calculator rejects (under 18, out-of-range measurements) yields no menu
+    at all, the same as it yields no targets.
+    """
+    if profile is None:
+        return {
+            "error": "no_profile",
+            "message": (
+                "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร "
+                "ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
+            ),
+        }
+    try:
+        targets = calc_nutrition_targets(profile)
+    except NutritionInputError as exc:
+        return {"error": "invalid_profile", "message": str(exc)}
+
+    try:
+        variant = int(args.get("variant") or 0)
+    except (TypeError, ValueError):
+        variant = 0
+
+    try:
+        return build_day_plan(
+            all_foods(db),
+            {
+                "kcal": targets["energy_target_kcal"],
+                **{k: targets["macros"][k] for k in ("protein_g", "carb_g", "fat_g")},
+            },
+            profile.restrictions,
+            variant=max(variant, 0),
+        )
+    except MealPlanError as exc:
+        return {"error": "cannot_build_menu", "message": str(exc)}
+
+
 def _execute_tool(db: Session, profile: ProfileInput | None, name: str, args: dict) -> dict:
     if name == "calc_nutrition_targets":
         return _run_calc_tool(profile, args)
+    if name == "suggest_day_menu":
+        return _run_menu_tool(db, profile, args)
     if name == "lookup_food":
         return lookup_food(db, args.get("query", ""))
     return {"error": "unknown_tool", "message": f"ไม่รู้จักเครื่องมือ {name}"}
@@ -257,7 +323,8 @@ def _profile_summary_th(profile: ProfileInput | None) -> str | None:
     return (
         f"เพศ {'ชาย' if profile.sex == 'male' else 'หญิง'}, อายุ {profile.age()} ปี, "
         f"สูง {profile.height_cm} ซม., หนัก {profile.weight_kg} กก.{bf}, "
-        f"เล่นเวท {profile.training_days} วัน/สัปดาห์"
+        f"เล่นเวท {profile.training_days} วัน/สัปดาห์, "
+        f"เป้าหมายที่ตั้งไว้: {GOAL_LABELS_TH.get(profile.goal, profile.goal)}"
         + (f", ข้อจำกัดอาหาร: {', '.join(profile.restrictions)}" if profile.restrictions else "")
     )
 
@@ -330,20 +397,30 @@ def stream_chat(
         }
         return
 
+    targets: dict | None = None
     targets_summary = None
     if profile is not None:
         try:
-            targets_summary = summarize_targets_th(calc_nutrition_targets(profile))
+            targets = calc_nutrition_targets(profile)
+            targets_summary = summarize_targets_th(targets)
         except NutritionInputError:
             logger.warning("stored profile fails validation; skipping targets summary")
-            targets_summary = None
+        # Profile-derived risk (age, BMI, computed target). The text rules above
+        # cannot see any of this - a logged-in minor rarely retypes their age -
+        # so it is merged here, after targets exist, and lands in the same
+        # guard_instructions / safety_flags as the text rules.
+        guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
+    effective_goal = (targets or {}).get("effective_goal") or (profile.goal if profile else None)
     system_prompt = prompts.build_system_prompt(
         profile_summary=_profile_summary_th(profile),
         targets_summary=targets_summary,
         passages=[p.as_dict() for p in passages],
         guard_instructions=guardrails.instructions_for(guard),
         use_rag=use_rag,
+        goal=effective_goal,
+        sex=profile.sex if profile else None,
+        age=profile.age() if profile else None,
     )
 
     contents = _history_to_contents(history or [])

@@ -90,6 +90,17 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
     }
 
 
+def all_foods(db: Session) -> list[dict]:
+    """Every row as a plain dict, for the meal planner.
+
+    The planner scores the whole table to rank candidates per role, so it needs
+    all rows rather than a search hit. Ordered by name so a given database
+    always yields the same menu for the same profile.
+    """
+    rows = db.execute(select(Food).order_by(Food.name_th)).scalars()
+    return [_row_to_dict(f) for f in rows]
+
+
 def search_foods(db: Session, query: str, limit: int = 20) -> list[Food]:
     """Food search for the diary UI. Returns ORM rows (with `id`, needed to
     log an entry) unlike lookup_food's dict payload, which is fed to the LLM

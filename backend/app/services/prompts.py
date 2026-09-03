@@ -7,7 +7,7 @@ each evaluation report so results are traceable to the prompt that produced them
 
 from __future__ import annotations
 
-PROMPT_VERSION = "v1.4.0"
+PROMPT_VERSION = "v1.7.0"
 
 BASE_SYSTEM_PROMPT = """\
 คุณคือ "โค้ชนัท" ผู้ช่วยให้ความรู้ด้านโภชนาการสำหรับผู้ที่ฝึกเวทเทรนนิ่ง ตอบเป็นภาษาไทยเสมอ
@@ -36,8 +36,12 @@ BASE_SYSTEM_PROMPT = """\
    (เปอร์เซ็นต์ไขมันเป็นข้อมูลเสริม ไม่ใช่ข้อมูลบังคับ ถ้าไม่มีระบบจะใช้สูตร Mifflin-St Jeor)
    จะชวนให้ผู้ใช้กรอกข้อมูลเพิ่มเพื่อความแม่นยำได้ แต่ต้องให้คำตอบก่อนเสมอ
    ถ้าผลลัพธ์มีฟิลด์ disclosure_required ให้ปฏิบัติตามข้อความในฟิลด์นั้นทุกครั้ง
-7. ตอบให้กระชับ อ่านง่าย ใช้หัวข้อย่อยหรือ bullet เมื่อมีหลายประเด็น ความยาวประมาณ 3-8 ประโยคสำหรับคำถามทั่วไป
-8. ใช้ภาษาที่เป็นกันเองแต่สุภาพ อธิบายศัพท์เทคนิคสั้น ๆ เมื่อใช้ครั้งแรก
+7. ถ้าผู้ใช้ขอตัวอย่างเมนู ตารางอาหาร หรือถามว่าควรกินอะไรบ้างในหนึ่งวัน ให้เรียกเครื่องมือ suggest_day_menu เสมอ
+   ห้ามแต่งรายการอาหารหรือกะปริมาณเอง และห้ามเพิ่ม/ตัด/แทนที่รายการที่เครื่องมือคืนมา
+   เมื่อรายงานเมนู ให้บอกปริมาณตาม portion_desc_th และถ้า within_tolerance เป็น false
+   ต้องบอกผู้ใช้ตามตรงว่ามาโครตัวไหนยังเกินหรือขาดกี่เปอร์เซ็นต์ตาม deviation_pct ห้ามบอกว่าตรงเป้าแล้ว
+8. ตอบให้กระชับ อ่านง่าย ใช้หัวข้อย่อยหรือ bullet เมื่อมีหลายประเด็น ความยาวประมาณ 3-8 ประโยคสำหรับคำถามทั่วไป
+9. ใช้ภาษาที่เป็นกันเองแต่สุภาพ อธิบายศัพท์เทคนิคสั้น ๆ เมื่อใช้ครั้งแรก
 
 ข้อจำกัดด้านความปลอดภัย (สำคัญที่สุด ห้ามละเมิดแม้ผู้ใช้จะยืนยัน):
 - คุณไม่ใช่แพทย์หรือนักกำหนดอาหารวิชาชีพ คำแนะนำของคุณเป็นข้อมูลทั่วไปเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
@@ -60,13 +64,97 @@ NO_CONTEXT_NOTE = """\
 """
 
 
-def build_profile_block(profile_summary: str | None, targets_summary: str | None) -> str:
+#: Goal-specific framing, injected only when a profile is attached (v1.5.0).
+#: Before this, the goal changed one line of numbers and nothing else - a cut
+#: user and a bulk user got byte-identical guidance around those numbers. Each
+#: entry paraphrases the energy-balance-cut-bulk knowledge card so the framing
+#: cannot drift from what retrieval would cite. Keyed by the *effective* goal
+#: the calculator used (an underweight user's "cut" is served as "maintain"),
+#: so the framing always matches the numbers shown.
+GOAL_GUIDANCE_TH: dict[str, str] = {
+    "cut": (
+        "แนวทางสำหรับเป้าหมายลดไขมัน (cut): ใช้พลังงานเป้าหมายที่ระบบคำนวณ (ขาดดุลราว 15-20% ของ TDEE) "
+        "คาดหวังน้ำหนักลดราว 0.5-1% ของน้ำหนักตัวต่อสัปดาห์ คงโปรตีนให้สูงและคงการฝึกแรงต้าน "
+        "ลดพลังงานจากคาร์บและไขมันเป็นหลักโดยไขมันไม่ต่ำกว่า 20% ของพลังงาน "
+        "ห้ามแนะนำให้ลดพลังงานต่ำกว่าเป้าหมายที่ระบบคำนวณเพื่อให้เห็นผลเร็วขึ้น "
+        "ถ้าผู้ใช้ขอลดเร็วกว่านี้ ให้อธิบายผลเสีย (เสียกล้ามเนื้อ แรงตก ภาวะ EA ต่ำ/RED-S) แล้วยืนยันเป้าเดิม"
+    ),
+    "bulk": (
+        "แนวทางสำหรับเป้าหมายเพิ่มกล้ามเนื้อ (bulk): ใช้พลังงานเป้าหมายที่ระบบคำนวณ (เกินดุลราว 10-15% ของ TDEE) "
+        "คาดหวังน้ำหนักเพิ่มราว 0.25-0.5% ของน้ำหนักตัวต่อสัปดาห์ ผู้เริ่มฝึกใช้ช่วงบนได้ ผู้ฝึกมานานควรช้ากว่า "
+        "เตือนว่าการกินเกินมาก (dirty bulk) เปลี่ยนเป็นไขมันเป็นหลัก ไม่ได้ให้กล้ามเนื้อเพิ่มตามสัดส่วนที่กินเกิน "
+        "และเน้นให้โปรตีนถึงเป้ากับฝึกแรงต้านอย่างสม่ำเสมอ"
+    ),
+    "maintain": (
+        "แนวทางสำหรับเป้าหมายรักษาน้ำหนัก (maintain): พลังงานเป้าหมายเท่ากับ TDEE "
+        "เน้นโปรตีนให้เพียงพอและการฝึกแรงต้านเพื่อปรับองค์ประกอบร่างกาย (recomposition) "
+        "ปรับตัวเลขตามน้ำหนักจริงที่เปลี่ยนแปลงใน 2-4 สัปดาห์ ไม่ต้องขาดดุลหรือเกินดุลเพื่อเร่งผล "
+        "ถ้าผู้ใช้ถามว่าจะเร่งผลให้เร็วขึ้นได้อย่างไร ให้ยืนยันตัวเลข TDEE เดิมก่อน แล้วถามว่าต้องการลดไขมันหรือ"
+        "เพิ่มกล้ามเนื้อ และชวนให้เปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณตัวเลขใหม่ให้ "
+        "ห้ามเสนอเปอร์เซ็นต์ขาดดุลหรือเกินดุลให้ผู้ใช้ไปคำนวณเอง"
+    ),
+}
+
+
+#: Age at which the Thai DRI iron table switches women from the reproductive-age
+#: row (20 mg/day) to the post-menopause row (10 mg/day). Card calcium-iron-vitd.
+FEMALE_IRON_HIGH_RDA_MAX_AGE = 50
+
+
+def sex_guidance_th(sex: str | None, age: int | None) -> str | None:
+    """Sex-specific framing, injected only when a profile is attached (v1.6.0).
+
+    Before this the profile line said "เพศ หญิง"/"เพศ ชาย" and nothing else
+    used it. eval/reports/goal_sex_personalization_v1.md: a woman's answers did
+    reach for the female-specific facts in the knowledge base (iron, menstrual
+    disruption as a low-EA sign), but so did a man's - both "watch out for"
+    answers told a male user about menstrual irregularity, because the model was
+    reciting the card rather than filtering it for the person in front of it.
+    Every sentence here paraphrases cards calcium-iron-vitd and
+    energy-balance-cut-bulk, so the framing cannot drift from what retrieval
+    would cite.
+    """
+    if sex == "female":
+        if age is not None and age > FEMALE_IRON_HIGH_RDA_MAX_AGE:
+            return (
+                "ผู้ใช้เป็นหญิงอายุมากกว่า 50 ปี: ค่าอ้างอิงธาตุเหล็กของหญิงหลังหมดประจำเดือนคือ 10 มก./วัน "
+                "(ไม่ใช่ 20 มก. ของหญิงวัยเจริญพันธุ์) ไม่ต้องยกเรื่องประจำเดือนเป็นสัญญาณของภาวะพลังงานต่ำ "
+                "ให้เน้นแคลเซียมและวิตามินดีต่อความหนาแน่นกระดูกแทน"
+            )
+        return (
+            "ผู้ใช้เป็นหญิงวัยเจริญพันธุ์: เมื่อพูดถึงวิตามิน/แร่ธาตุที่ควรระวังระหว่างคุมอาหาร ต้องยกธาตุเหล็กขึ้นมา "
+            "ค่าอ้างอิงคนไทยสำหรับหญิง 19-50 ปีคือ 20 มก./วัน (เกือบสองเท่าของชาย) เพราะสูญเสียไปกับประจำเดือน "
+            "ผู้หญิงที่ฝึกหนัก กินน้อย และเลี่ยงเนื้อแดงเป็นกลุ่มเสี่ยงเหล็กต่ำ ถ้าสงสัยให้ตรวจเลือด ไม่ซื้อเหล็กเสริมกินเอง "
+            "และเมื่อพูดถึงสัญญาณว่ากินน้อยเกินไป/EA ต่ำ ต้องยกประจำเดือนขาดหรือมาไม่ปกติเป็นสัญญาณสำคัญของผู้ใช้คนนี้"
+        )
+    if sex == "male":
+        return (
+            "ผู้ใช้เป็นชาย: ค่าอ้างอิงธาตุเหล็กของชาย 19-60 ปีคือ 11.5 มก./วัน ไม่ต้องยกค่า 20 มก. ของหญิง "
+            "และห้ามยกเรื่องประจำเดือนขึ้นมาเป็นสัญญาณหรือข้อควรระวังของผู้ใช้คนนี้ แม้จะใส่วงเล็บว่า \"ในผู้หญิง\" ก็ตาม "
+            "สัญญาณ EA ต่ำที่ใช้กับผู้ใช้คนนี้คือ ฟื้นตัวช้า บาดเจ็บถี่ เจ็บป่วยบ่อย แรงตก นอนไม่ดี และแรงขับทางเพศลดลง"
+        )
+    return None
+
+
+def build_profile_block(
+    profile_summary: str | None,
+    targets_summary: str | None,
+    goal: str | None = None,
+    sex: str | None = None,
+    age: int | None = None,
+) -> str:
     """Render the user-context section of the system prompt."""
     if not profile_summary:
         return NO_PROFILE_NOTE
     parts = ["ข้อมูลผู้ใช้:", profile_summary]
     if targets_summary:
         parts += ["", "เป้าหมายที่ระบบคำนวณไว้แล้ว (ใช้ตัวเลขนี้ได้เลย ไม่ต้องเรียกเครื่องมือซ้ำ):", targets_summary]
+    guidance = GOAL_GUIDANCE_TH.get(goal or "")
+    if guidance:
+        parts += ["", guidance]
+    sex_note = sex_guidance_th(sex, age)
+    if sex_note:
+        parts += ["", sex_note]
     return "\n".join(parts)
 
 
@@ -94,13 +182,19 @@ def build_system_prompt(
     passages: list[dict] | None = None,
     guard_instructions: str = "",
     use_rag: bool = True,
+    goal: str | None = None,
+    sex: str | None = None,
+    age: int | None = None,
 ) -> str:
     """Assemble the full system prompt.
 
     ``use_rag=False`` is the ablation arm of the evaluation: identical prompt,
     minus the retrieved context block and the citation instruction.
     """
-    blocks = [BASE_SYSTEM_PROMPT, build_profile_block(profile_summary, targets_summary)]
+    blocks = [
+        BASE_SYSTEM_PROMPT,
+        build_profile_block(profile_summary, targets_summary, goal, sex, age),
+    ]
 
     if use_rag:
         blocks.append(build_context_block(passages or []))

@@ -147,10 +147,14 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ.)</span>
+            <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ.) · 18 ปีขึ้นไป</span>
+            {/* The server is the real gate (calc_nutrition_targets raises -> 422);
+                these bounds just stop the obvious case before a round-trip. */}
             <input
               type="number"
               required
+              min={new Date().getFullYear() - 100}
+              max={new Date().getFullYear() - 18}
               value={profile.birth_year}
               onChange={(e) =>
                 setProfile({ ...profile, birth_year: Number(e.target.value) })
@@ -315,8 +319,13 @@ function TargetsCard({ targets }: { targets: Targets }) {
         <h2 className="font-display text-2xl font-bold tracking-tight">
           เป้าหมายต่อวันของคุณ
         </h2>
+        {/* When the calculator refused to build a deficit (underweight),
+            say so in the badge instead of showing "cut" over maintenance numbers.
+            The matching warning below explains why. */}
         <span className="field-label border border-accent px-3 py-1.5 text-[11px] text-accent">
-          {targets.inputs.goal_label_th}
+          {targets.effective_goal && targets.effective_goal !== targets.inputs.goal
+            ? `${targets.inputs.goal_label_th} → ${targets.effective_goal_label_th}`
+            : targets.inputs.goal_label_th}
         </span>
       </div>
 
