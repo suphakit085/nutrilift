@@ -10,6 +10,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
+from app.db.session import connect_args_for
 from app.db.models import Base
 
 config = context.config
@@ -47,6 +48,9 @@ def run_migrations_online() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        # Same reason as app.db.session: this runs against Supabase's
+        # transaction-mode pooler on boot.
+        connect_args=connect_args_for(settings.database_url),
     )
     with connectable.connect() as connection:
         context.configure(

@@ -1,6 +1,6 @@
 # Deploy checklist
 
-เอกสารนี้เตรียมไว้สำหรับตอน deploy จริง (week 9 ตามไทม์ไลน์ในแผน) — ตรวจสอบกับสถานะ repo จริง ณ 2 ก.ย. 2569
+เอกสารนี้เตรียมไว้สำหรับตอน deploy จริง (week 9 ตามไทม์ไลน์ในแผน) — ตรวจสอบกับสถานะ repo จริง ณ 4 ก.ย. 2569
 MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว ยังไม่เคย deploy ที่ไหนเลย ทุกอย่างรันบน docker-compose ในเครื่องเท่านั้น
 
 ต้องมีบัญชี (ฟรี tier พอสำหรับโปรเจกนี้): [Supabase](https://supabase.com), [Render](https://render.com)
@@ -17,6 +17,11 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
       เพราะ backend จะรันบน serverless/managed host ที่เปิด-ปิด connection บ่อย) มาเป็น `DATABASE_URL`
       รูปแบบ `postgresql+psycopg://...` (ต้องมี `+psycopg` ต่อท้าย `postgresql` ตามที่โค้ดใช้ driver นี้
       อยู่แล้วใน `.env.example`)
+- [ ] ไม่ต้องแก้อะไรเรื่อง prepared statement — pooler port 6543 เป็น **transaction mode** ซึ่งเข้ากันไม่ได้กับ
+      prepared statement ที่ psycopg3 เปิดให้อัตโนมัติหลัง query เดิมรันครบ 5 ครั้ง (อาการคือ error
+      `prepared statement "_pg3_0" does not exist` โผล่หลังใช้งานไปสักพัก ไม่ใช่ตอน deploy — เหมือน flake)
+      `app/db/session.py` ปิด `prepare_threshold` ไว้แล้ว และ `alembic/env.py` ใช้ค่าเดียวกัน
+      (ล็อกไว้ด้วย `tests/test_db_connect_args.py`)
 - [ ] **ยังไม่ต้องรัน migration ที่นี่** — `backend/Dockerfile` รัน `alembic upgrade head` เองตอน boot
       (บรรทัด `CMD` มี `alembic upgrade head && uvicorn ...`) ต่อเมื่อ deploy backend แล้วเท่านั้น
 - [ ] หลัง backend deploy และ migrate สำเร็จ (ดูขั้นตอน 2) กลับมารัน ingest จากเครื่องตัวเอง ชี้
@@ -24,7 +29,8 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
       ```
       cd backend && DATABASE_URL=<supabase-url> .venv/Scripts/python.exe -m ingest
       ```
-      (ตรวจว่า `knowledge/cards/*.md` และ `knowledge/foods.csv` ครบก่อนรัน — ปัจจุบัน 25 การ์ด, 339 แถวอาหาร)
+      (ตรวจว่า `knowledge/cards/*.md` และ `knowledge/foods.csv` ครบก่อนรัน — ปัจจุบัน 26 การ์ด, 339 แถวอาหาร)
+      ต้องมี `GEMINI_API_KEY` ใน env ตอนรันด้วย เพราะขั้นนี้เรียก embedding API (~144 chunks = 3 batch calls, ไม่กินโควตาแชท)
 - [ ] ตรวจว่า `SELECT count(*) FROM chunks` และ `SELECT count(*) FROM foods` บน Supabase ตรงกับที่รันในเครื่อง
 
 ## 2. Backend — Render หรือ Railway
@@ -74,12 +80,14 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
 ## 5. หลัง deploy สำเร็จ
 
 - [ ] บันทึก URL จริง + วันที่ deploy ไว้ใน `docs/architecture.md` (ตามธรรมเนียมที่บันทึกทุกอย่างที่วัดจริง)
-- [ ] เริ่มส่ง `eval/reports/baseline-v5_expert.csv` (+ `_expert_key.csv`) ให้ผู้เชี่ยวชาญ/นักกำหนดอาหาร/
-      เทรนเนอร์ให้คะแนน blind (ต้องมี mapping key เก็บแยกไว้ไม่ให้ผู้ให้คะแนนเห็น)
+- [ ] ส่ง `eval/reports/baseline-v9_expert.csv` ให้ผู้เชี่ยวชาญ/นักกำหนดอาหาร/เทรนเนอร์ให้คะแนน blind
+      **ส่งไฟล์นี้ไฟล์เดียว** — `baseline-v9_expert_key.csv` คือไฟล์เฉลยที่แมปคอลัมน์ A/B กลับไปเป็น
+      rag/no-RAG ถ้าผู้ให้คะแนนเห็น การ blind จะเสียทันทีและผลที่ได้ใช้อ้างอิงไม่ได้
+      (ไฟล์ key ถูก gitignore ไว้แล้ว เก็บไว้ในเครื่องเท่านั้น) — อย่าส่ง `baseline-v7` ซึ่งเป็นชุดเก่า
 - [ ] เตรียมแบบสอบถาม SUS + แผนเก็บข้อมูลผู้ใช้จริง 20-30 คน (เวทเทรนนิ่ง) ตามหัวข้อ 4 ข้อ 6 ในแผน — ต้อง
       รอระบบ deploy เสถียรระยะหนึ่งก่อน (คำแนะนำในแผน: 1-2 สัปดาห์)
-- [ ] เมื่อรวบรวมผลผู้เชี่ยวชาญ + SUS ครบ ค่อยรัน Wilcoxon signed-rank อย่างเป็นทางการบน correctness
-      rag vs no-RAG (ยังไม่ได้ทำ แม้จะมีข้อมูล baseline-v5 ครบ 100 คู่แล้วก็ตาม)
+- [ ] เมื่อรวบรวมผลผู้เชี่ยวชาญ + SUS ครบ ค่อยรัน Wilcoxon signed-rank บนคะแนน**ของผู้เชี่ยวชาญ**
+      (ฝั่ง LLM-judge รันไปแล้วบน baseline-v9: 150 คู่ correctness +0.19 p=0.0019)
 
 ## ข้อจำกัดที่ควรรู้ก่อนเริ่ม
 
