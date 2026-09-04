@@ -15,10 +15,23 @@ COPY alembic.ini ./
 RUN pip install --upgrade pip && pip install .
 
 # Run as an unprivileged user: a bug in the app or a dependency should not
-# hand out root inside the container. Nothing at runtime writes under /app.
-RUN useradd --system --uid 10001 --user-group --no-create-home nutrilift \
+# hand out root inside the container.
+#
+# pythainlp (the Thai tokeniser BM25 uses) creates a data directory under $HOME
+# the first time it is imported, so the user needs a home it owns. Without one
+# the import raised PermissionError, retrieval caught it, logged "BM25 scoring
+# failed; falling back to dense order" and answered anyway - hybrid retrieval
+# silently off in production, which is the regression the hybrid ranker exists
+# to prevent. PYTHAINLP_DATA pins the location instead of trusting $HOME.
+ENV PYTHAINLP_DATA=/app/.pythainlp
+RUN useradd --system --uid 10001 --user-group --create-home nutrilift \
+    && mkdir -p /app/.pythainlp \
     && chown -R nutrilift:nutrilift /app
 USER nutrilift
+
+# Fail the build, not a user's question, if the tokeniser cannot start as this
+# user. The newmm dictionary ships inside the wheel, so this needs no network.
+RUN python -c "from app.services.bm25 import tokenize; assert len(tokenize('เวย์โปรตีนกินตอนไหนดี')) > 1, 'Thai tokenizer returned nothing'"
 
 EXPOSE 8000
 

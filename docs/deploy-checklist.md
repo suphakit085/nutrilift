@@ -130,6 +130,15 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
 - `ingest --rebuild` ลบข้อมูลก่อน embed → ถ้า 429 กลางทาง production เหลือ 0 chunks
 - CORS origin ไม่ normalise trailing slash; `Retry-After` ไม่ถูก expose ข้าม origin
 
+**พบเพิ่มตอนขับเว็บจริงหลังแก้รอบแรก (4 ก.ย. 2569)**
+- การเปลี่ยนไปรันเป็น non-root ทำให้ `pythainlp` สร้าง data dir ใน `$HOME` ไม่ได้ (user ไม่มี home)
+  → `BM25 scoring failed; falling back to dense order` ทุกคำถาม แปลว่า **hybrid retrieval ปิดเงียบ ๆ
+  บน production** ทั้งที่ตั้ง `RETRIEVAL_HYBRID=true` ผู้ใช้ยังได้คำตอบ จึงไม่มีอะไรฟ้อง
+  แก้ด้วย `--create-home` + `ENV PYTHAINLP_DATA=/app/.pythainlp` และเพิ่ม `RUN python -c ...` ใน
+  Dockerfile ให้ build พังทันทีถ้า tokenizer ทำงานไม่ได้ (เดิมจะพังตอนผู้ใช้ถามแทน)
+- ชื่อห้องแชตในแถบข้างขึ้นว่า "แชตใหม่" ทุกห้องจนกว่าจะรีโหลด — เซิร์ฟเวอร์ตั้งชื่อจากข้อความแรก
+  หลังห้องถูกสร้าง แต่ฝั่งเว็บไม่เคยดึงรายการใหม่ระหว่าง session ผู้ใช้ที่เปิด 3 ห้องจะแยกไม่ออก
+
 **Frontend**
 - กด "แชตใหม่"/ลบห้อง/สลับห้อง ระหว่าง streaming → TypeError ทั้งหน้า (ไม่มี error.tsx) หรือ token
   ของห้อง A ไปต่อท้ายห้อง B — ตอนนี้ abort stream และ ignore callback จาก stream เก่า

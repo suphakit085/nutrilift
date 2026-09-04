@@ -148,7 +148,17 @@ export default function ChatPage() {
         if (!isCurrent()) return;
         conversationId = created.id;
         setActiveId(created.id);
-        setConversations((prev) => [created, ...prev]);
+        // The room is created before the message is sent, so the server's
+        // response still carries the default title; the server renames it
+        // from the first message a moment later. Nothing re-fetches the list
+        // during a session, so without this every room a user opened read
+        // "แชตใหม่" in the sidebar until they reloaded the page - three
+        // identical rows they could not tell apart. Same rule as the server
+        // (app/api/chat.py: `conv.title = user_message[:60]`).
+        setConversations((prev) => [
+          { ...created, title: message.slice(0, 60) },
+          ...prev,
+        ]);
       }
     } catch (err) {
       if (!isCurrent()) return;
