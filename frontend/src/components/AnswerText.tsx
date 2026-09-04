@@ -18,61 +18,7 @@
  * instead of swallowing the rest of the answer.
  */
 
-type Block =
-  | { kind: "heading"; text: string }
-  | { kind: "list"; items: string[] }
-  | { kind: "paragraph"; text: string }
-  | { kind: "rule" };
-
-const HEADING = /^\s{0,3}#{1,6}\s+(.*)$/;
-const BULLET = /^\s{0,3}[-*•]\s+(.*)$/;
-const RULE = /^\s{0,3}(-{3,}|\*{3,}|_{3,})\s*$/;
-
-function toBlocks(source: string): Block[] {
-  const blocks: Block[] = [];
-  let paragraph: string[] = [];
-  let list: string[] = [];
-
-  const flushParagraph = () => {
-    if (paragraph.length) {
-      blocks.push({ kind: "paragraph", text: paragraph.join("\n") });
-      paragraph = [];
-    }
-  };
-  const flushList = () => {
-    if (list.length) {
-      blocks.push({ kind: "list", items: list });
-      list = [];
-    }
-  };
-
-  for (const line of source.split("\n")) {
-    const heading = line.match(HEADING);
-    const bullet = line.match(BULLET);
-
-    if (RULE.test(line)) {
-      flushParagraph();
-      flushList();
-      blocks.push({ kind: "rule" });
-    } else if (heading) {
-      flushParagraph();
-      flushList();
-      blocks.push({ kind: "heading", text: heading[1] });
-    } else if (bullet) {
-      flushParagraph();
-      list.push(bullet[1]);
-    } else if (line.trim() === "") {
-      flushParagraph();
-      flushList();
-    } else {
-      flushList();
-      paragraph.push(line);
-    }
-  }
-  flushParagraph();
-  flushList();
-  return blocks;
-}
+import { toBlocks } from "@/lib/markdown";
 
 /** `**bold**` and `` `code` ``. An unclosed marker is left as literal text so a
  *  half-streamed token does not eat the rest of the line. */
@@ -127,6 +73,46 @@ export function AnswerText({ content }: { content: string }) {
                 <li key={j}>{inline(item, `l${i}-${j}`)}</li>
               ))}
             </ul>
+          );
+        }
+        if (block.kind === "table") {
+          // The day-menu answer is a four-row table of food names and grams; on
+          // a phone it is wider than the bubble, so the table scrolls inside its
+          // own box rather than pushing the whole message pane sideways.
+          return (
+            <div key={i} className="my-3 -mx-1 overflow-x-auto">
+              <table className="w-full border-collapse text-left text-[0.95em]">
+                <thead>
+                  <tr className="border-b border-border">
+                    {block.header.map((cell, c) => (
+                      <th
+                        key={c}
+                        scope="col"
+                        className="px-2 py-1.5 font-semibold"
+                        style={{ textAlign: block.align[c] ?? "left" }}
+                      >
+                        {inline(cell, `th${i}-${c}`)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {block.rows.map((row, r) => (
+                    <tr key={r} className="border-b border-border/50 last:border-0">
+                      {row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className="px-2 py-1.5 align-top"
+                          style={{ textAlign: block.align[c] ?? "left" }}
+                        >
+                          {inline(cell, `td${i}-${r}-${c}`)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           );
         }
         return (
