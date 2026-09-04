@@ -448,6 +448,44 @@ def summarise(rows: list[dict], modes: list[str]) -> str:
             cells.append(str(mean([r.get("correctness") for r in subset])))
         lines.append(f"| {category} | " + " | ".join(cells) + " |")
 
+    # --- citation validity: deterministic, no judge involved --------------
+    #
+    # The judge deliberately never sees the retrieved passages (so it cannot
+    # infer which arm produced an answer), which means it cannot actually check
+    # whether an [Sn] marker refers to a real source - it can only see that a
+    # marker is there. On baseline-v9 it read Q131's "[S1, S2, S5]" as invented
+    # and scored a hallucination, when all three markers were real. Marker
+    # validity needs no model at all: a marker is valid when its number is
+    # within the passages that were retrieved for that answer.
+    rag_rows = [r for r in rows if r.get("mode") == "rag" and (r.get("answer") or "").strip()]
+    if rag_rows:
+        total = invalid = with_markers = 0
+        offenders: list[str] = []
+        for row in rag_rows:
+            retrieved = int(row.get("n_retrieved") or 0)
+            marks = {int(m) for m in re.findall(r"S(\d+)", row.get("answer") or "")}
+            if marks:
+                with_markers += 1
+            total += len(marks)
+            bad = [m for m in marks if m < 1 or m > retrieved]
+            if bad:
+                invalid += len(bad)
+                offenders.append(f"{row['id']} (อ้าง {sorted(bad)} จาก {retrieved} แหล่ง)")
+        lines.append("")
+        lines.append("## ความถูกต้องของการอ้างอิง (ตรวจด้วยกฎ ไม่ใช้ judge)")
+        lines.append("")
+        lines.append(
+            f"- คำตอบโหมด rag ที่มี citation marker: {with_markers}/{len(rag_rows)} "
+            f"(ที่เหลือเป็นคำตอบที่ปฏิเสธด้วยกฎ จึงไม่มีแหล่งอ้างอิง)"
+        )
+        lines.append(f"- marker ทั้งหมด: {total} · **อ้างแหล่งที่ไม่มีจริง: {invalid}**")
+        if offenders:
+            lines.append("- ข้อที่อ้างเกิน: " + ", ".join(offenders[:10]))
+        lines.append(
+            "- หมายเหตุ: ตัวเลขนี้ต่างจาก groundedness ของ judge ซึ่งไม่เห็นแหล่งอ้างอิง "
+            "จึงตรวจได้แค่ว่า *มี* marker หรือไม่ ไม่ใช่ว่า marker นั้นมีอยู่จริงหรือไม่"
+        )
+
     safety_rows = [r for r in rows if r.get("category") in SAFETY_CATEGORIES]
     if any("handled_safely" in r for r in safety_rows):
         lines.append("")
@@ -537,6 +575,14 @@ def main() -> int:
     parser.add_argument("--mode", choices=["rag", "norag", "both"], default="both")
     parser.add_argument("--judge", action="store_true", help="score answers with the judge model")
     parser.add_argument("--limit", type=int, help="only run the first N questions")
+    parser.add_argument(
+        "--from-id",
+        help=(
+            "only run questions whose id sorts at or after this one (e.g. Q101). "
+            "For scoring a batch of newly added questions without paying to "
+            "recompute the ones already measured."
+        ),
+    )
     parser.add_argument("--run-id", help="override the report file prefix")
     parser.add_argument(
         "--delay",
@@ -559,6 +605,10 @@ def main() -> int:
         parser.error("--resume requires --run-id (the run to continue)")
 
     questions = load_questions()
+    if args.from_id:
+        questions = [q for q in questions if q["id"] >= args.from_id]
+        if not questions:
+            parser.error(f"--from-id {args.from_id} matched no questions")
     if args.limit:
         questions = questions[: args.limit]
 
