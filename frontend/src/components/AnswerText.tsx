@@ -108,7 +108,7 @@ function inline(text: string, keyPrefix: string) {
 export function AnswerText({ content }: { content: string }) {
   const blocks = toBlocks(content);
   return (
-    <div className="leading-relaxed">
+    <div className="min-w-0 leading-relaxed wrap-anywhere">
       {blocks.map((block, i) => {
         if (block.kind === "rule") {
           return <hr key={i} className="my-3 border-border" />;

@@ -8,10 +8,9 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, profile_to_input
+from app.api.deps import DB_SESSION, get_current_user, profile_to_input
 from app.api.schemas import DailySummaryOut, FoodLogEntryIn, FoodLogEntryOut, FoodLogEntryUpdate
 from app.db.models import Profile, User
-from app.db.session import get_db
 from app.services import food_log
 from app.services.nutrition import NutritionInputError, calc_nutrition_targets
 
@@ -22,7 +21,7 @@ router = APIRouter(prefix="/food-log", tags=["food-log"])
 def create_entry(
     payload: FoodLogEntryIn,
     user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ):
     entry = food_log.create_entry(
         db,
@@ -41,7 +40,7 @@ def create_entry(
 def list_entries(
     date_: date = Query(alias="date"),
     user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ):
     return food_log.list_entries(db, user, date_)
 
@@ -50,7 +49,7 @@ def list_entries(
 def summary(
     date_: date = Query(alias="date"),
     user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ):
     entries = food_log.list_entries(db, user, date_)
     agg = food_log.daily_totals(entries)
@@ -89,7 +88,7 @@ def update_entry(
     entry_id: uuid.UUID,
     payload: FoodLogEntryUpdate,
     user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ):
     entry = food_log.get_owned_entry(db, user, entry_id)
     if entry is None:
@@ -107,7 +106,7 @@ def update_entry(
 def delete_entry(
     entry_id: uuid.UUID,
     user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ) -> None:
     entry = food_log.get_owned_entry(db, user, entry_id)
     if entry is None:

@@ -46,8 +46,11 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
     #: "สเตอรอย" are stems, so they cover the full spelling *and* the common
     #: truncation without the final ด์.
     Flag.PED: (
-        "สเตียรอย", "สเตอรอย", "steroid", "anabolic", "อนาโบลิก",
-        "เทสโทสเตอโรน", "testosterone", "trenbolone", "เทรนโบโลน", "เทรน โบโลน",
+        # Not "anabolic"/"อนาโบลิก" on their own: "anabolic window มีจริงไหม" is a
+        # core nutrient-timing question, and the compound forms are all caught by
+        # the steroid stems.
+        "สเตียรอย", "สเตอรอย", "steroid", "anabolic androgenic", "anabolic-androgenic",
+        "เทสโทสเตอโรน", "เทสโทสเทอโรน", "testosterone", "trenbolone", "เทรนโบโลน", "เทรน โบโลน",
         "dianabol", "winstrol", "stanozolol", "สตาโนโซลอล", "clenbuterol", "เคลนบูเทอรอล",
         "anavar", "oxandrolone", "ออกซานโดรโลน", "nandrolone", "แนนโดรโลน",
         "deca durabolin", "deca-durabolin", "primobolan", "masteron", "boldenone",
@@ -56,22 +59,49 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         # bare "test e" is a substring of "latest edition", while the real usage
         # is always followed by a dose ("test e 250"). Same for the tren forms.
         "test e ", "test-e", "tren a ", "tren e ", "เทสโต",
-        "sarm", "hgh", "โกรทฮอร์โมน", "ฮอร์โมนเร่งกล้าม",
+        "sarm", "ซาร์ม", "ostarine", "ligandrol", "cardarine", "rad140", "rad-140",
+        "hgh", "growth hormone", "ฉีด gh", "โกรทฮอร์โมน", "ฮอร์โมนเร่งกล้าม",
+        "ฉีดอินซูลิน", "clen ", "เคลน ",
         # protocol talk: someone planning a course rather than naming a compound
         "ขึ้น cycle", "cycle แรก", "จบ cycle", "รอบยา", "ขึ้นรอบยา", "post cycle", "pct",
         # street phrasing seen in Thai lifting forums
-        "ของขึ้น", "ยาเพิ่มกล้าม", "ยาขึ้นกล้าม", "ยาฉีดกล้าม", "ฉีดเข้ากล้าม", "ยาแห้ง",
+        # "ของขึ้น" is the slang from the evasion probes ("พวกของขึ้นที่นักเพาะกาย
+        # ใช้กัน"); the price idiom that also contains it is in _FALSE_FRIENDS.
+        "ของขึ้น", "เล่นของ", "ยาเพิ่มกล้าม", "ยาขึ้นกล้าม", "ยาฉีดกล้าม", "ฉีดเข้ากล้าม", "ยาแห้ง",
         "ยาลดน้ำหนัก", "ยาขับน้ำ", "diuretic", "ยาลดความอ้วน", "ephedrine", "อีเฟดรีน",
     ),
     Flag.MEDICAL: (
         "เบาหวาน", "diabetes", "ความดัน", "hypertension", "โรคไต", "ไตวาย",
         "kidney disease", "โรคหัวใจ", "โรคตับ", "ตับแข็ง", "เกาต์", "gout",
         "ไทรอยด์", "thyroid", "มะเร็ง", "cancer", "แพ้อาหารรุนแรง", "anaphylaxis",
-        "กินยา", "ยาประจำตัว", "หลังผ่าตัด",
+        "กินยา", "ทานยา", "ใช้ยา", "รับยา", "หยุดยา", "ตัวยา", "ยาประจำตัว", "หลังผ่าตัด",
+        # medication by class. Bare "ยา" is unusable (ยาก, ยาว, ยาย ...), so
+        # these are the compounds people write; _FALSE_FRIENDS below blanks the
+        # few ordinary words that contain one of them.
+        "ยาคุม", "ยาแก้", "ยาลด", "ยาปฏิชีวนะ", "ยาฆ่าเชื้อ", "ยานอนหลับ", "ยาถ่าย",
+        "ยาเม็ด", "ยาฉีด", "ยาแคปซูล", "ยารักษา", "ยาบำรุง", "ยาสมุนไพร", "ยาแผนปัจจุบัน",
+        "ยาเสพติด", "ยาบ้า", "ยาไอซ์", "ยาหมอ", "ยาที่หมอ", "ยาชนิด", "ยาโรค",
+        "medication", "medicine", "prescription", "prescribed", "antibiotic",
+        "ibuprofen", "paracetamol", "aspirin", "painkiller", "insulin", "metformin",
+        "statin", "antidepressant",
+        # symptoms - the rule covers อาการป่วย, not only named diseases. "ปวดหัว"
+        # is deliberately absent: "ปวดหัวกับการนับแคล" is an idiom, not a symptom.
+        "เจ็บหน้าอก", "แน่นหน้าอก", "หน้ามืด", "เวียนหัว", "เวียนศีรษะ", "ท้องเสีย",
+        "ท้องร่วง", "ปวดท้อง", "หายใจไม่ออก", "หายใจลำบาก", "ใจสั่น", "เป็นลม", "มีไข้",
+        "ไข้ขึ้น", "ท้องผูก", "ปัสสาวะเป็นเลือด", "ฉี่เป็นเลือด", "ถ่ายเป็นเลือด",
+        "chest pain", "dizzy", "dizziness", "nausea", "diarrhea", "diarrhoea",
+        # lab values and named conditions the earlier list missed
+        "น้ำตาลในเลือดสูง", "น้ำตาลในเลือดต่ำ", "ไตเสื่อม", "ฟอกไต", "ตับอักเสบ",
+        "ไขมันพอกตับ", "หัวใจเต้นผิดจังหวะ", "เคมีบำบัด", "คีโม", "chemo",
+        "diabetic", "kidney problem", "kidney failure", "liver disease", "heart disease",
+        "heart condition", "on insulin", "my doctor", "doctor said", "doctor told",
         # conditions the original list never enumerated, all of which change what
         # is safe to eat (adversarial_scope_v1.md)
-        "pcos", "ถุงน้ำในรังไข่", "ลำไส้แปรปรวน", "ไขมันในเลือด", "คอเลสเตอรอล",
-        "cholesterol", "ไตรกลีเซอไรด์", "โลหิตจาง", "ธาลัสซีเมีย", "thalassemia",
+        "pcos", "ถุงน้ำในรังไข่", "ลำไส้แปรปรวน", "ไขมันในเลือด",
+        # a person's cholesterol, not the nutrient: "ไข่มีคอเลสเตอรอลเท่าไหร่" is a
+        # food fact and stays answerable
+        "คอเลสเตอรอลสูง", "คอเลสเตอรอลในเลือด", "ค่าคอเลสเตอรอล", "high cholesterol",
+        "cholesterol level", "ไตรกลีเซอไรด์", "โลหิตจาง", "ธาลัสซีเมีย", "thalassemia",
         "โรคกระเพาะ", "กรดไหลย้อน", "ซึมเศร้า", "ลมชัก", "หอบหืด", "asthma",
         "ภูมิแพ้", "แพ้ยา", "โรคประจำตัว", "หมอบอกว่า", "หมอสั่ง", "โรคเรื้อรัง",
     ),
@@ -83,15 +113,21 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         # probe "กินเยอะแล้วรู้สึกผิด อยากเอาออกให้หมด" raised no flag at all and
         # was answered as an ordinary overeating question, so the mandatory
         # referral + 1323 hotline never reached the user.
-        "ไม่กินอะไรเลย", "อดทั้งวัน", "งดอาหารทั้งวัน", "อยากเอาออก", "เอาออกให้หมด",
+        "ไม่กินอะไรเลย", "อดทั้งวัน", "งดอาหารทั้งวัน", "เอาออกให้หมด",
         "รู้สึกผิดที่กิน", "กินแล้วรู้สึกผิด", "ชดเชยด้วยการอด", "ล้างท้อง", "purge",
     ),
     Flag.PREGNANCY: ("ตั้งครรภ์", "ท้องอยู่", "คนท้อง", "pregnant", "ให้นมบุตร", "breastfeeding"),
 }
 
-#: Age patterns like "อายุ 15", "15 ปี", "อายุ15ปี"
-_AGE_RE = re.compile(r"(?:อายุ\s*)?(\d{1,2})\s*(?:ปี|ขวบ|years? old|yo\b)")
-_AGE_PREFIX_RE = re.compile(r"อายุ\s*(\d{1,2})")
+#: Age patterns: "อายุ 15", "หนู 15 ปี", "15 ขวบ", "15 years old", "i'm 15".
+#: A bare "N ปี" is *not* an age - "เล่นเวทมา 8 ปี" is training tenure, and the
+#: old pattern turned that into MINOR for the next eight turns.
+_AGE_RES = (
+    re.compile(r"อายุ\s*(\d{1,2})"),
+    re.compile(r"(?:ผม|หนู|ฉัน|ดิฉัน|เรา|น้อง|ลูก|เด็ก)\s*(\d{1,2})\s*(?:ปี|ขวบ)"),
+    re.compile(r"(\d{1,2})\s*(?:ขวบ|years?\s*old|yo\b|y/o)"),
+    re.compile(r"i(?:'m| am)\s*(\d{1,2})\b"),
+)
 
 #: A stated *daily* intake under the self-managed floor ("กินวันละ 800 แคล").
 #: Replaces the old bare "0 แคล" substring, which matched every amount ending in
@@ -100,6 +136,22 @@ _AGE_PREFIX_RE = re.compile(r"อายุ\s*(\d{1,2})")
 #: "โค้กซีโร่ 0 แคล") out of it.
 _KCAL_MENTION_RE = re.compile(r"(?<![\d.,])(\d{1,4})\s*(?:แคล|kcal|กิโลแคลอรี)")
 _DAILY_PHRASES: tuple[str, ...] = ("วันละ", "ต่อวัน", "/วัน", "per day", "a day", "daily")
+#: "ลดวันละ 500 แคล" is a deficit, the standard cut question; only an *intake*
+#: below the floor is a warning sign. The daily phrase must also sit next to the
+#: amount: "โปรตีนวันละกี่กรัม แล้วข้าวมันไก่ 600 แคล" has both words but the
+#: 600 is a food fact.
+_DEFICIT_WORDS: tuple[str, ...] = ("ลด", "ตัด", "หัก", "ขาดดุล", "เผา", "deficit", "burn", "cut")
+_KCAL_CONTEXT_BEFORE = 20
+_KCAL_CONTEXT_AFTER = 12
+
+#: Ordinary words that contain a pattern. Blanked before matching so "กินยาก"
+#: (a picky eater) is not "กินยา" (taking medication), "ตลอด" is not "อด…", and
+#: "หยุดยาว" (a long break) is not "หยุดยา". Each entry is folded the same way
+#: as the patterns.
+_FALSE_FRIENDS: tuple[str, ...] = (
+    "กินยาก", "กินยาว", "ตลอด", "หยุดยาว", "ตัวยาว",
+    "ราคาของขึ้น", "ของขึ้นราคา", "ข้าวของขึ้น",
+)
 
 #: Asking the bot to name a condition or read a lab result. Kept separate from
 #: the condition list because these name no disease at all - "ผมเป็นอะไรครับ"
@@ -151,18 +203,24 @@ _FOLDED_PATTERNS: dict[Flag, tuple[tuple[str, str], ...]] = {
     flag: _fold_patterns(patterns) for flag, patterns in _PATTERNS.items()
 }
 _FOLDED_OUT_OF_SCOPE = _fold_patterns(_OUT_OF_SCOPE_PATTERNS)
+_FOLDED_FALSE_FRIENDS = tuple(normalize_thai(w) for w in _FALSE_FRIENDS)
+_ASCII_LETTER_RE = re.compile(r"[a-z]")
 _FOLDED_DIAGNOSIS = _fold_patterns(_DIAGNOSIS_REQUEST_PATTERNS)
 
 
 def check(message: str) -> GuardResult:
     """Classify one user message. Never raises."""
     text = _normalise(message)
+    for friend in _FOLDED_FALSE_FRIENDS:
+        text = text.replace(friend, " ")
     #: Also matched against a space-stripped copy, so "ส เตียรอยด์" and
     #: "สเต ยรอยด์" cannot walk past a substring test by adding a space.
     #:
-    #: Only single-word patterns use this path. Stripping spaces from a
+    #: Only Thai single-word patterns use this path. Stripping spaces from a
     #: multi-word pattern makes it match across unrelated word boundaries:
-    #: "test e " became "teste", which is inside "la-teste-dition".
+    #: "test e " became "teste", which is inside "la-teste-dition" - and the
+    #: same happens to any English pattern, because English *has* word
+    #: boundaries: "is arm day" squashed to "isarmday" and matched "sarm".
     squashed = re.sub(r"\s+", "", text)
     flags: list[Flag] = []
     matched: dict[str, list[str]] = {}
@@ -171,7 +229,12 @@ def check(message: str) -> GuardResult:
         hits = [
             original
             for folded, original in patterns
-            if folded in text or (" " not in folded and folded in squashed)
+            if folded in text
+            or (
+                " " not in folded
+                and not _ASCII_LETTER_RE.search(folded)
+                and folded in squashed
+            )
         ]
         if hits:
             flags.append(flag)
@@ -179,11 +242,17 @@ def check(message: str) -> GuardResult:
 
     if any(p in text for p in _DAILY_PHRASES):
         digits_only = re.sub(r"(?<=\d),(?=\d)", "", text)  # "1,000 แคล" -> "1000 แคล"
-        low_kcal = [
-            int(v)
-            for v in _KCAL_MENTION_RE.findall(digits_only)
-            if int(v) < MIN_SELF_MANAGED_KCAL
-        ]
+        low_kcal = []
+        for m in _KCAL_MENTION_RE.finditer(digits_only):
+            value = int(m.group(1))
+            if value >= MIN_SELF_MANAGED_KCAL:
+                continue
+            before = digits_only[max(0, m.start() - _KCAL_CONTEXT_BEFORE) : m.start()]
+            after = digits_only[m.end() : m.end() + _KCAL_CONTEXT_AFTER]
+            daily_nearby = any(p in before or p in after for p in _DAILY_PHRASES)
+            deficit = any(w in before for w in _DEFICIT_WORDS)
+            if daily_nearby and not deficit:
+                low_kcal.append(value)
         if low_kcal:
             if Flag.DISORDERED_EATING not in flags:
                 flags.append(Flag.DISORDERED_EATING)
@@ -197,7 +266,7 @@ def check(message: str) -> GuardResult:
             flags.append(Flag.MEDICAL)
         matched.setdefault(str(Flag.MEDICAL), []).extend(diagnosis_hits)
 
-    ages = [int(m) for m in _AGE_RE.findall(text)] + [int(m) for m in _AGE_PREFIX_RE.findall(text)]
+    ages = [int(m) for rx in _AGE_RES for m in rx.findall(text)]
     minor_ages = [a for a in ages if 5 <= a < 18]
     if minor_ages:
         flags.append(Flag.MINOR)

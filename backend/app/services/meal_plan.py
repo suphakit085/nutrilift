@@ -236,7 +236,10 @@ _RESTRICTIONS_EXCLUDING_EGGS = frozenset({"วีแกน"})
 
 _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
     "ฮาลาล": (
-        ("หมู", "แฮม", "เบคอน", "ไส้กรอก", "ขาหมู", "สุรา", "เบียร์", "ไวน์", "เหล้า"),
+        # blood and amphibians are haram alongside pork and alcohol; the ASEAN
+        # table has boiled chicken/duck blood and frog as plain "เนื้อสัตว์" rows
+        ("หมู", "แฮม", "เบคอน", "ไส้กรอก", "ขาหมู", "เลือด", "กบ", "เขียด",
+         "สุรา", "เบียร์", "ไวน์", "เหล้า", "แอลกอฮอล์"),
         frozenset(),
     ),
     "มังสวิรัติ": (_MEAT_TOKENS, _MEAT_CATEGORIES),
@@ -475,6 +478,18 @@ def _pick(
     return ordered[0]
 
 
+#: Rows that are legitimately in the food table (they come from the ASEAN
+#: composition data, with a source id) but must never be *recommended*: the
+#: table's egg category includes sea-turtle eggs, and the vegetarian sweep
+#: served them as a lunch protein because they rank as a clean egg row.
+_NEVER_SUGGEST_TOKENS = ("เต่า", "จะละเม็ด(ไข่")
+
+
+def _never_suggest(food: dict) -> bool:
+    name = normalize_thai(food.get("name_th") or "")
+    return any(_contains(name, normalize_thai(t)) for t in _NEVER_SUGGEST_TOKENS)
+
+
 def build_day_plan(
     foods: list[dict],
     targets: dict[str, float],
@@ -500,6 +515,8 @@ def build_day_plan(
     for food in foods:
         if str(food.get("source") or "").startswith("TOVERIFY"):
             estimated_dropped += 1
+            continue
+        if _never_suggest(food):
             continue
         blocked_by = excluded_by(food, restrictions)
         if blocked_by:

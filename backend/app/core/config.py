@@ -1,19 +1,51 @@
 """Application settings, loaded from environment / .env."""
 
+import logging
+import os
+from collections.abc import Mapping
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 #: backend/.env - resolved from this file, not the working directory, so the
 #: ingest CLI and eval/ scripts load the same settings no matter where they run.
 ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+
+#: JWT secrets that appear in this repo's own defaults / .env.example. Any of
+#: them in production means every token is forgeable by anyone who read GitHub.
+PLACEHOLDER_JWT_SECRETS = frozenset({"change-me", "change-me-to-a-long-random-string"})
+MIN_JWT_SECRET_LENGTH = 32
+#: The literal value .env.example ships for GEMINI_API_KEY.
+PLACEHOLDER_GEMINI_KEY_PREFIX = "AIza..."
+
+
+def _normalise_origin(raw: str) -> str:
+    """Canonical form of one CORS origin.
+
+    Browsers send ``Origin: https://x.vercel.app`` - lowercase scheme and host,
+    no trailing slash - and Starlette compares the string exactly, so a value
+    pasted into Render as ``https://X.vercel.app/`` silently never matches.
+    """
+    origin = raw.strip().rstrip("/")
+    parts = urlsplit(origin)
+    if parts.scheme and parts.netloc:
+        return f"{parts.scheme.lower()}://{parts.netloc.lower()}{parts.path}"
+    return origin
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore"
     )
+
+    # "production" turns the startup secret check in ``check_production_settings``
+    # from a warning into a refusal to boot. Render/Railway are detected even
+    # when this is left unset - see ``is_production``.
+    environment: str = "development"
 
     # Gemini
     # gemini-3.5-flash's free tier is capped at 20 requests/day *per project*,
@@ -85,12 +117,76 @@ class Settings(BaseSettings):
     # Hard cap across all users combined, so total daily spend is bounded even
     # if many accounts are created.
     rate_limit_chat_global_per_day: int = 1500
-    # Login/register attempts per IP, to blunt password guessing.
-    rate_limit_auth_per_15min: int = 10
+    # Login/register attempts per IP. Deliberately loose: a whole classroom
+    # sits behind one NAT during the SUS study, and at 10 the third student to
+    # mistype a password locked everyone out. Password guessing is blunted by
+    # the per-email login limit below instead.
+    rate_limit_auth_per_15min: int = 60
+    # Login attempts per email address (any IP), the actual brute-force guard.
+    rate_limit_login_per_email_per_15min: int = 10
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        origins = (_normalise_origin(o) for o in self.cors_origins.split(","))
+        return [o for o in origins if o]
+
+
+def is_production(environ: Mapping[str, str] | None = None) -> bool:
+    """Whether this process is a deployed instance rather than a dev machine.
+
+    ``ENVIRONMENT=production`` is the explicit switch, but Render sets ``RENDER``
+    and Railway sets ``RAILWAY_*`` on every service automatically, so forgetting
+    to set ENVIRONMENT on the host does not quietly disable the secret check.
+    """
+    env = os.environ if environ is None else environ
+    if env.get("ENVIRONMENT", "").strip().lower() == "production":
+        return True
+    if env.get("RENDER"):
+        return True
+    return any(key.startswith("RAILWAY_") for key in env)
+
+
+def production_config_problems(cfg: "Settings") -> list[str]:
+    """Settings that must never reach production, as human-readable findings."""
+    problems: list[str] = []
+    secret = cfg.jwt_secret
+    if secret in PLACEHOLDER_JWT_SECRETS:
+        problems.append(
+            f"JWT_SECRET is the placeholder value {secret!r}; anyone can mint tokens"
+        )
+    elif len(secret) < MIN_JWT_SECRET_LENGTH:
+        problems.append(
+            f"JWT_SECRET is only {len(secret)} characters; use at least "
+            f"{MIN_JWT_SECRET_LENGTH} random characters"
+        )
+    key = cfg.gemini_api_key
+    if not key.strip():
+        problems.append("GEMINI_API_KEY is empty; every chat turn will fail")
+    elif key.startswith(PLACEHOLDER_GEMINI_KEY_PREFIX):
+        problems.append("GEMINI_API_KEY is the .env.example placeholder ('AIza...')")
+    return problems
+
+
+def check_production_settings(
+    cfg: "Settings", *, environ: Mapping[str, str] | None = None
+) -> None:
+    """Refuse to boot a production deployment on placeholder secrets.
+
+    Called from the FastAPI lifespan. Outside production the same findings are
+    logged as a WARNING so a local checkout with the default ``.env`` keeps
+    working.
+    """
+    problems = production_config_problems(cfg)
+    if not problems:
+        return
+    if is_production(environ):
+        raise RuntimeError(
+            "Refusing to start in production with unsafe settings:\n  - "
+            + "\n  - ".join(problems)
+            + "\nSet the variables above on the host (Render/Railway dashboard) and redeploy."
+        )
+    for problem in problems:
+        logger.warning("INSECURE DEV SETTING (fatal in production): %s", problem)
 
 
 @lru_cache

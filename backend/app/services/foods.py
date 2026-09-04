@@ -10,6 +10,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db.models import Food
+from app.services.thai_text import compose_sara_am
 
 MAX_RESULTS = 5
 
@@ -45,15 +46,25 @@ def _row_to_dict(food: Food) -> dict:
     }
 
 
+def _escape_like(text: str) -> str:
+    """``%`` and ``_`` are LIKE wildcards; "100%" must not match every row."""
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
     """Matching strategy shared by lookup_food (LLM tool) and search_foods
     (REST /foods/search): exact/substring on name, falling back to per-token
     matching for multi-word queries (handles "ข้าวผัดกุ้ง ใหญ่").
     """
-    pattern = f"%{q}%"
+    # The table stores สระอำ composed (ingest rewrites the ASEAN source's
+    # นิคหิต+สระอา form); fold the query the same way so "น้ำพริก" typed on any
+    # keyboard finds "น้ำพริก" however the row was originally spelled. Before
+    # this, 20 of the 28 rows containing น้ำ were unreachable.
+    q = compose_sara_am(q)
+    pattern = f"%{_escape_like(q)}%"
     stmt = (
         select(Food)
-        .where(or_(Food.name_th.ilike(pattern), Food.name_en.ilike(pattern)))
+        .where(or_(Food.name_th.ilike(pattern, escape="\\"), Food.name_en.ilike(pattern, escape="\\")))
         .order_by(func.length(Food.name_th))
         .limit(limit)
     )
@@ -64,8 +75,8 @@ def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
     tokens = [t for t in q.split() if len(t) >= 3]
     if not tokens:
         return []
-    conditions = [Food.name_th.ilike(f"%{t}%") for t in tokens]
-    conditions += [Food.name_en.ilike(f"%{t}%") for t in tokens]
+    conditions = [Food.name_th.ilike(f"%{_escape_like(t)}%", escape="\\") for t in tokens]
+    conditions += [Food.name_en.ilike(f"%{_escape_like(t)}%", escape="\\") for t in tokens]
     return list(
         db.execute(
             select(Food).where(or_(*conditions)).order_by(func.length(Food.name_th)).limit(limit)

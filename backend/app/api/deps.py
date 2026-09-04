@@ -15,6 +15,21 @@ from app.db.models import Profile, User
 from app.db.session import get_db
 from app.services.nutrition import ProfileInput
 
+#: The one way routes should ask for a database session: ``db: Session = DB_SESSION``.
+#:
+#: ``scope="function"`` closes the session as soon as the endpoint has returned
+#: and its response is serialised - *before* the response body is sent. With
+#: the default request scope, FastAPI (>= 0.106) tears yield-dependencies down
+#: only after the body has finished, which for the SSE chat endpoint meant a
+#: session with an open transaction (``db.get`` starts one; nothing commits)
+#: sat "idle in transaction" on a pooled Supabase connection for the whole
+#: LLM stream. Two connections per in-flight chat, verified empirically.
+#:
+#: Every route must use the *same* call and scope: FastAPI keys its per-request
+#: dependency cache on ``(callable, scope)``, so mixing ``Depends(get_db)`` with
+#: this alias in one request silently opens a second session.
+DB_SESSION = Depends(get_db, scope="function")
+
 bearer_scheme = HTTPBearer(auto_error=False)
 
 #: One process-wide limiter. See app/core/ratelimit.py for what that implies.
@@ -31,7 +46,7 @@ _CREDENTIALS_ERROR = HTTPException(
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-    db: Session = Depends(get_db),
+    db: Session = DB_SESSION,
 ) -> User:
     if credentials is None:
         raise _CREDENTIALS_ERROR
@@ -70,18 +85,67 @@ def _too_many(exc: RateLimitExceeded) -> HTTPException:
     )
 
 
+def auth_ip_limit() -> Limit:
+    return Limit(settings.rate_limit_auth_per_15min, 15 * 60)
+
+
+def login_email_limit() -> Limit:
+    return Limit(settings.rate_limit_login_per_email_per_15min, 15 * 60)
+
+
+def auth_ip_key(request: Request) -> str:
+    return f"auth:{_client_ip(request)}"
+
+
+def login_email_key(email: str) -> str:
+    return f"auth:email:{email.strip().lower()}"
+
+
 def rate_limit_auth(request: Request) -> None:
-    """Throttle login/register attempts per IP."""
-    limit = Limit(settings.rate_limit_auth_per_15min, 15 * 60)
+    """Throttle register attempts per IP (route dependency).
+
+    The per-IP limit is loose on purpose - a classroom shares one NAT during the
+    SUS study - so this is a flood control, not the password-guessing guard.
+    """
+    limit = auth_ip_limit()
     try:
         enforce(
             limiter,
-            f"auth:{_client_ip(request)}",
+            auth_ip_key(request),
             limit,
             f"พยายามเข้าสู่ระบบบ่อยเกินไป (จำกัด {limit.describe_th()}) กรุณารอสักครู่แล้วลองใหม่",
         )
     except RateLimitExceeded as exc:
         raise _too_many(exc) from exc
+
+
+def rate_limit_login(request: Request, email: str) -> None:
+    """Throttle login attempts per IP *and* per email address.
+
+    The email comes from the request body, so this runs inside the endpoint
+    rather than as a route dependency. Same rule as ``rate_limit_chat``: every
+    limit is checked first and only then are both counted, so a rejected
+    attempt does not shorten the caller's remaining allowance.
+    """
+    ip_limit = auth_ip_limit()
+    email_limit = login_email_limit()
+    ip_message = (
+        f"พยายามเข้าสู่ระบบบ่อยเกินไป (จำกัด {ip_limit.describe_th()}) กรุณารอสักครู่แล้วลองใหม่"
+    )
+    email_message = (
+        f"พยายามเข้าสู่ระบบด้วยอีเมลนี้บ่อยเกินไป (จำกัด {email_limit.describe_th()}) "
+        "กรุณารอสักครู่แล้วลองใหม่"
+    )
+    checks = [
+        (auth_ip_key(request), ip_limit, ip_message),
+        (login_email_key(email), email_limit, email_message),
+    ]
+    for key, limit, message in checks:
+        wait = limiter.retry_after(key, limit)
+        if wait is not None:
+            raise _too_many(RateLimitExceeded(message, wait))
+    for key, limit, _ in checks:
+        limiter.hit(key, limit)
 
 
 def chat_limits(user_id) -> list[tuple[str, Limit]]:
@@ -142,6 +206,7 @@ def profile_to_input(profile: Profile | None) -> ProfileInput | None:
     return ProfileInput(
         sex=profile.sex,  # type: ignore[arg-type]
         birth_year=profile.birth_year,
+        birth_month=profile.birth_month,
         height_cm=profile.height_cm,
         weight_kg=profile.weight_kg,
         activity_level=profile.activity_level,  # type: ignore[arg-type]

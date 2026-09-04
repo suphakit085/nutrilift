@@ -7,9 +7,19 @@ Usage (from backend/, with the venv active):
     python -m ingest --only foods
     python -m ingest --rebuild       # wipe documents/chunks and re-embed everything
 
+Run it from a git checkout that contains ``knowledge/`` (the repo root), never
+from the deployed Docker image: the image only copies ``app/``, ``ingest/`` and
+``alembic/``, so inside it ``REPO_ROOT`` resolves to ``/`` and there is nothing
+to ingest. Point ``DATABASE_URL`` at the production database instead.
+
 Chunking: knowledge cards are split on markdown headings, then long sections are
 split further on blank lines to stay near ``TARGET_CHARS``. Each chunk keeps its
 heading so citations can point at a section, not just a file.
+
+``--rebuild`` embeds every card *before* touching the database and then wipes
+and re-inserts in a single transaction. An earlier version committed the wipe
+first; a 429 on the first card's embedding then left production with zero
+chunks (RAG silently off) until someone re-ran it.
 """
 
 from __future__ import annotations
@@ -27,6 +37,7 @@ from sqlalchemy import delete, select
 from app.db.models import Chunk, Document, Food
 from app.db.session import SessionLocal
 from app.services.llm import embed_texts
+from app.services.thai_text import compose_sara_am
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CARDS_DIR = REPO_ROOT / "knowledge" / "cards"
@@ -112,23 +123,84 @@ def embed_in_batches(texts: list[str]) -> list[list[float]]:
     return vectors
 
 
-def ingest_cards(session, *, rebuild: bool = False) -> None:
-    if not CARDS_DIR.exists():
-        print(f"! no cards directory at {CARDS_DIR}")
-        return
-
-    if rebuild:
-        session.execute(delete(Chunk))
-        session.execute(delete(Document))
-        session.commit()
-        print("  wiped existing documents and chunks")
-
+def card_paths() -> list[Path]:
     # files starting with "_" are templates/notes, not knowledge
-    paths = sorted(p for p in CARDS_DIR.glob("*.md") if not p.name.startswith("_"))
+    return sorted(p for p in CARDS_DIR.glob("*.md") if not p.name.startswith("_"))
+
+
+def add_chunks(session, document: Document, path: Path, pieces, vectors) -> None:
+    for index, ((heading, text), vector) in enumerate(zip(pieces, vectors, strict=True)):
+        session.add(
+            Chunk(
+                document_id=document.id,
+                chunk_index=index,
+                heading=heading,
+                content=text,
+                embedding=vector,
+                meta={"source_file": path.name},
+            )
+        )
+
+
+def ingest_cards(session, *, rebuild: bool = False) -> int:
+    """Returns a process exit code: 0 on success, 1 when there is nothing to
+    ingest (missing directory / no cards), which is a misconfiguration rather
+    than an empty result - see the module docstring."""
+    if not CARDS_DIR.exists():
+        print(f"! no cards directory at {CARDS_DIR} - run from a checkout with knowledge/")
+        return 1
+
+    paths = card_paths()
     if not paths:
         print(f"! no .md cards found in {CARDS_DIR}")
-        return
+        return 1
 
+    if rebuild:
+        rebuild_cards(session, paths)
+    else:
+        update_cards(session, paths)
+    return 0
+
+
+def rebuild_cards(session, paths: list[Path]) -> None:
+    """Embed everything first, then wipe + insert + commit once.
+
+    Embedding is the step that fails (429s on the free tier), so it happens
+    before any destructive statement. If it raises, the database is untouched.
+    """
+    prepared = []
+    for path in paths:
+        post = frontmatter.load(path)
+        slug = post.get("slug") or path.stem
+        title = post.get("title") or slug
+        pieces = chunk_card(title, post.content)
+        print(f"  embedding {slug} ({len(pieces)} chunks)")
+        vectors = embed_in_batches([text for _, text in pieces])
+        prepared.append((path, post, slug, title, pieces, vectors))
+
+    session.execute(delete(Chunk))
+    session.execute(delete(Document))
+    for path, post, slug, title, pieces, vectors in prepared:
+        document = Document(
+            slug=slug,
+            title=title,
+            topic=post.get("topic"),
+            source_type="knowledge_card",
+            source_refs=post.get("sources") or [],
+            lang=post.get("lang", "th"),
+            content_hash=content_hash(post),
+        )
+        session.add(document)
+        session.flush()
+        add_chunks(session, document, path, pieces, vectors)
+    session.commit()
+    print(f"  rebuilt {len(prepared)} documents in one transaction")
+    for _, _, slug, _, pieces, _ in prepared:
+        print(f"  + {slug}: {len(pieces)} chunks")
+
+
+def update_cards(session, paths: list[Path]) -> None:
+    """Incremental path: one commit per changed card, unchanged cards skipped."""
     for path in paths:
         post = frontmatter.load(path)
         slug = post.get("slug") or path.stem
@@ -140,8 +212,7 @@ def ingest_cards(session, *, rebuild: bool = False) -> None:
         ).scalar_one_or_none()
 
         if document is not None:
-            unchanged = document.content_hash == digest
-            if unchanged and not rebuild:
+            if document.content_hash == digest:
                 print(f"  = {slug} (unchanged)")
                 continue
             session.execute(delete(Chunk).where(Chunk.document_id == document.id))
@@ -164,17 +235,7 @@ def ingest_cards(session, *, rebuild: bool = False) -> None:
 
         pieces = chunk_card(title, post.content)
         vectors = embed_in_batches([text for _, text in pieces])
-        for index, ((heading, text), vector) in enumerate(zip(pieces, vectors, strict=True)):
-            session.add(
-                Chunk(
-                    document_id=document.id,
-                    chunk_index=index,
-                    heading=heading,
-                    content=text,
-                    embedding=vector,
-                    meta={"source_file": path.name},
-                )
-            )
+        add_chunks(session, document, path, pieces, vectors)
         session.commit()
         print(f"  + {slug}: {len(pieces)} chunks")
 
@@ -190,28 +251,29 @@ REQUIRED_FOOD_COLUMNS = {
 }
 
 
-def ingest_foods(session) -> None:
+def ingest_foods(session) -> int:
+    """Exit code like ``ingest_cards``: 1 when the CSV is missing or unusable."""
     if not FOODS_CSV.exists():
-        print(f"! no foods CSV at {FOODS_CSV}")
-        return
+        print(f"! no foods CSV at {FOODS_CSV} - run from a checkout with knowledge/")
+        return 1
 
     with FOODS_CSV.open(encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
 
     if not rows:
         print("! foods.csv is empty")
-        return
+        return 1
 
     missing = REQUIRED_FOOD_COLUMNS - set(rows[0])
     if missing:
         print(f"! foods.csv is missing columns: {sorted(missing)}")
-        return
+        return 1
 
     session.execute(delete(Food))
     for row in rows:
         session.add(
             Food(
-                name_th=row["name_th"].strip(),
+                name_th=compose_sara_am(row["name_th"].strip()),
                 name_en=(row.get("name_en") or "").strip() or None,
                 category=(row.get("category") or "").strip() or None,
                 serving_desc=row["serving_desc"].strip(),
@@ -226,6 +288,7 @@ def ingest_foods(session) -> None:
         )
     session.commit()
     print(f"  + foods: {len(rows)} rows")
+    return 0
 
 
 def main() -> int:
@@ -236,17 +299,18 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    exit_code = 0
     session = SessionLocal()
     try:
         if args.only in (None, "cards"):
             print("knowledge cards:")
-            ingest_cards(session, rebuild=args.rebuild)
+            exit_code |= ingest_cards(session, rebuild=args.rebuild)
         if args.only in (None, "foods"):
             print("food table:")
-            ingest_foods(session)
+            exit_code |= ingest_foods(session)
     finally:
         session.close()
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

@@ -49,6 +49,8 @@ def embed_texts(
     texts: list[str],
     *,
     task_type: Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"] = "RETRIEVAL_DOCUMENT",
+    max_retries: int = MAX_RATE_LIMIT_RETRIES,
+    max_delay_s: float | None = None,
 ) -> list[list[float]]:
     """Embed a batch of texts. Order of the returned vectors matches ``texts``.
 
@@ -61,27 +63,36 @@ def embed_texts(
     model produces measurably better retrieval when told which one it is doing.
     Chunks being ingested should use the default; retrieval.py passes
     RETRIEVAL_QUERY for the user's question.
+
+    ``max_retries`` / ``max_delay_s`` bound the 429 back-off. The defaults
+    (5 retries, sleep as long as Google asks - ~20 s each) are right for ingest
+    and eval runs that must eventually succeed. They are wrong inside a live
+    chat turn, where the retry loop blocks a worker thread while the user
+    stares at a spinner; retrieval.py passes a short budget and lets the turn
+    fall back to an unsourced answer instead.
     """
     if not texts:
         return []
     from google.genai import types
 
     config = types.EmbedContentConfig(output_dimensionality=settings.embed_dim, task_type=task_type)
-    for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+    for attempt in range(max_retries + 1):
         try:
             response = get_client().models.embed_content(
                 model=settings.embed_model, contents=texts, config=config
             )
             break
         except genai_errors.ClientError as exc:
-            if exc.code != 429 or attempt == MAX_RATE_LIMIT_RETRIES:
+            if exc.code != 429 or attempt >= max_retries:
                 raise
             delay = _retry_delay_seconds(str(exc))
+            if max_delay_s is not None:
+                delay = min(delay, max_delay_s)
             logger.warning(
                 "embed_content 429, retrying in %.0fs (%d/%d)",
                 delay,
                 attempt + 1,
-                MAX_RATE_LIMIT_RETRIES,
+                max_retries,
             )
             time.sleep(delay)
     # The batch endpoint has no per-item index to sort by; order is positional
@@ -94,5 +105,9 @@ def embed_text(
     text: str,
     *,
     task_type: Literal["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"] = "RETRIEVAL_QUERY",
+    max_retries: int = MAX_RATE_LIMIT_RETRIES,
+    max_delay_s: float | None = None,
 ) -> list[float]:
-    return embed_texts([text], task_type=task_type)[0]
+    return embed_texts(
+        [text], task_type=task_type, max_retries=max_retries, max_delay_s=max_delay_s
+    )[0]

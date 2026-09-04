@@ -44,7 +44,47 @@ export default function ChatPage() {
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
   const [sources, setSources] = useState<Citation[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // The in-flight stream. `streamId` is bumped whenever a stream starts or is
+  // cancelled, so callbacks from a stream the user has already abandoned
+  // (new chat, switched room, deleted room, unmounted) are ignored instead of
+  // appending its tokens onto whatever is on screen now.
+  const abortRef = useRef<(() => void) | null>(null);
+  const streamIdRef = useRef(0);
+  // Same idea for opening a room: a slow fetch for room A must not overwrite
+  // room B, which the user opened afterwards.
+  const openSeqRef = useRef(0);
+
+  const stopStream = useCallback(() => {
+    streamIdRef.current += 1;
+    abortRef.current?.();
+    abortRef.current = null;
+    setStreaming(false);
+    setBubbles((prev) =>
+      prev.some((b) => b.pending)
+        ? prev.map((b) => (b.pending ? { ...b, pending: false } : b))
+        : prev,
+    );
+  }, []);
+
+  useEffect(
+    () => () => {
+      streamIdRef.current += 1;
+      abortRef.current?.();
+      abortRef.current = null;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -61,24 +101,31 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [bubbles]);
 
-  const openConversation = useCallback(async (id: string) => {
-    setActiveId(id);
-    setError("");
-    try {
-      const detail = await api.getConversation(id);
-      setBubbles(
-        detail.messages.map((message: ChatMessage) => ({
-          role: message.role,
-          content: message.content,
-          citations: message.citations ?? undefined,
-        })),
-      );
-      const last = [...detail.messages].reverse().find((m) => m.citations?.length);
-      setSources(last?.citations ?? []);
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  }, []);
+  const openConversation = useCallback(
+    async (id: string) => {
+      stopStream();
+      const seq = ++openSeqRef.current;
+      setActiveId(id);
+      setError("");
+      try {
+        const detail = await api.getConversation(id);
+        if (openSeqRef.current !== seq) return;
+        setBubbles(
+          detail.messages.map((message: ChatMessage) => ({
+            role: message.role,
+            content: message.content,
+            citations: message.citations ?? undefined,
+          })),
+        );
+        const last = [...detail.messages].reverse().find((m) => m.citations?.length);
+        setSources(last?.citations ?? []);
+      } catch (err) {
+        if (openSeqRef.current !== seq) return;
+        setError((err as Error).message);
+      }
+    },
+    [stopStream],
+  );
 
   async function send(text: string) {
     const message = text.trim();
@@ -88,15 +135,23 @@ export default function ChatPage() {
     setInput("");
     setStreaming(true);
 
+    // Taken before the first await: if the user starts a new chat while the
+    // room is still being created, stopStream() bumps the id and everything
+    // below becomes a no-op.
+    const streamId = ++streamIdRef.current;
+    const isCurrent = () => streamIdRef.current === streamId;
+
     let conversationId = activeId;
     try {
       if (!conversationId) {
         const created = await api.createConversation();
+        if (!isCurrent()) return;
         conversationId = created.id;
         setActiveId(created.id);
         setConversations((prev) => [created, ...prev]);
       }
     } catch (err) {
+      if (!isCurrent()) return;
       setError((err as Error).message);
       setStreaming(false);
       return;
@@ -108,23 +163,40 @@ export default function ChatPage() {
       { role: "assistant", content: "", pending: true, tools: [] },
     ]);
 
+    // Patch the pending assistant bubble. A no-op when there is none - the
+    // list may have been cleared by "new chat" / delete while a delta was
+    // already queued, and patching `undefined` used to crash the whole page.
     const updateLast = (patch: (bubble: Bubble) => Bubble) =>
       setBubbles((prev) => {
+        const last = prev[prev.length - 1];
+        if (!last || last.role !== "assistant" || !last.pending) return prev;
         const next = [...prev];
-        next[next.length - 1] = patch(next[next.length - 1]);
+        next[next.length - 1] = patch(last);
         return next;
       });
 
-    streamChat(conversationId!, message, {
-      onSources: (citations) => setSources(citations),
-      onDelta: (chunk) =>
-        updateLast((bubble) => ({ ...bubble, content: bubble.content + chunk })),
-      onTool: (name) =>
+    const finish = () => {
+      abortRef.current = null;
+      setStreaming(false);
+    };
+
+    abortRef.current = streamChat(conversationId, message, {
+      onSources: (citations) => {
+        if (isCurrent()) setSources(citations);
+      },
+      onDelta: (chunk) => {
+        if (!isCurrent()) return;
+        updateLast((bubble) => ({ ...bubble, content: bubble.content + chunk }));
+      },
+      onTool: (name) => {
+        if (!isCurrent()) return;
         updateLast((bubble) => ({
           ...bubble,
           tools: [...(bubble.tools ?? []), name],
-        })),
+        }));
+      },
       onDone: ({ text: full, citations }) => {
+        if (!isCurrent()) return;
         updateLast((bubble) => ({
           ...bubble,
           content: full || bubble.content,
@@ -134,17 +206,19 @@ export default function ChatPage() {
         // Narrow the panel from "passages consulted" to "passages actually
         // cited" - the backend filters these by the [Sn] markers in the answer.
         setSources(citations);
-        setStreaming(false);
+        finish();
       },
       onError: (message) => {
+        if (!isCurrent()) return;
         setError(message);
         updateLast((bubble) => ({ ...bubble, pending: false }));
-        setStreaming(false);
+        finish();
       },
     });
   }
 
   function startNew() {
+    stopStream();
     setActiveId(null);
     setBubbles([]);
     setSources([]);
@@ -171,78 +245,54 @@ export default function ChatPage() {
     router.replace("/login");
   }
 
+  const sidebarProps = {
+    conversations,
+    activeId,
+    onNew: startNew,
+    onOpen: openConversation,
+    onRemove: removeConversation,
+    onLogout: logout,
+  };
+
   return (
-    <div className="flex h-screen">
-      {/* sidebar */}
+    <div className="flex h-dvh">
+      {/* sidebar (desktop) */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface p-4 md:flex">
-        <div className="flex items-center gap-2.5 px-1 pb-4 pt-1">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
-            <LeafIcon className="h-4 w-4" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">NutriLift</span>
-        </div>
-
-        <button
-          onClick={startNew}
-          className="rounded-md bg-cta py-2.5 text-sm font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
-        >
-          + แชตใหม่
-        </button>
-
-        <nav className="mt-5 flex-1 space-y-0.5 overflow-y-auto">
-          {conversations.map((conversation) => (
-            <div
-              key={conversation.id}
-              className={`group flex items-center gap-1 rounded-sm pr-1 transition ${
-                activeId === conversation.id
-                  ? "bg-accent-soft text-accent"
-                  : "text-muted hover:bg-surface-sunken hover:text-foreground"
-              }`}
-            >
-              <button
-                onClick={() => openConversation(conversation.id)}
-                className="min-w-0 flex-1 truncate px-3 py-2 text-left text-sm"
-              >
-                {conversation.title}
-              </button>
-              <button
-                onClick={() => removeConversation(conversation.id)}
-                aria-label={`ลบห้องแชต ${conversation.title}`}
-                title="ลบห้องแชตนี้"
-                className="shrink-0 rounded-sm px-2 py-1 text-xs opacity-0 transition group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-500 focus:opacity-100"
-              >
-                ลบ
-              </button>
-            </div>
-          ))}
-        </nav>
-
-        <div className="mt-4 space-y-0.5 border-t border-border pt-4 text-sm">
-          <Link
-            href="/log"
-            className="block rounded-sm px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
-          >
-            บันทึกอาหาร
-          </Link>
-          <Link
-            href="/profile"
-            className="block rounded-sm px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground"
-          >
-            โปรไฟล์และเป้าหมาย
-          </Link>
-          <button
-            onClick={logout}
-            className="block w-full rounded-sm px-3 py-2 text-left text-muted transition hover:bg-surface-sunken hover:text-foreground"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
+        <Sidebar {...sidebarProps} />
       </aside>
+
+      {/* sidebar (mobile drawer) - same content, shown over the chat */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-40 flex md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="เมนู"
+        >
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden
+          />
+          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col border-r border-border bg-surface p-4">
+            <Sidebar {...sidebarProps} onNavigate={() => setMenuOpen(false)} />
+          </aside>
+        </div>
+      )}
 
       {/* conversation */}
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border px-6 py-3.5">
+        <header className="flex items-center justify-between border-b border-border px-4 py-3.5 md:px-6">
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="เปิดเมนู"
+              aria-expanded={menuOpen}
+              className="-ml-1 flex h-8 w-8 items-center justify-center rounded-sm border border-border text-muted transition hover:border-accent hover:text-foreground md:hidden"
+            >
+              <MenuIcon className="h-4 w-4" />
+            </button>
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
               <LeafIcon className="h-3.5 w-3.5" />
             </span>
@@ -253,7 +303,7 @@ export default function ChatPage() {
           </Link>
         </header>
 
-        <div className="flex-1 space-y-5 overflow-y-auto p-6">
+        <div className="flex-1 space-y-5 overflow-y-auto p-4 md:p-6">
           {bubbles.length === 0 && (
             <div className="mx-auto max-w-lg pt-16">
               <h2 className="font-display text-3xl font-bold leading-snug tracking-tight">
@@ -388,11 +438,104 @@ export default function ChatPage() {
   );
 }
 
+/**
+ * Room list + navigation. Rendered twice: inside the fixed desktop sidebar and
+ * inside the mobile drawer. `onNavigate` is called after any action so the
+ * drawer can close itself; the desktop sidebar leaves it undefined.
+ */
+function Sidebar({
+  conversations,
+  activeId,
+  onNew,
+  onOpen,
+  onRemove,
+  onLogout,
+  onNavigate,
+}: {
+  conversations: Conversation[];
+  activeId: string | null;
+  onNew: () => void;
+  onOpen: (id: string) => void;
+  onRemove: (id: string) => void;
+  onLogout: () => void;
+  onNavigate?: () => void;
+}) {
+  const navLink =
+    "block rounded-sm px-3 py-2 text-muted transition hover:bg-surface-sunken hover:text-foreground";
+
+  return (
+    <>
+      <div className="flex items-center gap-2.5 px-1 pb-4 pt-1">
+        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-cta text-cta-foreground">
+          <LeafIcon className="h-4 w-4" />
+        </span>
+        <span className="font-display text-lg font-bold tracking-tight">NutriLift</span>
+      </div>
+
+      <button
+        onClick={() => {
+          onNew();
+          onNavigate?.();
+        }}
+        className="rounded-md bg-cta py-2.5 text-sm font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
+      >
+        + แชตใหม่
+      </button>
+
+      <nav className="mt-5 flex-1 space-y-0.5 overflow-y-auto">
+        {conversations.map((conversation) => (
+          <div
+            key={conversation.id}
+            className={`group flex items-center gap-1 rounded-sm pr-1 transition ${
+              activeId === conversation.id
+                ? "bg-accent-soft text-accent"
+                : "text-muted hover:bg-surface-sunken hover:text-foreground"
+            }`}
+          >
+            <button
+              onClick={() => {
+                onOpen(conversation.id);
+                onNavigate?.();
+              }}
+              className="min-w-0 flex-1 truncate px-3 py-2 text-left text-sm"
+            >
+              {conversation.title}
+            </button>
+            <button
+              onClick={() => onRemove(conversation.id)}
+              aria-label={`ลบห้องแชต ${conversation.title}`}
+              title="ลบห้องแชตนี้"
+              className={`shrink-0 rounded-sm px-2 py-1 text-xs transition hover:bg-red-500/10 hover:text-red-500 focus:opacity-100 ${
+                // No hover on touch screens, so the drawer shows the button always.
+                onNavigate ? "" : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
+              ลบ
+            </button>
+          </div>
+        ))}
+      </nav>
+
+      <div className="mt-4 space-y-0.5 border-t border-border pt-4 text-sm">
+        <Link href="/log" className={navLink} onClick={onNavigate}>
+          บันทึกอาหาร
+        </Link>
+        <Link href="/profile" className={navLink} onClick={onNavigate}>
+          โปรไฟล์และเป้าหมาย
+        </Link>
+        <button onClick={onLogout} className={`${navLink} w-full text-left`}>
+          ออกจากระบบ
+        </button>
+      </div>
+    </>
+  );
+}
+
 function MessageBubble({ bubble }: { bubble: Bubble }) {
   if (bubble.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-lg rounded-br-sm bg-cta px-5 py-3 text-cta-foreground">
+        <div className="min-w-0 max-w-[80%] rounded-lg rounded-br-sm bg-cta px-5 py-3 text-cta-foreground wrap-anywhere">
           {bubble.content}
         </div>
       </div>
@@ -401,7 +544,7 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
 
   return (
     <div className="flex justify-start">
-      <div className="max-w-[85%] rounded-lg rounded-bl-sm border border-border bg-surface px-5 py-4">
+      <div className="min-w-0 max-w-[85%] rounded-lg rounded-bl-sm border border-border bg-surface px-5 py-4 wrap-anywhere">
         {bubble.tools?.map((tool, index) => (
           <div
             key={index}
@@ -432,6 +575,22 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
         )}
       </div>
     </div>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
   );
 }
 

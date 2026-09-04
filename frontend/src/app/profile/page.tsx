@@ -29,9 +29,15 @@ const RESTRICTION_OPTIONS = [
   "ไม่กินเนื้อวัว",
 ];
 
+const MONTHS_TH = [
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+];
+
 const EMPTY: Profile = {
   sex: "male",
   birth_year: new Date().getFullYear() - 25,
+  birth_month: null,
   height_cm: 170,
   weight_kg: 65,
   body_fat_pct: null,
@@ -173,6 +179,32 @@ export default function ProfilePage() {
               }
               className={inputClass}
             />
+          </label>
+
+          <label className="block">
+            <span className="field-label text-xs text-muted">เดือนเกิด</span>
+            {/* The year alone let a December-born 17-year-old through from
+                1 January; the month lets the server round the age down. */}
+            <select
+              required
+              value={profile.birth_month ?? ""}
+              onChange={(e) =>
+                setProfile({
+                  ...profile,
+                  birth_month: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+              className={inputClass}
+            >
+              <option value="" disabled>
+                เลือกเดือน
+              </option>
+              {MONTHS_TH.map((name, index) => (
+                <option key={name} value={index + 1}>
+                  {name}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">

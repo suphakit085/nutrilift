@@ -26,6 +26,7 @@ Anything comparing user text (or food names) against a Thai keyword must fold
 
 from __future__ import annotations
 
+import re
 import unicodedata
 
 #: สระอำ decomposes to นิคหิต + สระอา. NFKC already does this, but it is spelled
@@ -43,14 +44,48 @@ _THAI_COMBINING = frozenset(
 )
 
 
-def normalize_thai(text: str) -> str:
-    """Fold Thai spelling variants so substring tests are reliable.
+#: Characters that render as nothing: zero-width space/joiner/non-joiner, the
+#: byte-order mark, soft hyphen, word joiner, and the rest of Unicode's Cf
+#: (format) category. Thai copied from LINE or a web page often carries U+200B
+#: between words, and it can also be inserted on purpose - "สเตีย​รอยด์"
+#: walked straight past the PED rule before these were stripped.
+_INVISIBLE_RE = re.compile(r"[­͏؜᠎​-‏‪-‮⁠-⁯﻿]")
 
-    NFKC, สระอำ expanded, each run of combining marks sorted, lower-cased.
+#: สระอำ written as นิคหิต + สระอา, with an optional tone mark between them
+#: ("นํ้า" for "น้ำ", "ดํา" for "ดำ"). The ASEAN food table is spelled this way
+#: in 30 rows. Matching-side folding (below) handles it, but the *display* side
+#: - what the food table stores and what a user types - wants the composed
+#: character, so the two forms meet in an ILIKE.
+_SPLIT_SARA_AM_RE = re.compile("ํ([่-๋]?)า")
+
+
+def compose_sara_am(text: str) -> str:
+    """Rewrite นิคหิต+สระอา (with any tone mark between) as สระอำ.
+
+    Order-preserving and lossless for real words: the tone mark is moved in
+    front of the composed vowel, which is where a keyboard puts it.
     """
     if not text:
         return ""
-    folded = unicodedata.normalize("NFKC", text).replace(_SARA_AM, _NIKHAHIT + _SARA_AA)
+    return _SPLIT_SARA_AM_RE.sub(lambda m: m.group(1) + _SARA_AM, text)
+
+
+def strip_invisible(text: str) -> str:
+    """Remove zero-width and other format characters."""
+    return _INVISIBLE_RE.sub("", text) if text else ""
+
+
+def normalize_thai(text: str) -> str:
+    """Fold Thai spelling variants so substring tests are reliable.
+
+    Invisible characters removed, NFKC, สระอำ expanded, each run of combining
+    marks sorted, lower-cased.
+    """
+    if not text:
+        return ""
+    folded = unicodedata.normalize("NFKC", strip_invisible(text)).replace(
+        _SARA_AM, _NIKHAHIT + _SARA_AA
+    )
     out: list[str] = []
     run: list[str] = []
     for char in folded:

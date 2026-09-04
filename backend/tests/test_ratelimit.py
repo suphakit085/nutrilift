@@ -97,6 +97,27 @@ def test_reset_clears(limiter):
     assert limiter.count("u1", PER_MINUTE) == 0
 
 
+# --- memory bound ---------------------------------------------------------
+
+
+def test_keys_are_dropped_once_their_window_empties(limiter, clock):
+    """Keys are per IP / per email / per user, so a key that is never freed is
+    a slow leak for the lifetime of the process. Checking an unknown key must
+    not create one either."""
+    for key in ("ip:1", "ip:2", "ip:3"):
+        limiter.hit(key, PER_MINUTE)
+    assert limiter.tracked_keys() == 3
+
+    clock.advance(61)
+    assert limiter.retry_after("ip:1", PER_MINUTE) is None  # prunes ip:1
+    assert limiter.count("ip:2", PER_MINUTE) == 0  # prunes ip:2
+    assert limiter.retry_after("never-seen", PER_MINUTE) is None
+    assert limiter.tracked_keys() == 1  # only ip:3, untouched since it aged out
+
+    limiter.hit("ip:1", PER_MINUTE)  # re-creating a dropped key works
+    assert limiter.count("ip:1", PER_MINUTE) == 1
+
+
 # --- enforce() -------------------------------------------------------------
 
 

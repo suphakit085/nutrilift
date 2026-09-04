@@ -61,7 +61,18 @@ class RateLimiter:
         cutoff = now - window_seconds
         while events and events[0] <= cutoff:
             events.popleft()
+        if not events:
+            # Drop the key once its window has emptied. Keys are per user /
+            # per email / per IP, so without this the dict grows for the
+            # lifetime of the process - one entry for every address that ever
+            # called, never freed. ``hit`` re-creates it on the next event.
+            del self._events[key]
         return events
+
+    def tracked_keys(self) -> int:
+        """How many keys currently hold at least one event (memory bound)."""
+        with self._lock:
+            return len(self._events)
 
     def retry_after(self, key: str, limit: Limit) -> int | None:
         """Seconds until the caller may retry, or ``None`` if allowed now."""

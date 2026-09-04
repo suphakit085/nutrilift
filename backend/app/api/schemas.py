@@ -6,14 +6,28 @@ import uuid
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 # --- auth ---------------------------------------------------------------
+
+#: bcrypt hashes only the first 72 *bytes* of a password. A Thai character is
+#: 3 bytes in UTF-8, so a 25-character Thai password would be silently
+#: truncated (bcrypt < 4.1) or rejected with a 500 (>= 4.1). Refuse it up
+#: front with a message that explains the byte/character difference.
+PASSWORD_MAX_BYTES = 72
+PASSWORD_TOO_LONG = "รหัสผ่านยาวเกินไป (ไม่เกิน 72 ไบต์ หรือประมาณ 24 ตัวอักษรไทย)"
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def _fits_in_bcrypt(cls, value: str) -> str:
+        if len(value.encode("utf-8")) > PASSWORD_MAX_BYTES:
+            raise ValueError(PASSWORD_TOO_LONG)
+        return value
 
 
 class LoginRequest(BaseModel):
@@ -37,9 +51,16 @@ class UserOut(BaseModel):
 # --- profile ------------------------------------------------------------
 
 
+#: Thai users think in พ.ศ.; a year above this is taken as Buddhist Era and
+#: converted, so "2547" becomes 2004 instead of a 422 about the year 2100.
+_BE_THRESHOLD = 2400
+_BE_OFFSET = 543
+
+
 class ProfileIn(BaseModel):
     sex: Literal["male", "female"]
-    birth_year: int = Field(ge=1900, le=2100)
+    birth_year: int
+    birth_month: int = Field(ge=1, le=12)
     height_cm: float = Field(gt=0, le=250)
     weight_kg: float = Field(gt=0, le=400)
     body_fat_pct: float | None = Field(default=None, ge=3, le=60)
@@ -49,9 +70,24 @@ class ProfileIn(BaseModel):
     restrictions: list[str] = Field(default_factory=list)
 
 
+    @field_validator("birth_year", mode="before")
+    @classmethod
+    def _birth_year_ce(cls, value: object) -> object:
+        if isinstance(value, bool) or not isinstance(value, int):
+            return value
+        if value >= _BE_THRESHOLD:
+            value -= _BE_OFFSET
+        if not 1900 <= value <= 2100:
+            raise ValueError("ปีเกิดต้องอยู่ระหว่าง ค.ศ. 1900-2100 (หรือ พ.ศ. 2443-2643)")
+        return value
+
+
 class ProfileOut(ProfileIn):
     model_config = ConfigDict(from_attributes=True)
 
+    # Rows saved before the column existed have no month; the API still
+    # requires it on write, so a client re-saving such a row must supply it.
+    birth_month: int | None = Field(default=None, ge=1, le=12)
     updated_at: datetime
 
 

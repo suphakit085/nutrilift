@@ -70,6 +70,8 @@ class Profile(Base):
     )
     sex: Mapped[str] = mapped_column(String(10), nullable=False)
     birth_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    # Nullable only for rows that predate the column; the API requires it.
+    birth_month: Mapped[int | None] = mapped_column(Integer, nullable=True)
     height_cm: Mapped[float] = mapped_column(Float, nullable=False)
     weight_kg: Mapped[float] = mapped_column(Float, nullable=False)
     body_fat_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -87,6 +89,9 @@ class Profile(Base):
 
     __table_args__ = (
         CheckConstraint("sex IN ('male','female')", name="ck_profiles_sex"),
+        CheckConstraint(
+            "birth_month IS NULL OR birth_month BETWEEN 1 AND 12", name="ck_profiles_birth_month"
+        ),
         CheckConstraint("goal IN ('cut','bulk','maintain')", name="ck_profiles_goal"),
         CheckConstraint("height_cm > 0 AND weight_kg > 0", name="ck_profiles_positive"),
     )

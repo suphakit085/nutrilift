@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { parseSSEFrames } from "./api.ts";
+import { STREAM_CUT_MESSAGE, parseSSEFrames, streamChat } from "./api.ts";
 
 /**
  * A frame in the exact wire format the server produces.
@@ -153,4 +153,91 @@ test("error frames are surfaced as frames, not dropped", () => {
   const { frames } = parseSSEFrames(frame("error", { message: "เกิดข้อผิดพลาด" }));
   assert.equal(frames[0].event, "error");
   assert.equal(frames[0].payload.message, "เกิดข้อผิดพลาด");
+});
+
+// --- streamChat end-of-stream handling -------------------------------------
+//
+// `streamChat` is driven end to end here by replacing global fetch with one
+// that returns a canned SSE body. Node's Response/ReadableStream are the same
+// WHATWG objects the browser gives us, so the reader loop runs unchanged.
+
+function sseResponse(body: string): Response {
+  const bytes = new TextEncoder().encode(body);
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(bytes);
+      controller.close();
+    },
+  });
+  return new Response(stream, {
+    status: 200,
+    headers: { "Content-Type": "text/event-stream" },
+  });
+}
+
+async function withMockFetch<T>(body: string, run: () => Promise<T>): Promise<T> {
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () => sseResponse(body)) as typeof fetch;
+  try {
+    return await run();
+  } finally {
+    globalThis.fetch = original;
+  }
+}
+
+test("EOF without a done frame reports an error instead of hanging", async () => {
+  const body = frame("delta", { text: "ครึ่ง" });
+  const deltas: string[] = [];
+
+  const message = await withMockFetch(body, () =>
+    new Promise<string>((resolve, reject) => {
+      streamChat("c1", "สวัสดี", {
+        onDelta: (text) => deltas.push(text),
+        onDone: () => reject(new Error("done must not fire on a cut stream")),
+        onError: resolve,
+      });
+    }),
+  );
+
+  assert.deepEqual(deltas, ["ครึ่ง"], "partial content is still delivered");
+  assert.equal(message, STREAM_CUT_MESSAGE);
+});
+
+test("EOF after a done frame is a normal end, not an error", async () => {
+  const body =
+    frame("delta", { text: "จบ" }) + frame("done", { text: "จบ", citations: [] });
+  const errors: string[] = [];
+
+  const done = await withMockFetch(body, () =>
+    new Promise<{ text: string }>((resolve) => {
+      streamChat("c1", "สวัสดี", {
+        onError: (m) => errors.push(m),
+        onDone: resolve,
+      });
+    }),
+  );
+  // Let the reader loop reach EOF before checking that nothing else fired.
+  await new Promise((r) => setTimeout(r, 10));
+
+  assert.equal(done.text, "จบ");
+  assert.deepEqual(errors, []);
+});
+
+test("EOF after an error frame does not report a second error", async () => {
+  const body = frame("error", { message: "โควต้าหมด" });
+  const errors: string[] = [];
+
+  await withMockFetch(body, () =>
+    new Promise<void>((resolve) => {
+      streamChat("c1", "สวัสดี", {
+        onError: (m) => {
+          errors.push(m);
+          resolve();
+        },
+      });
+    }),
+  );
+  await new Promise((r) => setTimeout(r, 10));
+
+  assert.deepEqual(errors, ["โควต้าหมด"]);
 });

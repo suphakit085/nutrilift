@@ -250,6 +250,22 @@ def _run_menu_tool(db: Session, profile: ProfileInput | None, args: dict) -> dic
         return {"error": "cannot_build_menu", "message": str(exc)}
 
 
+def _release_connection(db: Session) -> None:
+    """End the read-only transaction so the pooled connection goes back.
+
+    Everything this module reads (chunks, foods) is done in autobegun
+    transactions that would otherwise stay open - "idle in transaction" - for
+    the whole model stream. Measured on the production image: two such
+    connections per in-flight chat, against a pool of 15. Nothing here has
+    pending writes; the router commits its own rows on its own session.
+    """
+    try:
+        db.commit()
+    except Exception:  # pragma: no cover - a failed release must not kill the turn
+        logger.exception("could not release DB connection mid-stream")
+        db.rollback()
+
+
 def _execute_tool(db: Session, profile: ProfileInput | None, name: str, args: dict) -> dict:
     if name == "calc_nutrition_targets":
         return _run_calc_tool(profile, args)
@@ -340,6 +356,11 @@ def _history_to_contents(history: list[dict]) -> list[types.Content]:
     """
     contents = []
     for turn in history:
+        # An empty part is rejected by the API ("empty text parameter"), and one
+        # empty assistant row - a safety-blocked or tool-only final turn - would
+        # otherwise poison every later request in that conversation.
+        if not (turn.get("content") or "").strip():
+            continue
         role = "model" if turn["role"] == "assistant" else "user"
         part = types.Part.from_text(text=turn["content"])
         contents.append(types.Content(role=role, parts=[part]))
@@ -381,6 +402,7 @@ def stream_chat(
             logger.exception("retrieval failed; answering without context")
             use_rag = False
     citations = [p.as_citation() for p in passages]
+    _release_connection(db)
     yield {"type": "sources", "sources": citations}
 
     # Refuse deterministically rather than asking the model to refuse. This also
@@ -434,6 +456,12 @@ def stream_chat(
             targets_summary = summarize_targets_th(targets)
         except NutritionInputError:
             logger.warning("stored profile fails validation; skipping targets summary")
+    if guardrails.Flag.MINOR in guard.flags:
+        # The text said "หนูอายุ 15" but the profile says adult. The MINOR
+        # instruction forbids quoting any target while the targets block says
+        # "ใช้ตัวเลขนี้ได้เลย"; the model cannot obey both, so the block goes.
+        targets_summary = None
+    if profile is not None:
         # Profile-derived risk (age, BMI, computed target). The text rules above
         # cannot see any of this - a logged-in minor rarely retypes their age -
         # so it is merged here, after targets exist, and lands in the same
@@ -510,6 +538,7 @@ def stream_chat(
             for call in function_calls:
                 args = call.args or {}
                 result = _execute_tool(db, profile, call.name, args)
+                _release_connection(db)
                 tool_calls_log.append({"name": call.name, "arguments": args})
                 yield {"type": "tool", "name": call.name, "args": args}
                 response_parts.append(

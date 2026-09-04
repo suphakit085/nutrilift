@@ -4,21 +4,21 @@
 "ข้าวโพด, เหลือง, ฝัก, ต้ม","Corn, yellow, on the cob, boiled Mais sa busal, dilaw, nilaga",ข้าว-แป้ง,100 กรัม,100,142,3.8,19.4,4.3,5,ASEAN-FCD-2014-INMU:AAA37
 "เส้นหมี่, อบ/ตาก, แห้ง","Noodle, rice, vermicelli, dried",ข้าว-แป้ง,100 กรัม,100,374,6.1,85.1,0.7,1.3,ASEAN-FCD-2014-INMU:AAA78
 "ก๋วยเตี๋ยวเส้นใหญ่, สด","Noodle, rice, fresh, kuih-teow Kuih-teow",ข้าว-แป้ง,100 กรัม,100,150,3,32.4,0.9,0.1,ASEAN-FCD-2014-INMU:AAA50
-ข้าวเหนียวดํา,"Rice, glutinous, black, polished, raw Pulut hitam",ข้าว-แป้ง,100 กรัม,100,347,8.5,69.9,2.6,4.9,ASEAN-FCD-2014-INMU:AAA59
+ข้าวเหนียวดำ,"Rice, glutinous, black, polished, raw Pulut hitam",ข้าว-แป้ง,100 กรัม,100,347,8.5,69.9,2.6,4.9,ASEAN-FCD-2014-INMU:AAA59
 ข้าวเหนียว,"MYA23 Rice, glutinous, white, polished, raw Pulut putih",ข้าว-แป้ง,100 กรัม,100,354,7.3,77.4,1.5,0.6,ASEAN-FCD-2014-INMU:VNA1
 ข้าวมันปู,"Rice, red, undermilled, raw Bigas, mapula",ข้าว-แป้ง,100 กรัม,100,356,6.8,74.2,2.7,4,ASEAN-FCD-2014-INMU:AAA69
 "ข้าวเจ้า, สุก","Rice, white, polished, cooked Nasi",ข้าว-แป้ง,100 กรัม,100,129,2.2,29.4,0.2,0.6,ASEAN-FCD-2014-INMU:MYA14
 "ข้าวเจ้า, พันธุ์ต่างๆ","VNA2 Rice, white, polished, raw Beras kilang",ข้าว-แป้ง,100 กรัม,100,354,6.8,79.7,0.7,0.6,ASEAN-FCD-2014-INMU:MYA17
 ข้าวกล้อง,"Rice, whole-grain, milled by machine, raw Beras, tidak dikilang",ข้าว-แป้ง,100 กรัม,100,353,7.9,74.1,2.1,2.8,ASEAN-FCD-2014-INMU:MYA15
-มันสําปะหลัง,"MYB72 Cassava, tuber, fresh, raw Ubi Kayu",หัวและมันต่าง ๆ,100 กรัม,100,146,0.8,34.5,0.2,1.7,ASEAN-FCD-2014-INMU:THB12
+มันสำปะหลัง,"MYB72 Cassava, tuber, fresh, raw Ubi Kayu",หัวและมันต่าง ๆ,100 กรัม,100,146,0.8,34.5,0.2,1.7,ASEAN-FCD-2014-INMU:THB12
 มันฝรั่ง,"Potato, fresh, raw Ubi kentang",หัวและมันต่าง ๆ,100 กรัม,100,76,2.2,15.7,0.1,1.6,ASEAN-FCD-2014-INMU:MYB66
 แป้งมันสัมปะหลัง,"Tapioca, flour Tepung ubi kayu",หัวและมันต่าง ๆ,100 กรัม,100,64,1,1,7,,ASEAN-FCD-2014-INMU:MYB73
 เผือก,"VNB43 Taro, fresh, raw Ubi keladi Cina",หัวและมันต่าง ๆ,100 กรัม,100,117,1.7,26.1,0.1,2.4,ASEAN-FCD-2014-INMU:THB7
-"ถั่วดํา, เมล็ดแห้ง","Bean, black, dried, raw",ถั่วและเมล็ด,100 กรัม,100,305,21.3,40,1.9,21.3,ASEAN-FCD-2014-INMU:THC6
+"ถั่วดำ, เมล็ดแห้ง","Bean, black, dried, raw",ถั่วและเมล็ด,100 กรัม,100,305,21.3,40,1.9,21.3,ASEAN-FCD-2014-INMU:THC6
 "มะม่วงหิมพานต์, เมล็ดสด","Cashew nut, fresh, raw",ถั่วและเมล็ด,100 กรัม,100,299,11.6,9.2,23,4.5,ASEAN-FCD-2014-INMU:AAC16
 "ลูกเดือย, ดิบ","Job's tears, seed, whole",ถั่วและเมล็ด,100 กรัม,100,359,14.6,67.6,2.6,3.6,ASEAN-FCD-2014-INMU:AAC47
 "วุ้นเส้น, ถั่วเขียว 100 %","Mungbean noodle, dried, raw Sotanghon",ถั่วและเมล็ด,100 กรัม,100,345,0.2,83.2,0.2,4.8,ASEAN-FCD-2014-INMU:AAC53
-"วุ้นเส้นกึ่งสําเร็จรูป, พร้อมเครื่องปรุง, รสต่างๆ","Mungbean noodle, instant, w/ seasonings, mixed flavoures",ถั่วและเมล็ด,100 กรัม,100,353,1.8,70.1,6.9,1.5,ASEAN-FCD-2014-INMU:AAC61
+"วุ้นเส้นกึ่งสำเร็จรูป, พร้อมเครื่องปรุง, รสต่างๆ","Mungbean noodle, instant, w/ seasonings, mixed flavoures",ถั่วและเมล็ด,100 กรัม,100,353,1.8,70.1,6.9,1.5,ASEAN-FCD-2014-INMU:AAC61
 "ถั่วเขียว, เมล็ดแห้ง","VNC71 Mungbean, seed, green, dried, raw Kacang hijau",ถั่วและเมล็ด,100 กรัม,100,301,23.2,34.7,1.9,26.1,ASEAN-FCD-2014-INMU:MYC83
 ถั่วทอง,"Mungbean, seed, splited, dried, dehulled, raw (Golden gram) Munggo buto, dilaw, tuyo",ถั่วและเมล็ด,100 กรัม,100,329,24.5,47.9,1.2,14.2,ASEAN-FCD-2014-INMU:AAC58
 "ถั่วลิสง, เมล็ดแห้ง","Peanut/Groundnut, seed, w/ skin, dried, raw Kacang tanah tanpa kulit",ถั่วและเมล็ด,100 กรัม,100,543,24.9,5.2,43,18,ASEAN-FCD-2014-INMU:AAC63
@@ -26,7 +26,7 @@
 "เมล็ดฟักทอง, พันธุ์ต่างๆ, แกะเปลือก, อบเกลือ","Pumpkin, seed, w/o shell, baked, salted",ถั่วและเมล็ด,100 กรัม,100,555,22.9,10,45.7,5.9,ASEAN-FCD-2014-INMU:AAC123
 "เมล็ดฟักทอง, พันธุ์ต่างๆ, แกะเปลือก, สด","Pumpkin, seed, w/o shell, fresh, raw",ถั่วและเมล็ด,100 กรัม,100,384,16.8,2.8,32.5,6.7,ASEAN-FCD-2014-INMU:AAC122
 "ถั่วแดง, เมล็ดแห้ง","Rice bean, seed, red, dried, raw",ถั่วและเมล็ด,100 กรัม,100,300,22.5,33.9,2.1,27.8,ASEAN-FCD-2014-INMU:AAC72
-งาดํา,"Sesame, seed, black, dried, raw",ถั่วและเมล็ด,100 กรัม,100,555,19.4,6.3,46,19.2,ASEAN-FCD-2014-INMU:AAC73
+งาดำ,"Sesame, seed, black, dried, raw",ถั่วและเมล็ด,100 กรัม,100,555,19.4,6.3,46,19.2,ASEAN-FCD-2014-INMU:AAC73
 งาขาว,"Sesame, seed, white, dried, raw Linga, tuyo",ถั่วและเมล็ด,100 กรัม,100,602,22.8,0,52,21.6,ASEAN-FCD-2014-INMU:AAC74
 "ผงถั่วเหลือง, ชนิดไขมันเต็ม","Soybean flour, full-fat",ถั่วและเมล็ด,100 กรัม,100,449,36.2,24.9,21.4,6,ASEAN-FCD-2014-INMU:AAC126
 "ถั่วเหลือง, เมล็ดแห้ง","Soybean, seed, yellow, dried, raw Kacang soya putih",ถั่วและเมล็ด,100 กรัม,100,389,34.6,11.6,17.8,22,ASEAN-FCD-2014-INMU:MYC88
@@ -38,11 +38,11 @@
 บร็อคโคลี่,"Broccoli, fresh, raw Brokoli",ผัก,100 กรัม,100,26,3.4,1.4,0.1,2.9,ASEAN-FCD-2014-INMU:AAD22
 ผักกาดขาว/ ผักกาดขาวใบห่อ,"PHD160 Cabbage, Chinese, fresh, raw Pak-coy",ผัก,100 กรัม,100,18,1.7,1.5,0.2,1.7,ASEAN-FCD-2014-INMU:VND99
 ผักกวางตุ้ง,"Cabbage, Chinese/ Flowering white cabbage, raw",ผัก,100 กรัม,100,20,1.9,1.5,0.2,2.1,ASEAN-FCD-2014-INMU:AAD56
-กระหลํ่าปลี,"Cabbage, common, fresh, raw Kobis",ผัก,100 กรัม,100,25,1.5,3.2,0.3,1.9,ASEAN-FCD-2014-INMU:PHD035
+กระหล่ำปลี,"Cabbage, common, fresh, raw Kobis",ผัก,100 กรัม,100,25,1.5,3.2,0.3,1.9,ASEAN-FCD-2014-INMU:PHD035
 แครอท,"PHD039 Carrot, raw Lobak merah",ผัก,100 กรัม,100,35,1.5,4.9,0.2,4,ASEAN-FCD-2014-INMU:MYD145
 "มันสัมปะหลัง, ยอด","PHD043 Cassava, young leaf and top, raw Pucuk ubi kayu",ผัก,100 กรัม,100,65,6.3,6.1,0.7,4.6,ASEAN-FCD-2014-INMU:MYD224
 "ขี้เหล็ก, ใบ","Cassia, leaf, raw",ผัก,100 กรัม,100,104,6.3,15.1,0.7,5.8,ASEAN-FCD-2014-INMU:AAD32
-กระหลํ่าดอก,"VN D167,PHD045 Cauliflower, inflorescence, raw Bunga kobis",ผัก,100 กรัม,100,30,2.6,3.9,0.1,1.7,ASEAN-FCD-2014-INMU:AAD34
+กระหล่ำดอก,"VN D167,PHD045 Cauliflower, inflorescence, raw Bunga kobis",ผัก,100 กรัม,100,30,2.6,3.9,0.1,1.7,ASEAN-FCD-2014-INMU:AAD34
 ผักคื่นช่าย,"PHD047 Celery, leaf and petiole, raw Daun seladeri",,100 กรัม,100,25,1.3,3.2,0.2,2.6,ASEAN-FCD-2014-INMU:YD149
 ผักชี,"Coriander, leaf, raw Daun ketumbar / Yuen-sai",ผัก,100 กรัม,100,27,2.5,2.2,0.2,3,ASEAN-FCD-2014-INMU:THD87
 ข้าวโพดอ่อน,"Corn, baby",ผัก,100 กรัม,100,27,1.9,3.6,0.2,1.5,ASEAN-FCD-2014-INMU:AAD42
@@ -52,16 +52,16 @@
 มะเขือยาว,"Eggplant/aubergine, green, long, raw",ผัก,100 กรัม,100,22,1,3.2,0.1,2.3,ASEAN-FCD-2014-INMU:AAD50
 มะเขือเปราะ,"Eggplant/brinjal, raw",ผัก,100 กรัม,100,31,1.5,4.5,0.2,2.8,ASEAN-FCD-2014-INMU:AAD54
 "มะระ, ยอด(สะไล)","Gourd, bitter, leaf and top, raw Ampalaya dahon",ผัก,100 กรัม,100,68,4.5,0,4.5,4.5,ASEAN-FCD-2014-INMU:AAD59
-นํ้าเต้า,"VND83 Gourd, bottle, raw Labu jantung",ผัก,100 กรัม,100,20,0.5,1.5,1,1.5,ASEAN-FCD-2014-INMU:MYD167
+น้ำเต้า,"VND83 Gourd, bottle, raw Labu jantung",ผัก,100 กรัม,100,20,0.5,1.5,1,1.5,ASEAN-FCD-2014-INMU:MYD167
 บวบกลม,"Gourd, sponge, raw Ketola air",,100 กรัม,100,21,0.9,3,0.3,1.2,ASEAN-FCD-2014-INMU:YD180
 ฟักเขียว,"THD107 Gourd, wax, mixed variety, raw Kundur/Tong-kuah",,100 กรัม,100,16,0.5,2.3,0.2,1.7,ASEAN-FCD-2014-INMU:HD269
-ผักตําลึง,"Ivygourd, fresh, raw",ผัก,100 กรัม,100,26,3.6,1.2,0.2,2.7,ASEAN-FCD-2014-INMU:AAD58
+ผักตำลึง,"Ivygourd, fresh, raw",ผัก,100 กรัม,100,26,3.6,1.2,0.2,2.7,ASEAN-FCD-2014-INMU:AAD58
 "กุยช่าย , ใบ","Leek, Chinese, raw Kutsay dahon",ผัก,100 กรัม,100,23,2.3,1.7,0.2,2.7,ASEAN-FCD-2014-INMU:VND125
 ผักกาดหอม,"MYD178 Lettuce, garden, leaf and petiole Daun salad/Sang-coy",ผัก,100 กรัม,100,15,1.3,1.3,0.1,1.8,ASEAN-FCD-2014-INMU:VND144
 บวบเหลี่ยม,"Loofah, angled Ketola segi",ผัก,100 กรัม,100,21,0.8,3,0.3,1.4,ASEAN-FCD-2014-INMU:PHD219
 ถั่วงอก,"MYD185 Mung bean, sprout, raw Tau-geh",ผัก,100 กรัม,100,41,4.3,4.1,0.2,2.6,ASEAN-FCD-2014-INMU:THD39
-"ถั่วงอก, ในนํ้าเกลือ, บรรจุกระป๋อง","Mung bean, sprout, in brine, canned",ผัก,100 กรัม,100,23,1.5,3,0.1,1.9,ASEAN-FCD-2014-INMU:AAD81
-"เห็ดแชมปิยอง, ในนํ้าเกลือ, บรรจุกระป๋อง, ไม่รวมนํ้า","Mushroom, button/ champignon, canned in brine, drained",ผัก,100 กรัม,100,31,4,1.1,0.5,3.2,ASEAN-FCD-2014-INMU:AAD84
+"ถั่วงอก, ในน้ำเกลือ, บรรจุกระป๋อง","Mung bean, sprout, in brine, canned",ผัก,100 กรัม,100,23,1.5,3,0.1,1.9,ASEAN-FCD-2014-INMU:AAD81
+"เห็ดแชมปิยอง, ในน้ำเกลือ, บรรจุกระป๋อง, ไม่รวมน้ำ","Mushroom, button/ champignon, canned in brine, drained",ผัก,100 กรัม,100,31,4,1.1,0.5,3.2,ASEAN-FCD-2014-INMU:AAD84
 เห็ดฟาง,"Mushroom, Chinese/straw, fresh, raw",ผัก,100 กรัม,100,31,3,3.6,0.2,1.4,ASEAN-FCD-2014-INMU:AAD88
 "มะละกอ, ดิบ","Papaya, unripe, raw",ผัก,100 กรัม,100,24,0.8,4,0.1,2,ASEAN-FCD-2014-INMU:VND116
 "สะตอ, เมล็ด","Parkia, seed, raw Petai",ผัก,100 กรัม,100,124,9,14.2,2.9,2.7,ASEAN-FCD-2014-INMU:AAD103
@@ -82,40 +82,40 @@
 กล้วยหอม,"Banana, dessert, Valery, Hom variety",ผลไม้,100 กรัม,100,109,1.3,24.8,0.1,1.9,ASEAN-FCD-2014-INMU:AAE12
 กล้วยไข่,"IDE75 Banana, rice banana Pisang mas",ผลไม้,100 กรัม,100,98,1.1,22,0.2,1.8,ASEAN-FCD-2014-INMU:MYE247
 ทุเรียนชะนี/ ทุเรียนลวง/ทุเรียนหมอนทอง,"Durian, assorted Durian",ผลไม้,100 กรัม,100,152,2.4,25,3.9,3.6,ASEAN-FCD-2014-INMU:MYE260
-"ผลไม้รวม, ในนํ้าเชื่อม, บรรจุกระป๋อง","Fruit cocktail, tropical, in syrup, canned",ผลไม้,100 กรัม,100,82,0.3,17.9,0.7,1.6,ASEAN-FCD-2014-INMU:AAE36
+"ผลไม้รวม, ในน้ำเชื่อม, บรรจุกระป๋อง","Fruit cocktail, tropical, in syrup, canned",ผลไม้,100 กรัม,100,82,0.3,17.9,0.7,1.6,ASEAN-FCD-2014-INMU:AAE36
 องุ่นเขียว/องุ่นแดง,"MYE265 Grape, assorted Buah anggur",,100 กรัม,100,53,0.6,11.8,0.1,1.1,ASEAN-FCD-2014-INMU:NE238
 ฝรั่ง,"MYE267 Guava, white flesh Jambu batu",ผลไม้,100 กรัม,100,55,0.9,10.1,0.2,4.4,ASEAN-FCD-2014-INMU:THE39
-"ขนุน, ในนํ้าเชื่อม, บรรจุกระป๋อง","Jackfruit, in syrup, canned",ผลไม้,100 กรัม,100,100,0.7,21.7,1,0.9,ASEAN-FCD-2014-INMU:AAE47
+"ขนุน, ในน้ำเชื่อม, บรรจุกระป๋อง","Jackfruit, in syrup, canned",ผลไม้,100 กรัม,100,100,0.7,21.7,1,0.9,ASEAN-FCD-2014-INMU:AAE47
 พุทราแอปเปิ้ล,Jujube Mansanitas,ผลไม้,100 กรัม,100,50,0.9,10.2,0.1,2.2,ASEAN-FCD-2014-INMU:THE43
-"ลิ้นจี่, ในนํ้าเชื่อม, บรรจุกระป๋อง","Litchi, in syrup, canned",ผลไม้,100 กรัม,100,95,0.4,20.9,1,0.5,ASEAN-FCD-2014-INMU:AAE54
-ลําใย,"VNE235 Longan, fresh Mata kucing",ผลไม้,100 กรัม,100,71,1,15.8,0.2,0.9,ASEAN-FCD-2014-INMU:MYE296
-"ลําไย, ในนํ้าเชื่อม, บรรจุกระป๋อง","Longan, in syrup, canned",ผลไม้,100 กรัม,100,94,0.3,20.5,1.1,0.3,ASEAN-FCD-2014-INMU:AAE56
+"ลิ้นจี่, ในน้ำเชื่อม, บรรจุกระป๋อง","Litchi, in syrup, canned",ผลไม้,100 กรัม,100,95,0.4,20.9,1,0.5,ASEAN-FCD-2014-INMU:AAE54
+ลำใย,"VNE235 Longan, fresh Mata kucing",ผลไม้,100 กรัม,100,71,1,15.8,0.2,0.9,ASEAN-FCD-2014-INMU:MYE296
+"ลำไย, ในน้ำเชื่อม, บรรจุกระป๋อง","Longan, in syrup, canned",ผลไม้,100 กรัม,100,94,0.3,20.5,1.1,0.3,ASEAN-FCD-2014-INMU:AAE56
 ส้มเขียวหวาน,Mandarin/tangerine Limau Cina,,100 กรัม,100,42,1,8.1,0.3,1.5,ASEAN-FCD-2014-INMU:YE302
 "มะม่วงเขียวเสวย, ดิบ","Mango,Kiew-sa- weya variety, unripe",ผลไม้,100 กรัม,100,79,0.8,17.2,0.2,2.7,ASEAN-FCD-2014-INMU:AAE132
 "มะม่วงแก้ว, ดิบ","Mango, kaew variety, mature, unripe",ผลไม้,100 กรัม,100,75,0.6,16.2,0.2,3,ASEAN-FCD-2014-INMU:AAE72
-"มะม่วงนํ้าดอกไม้, สุก","Mango, num-dok-mai variety, ripe",ผลไม้,100 กรัม,100,78,0.9,17.5,0.2,1.2,ASEAN-FCD-2014-INMU:AAE67
+"มะม่วงน้ำดอกไม้, สุก","Mango, num-dok-mai variety, ripe",ผลไม้,100 กรัม,100,78,0.9,17.5,0.2,1.2,ASEAN-FCD-2014-INMU:AAE67
 "มะม่วงอกร่อง, สุก","Mango, okrong variety, ripe",ผลไม้,100 กรัม,100,79,0.8,17.9,0.2,1.3,ASEAN-FCD-2014-INMU:AAE69
 "มะม่วงแรด, ดิบ","Mango, rad variety, mature, unripe",ผลไม้,100 กรัม,100,76,0.5,16.8,0.2,2.3,ASEAN-FCD-2014-INMU:AAE74
 มังคุด,Mangosteen Manggis,ผลไม้,100 กรัม,100,68,0.6,14.4,0.6,1.5,ASEAN-FCD-2014-INMU:MYE295
 ส้มเช้ง,"Orange, green skin/Kalanchoe Limau manis",,100 กรัม,100,45,0.8,8.6,0.3,2.4,ASEAN-FCD-2014-INMU:YE300
 "มะละกอ , สุก","VN E217,MYE303 Papaya, ripe Papaya/Betik",ผลไม้,100 กรัม,100,40,0.9,8.1,0.1,1.3,ASEAN-FCD-2014-INMU:AAE83
 สับปะรด,THE120 Pineapple Nenas,,100 กรัม,100,48,0.5,10.8,0.1,1,ASEAN-FCD-2014-INMU:NE214
-"สับปะรดในนํ้าเชื่อมเข้มข้น, บรรจุกระป๋อง","Pineapple, slice, in heavy syrup, canned Nenas, dengan sirup, dalam tin",ผลไม้,100 กรัม,100,90,0.3,21.3,0.2,0.8,ASEAN-FCD-2014-INMU:PHE114
+"สับปะรดในน้ำเชื่อมเข้มข้น, บรรจุกระป๋อง","Pineapple, slice, in heavy syrup, canned Nenas, dengan sirup, dalam tin",ผลไม้,100 กรัม,100,90,0.3,21.3,0.2,0.8,ASEAN-FCD-2014-INMU:PHE114
 ส้มโอ,MYE317 Pomelo Limau Betawi/Limau Bali,,100 กรัม,100,44,0.6,9.6,0.2,0.7,ASEAN-FCD-2014-INMU:NE203
-"เงาะไส้สับปะรด, ในนํ้าเชื่อม , บรรจุกระป๋อง","Rambutan and pineapple, in syrup, canned",ผลไม้,100 กรัม,100,91,0.4,19.4,1.1,0.7,ASEAN-FCD-2014-INMU:AAE101
-"เงาะ, ในนํ้าเชื่อม, บรรจุกระป๋อง","Rambutan, in syrup, canned",ผลไม้,100 กรัม,100,107,0.3,21.6,1.9,1,ASEAN-FCD-2014-INMU:AAE102
+"เงาะไส้สับปะรด, ในน้ำเชื่อม , บรรจุกระป๋อง","Rambutan and pineapple, in syrup, canned",ผลไม้,100 กรัม,100,91,0.4,19.4,1.1,0.7,ASEAN-FCD-2014-INMU:AAE101
+"เงาะ, ในน้ำเชื่อม, บรรจุกระป๋อง","Rambutan, in syrup, canned",ผลไม้,100 กรัม,100,107,0.3,21.6,1.9,1,ASEAN-FCD-2014-INMU:AAE102
 ละมุด,"MYE324 Sapodilla, ripe Ciku",ผลไม้,100 กรัม,100,69,0.5,11.1,0.7,8.1,ASEAN-FCD-2014-INMU:THE85
 น้อยหน่า,MYE257 Sugar apple Buah nona,ผลไม้,100 กรัม,100,86,1.6,18,0.3,2.2,ASEAN-FCD-2014-INMU:VNE234
 มะขามเทศ,"Tamarind, Madras thorn Camachili",ผลไม้,100 กรัม,100,85,3.4,13.8,1,3.4,ASEAN-FCD-2014-INMU:AAE58
-"ลูกตาล, ในนํ้าเชื่อม, บรรจุกระป๋อง","Toddy palm, in syrup, canned",ผลไม้,100 กรัม,100,93,0.2,21.2,0.5,1.2,ASEAN-FCD-2014-INMU:AAE118
+"ลูกตาล, ในน้ำเชื่อม, บรรจุกระป๋อง","Toddy palm, in syrup, canned",ผลไม้,100 กรัม,100,93,0.2,21.2,0.5,1.2,ASEAN-FCD-2014-INMU:AAE118
 แตงโม,MYE330 Watermelon Tembikai,ผลไม้,100 กรัม,100,24,0.6,5.1,0.1,0.3,ASEAN-FCD-2014-INMU:VNE212
 ชมพู่เขียว,"Wax jambu, Water Rose, green color variety",ผลไม้,100 กรัม,100,30,0.5,6.1,0.1,1.1,ASEAN-FCD-2014-INMU:AAE125
 "วัว, ลูกชิ้น","Beef, meat ball",เนื้อสัตว์,100 กรัม,100,84,16.5,2.9,0.7,0,ASEAN-FCD-2014-INMU:AAF2
-"ไก่ดํา, สะโพก, ดิบ","Chicken, black, thigh, w/ skin, raw",เนื้อสัตว์,100 กรัม,100,127,22.7,0,4,0,ASEAN-FCD-2014-INMU:AAF185
+"ไก่ดำ, สะโพก, ดิบ","Chicken, black, thigh, w/ skin, raw",เนื้อสัตว์,100 กรัม,100,127,22.7,0,4,0,ASEAN-FCD-2014-INMU:AAF185
 "ไก่, เลือด, ต้ม","Chicken, blood, cooked",เนื้อสัตว์,100 กรัม,100,30,7.1,0,0.2,0,ASEAN-FCD-2014-INMU:AAF91
 "ไก่, อก, ดิบ","Chicken, breast, w/ skin, raw Daging ayam, bahagian dada",เนื้อสัตว์,100 กรัม,100,152,19.9,0,8,0,ASEAN-FCD-2014-INMU:PHF093
 "ไก่, น่อง, ดิบ","Chicken, drumstick, raw Manok binti",เนื้อสัตว์,100 กรัม,100,152,17.9,4,7.2,0,ASEAN-FCD-2014-INMU:AAF100
-"ไก่ดํา, กึ๋น, ดิบ","THF32 Chicken, gizzard, raw Hempedal ayam",,100 กรัม,100,102,20.2,1.2,1.8,0,ASEAN-FCD-2014-INMU:YF372
+"ไก่ดำ, กึ๋น, ดิบ","THF32 Chicken, gizzard, raw Hempedal ayam",,100 กรัม,100,102,20.2,1.2,1.8,0,ASEAN-FCD-2014-INMU:YF372
 "ไก่ป่า, ปีก, เนื้อและหนัง, ดิบ","Chicken, jungle fowl, wing, w/ skin, raw",เนื้อสัตว์,100 กรัม,100,187,22.1,0,11,0,ASEAN-FCD-2014-INMU:AAF186
 "ไก่, ตับ, ดิบ","THF15 Chicken, liver, raw Hati ayam",เนื้อสัตว์,100 กรัม,100,121,18.6,2.5,4.1,0,ASEAN-FCD-2014-INMU:PHF103
 "ไก่, สะโพก, ดิบ","Chicken, thigh, w/ skin, raw Manok hita",เนื้อสัตว์,100 กรัม,100,198,17.7,0,14.1,0,ASEAN-FCD-2014-INMU:AAF104
@@ -173,7 +173,7 @@
 "ปลาทู, นึ่ง, ทอด","Mackerel, short- bodied, steamed, fried",ปลาและอาหารทะเล,100 กรัม,100,233,27.5,0.1,13.6,0,ASEAN-FCD-2014-INMU:AAG199
 "ปลาทู, สด, ต้ม","Mackerel, short-bodied, boiled",ปลาและอาหารทะเล,100 กรัม,100,145,23.4,0.2,5.6,0,ASEAN-FCD-2014-INMU:AAG195
 "ปลาทู, สด, ทอด","Mackerel, short-bodied, fried",ปลาและอาหารทะเล,100 กรัม,100,236,28,0.3,13.6,0,ASEAN-FCD-2014-INMU:AAG196
-"ปลาทู, ในนํ้ามัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Mackerel, short-bodied, in oil, canned, drained",ปลาและอาหารทะเล,100 กรัม,100,138,23,0.5,4.9,0,ASEAN-FCD-2014-INMU:AAG75
+"ปลาทู, ในน้ำมัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Mackerel, short-bodied, in oil, canned, drained",ปลาและอาหารทะเล,100 กรัม,100,138,23,0.5,4.9,0,ASEAN-FCD-2014-INMU:AAG75
 "ปลาทู, ในซอสมะเขือเทศ- พริก, บรรจุกระป๋อง","Mackerel, short-bodied, in tomato sauce and chilli, canned",ปลาและอาหารทะเล,100 กรัม,100,101,15.2,1.8,3.3,1.7,ASEAN-FCD-2014-INMU:AAG78
 "ปลาทู, ในซอสมะเขือเทศ, บรรจุกระป๋อง","Mackerel, short-bodied, in tomato sauce, canned Alumahan, sa tomato sce",ปลาและอาหารทะเล,100 กรัม,100,98,15.2,0.5,3.6,1.6,ASEAN-FCD-2014-INMU:AAG76
 "ปลาทู, สด","Mackerel, short-bodied, raw Hasa-hasa",ปลาและอาหารทะเล,100 กรัม,100,122,21.4,0,4,0,ASEAN-FCD-2014-INMU:AAG129
@@ -185,17 +185,17 @@
 "ปลานิล, ต้ม","Nile tilapia, boiled",ปลาและอาหารทะเล,100 กรัม,100,123,21.4,0,4.2,0,ASEAN-FCD-2014-INMU:AAG221
 หอยนางรม,"Oyster, raw Tiram",ปลาและอาหารทะเล,100 กรัม,100,58,7.5,2.6,1.9,0,ASEAN-FCD-2014-INMU:MYG450
 "ปลาหมอไทย, สด","Perch, climbing Puyu/Betok",ปลาและอาหารทะเล,100 กรัม,100,145,17.9,0,8.2,0,ASEAN-FCD-2014-INMU:THG140
-"ปลาจะละเม็ดดํา, ทอด","Pomfret, black, fried Ikan bawal hitam goreng",ปลาและอาหารทะเล,100 กรัม,100,259,31.8,0.8,14.3,0,ASEAN-FCD-2014-INMU:AAG9
-"ปลาจะละเม็ดดํา, สด","Pomfret, black, raw Bawal hitam",,100 กรัม,100,102,19.8,0.1,2.5,0,ASEAN-FCD-2014-INMU:YG456
-"ปลาจะละเม็ดดํา, นึ่ง","Pomfret, black, steamed",ปลาและอาหารทะเล,100 กรัม,100,160,22.8,1.6,6.9,0,ASEAN-FCD-2014-INMU:AAG10
+"ปลาจะละเม็ดดำ, ทอด","Pomfret, black, fried Ikan bawal hitam goreng",ปลาและอาหารทะเล,100 กรัม,100,259,31.8,0.8,14.3,0,ASEAN-FCD-2014-INMU:AAG9
+"ปลาจะละเม็ดดำ, สด","Pomfret, black, raw Bawal hitam",,100 กรัม,100,102,19.8,0.1,2.5,0,ASEAN-FCD-2014-INMU:YG456
+"ปลาจะละเม็ดดำ, นึ่ง","Pomfret, black, steamed",ปลาและอาหารทะเล,100 กรัม,100,160,22.8,1.6,6.9,0,ASEAN-FCD-2014-INMU:AAG10
 "ปลาจะละเม็ดขาว, ทอด","Pomfret, silver, fried",ปลาและอาหารทะเล,100 กรัม,100,335,32.7,0,22.7,0,ASEAN-FCD-2014-INMU:AAG193
 "ปลาจะละเม็ดขาว, นึ่ง","Pomfret, silver, steamed",ปลาและอาหารทะเล,100 กรัม,100,158,22.9,0,7.4,0,ASEAN-FCD-2014-INMU:AAG194
 "ปลาจะละเม็ดขาว, สด","Pomfret, silver/white, raw Bawal putih",ปลาและอาหารทะเล,100 กรัม,100,126,19.4,0,5.4,0,ASEAN-FCD-2014-INMU:AAG103
-"กุ้งฝอยนํ้าจืด, สด","Prawn, fresh water, raw Ulang",ปลาและอาหารทะเล,100 กรัม,100,98,17.5,3.1,1.7,0,ASEAN-FCD-2014-INMU:AAG105
-"กุ้งกุลาดํา, แช่แข็ง, เฉพาะเนื้อ","Prawn, giant tiger, headless, frozen",ปลาและอาหารทะเล,100 กรัม,100,88,20,0,0.9,0,ASEAN-FCD-2014-INMU:AAG106
+"กุ้งฝอยน้ำจืด, สด","Prawn, fresh water, raw Ulang",ปลาและอาหารทะเล,100 กรัม,100,98,17.5,3.1,1.7,0,ASEAN-FCD-2014-INMU:AAG105
+"กุ้งกุลาดำ, แช่แข็ง, เฉพาะเนื้อ","Prawn, giant tiger, headless, frozen",ปลาและอาหารทะเล,100 กรัม,100,88,20,0,0.9,0,ASEAN-FCD-2014-INMU:AAG106
 "ปลาสีเสียด, แห้ง","Queenfish, Slender, dried",ปลาและอาหารทะเล,100 กรัม,100,176,37.8,0,2.8,0,ASEAN-FCD-2014-INMU:AAG232
 หอยเชลล์/หอยพัด,Radiated scallop,ปลาและอาหารทะเล,100 กรัม,100,106,22.3,3.3,0.4,0,ASEAN-FCD-2014-INMU:AAG3
-"ปลาซาดีน, ในนํ้ามัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Sardine, in oil, canned, drained",ปลาและอาหารทะเล,100 กรัม,100,133,22.2,0.1,4.9,0,ASEAN-FCD-2014-INMU:AAG113
+"ปลาซาดีน, ในน้ำมัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Sardine, in oil, canned, drained",ปลาและอาหารทะเล,100 กรัม,100,133,22.2,0.1,4.9,0,ASEAN-FCD-2014-INMU:AAG113
 "ปลาซาดีน, ในซอสมะเขือเทศและพริกเผ็ดมาก, บรรจุกระป๋อง","Sardine, in tomato sauce and chilli, canned",ปลาและอาหารทะเล,100 กรัม,100,69,10.6,2.7,1.3,2,ASEAN-FCD-2014-INMU:AAG116
 "ปลาซาดีน, ในซอสมะเขือเทศ, บรรจุกระป๋อง","Sardine, in tomato sauce, canned Sardinas, sa tomato sce, de lata",ปลาและอาหารทะเล,100 กรัม,100,93,12.3,5.6,2.2,1,ASEAN-FCD-2014-INMU:AAG115
 "ปลาหางแข็ง, แห้ง","Scad, hardtail (torpedo), dried Cincaru, kering",ปลาและอาหารทะเล,100 กรัม,100,166,37.4,0,1.8,0,ASEAN-FCD-2014-INMU:THG149
@@ -215,26 +215,26 @@
 "ปลาหมึกกล้วย, แห้ง(เค็มตัวเล็ก)","Squid, splendid, salted and dried",ปลาและอาหารทะเล,100 กรัม,100,299,62.4,3.7,3.8,0,ASEAN-FCD-2014-INMU:AAG203
 "ปลาหมึกกล้วย, ลอกหนังติดหัว, แช่แข็ง","Squid, splendid, skin removed, whole cleaned, frozen",ปลาและอาหารทะเล,100 กรัม,100,59,11.8,0.7,1,0,ASEAN-FCD-2014-INMU:AAG205
 "ปลานิล, สด","Tilapia, all species, raw Tilapia, Tilapia merah, Kerisi",ปลาและอาหารทะเล,100 กรัม,100,94,18.4,0.8,1.9,0,ASEAN-FCD-2014-INMU:THG98
-"ปลาสําลี, ทอด","Trevally, black-banded, fried",ปลาและอาหารทะเล,100 กรัม,100,241,26,0.4,15,0,ASEAN-FCD-2014-INMU:AAG6
-"ปลาสําลี, เผา","Trevally, black-banded, grilled",ปลาและอาหารทะเล,100 กรัม,100,146,22.1,0,6.4,0,ASEAN-FCD-2014-INMU:AAG7
-"ปลาสําลี, สด","Trevally, black-banded, raw",ปลาและอาหารทะเล,100 กรัม,100,134,18.6,2.9,5.3,0,ASEAN-FCD-2014-INMU:AAG4
-"ปลาสําลี, นึ่ง","Trevally, black-banded, steamed",ปลาและอาหารทะเล,100 กรัม,100,163,21.2,0.3,8.6,0,ASEAN-FCD-2014-INMU:AAG8
+"ปลาสำลี, ทอด","Trevally, black-banded, fried",ปลาและอาหารทะเล,100 กรัม,100,241,26,0.4,15,0,ASEAN-FCD-2014-INMU:AAG6
+"ปลาสำลี, เผา","Trevally, black-banded, grilled",ปลาและอาหารทะเล,100 กรัม,100,146,22.1,0,6.4,0,ASEAN-FCD-2014-INMU:AAG7
+"ปลาสำลี, สด","Trevally, black-banded, raw",ปลาและอาหารทะเล,100 กรัม,100,134,18.6,2.9,5.3,0,ASEAN-FCD-2014-INMU:AAG4
+"ปลาสำลี, นึ่ง","Trevally, black-banded, steamed",ปลาและอาหารทะเล,100 กรัม,100,163,21.2,0.3,8.6,0,ASEAN-FCD-2014-INMU:AAG8
 "ปลาทูนา, ในนาเกลอ, บรรจุกระป๋อง, เฉพาะเนื้อ","Tuna, Skipjack or Yellow Fin, canned in brine, drained",ปลาและอาหารทะเล,100 กรัม,100,105,23.9,0.8,0.7,0,ASEAN-FCD-2014-INMU:AAG238
-"ปลาทูน่า, ในนํ้ามัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Tuna, Skipjack or Yellow Fin, canned in oil, drained",ปลาและอาหารทะเล,100 กรัม,100,176,22.4,0,9.6,0,ASEAN-FCD-2014-INMU:AAG239
-"ปลาทูน่า, ในนํ้า, บรรจุกระป๋อง, เฉพาะเนื้อ","Tuna, Skipjack or Yellow Fin, canned in water, drained",ปลาและอาหารทะเล,100 กรัม,100,113,26.1,0,0.9,0,ASEAN-FCD-2014-INMU:AAG241
+"ปลาทูน่า, ในน้ำมัน, บรรจุกระป๋อง, เฉพาะเนื้อ","Tuna, Skipjack or Yellow Fin, canned in oil, drained",ปลาและอาหารทะเล,100 กรัม,100,176,22.4,0,9.6,0,ASEAN-FCD-2014-INMU:AAG239
+"ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ","Tuna, Skipjack or Yellow Fin, canned in water, drained",ปลาและอาหารทะเล,100 กรัม,100,113,26.1,0,0.9,0,ASEAN-FCD-2014-INMU:AAG241
 "ไข่เป็ด, ไข่เค็ม","Egg, duck, salted Telur asin, sebiji",ไข่,100 กรัม,100,190,13.9,5.4,12.5,0,ASEAN-FCD-2014-INMU:PHH021
 "ไข่เป็ด, ทั้งฟอง","PHH007 Egg, duck, whole Telur itik, sebiji",,100 กรัม,100,183,12.6,2.5,13.6,0,ASEAN-FCD-2014-INMU:YH384
 "ไข่เป็ด, ไข่แดง","Egg, duck, yolk Telur itik, kuning telur",ไข่,100 กรัม,100,364,14.7,2.3,32.9,0,ASEAN-FCD-2014-INMU:THH13
 "ไข่ไก่, ไข่ขาว","VNH371 Egg, hen, white Telur ayam, putih telur",ไข่,100 กรัม,100,52,10.9,1.3,0.4,0,ASEAN-FCD-2014-INMU:THH1
 "ไข่ไก่, ทั้งฟอง","THH3 Egg, hen, whole Telur ayam, sebiji",ไข่,100 กรัม,100,159,13.2,1.5,11.1,0,ASEAN-FCD-2014-INMU:PHH003
 "ไข่ไก่, ไข่แดง","PHH005 Egg, hen, yolk Telur ayam, kuning telur",ไข่,100 กรัม,100,332,14.8,1.9,29.5,0,ASEAN-FCD-2014-INMU:VNH370
-"ไข่นกกระทา, ในนํ้าเกลือ","Egg, quail, in brine",ไข่,100 กรัม,100,173,13,2.3,12.4,0,ASEAN-FCD-2014-INMU:AAH17
+"ไข่นกกระทา, ในน้ำเกลือ","Egg, quail, in brine",ไข่,100 กรัม,100,173,13,2.3,12.4,0,ASEAN-FCD-2014-INMU:AAH17
 "ไข่นกกระทา, ต้ม","Egg, quail, whole, boiled Telur puyuh, sebiji",ไข่,100 กรัม,100,168,12.4,1.6,12.4,0,ASEAN-FCD-2014-INMU:THH8
 ไข่จะละเม็ด(ไข่ของเต่าตนุ/ เต่าแสงอาทิตย์),"Egg, turtle, whole Telur penyu, sebiji",ไข่,100 กรัม,100,128,11.9,0.1,8.9,0,ASEAN-FCD-2014-INMU:THH7
 "ไข่ปลากระบอก, เค็ม","Roe, bluespot grey mullet, salted",ไข่,100 กรัม,100,480,41.7,0,34.8,0,ASEAN-FCD-2014-INMU:AAH24
 "ชีส, เชดดา","THJ69 Cheese, processed, cheddar Keju, dalam bukungsan plastik",,100 กรัม,100,323,21.7,7.3,23,0,ASEAN-FCD-2014-INMU:YJ509
 "นมเปรี้ยว, ยาคูลท์","Milk, cultured, yakult, per 100 ml",นมและผลิตภัณฑ์,100 กรัม,100,83,1.5,19,0.1,0,ASEAN-FCD-2014-INMU:AAJ44
-"นมข้น, แปลงไขมัน, สูตรนํ้ามันปาล์มผสมมันเนย, หวาน","Milk, filled, condensed, sweetenned, w/ palm oil and butter Susu isian pekat manis",,100 กรัม,100,339,8.5,54.8,9.5,0,ASEAN-FCD-2014-INMU:HJ4
+"นมข้น, แปลงไขมัน, สูตรน้ำมันปาล์มผสมมันเนย, หวาน","Milk, filled, condensed, sweetenned, w/ palm oil and butter Susu isian pekat manis",,100 กรัม,100,339,8.5,54.8,9.5,0,ASEAN-FCD-2014-INMU:HJ4
 นมคน 1 เดือน,"Milk, human, 1 month lactation, per 100 ml",นมและผลิตภัณฑ์,100 กรัม,100,53,0.9,7.8,2,0,ASEAN-FCD-2014-INMU:AAJ40
 นมคน 3 เดือน,"Milk, human, 3 month lactation, per 100 ml",นมและผลิตภัณฑ์,100 กรัม,100,56,0.8,7.7,2.5,0,ASEAN-FCD-2014-INMU:AAJ17
 นมคน 6 เดือน,"Milk, human, 6 month lactation, per 100 ml",นมและผลิตภัณฑ์,100 กรัม,100,56,0.8,7.6,2.5,0,ASEAN-FCD-2014-INMU:AAJ41
@@ -260,10 +260,10 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 ผงหมักไก่,"Marinade powder, for chicken",เครื่องปรุง,100 กรัม,100,289,7.7,58.2,2.3,2.5,ASEAN-FCD-2014-INMU:AAN90
 ผงหมูแดง,"Marinade powder, for roasted pork",เครื่องปรุง,100 กรัม,100,288,2.6,65.9,1.3,0.9,ASEAN-FCD-2014-INMU:AAN59
 "สะเต๊ะ, ผง","Marinade powder, for satay",เครื่องปรุง,100 กรัม,100,309,3.2,70.8,0.7,3.3,ASEAN-FCD-2014-INMU:AAN63
-นํ้าพริกแกงเขียวหวาน,"Paste, curry, green",เครื่องปรุง,100 กรัม,100,59,3.5,5.9,0.8,7.1,ASEAN-FCD-2014-INMU:AAN25
-นํ้าพริกแกงแพนง,"Paste, curry, panang",เครื่องปรุง,100 กรัม,100,92,4.6,10.1,1.8,8.6,ASEAN-FCD-2014-INMU:AAN28
-นํ้าพริกแกงแดง,"Paste, curry, red",เครื่องปรุง,100 กรัม,100,94,5.3,8.3,2.2,9.9,ASEAN-FCD-2014-INMU:AAN26
-นํ้าพริกแกงกะหรี่,"Paste, curry, yellow (Kari)",เครื่องปรุง,100 กรัม,100,109,4.6,5,5.8,9.2,ASEAN-FCD-2014-INMU:AAN27
+น้ำพริกแกงเขียวหวาน,"Paste, curry, green",เครื่องปรุง,100 กรัม,100,59,3.5,5.9,0.8,7.1,ASEAN-FCD-2014-INMU:AAN25
+น้ำพริกแกงแพนง,"Paste, curry, panang",เครื่องปรุง,100 กรัม,100,92,4.6,10.1,1.8,8.6,ASEAN-FCD-2014-INMU:AAN28
+น้ำพริกแกงแดง,"Paste, curry, red",เครื่องปรุง,100 กรัม,100,94,5.3,8.3,2.2,9.9,ASEAN-FCD-2014-INMU:AAN26
+น้ำพริกแกงกะหรี่,"Paste, curry, yellow (Kari)",เครื่องปรุง,100 กรัม,100,109,4.6,5,5.8,9.2,ASEAN-FCD-2014-INMU:AAN27
 "กะปิเคย, คุณภาพรอง","Paste, tiny shrimp, fermented (Ka-pi)",เครื่องปรุง,100 กรัม,100,81,13.9,2.7,1.2,2,ASEAN-FCD-2014-INMU:AAN67
 ซอสมะเขือเทศ,"Sauce, tomato (ketchup) Sos tomato/Ketcup tomato",ผัก,100 กรัม,100,114,1.6,26.5,0,1,ASEAN-FCD-2014-INMU:MYD227
 หอมแดง,"Shallot, bulb Bawang merah",ผัก,100 กรัม,100,62,1.7,12.3,0.1,2.4,ASEAN-FCD-2014-INMU:MYD193
@@ -271,9 +271,9 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 "โหระพา, ใบ","Sweet basil, leaf",เครื่องปรุง,100 กรัม,100,36,2.9,4.8,0.1,2,ASEAN-FCD-2014-INMU:AAN71
 ขมิ้น,"Turmeric, rhizome, fresh Dilaw",เครื่องปรุง,100 กรัม,100,87,0.3,6.5,4.4,1,ASEAN-FCD-2014-INMU:THN8
 กาแฟใส่นม,"Coffee, iced, per 100 ml",เครื่องดื่ม,100 กรัม,100,63,1.7,12.6,0.6,0,ASEAN-FCD-2014-INMU:AAQ9
-นํ้ากระเจี๊ยบ,"Drink, roselle, per 100 ml",เครื่องดื่ม,100 กรัม,100,66,0,16.4,0,0.1,ASEAN-FCD-2014-INMU:AAQ47
+น้ำกระเจี๊ยบ,"Drink, roselle, per 100 ml",เครื่องดื่ม,100 กรัม,100,66,0,16.4,0,0.1,ASEAN-FCD-2014-INMU:AAQ47
 "เครื่องดื่มรสช็อกโกแลต, ผง","Energy drink, chocolate flavoured, powder (Milo+Ovaltine)",เครื่องดื่ม,100 กรัม,100,396,12,74.7,5.5,0,ASEAN-FCD-2014-INMU:AAQ59
-นํ้าส้ม 100%,"Juice, orange, 100%, per 100 ml",เครื่องดื่ม,100 กรัม,100,56,0.6,13.1,0.1,0.1,ASEAN-FCD-2014-INMU:AAQ43
+น้ำส้ม 100%,"Juice, orange, 100%, per 100 ml",เครื่องดื่ม,100 กรัม,100,56,0.6,13.1,0.1,0.1,ASEAN-FCD-2014-INMU:AAQ43
 นมถั่วเหลือง,"Soybean milk, commercial, per 100 ml",เครื่องดื่ม,100 กรัม,100,82,2.5,10,3.5,0.4,ASEAN-FCD-2014-INMU:AAQ66
 ชาใส่นมข้นหวาน,"Tea, w/ milk, per 100 ml",เครื่องดื่ม,100 กรัม,100,68,0.1,14.5,1.1,0,ASEAN-FCD-2014-INMU:AAQ55
 "เบอร์เกอร์, เนื้อ","Burger, beef",อาหารจานด่วน,100 กรัม,100,275,13.4,21.4,14.8,1.4,ASEAN-FCD-2014-INMU:AAS1
@@ -281,9 +281,9 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 มันฝรั่งทอด,French fries,อาหารจานด่วน,100 กรัม,100,336,3.9,37.2,18.1,4.2,ASEAN-FCD-2014-INMU:AAS6
 "แซนวิช, แฮม","Sandwich, ham",อาหารจานด่วน,100 กรัม,100,220,9.3,22.2,10.2,0.9,ASEAN-FCD-2014-INMU:AAS11
 ข้าวขาหมู,Rice w/ pig leg and gravy,อาหารจานเดียว,100 กรัม,100,161,7.2,19.3,5.9,1,ASEAN-FCD-2014-INMU:AAT366
-"ขนมจีน, นํ้ายา",Fermented rice noodle with fish curry,อาหารจานเดียว,100 กรัม,100,82,2.7,13,2.1,0.4,ASEAN-FCD-2014-INMU:AAT204
-"เส้นใหญ่, หมู, นํ้า","Rice noodle, big size, with pork, w/o soup",อาหารจานเดียว,100 กรัม,100,75,7.1,2.8,3.6,1.6,ASEAN-FCD-2014-INMU:AAT348
-"เส้นหมี่, ลูกชิ้นเนื้อวัว, นํ้า","Rice noodle, fine thread, w/ beef ball and soup",อาหารจานเดียว,100 กรัม,100,49,3.2,5.8,1.3,0.7,ASEAN-FCD-2014-INMU:AAT346
+"ขนมจีน, น้ำยา",Fermented rice noodle with fish curry,อาหารจานเดียว,100 กรัม,100,82,2.7,13,2.1,0.4,ASEAN-FCD-2014-INMU:AAT204
+"เส้นใหญ่, หมู, น้ำ","Rice noodle, big size, with pork, w/o soup",อาหารจานเดียว,100 กรัม,100,75,7.1,2.8,3.6,1.6,ASEAN-FCD-2014-INMU:AAT348
+"เส้นหมี่, ลูกชิ้นเนื้อวัว, น้ำ","Rice noodle, fine thread, w/ beef ball and soup",อาหารจานเดียว,100 กรัม,100,49,3.2,5.8,1.3,0.7,ASEAN-FCD-2014-INMU:AAT346
 "แกงพะแนง-หอยลาย, พร้อมบริโภค","Baby clam, curry (Pa-naeng) type cooked with coconut milk",อาหารจานเดียว,100 กรัม,100,126,7.2,3.4,9,1.4,ASEAN-FCD-2014-INMU:AAT134
 ไข่,"Moon's cake, durian and egg filling",อาหารจานเดียว,100 กรัม,100,379,6.5,57,13.2,3.2,ASEAN-FCD-2014-INMU:AAT259
 "ขนมไหว้พระจันทร์, ไส้ทุเรียน","Moon's ca ke, durian filling",อาหารจานเดียว,100 กรัม,100,363,5,60.7,10.3,3.7,ASEAN-FCD-2014-INMU:AAT255

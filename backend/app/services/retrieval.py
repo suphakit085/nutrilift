@@ -127,7 +127,11 @@ def search(
         relative_window if relative_window is not None else settings.retrieval_relative_window
     )
 
-    query_vector = embed_text(query)
+    # Short retry budget: this runs inside a live chat turn on a worker thread.
+    # One quick retry catches a burst crossing the per-minute line; anything
+    # longer and the caller's fallback (answer without sources) is the better
+    # experience than a 20 s+ stall. Ingest/eval keep the long defaults.
+    query_vector = embed_text(query, max_retries=1, max_delay_s=5.0)
     distance = Chunk.embedding.cosine_distance(query_vector).label("distance")
 
     # Over-fetch so BM25 has candidates the dense ranking placed just outside

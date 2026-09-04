@@ -99,6 +99,12 @@ BMI_UNDERWEIGHT = 18.5
 #: Self-managed intake floor (energy-balance-cut-bulk card, "ข้อควรระวัง").
 MIN_SELF_MANAGED_KCAL = 1200
 
+#: Below this the macro split is reported with a warning rather than as a plan.
+#: A lifter training several times a week has no business at ketogenic carb
+#: levels by accident; when the leftover falls this low the cause is the
+#: per-kg protein/fat rule meeting a high body weight, not a choice.
+MIN_CARB_G = 100
+
 
 class NutritionInputError(ValueError):
     """Raised when profile input is outside the range these formulas are valid for."""
@@ -117,10 +123,24 @@ class ProfileInput:
     body_fat_pct: float | None = None
     training_days: int = 3
     restrictions: list[str] = field(default_factory=list)
+    #: Optional only for rows written before the column existed. With a year
+    #: alone, someone born in December 2008 counted as 18 from 1 Jan 2026 - three
+    #: months of a 17-year-old passing the adult gate, which is the one gate this
+    #: service is not allowed to get wrong.
+    birth_month: int | None = None
 
     def age(self, today: datetime | None = None) -> int:
-        year = (today or datetime.now(UTC)).year
-        return year - self.birth_year
+        """Completed years, rounded *down* when the month is known.
+
+        The day is never stored, so in the birth month itself the birthday is
+        assumed not to have happened yet. That errs by at most one month, in
+        the direction that keeps a minor out rather than lets one in.
+        """
+        now = today or datetime.now(UTC)
+        years = now.year - self.birth_year
+        if self.birth_month is not None and now.month <= self.birth_month:
+            years -= 1
+        return years
 
 
 def _validate(p: ProfileInput) -> None:
@@ -250,6 +270,19 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
         warnings.append(
             f"พลังงานเป้าหมายต่ำกว่า {MIN_SELF_MANAGED_KCAL:,} kcal/วัน ซึ่งต่ำเกินกว่าจะดูแลด้วยตนเอง "
             "แนะนำให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อน"
+        )
+    # Protein and fat are set per kg of *total* body weight, so at a high BMI
+    # on a cut they can eat the whole energy budget: a 100 kg / 150 cm sedentary
+    # cut came out at 200 g protein, 90 g fat and 5 g carbohydrate, and the
+    # model quoted it as a plan. The numbers are not changed here - the split
+    # is still the documented method - but the model is told the result is
+    # not something to hand over as-is.
+    if not carb_floor_applied and carb_g < MIN_CARB_G:
+        warnings.append(
+            f"คาร์โบไฮเดรตที่เหลือหลังหักโปรตีนและไขมันต่ำมาก ({carb_g:.0f} g/วัน ต่ำกว่า "
+            f"{MIN_CARB_G} g) เพราะโปรตีนและไขมันคิดต่อน้ำหนักตัวทั้งหมด ซึ่งไม่เหมาะกับผู้ที่มี BMI สูง "
+            "ให้บอกผู้ใช้ตรง ๆ ว่าสัดส่วนนี้ยังไม่ควรใช้จริง และควรให้นักกำหนดอาหารปรับโปรตีน"
+            "ตามน้ำหนักเป้าหมายหรือมวลกล้ามเนื้อแทน"
         )
 
     return {

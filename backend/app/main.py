@@ -3,19 +3,31 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import auth, chat, food_log, foods, profile
-from app.core.config import settings
+from app.core.config import check_production_settings, settings
 
 logging.basicConfig(level=logging.INFO)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    # Raises in production (Render/Railway or ENVIRONMENT=production) when the
+    # JWT secret or Gemini key is still a placeholder; warns elsewhere.
+    check_production_settings(settings)
+    yield
+
 
 app = FastAPI(
     title="NutriLift API",
     description="แชตบอทให้ความรู้ด้านโภชนาการสำหรับผู้ฝึกเวทเทรนนิ่ง (RAG + เครื่องคำนวณ)",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -24,6 +36,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # Retry-After is not a CORS-safelisted response header, so without this the
+    # frontend cannot read the 429 wait time from a different origin.
+    expose_headers=["Retry-After"],
 )
 
 app.include_router(auth.router)

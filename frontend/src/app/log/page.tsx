@@ -35,9 +35,23 @@ function todayStr(): string {
 
 function shiftDate(dateStr: string, days: number): string {
   const d = new Date(`${dateStr}T00:00:00`);
+  // An unparseable value (e.g. "" from a cleared picker) would otherwise
+  // become "NaN-NaN-NaN" and every later request would carry that date.
+  if (Number.isNaN(d.getTime())) return todayStr();
   d.setDate(d.getDate() + days);
   return toDateStr(d);
 }
+
+/** Parse a quantity typed by the user. `Number("")` is 0, which the backend
+ *  rejects - so validation happens on the string, before conversion. */
+function parseQuantity(raw: string): number | null {
+  const trimmed = raw.trim();
+  const value = Number(trimmed);
+  if (trimmed === "" || !Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
+
+const QUANTITY_ERROR = "กรุณาระบุจำนวนที่มากกว่า 0";
 
 export default function LogPage() {
   const router = useRouter();
@@ -72,6 +86,13 @@ export default function LogPage() {
     })();
   }, [router, date, refresh]);
 
+  /** Every date change goes through here so a stale error from the previous
+   *  day does not linger over the new one. */
+  function changeDate(next: string) {
+    setError("");
+    setDate(next);
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -99,7 +120,7 @@ export default function LogPage() {
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <button
-          onClick={() => setDate((d) => shiftDate(d, -1))}
+          onClick={() => changeDate(shiftDate(date, -1))}
           aria-label="วันก่อนหน้า"
           className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
@@ -108,11 +129,15 @@ export default function LogPage() {
         <input
           type="date"
           value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="rounded-sm border border-border bg-surface-sunken px-3.5 py-2 text-sm outline-none focus:border-accent focus:bg-surface"
+          onChange={(e) => {
+            // Clearing the picker yields "" - keep the current date rather than
+            // requesting `?date=`.
+            if (e.target.value) changeDate(e.target.value);
+          }}
+          className="rounded-sm border border-border bg-surface-sunken px-3.5 py-2 text-base outline-none focus:border-accent focus:bg-surface"
         />
         <button
-          onClick={() => setDate((d) => shiftDate(d, 1))}
+          onClick={() => changeDate(shiftDate(date, 1))}
           aria-label="วันถัดไป"
           className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
@@ -120,7 +145,7 @@ export default function LogPage() {
         </button>
         {date !== todayStr() && (
           <button
-            onClick={() => setDate(todayStr())}
+            onClick={() => changeDate(todayStr())}
             className="rounded-md bg-accent-soft px-4 py-2 text-sm font-medium text-accent transition hover:opacity-85"
           >
             วันนี้
@@ -147,6 +172,7 @@ export default function LogPage() {
             onToggleAdd={() => setOpenMeal((m) => (m === meal ? null : meal))}
             date={date}
             onChanged={() => refresh(date)}
+            onError={setError}
           />
         ))}
       </div>
@@ -274,6 +300,7 @@ function MealSection({
   onToggleAdd,
   date,
   onChanged,
+  onError,
 }: {
   meal: MealType;
   entries: FoodLogEntry[];
@@ -282,6 +309,7 @@ function MealSection({
   onToggleAdd: () => void;
   date: string;
   onChanged: () => void;
+  onError: (message: string) => void;
 }) {
   return (
     <section className="rounded-lg border border-border bg-surface p-5">
@@ -309,7 +337,7 @@ function MealSection({
       {entries.length > 0 && (
         <ul className="mt-3 space-y-2">
           {entries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} onChanged={onChanged} />
+            <EntryRow key={entry.id} entry={entry} onChanged={onChanged} onError={onError} />
           ))}
         </ul>
       )}
@@ -322,6 +350,7 @@ function MealSection({
             onChanged();
             onToggleAdd();
           }}
+          onError={onError}
         />
       )}
     </section>
@@ -331,20 +360,33 @@ function MealSection({
 function EntryRow({
   entry,
   onChanged,
+  onError,
 }: {
   entry: FoodLogEntry;
   onChanged: () => void;
+  onError: (message: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [qty, setQty] = useState(entry.quantity_servings);
+  // Kept as the raw string so a cleared field stays empty instead of snapping
+  // to 0, and so validation can tell "" apart from a real 0.
+  const [qty, setQty] = useState(String(entry.quantity_servings));
+  const [qtyError, setQtyError] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function saveQty() {
+    const quantity = parseQuantity(qty);
+    if (quantity === null) {
+      setQtyError(QUANTITY_ERROR);
+      return;
+    }
+    setQtyError("");
     setBusy(true);
     try {
-      await api.updateFoodLogEntry(entry.id, { quantity_servings: qty });
+      await api.updateFoodLogEntry(entry.id, { quantity_servings: quantity });
       setEditing(false);
       onChanged();
+    } catch (err) {
+      onError(`แก้ไขจำนวนไม่สำเร็จ: ${(err as Error).message}`);
     } finally {
       setBusy(false);
     }
@@ -356,6 +398,8 @@ function EntryRow({
     try {
       await api.deleteFoodLogEntry(entry.id);
       onChanged();
+    } catch (err) {
+      onError(`ลบรายการไม่สำเร็จ: ${(err as Error).message}`);
     } finally {
       setBusy(false);
     }
@@ -371,22 +415,31 @@ function EntryRow({
         </div>
       </div>
       {editing ? (
-        <div className="flex shrink-0 items-center gap-1.5">
-          <input
-            type="number"
-            step="0.5"
-            min="0.1"
-            value={qty}
-            onChange={(e) => setQty(Number(e.target.value))}
-            className="stat-figure w-16 rounded-sm border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-accent"
-          />
-          <button
-            disabled={busy}
-            onClick={saveQty}
-            className="rounded-sm bg-cta px-2.5 py-1 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
-          >
-            บันทึก
-          </button>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.5"
+              min="0.1"
+              value={qty}
+              aria-label="จำนวนหน่วยบริโภค"
+              aria-invalid={qtyError ? true : undefined}
+              onChange={(e) => {
+                setQty(e.target.value);
+                setQtyError("");
+              }}
+              className="stat-figure w-20 rounded-sm border border-border bg-surface px-2 py-1 text-base outline-none focus:border-accent"
+            />
+            <button
+              disabled={busy}
+              onClick={saveQty}
+              className="rounded-sm bg-cta px-2.5 py-1 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
+            >
+              บันทึก
+            </button>
+          </div>
+          {qtyError && <span className="text-xs text-red-600">{qtyError}</span>}
         </div>
       ) : (
         <div className="flex shrink-0 items-center gap-3 text-xs">
@@ -413,15 +466,18 @@ function AddFoodSearch({
   meal,
   date,
   onAdded,
+  onError,
 }: {
   meal: MealType;
   date: string;
   onAdded: () => void;
+  onError: (message: string) => void;
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodSearchResult[]>([]);
   const [selected, setSelected] = useState<FoodSearchResult | null>(null);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState("1");
+  const [qtyError, setQtyError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -441,15 +497,23 @@ function AddFoodSearch({
 
   async function add() {
     if (!selected) return;
+    const quantity = parseQuantity(qty);
+    if (quantity === null) {
+      setQtyError(QUANTITY_ERROR);
+      return;
+    }
+    setQtyError("");
     setBusy(true);
     try {
       await api.addFoodLogEntry({
         food_id: selected.id,
-        quantity_servings: qty,
+        quantity_servings: quantity,
         meal_type: meal,
         logged_date: date,
       });
       onAdded();
+    } catch (err) {
+      onError(`เพิ่มรายการไม่สำเร็จ: ${(err as Error).message}`);
     } finally {
       setBusy(false);
     }
@@ -465,7 +529,7 @@ function AddFoodSearch({
           setSelected(null);
         }}
         placeholder="ค้นหาเมนู เช่น ข้าวผัดกุ้ง"
-        className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+        className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-base outline-none focus:border-accent"
       />
 
       {!selected && results.length > 0 && (
@@ -488,24 +552,33 @@ function AddFoodSearch({
       )}
 
       {selected && (
-        <div className="mt-3 flex items-center gap-2 text-sm">
-          <span className="min-w-0 flex-1 truncate">{selected.name_th}</span>
-          <input
-            type="number"
-            step="0.5"
-            min="0.1"
-            value={qty}
-            onChange={(e) => setQty(Number(e.target.value))}
-            className="stat-figure w-16 rounded-sm border border-border bg-surface px-2 py-1.5 text-xs outline-none focus:border-accent"
-          />
-          <span className="shrink-0 text-xs text-muted">× {selected.serving_desc}</span>
-          <button
-            disabled={busy}
-            onClick={add}
-            className="shrink-0 rounded-sm bg-cta px-4 py-1.5 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
-          >
-            เพิ่ม
-          </button>
+        <div className="mt-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="min-w-0 flex-1 truncate">{selected.name_th}</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.5"
+              min="0.1"
+              value={qty}
+              aria-label="จำนวนหน่วยบริโภค"
+              aria-invalid={qtyError ? true : undefined}
+              onChange={(e) => {
+                setQty(e.target.value);
+                setQtyError("");
+              }}
+              className="stat-figure w-20 rounded-sm border border-border bg-surface px-2 py-1.5 text-base outline-none focus:border-accent"
+            />
+            <span className="shrink-0 text-xs text-muted">× {selected.serving_desc}</span>
+            <button
+              disabled={busy}
+              onClick={add}
+              className="shrink-0 rounded-sm bg-cta px-4 py-1.5 text-xs font-medium text-cta-foreground transition hover:opacity-85 disabled:opacity-50"
+            >
+              เพิ่ม
+            </button>
+          </div>
+          {qtyError && <p className="mt-1.5 text-xs text-red-600">{qtyError}</p>}
         </div>
       )}
     </div>

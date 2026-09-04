@@ -6,8 +6,22 @@
  * stream is read manually from the fetch body reader.
  */
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+function resolveApiBase(): string {
+  // Trailing slashes are stripped so `${API_BASE}/auth/login` never becomes
+  // `http://host//auth/login`.
+  const configured = (process.env.NEXT_PUBLIC_API_BASE ?? "").trim().replace(/\/+$/, "");
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") {
+    // Fail `next build` loudly rather than silently baking localhost:8000 into
+    // a production bundle that then cannot reach the backend.
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE is not set. Set it to the backend URL (e.g. https://api.example.com) before building for production.",
+    );
+  }
+  return "http://localhost:8000";
+}
+
+export const API_BASE = resolveApiBase();
 
 const TOKEN_KEY = "nutrition_token";
 
@@ -38,6 +52,24 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * A 401 outside `/auth/` means the stored token is expired or revoked (the
+ * backend issues 7-day tokens): drop it and send the user back to the login
+ * page instead of leaving every request failing with an opaque error.
+ * `/auth/login` legitimately answers 401 for a wrong password, so the whole
+ * `/auth/` prefix is exempt.
+ */
+function handleUnauthorized(path: string, status: number): void {
+  if (status !== 401 || path.startsWith("/auth/")) return;
+  setToken(null);
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+    // A full navigation, not the router: this module has no access to it, and
+    // a hard reload also drops any in-memory state that belonged to the old
+    // session.
+    window.location.assign(new URL("/login", window.location.origin).href);
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   const response = await fetch(`${API_BASE}${path}`, {
@@ -50,6 +82,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
+    handleUnauthorized(path, response.status);
     let detail = `เกิดข้อผิดพลาด (${response.status})`;
     try {
       const body = await response.json();
@@ -69,6 +102,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export type Profile = {
   sex: "male" | "female";
   birth_year: number;
+  /** 1-12. Null only on rows saved before the field existed; required on save. */
+  birth_month: number | null;
   height_cm: number;
   weight_kg: number;
   body_fat_pct: number | null;
@@ -269,6 +304,10 @@ export type ChatStreamHandlers = {
 
 export type SSEFrame = { event: string; payload: Record<string, unknown> };
 
+/** Shown when the SSE stream ends before the server sent `done` or `error`. */
+export const STREAM_CUT_MESSAGE =
+  "การเชื่อมต่อถูกตัดก่อนคำตอบจะจบ กรุณาลองใหม่อีกครั้ง";
+
 /**
  * Split a raw SSE buffer into complete frames.
  *
@@ -325,12 +364,13 @@ export function streamChat(
   useRag = true,
 ): () => void {
   const controller = new AbortController();
+  const path = `/conversations/${conversationId}/chat`;
 
   (async () => {
     try {
       const token = getToken();
       const response = await fetch(
-        `${API_BASE}/conversations/${conversationId}/chat`,
+        `${API_BASE}${path}`,
         {
           method: "POST",
           signal: controller.signal,
@@ -343,6 +383,7 @@ export function streamChat(
       );
 
       if (!response.ok || !response.body) {
+        handleUnauthorized(path, response.status);
         // The server explains rate limits and quota exhaustion in `detail`;
         // showing only the status code would leave the user with no idea how
         // long to wait or what went wrong.
@@ -365,6 +406,11 @@ export function streamChat(
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      // Set once a terminal frame (`done` or `error`) has been dispatched. A
+      // stream that hits EOF without one - proxy timeout, backend crash
+      // mid-answer, dropped connection - would otherwise end silently and leave
+      // the composer disabled forever.
+      let finished = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -386,16 +432,22 @@ export function streamChat(
               handlers.onTool?.(String(payload.name ?? ""));
               break;
             case "done":
+              finished = true;
               handlers.onDone?.({
                 text: String(payload.text ?? ""),
                 citations: (payload.citations ?? []) as Citation[],
               });
               break;
             case "error":
+              finished = true;
               handlers.onError?.(String(payload.message ?? "เกิดข้อผิดพลาด"));
               break;
           }
         }
+      }
+
+      if (!finished && !controller.signal.aborted) {
+        handlers.onError?.(STREAM_CUT_MESSAGE);
       }
     } catch (error) {
       if ((error as Error).name !== "AbortError") {
