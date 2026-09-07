@@ -154,12 +154,13 @@ def roles_of(food: dict) -> frozenset[str]:
     fat = float(food["fat_g"])
 
     roles: set[str] = set()
-    if category in _ROLE_CATEGORIES["protein"] and kcal >= _MIN_KCAL_FOR_ANCHOR:
-        if (
-            protein >= _MIN_PROTEIN_G_FOR_ANCHOR
-            and _energy_share(protein, KCAL_PER_G_PROTEIN, kcal) >= _MIN_PROTEIN_ENERGY_SHARE
-        ):
-            roles.add("protein")
+    if (
+        category in _ROLE_CATEGORIES["protein"]
+        and kcal >= _MIN_KCAL_FOR_ANCHOR
+        and protein >= _MIN_PROTEIN_G_FOR_ANCHOR
+        and _energy_share(protein, KCAL_PER_G_PROTEIN, kcal) >= _MIN_PROTEIN_ENERGY_SHARE
+    ):
+        roles.add("protein")
     if category in _ROLE_CATEGORIES["carb"] and kcal >= _MIN_KCAL_FOR_ANCHOR:
         dry = (
             category in _DRY_STAPLE_CATEGORIES
@@ -171,9 +172,11 @@ def roles_of(food: dict) -> frozenset[str]:
             and _energy_share(carb, KCAL_PER_G_CARB, kcal) >= _MIN_CARB_ENERGY_SHARE
         ):
             roles.add("carb")
-    if category in _ROLE_CATEGORIES["fat"]:
-        if _energy_share(fat, KCAL_PER_G_FAT, kcal) >= _MIN_FAT_ENERGY_SHARE:
-            roles.add("fat")
+    if (
+        category in _ROLE_CATEGORIES["fat"]
+        and _energy_share(fat, KCAL_PER_G_FAT, kcal) >= _MIN_FAT_ENERGY_SHARE
+    ):
+        roles.add("fat")
     if category in _ROLE_CATEGORIES["vegetable"]:
         roles.add("vegetable")
     if category in _ROLE_CATEGORIES["fruit"]:
@@ -470,7 +473,8 @@ def _pick(
     offset = variant % len(ranked)
     ordered = ranked[offset:] + ranked[:offset]
     for food in ordered:
-        if food["name_th"] not in used_names and (food.get("category") or "") not in used_categories:
+        category = (food.get("category") or "")
+        if food["name_th"] not in used_names and category not in used_categories:
             return food
     for food in ordered:
         if food["name_th"] not in used_names:
@@ -623,7 +627,8 @@ def build_day_plan(
         "meals": meals_out,
         "warnings": warnings,
         "note": (
-            "เมนูนี้คำนวณด้วยโปรแกรม ไม่ใช่การประมาณของโมเดล และไม่ใช่การสุ่ม ตัวเลขทุกตัวมาจากฐานข้อมูลอาหารของระบบ "
+            "เมนูนี้คำนวณด้วยโปรแกรม ไม่ใช่การประมาณของโมเดล และไม่ใช่การสุ่ม "
+            "ตัวเลขทุกตัวมาจากฐานข้อมูลอาหารของระบบ "
             "ห้ามบอกผู้ใช้ว่าเมนูนี้สุ่มมา โปรไฟล์เดิมกับ variant เดิมจะได้เมนูเดิมเสมอ "
             "ให้รายงานหน่วยเสิร์ฟตามข้อความปริมาณที่แนบมากับแต่ละรายการ และแจ้งส่วนต่างจากเป้าหมายตามจริง "
             "ห้ามพิมพ์ชื่อคีย์หรือชื่อฟิลด์จากข้อมูลนี้ให้ผู้ใช้เห็น ให้เขียนเป็นภาษาคนเสมอ "

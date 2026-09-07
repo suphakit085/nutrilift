@@ -5,20 +5,20 @@ from app.services.food_log import daily_totals
 
 
 def make_entry(**overrides) -> FoodLogEntry:
-    base = dict(
-        user_id=None,
-        food_id=None,
-        food_name_th="ข้าวสวย",
-        serving_desc="1 ทัพพี",
-        serving_g=100.0,
-        serving_kcal=130.0,
-        serving_protein_g=2.7,
-        serving_carb_g=28.0,
-        serving_fat_g=0.3,
-        quantity_servings=1.0,
-        meal_type="breakfast",
-        logged_date=date(2026, 9, 2),
-    )
+    base = {
+        "user_id": None,
+        "food_id": None,
+        "food_name_th": "ข้าวสวย",
+        "serving_desc": "1 ทัพพี",
+        "serving_g": 100.0,
+        "serving_kcal": 130.0,
+        "serving_protein_g": 2.7,
+        "serving_carb_g": 28.0,
+        "serving_fat_g": 0.3,
+        "quantity_servings": 1.0,
+        "meal_type": "breakfast",
+        "logged_date": date(2026, 9, 2),
+    }
     base.update(overrides)
     return FoodLogEntry(**base)
 

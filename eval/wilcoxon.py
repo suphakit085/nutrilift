@@ -78,7 +78,10 @@ def main() -> int:
             lines.append(f"| {metric} | {len(rag)} | - | - | - | - | ข้อมูลไม่พอ |")
             continue
 
-        diffs = [r - n for r, n in zip(rag, norag)]
+        # strict=True on purpose: this is a *paired* test, so a length mismatch
+        # is not something to silently truncate past - it would hand the thesis
+        # a p-value computed over the wrong pairs.
+        diffs = [r - n for r, n in zip(rag, norag, strict=True)]
         if all(d == 0 for d in diffs):
             lines.append(
                 f"| {metric} | {len(rag)} | {sum(rag) / len(rag):.3f} | "

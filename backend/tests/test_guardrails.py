@@ -391,9 +391,10 @@ def test_lookback_is_bounded():
 
 
 def test_persistent_set_is_exactly_the_person_level_flags():
-    assert PERSISTENT_FLAGS == {
+    person_level = {
         Flag.MEDICAL, Flag.PREGNANCY, Flag.MINOR, Flag.PED, Flag.DISORDERED_EATING
     }
+    assert person_level == PERSISTENT_FLAGS
     assert Flag.OUT_OF_SCOPE not in PERSISTENT_FLAGS
     assert Flag.UNDERWEIGHT not in PERSISTENT_FLAGS  # recomputed from the profile
 

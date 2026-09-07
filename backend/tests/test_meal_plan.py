@@ -196,7 +196,7 @@ def test_same_inputs_give_the_same_menu_and_variant_changes_it():
 
 
 def test_estimated_rows_are_never_used():
-    table = TINY_TABLE + [food("ผัดผักรวม", "กับข้าว", 110, 3.0, 10.0, 7.0, source="TOVERIFY-INMU")]
+    table = [*TINY_TABLE, food("ผัดผักรวม", "กับข้าว", 110, 3.0, 10.0, 7.0, source="TOVERIFY-INMU")]
     plan = build_day_plan(table, TARGETS)
     assert plan["estimated_rows_dropped"] == 1
     names = [item["name_th"] for meal in plan["meals"] for item in meal["items"]]

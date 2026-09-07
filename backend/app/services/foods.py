@@ -64,7 +64,12 @@ def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
     pattern = f"%{_escape_like(q)}%"
     stmt = (
         select(Food)
-        .where(or_(Food.name_th.ilike(pattern, escape="\\"), Food.name_en.ilike(pattern, escape="\\")))
+        .where(
+            or_(
+                Food.name_th.ilike(pattern, escape="\\"),
+                Food.name_en.ilike(pattern, escape="\\"),
+            )
+        )
         .order_by(func.length(Food.name_th))
         .limit(limit)
     )

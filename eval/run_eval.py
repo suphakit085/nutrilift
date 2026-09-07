@@ -630,7 +630,9 @@ def main() -> int:
         # values are int | str | None depending on the column and the row.
         if str(row.get("error") or "").strip():
             return False  # generation failed
-        if args.judge and str(row.get("correctness") or "").strip() == "":
+        # Kept as two branches: collapsing it into `return not (...)` would fold
+        # away the comment that says why an unscored row is not done.
+        if args.judge and str(row.get("correctness") or "").strip() == "":  # noqa: SIM103
             return False  # answered, but the judge never scored it (503, quota)
         return True
 

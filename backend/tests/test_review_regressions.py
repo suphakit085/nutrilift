@@ -16,10 +16,10 @@ from app.services.thai_text import compose_sara_am
 
 
 def _profile(**overrides) -> ProfileInput:
-    base = dict(
-        sex="male", birth_year=2008, birth_month=12, height_cm=175, weight_kg=70,
-        activity_level="moderate", goal="cut",
-    )
+    base = {
+        "sex": "male", "birth_year": 2008, "birth_month": 12, "height_cm": 175,
+        "weight_kg": 70, "activity_level": "moderate", "goal": "cut",
+    }
     base.update(overrides)
     return ProfileInput(**base)
 
@@ -45,10 +45,10 @@ def test_unknown_month_falls_back_to_year_difference() -> None:
 
 
 def _profile_in(**overrides) -> dict:
-    base = dict(
-        sex="male", birth_year=2004, birth_month=5, height_cm=175, weight_kg=70,
-        activity_level="moderate", goal="cut",
-    )
+    base = {
+        "sex": "male", "birth_year": 2004, "birth_month": 5, "height_cm": 175,
+        "weight_kg": 70, "activity_level": "moderate", "goal": "cut",
+    }
     base.update(overrides)
     return base
 

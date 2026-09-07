@@ -11,6 +11,17 @@ ignore = ["B008"]
 
 [lint.per-file-ignores]
 "backend/alembic/versions/*" = ["E501", "I001", "UP007", "UP035", "W291"]
+# The multiplication sign in "2 × 1 ทัพพี" is deliberate typography in text the
+# user reads. RUF001/RUF002 are kept on everywhere else, where a Latin/Thai
+# homoglyph in this codebase really would be a bug.
+"backend/app/services/meal_plan.py" = ["RUF001", "RUF002"]
+# eval/ is report-generating tooling, not shipped code, and most of its body is
+# long Thai prose written straight into markdown. Thai has no word spaces, so
+# these three fire on the prose itself rather than on anything wrong: E501 on
+# sentences that cannot be broken at a space, ISC004 on the multi-line strings
+# that keep those sentences readable, and RUF001/RUF002 on – × − used as the
+# typography they are. Every rule that can find a real defect stays on.
+"eval/*" = ["E501", "ISC004", "RUF001", "RUF002"]
 
 [lint.isort]
 # Without this, moving the config to the repo root made ruff treat the

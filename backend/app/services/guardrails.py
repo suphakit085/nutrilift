@@ -15,7 +15,6 @@ import re
 from dataclasses import dataclass
 from enum import StrEnum
 
-from app.services.thai_text import normalize_thai
 from app.services.nutrition import (
     BMI_UNDERWEIGHT,
     MIN_SELF_MANAGED_KCAL,
@@ -23,6 +22,7 @@ from app.services.nutrition import (
     ProfileInput,
     bmi,
 )
+from app.services.thai_text import normalize_thai
 
 
 class Flag(StrEnum):
