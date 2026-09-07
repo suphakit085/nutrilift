@@ -56,6 +56,28 @@ GROUP_LABELS = {
 
 GROUP_RE = re.compile(r"^[A-Z]{2,3}([A-Z])\d+$")
 
+#: The exact shape of a source string this script writes: the prefix, a colon,
+#: and a bare food ID with nothing after it.
+GENERATED_SOURCE_RE = re.compile(r"^ASEAN-FCD-2014-INMU:[A-Z0-9]+$")
+
+#: The serving every generated row carries, because ASEAN publishes per 100 g.
+GENERATED_SERVING = "100 กรัม"
+
+
+def is_generated(row: dict) -> bool:
+    """Was this row written by a previous run of this script?
+
+    Only rows this script produced may be thrown away and rebuilt. Deciding
+    that by source *prefix* alone was wrong and quietly destructive: a
+    hand-entered household serving cites an ASEAN ID too - ข้าวสวย 1 ทัพพี is
+    MYA14 scaled to 60 g - so a rebuild deleted four curated rows, ข้าวสวย
+    among them, and nothing said so. A generated row is recognised by its whole
+    shape instead: the per-100 g serving *and* a bare, un-annotated source.
+    """
+    source = (row.get("source") or "").strip()
+    serving = (row.get("serving_desc") or "").strip()
+    return serving == GENERATED_SERVING and bool(GENERATED_SOURCE_RE.match(source))
+
 
 def category_for(food_id: str) -> str:
     match = GROUP_RE.match(food_id)
@@ -111,14 +133,23 @@ def main() -> int:
             }
         )
 
-    # Keep only genuinely hand-entered dishes. Rows this script wrote on a
+    # Keep everything this script did not write itself. Rows it wrote on a
     # previous run are regenerated, so carrying them over would duplicate the
     # whole ASEAN set every time the extractor's name cleanup changed slightly.
+    existing = load_existing()
     kept = [
         r
-        for r in load_existing()
-        if not (r.get("source") or "").startswith("ASEAN-FCD")
-        and r.get("name_th", "").strip() not in names
+        for r in existing
+        if not is_generated(r) and r.get("name_th", "").strip() not in names
+    ]
+    # A row the extractor has stopped producing disappears here, and that is the
+    # case worth announcing - MYB73 (แป้งมันสำปะหลัง) went precisely because its
+    # values turned out to be impossible. Say out loud what left the file.
+    current_ids = {item["food_id"] for item in asean}
+    dropped = [
+        r
+        for r in existing
+        if is_generated(r) and r["source"].split(":")[-1] not in current_ids
     ]
 
     FOODS_CSV.parent.mkdir(parents=True, exist_ok=True)
@@ -133,6 +164,11 @@ def main() -> int:
     print(f"kept from previous file  : {len(kept)}  (of which {still_placeholder} still TOVERIFY)")
     print(f"total rows               : {len(rows) + len(kept)}")
     print(f"written                  : {FOODS_CSV.relative_to(REPO_ROOT)}")
+    if dropped:
+        print()
+        print(f"removed {len(dropped)} row(s) the extractor no longer accepts:")
+        for row in dropped:
+            print(f"  {row['name_th']}  ({row['source']})")
     if still_placeholder:
         print("\nstill needing a real source (composite dishes ASEAN does not list):")
         for row in kept:

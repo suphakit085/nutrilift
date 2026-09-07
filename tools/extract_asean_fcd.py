@@ -35,6 +35,11 @@ import re
 import sys
 from pathlib import Path
 
+# One definition of the สระอำ rule, shared with the retrieval and food-lookup
+# code, so the CSV and the queries run against it can never drift apart.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+from app.services.thai_text import compose_sara_am
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PDF_PATH = REPO_ROOT / "knowledge" / "sources" / "ASEAN-FCD-v1-2014.pdf"
 CSV_PATH = REPO_ROOT / "knowledge" / "sources" / "asean_thai_foods.csv"
@@ -116,29 +121,50 @@ def thai_name(text: str) -> str:
     # Latin text are unaffected, so "ไก่, อก, ดิบ" keeps its separators.
     name = re.sub(r"(?<=[ก-๛])[ \t]+(?=[ก-๛])", "", name)
     name = re.sub(r"\s+", " ", name)
+    # ...and a space before the comma survives that rule, because the character
+    # on its left is a comma rather than a Thai letter: "ถั่วพุ่ม , ฝักสด".
+    name = re.sub(r"\s+,", ",", name)
     # Drop punctuation left over from the preceding country tag, e.g. "), ไก่".
     name = re.sub(r"^[\s,)\-.]+", "", name)
-    return name.strip(" ,")
+    # The PDF writes สระอำ decomposed, as นิคหิต + สระอา ("นํ้า", "มันสําปะหลัง").
+    # Composing it here rather than in the finished foods.csv is the difference
+    # between a fix that survives and one that does not: this pipeline is
+    # re-runnable, so a correction applied only downstream is undone the next
+    # time anyone follows the documented steps.
+    return compose_sara_am(name.strip(" ,"))
 
 
 def energy_is_consistent(row: dict, tolerance: float = 0.25) -> bool:
     """Does the stated energy match its own macronutrients?
 
-    4 kcal/g for protein and carbohydrate, 9 for fat. A row whose columns have
-    slipped - which happens when the text layer merges a stray number into the
-    value run - fails this badly, so it doubles as a column-alignment check that
-    needs no reference data.
+    4 kcal/g for protein and carbohydrate, 9 for fat, and 2 for dietary fibre.
+
+    The fibre term is not optional. This table's carbohydrate column is
+    *available* carbohydrate, with fibre listed separately, and its energy
+    column counts that fibre at roughly 2 kcal/g - the value INMU publishes.
+    Three rows pin it down exactly:
+
+        AAC72 ถั่วแดง, เมล็ดแห้ง  4(22.5+33.9) + 9(2.1) + 2(27.8) = 300.1, table says 300
+        AAN4  พริกขี้หนู          4(3.7+2.9)  + 9(1.1) + 2(9.9)  =  56.1, table says 56
+        THN8  ขมิ้น               4(1.1+4.4)  + 9(0.3) + 2(6.5)  =  37.7, table says 38
+
+    Leaving fibre out made every high-fibre food fail this check *at its
+    correct alignment*, and ``realign`` then shifted it into whatever offset
+    happened to pass - silently publishing wrong numbers under a real source
+    ID. That corrupted three of the four rows it "repaired": พริกขี้หนู was
+    written as 81 kcal instead of 56, ขมิ้น as 87 instead of 38.
     """
     try:
         kcal = float(row["kcal"])
         protein = float(row["protein_g"] or 0)
         fat = float(row["fat_g"] or 0)
         carb = float(row["carb_g"] or 0)
+        fibre = float(row["fiber_g"] or 0)
     except (TypeError, ValueError):
         return False
     if kcal <= 0:
         return False
-    computed = 4 * protein + 4 * carb + 9 * fat
+    computed = 4 * protein + 4 * carb + 9 * fat + 2 * fibre
     if computed == 0:
         return False
     return abs(computed - kcal) / kcal <= tolerance
@@ -161,15 +187,19 @@ def realign(row: dict) -> bool:
 
     When a line wraps in the PDF, the captured run of values can start one or
     two columns late, so every value lands under the wrong heading. Rather than
-    guess, each candidate shift is tested against the same energy-vs-macros
-    check used to detect the problem: with 22 columns, a wrong shift essentially
-    never satisfies it, so a shift that does is the right one.
+    guess, each candidate shift is tested against the same checks used to detect
+    the problem, mass balance included - shifting is how a row gets corrupted,
+    so it is exactly where the weaker energy-only test could not be trusted.
     """
     cells = row.get("_cells") or []
     for offset in (-1, 1, -2, 2):
         candidate = dict(row)
         apply_cells(candidate, cells, offset)
-        if energy_is_consistent(candidate) and plausible(candidate):
+        if (
+            energy_is_consistent(candidate)
+            and plausible(candidate)
+            and mass_balances(candidate)
+        ):
             row.update({k: candidate[k] for k in COLUMNS})
             row["_realigned"] = str(offset)
             return True
@@ -184,6 +214,37 @@ def plausible(row: dict) -> bool:
     except (TypeError, ValueError):
         return False
     return 0 < kcal <= 950 and all(0 <= m <= 100 for m in macros)
+
+
+#: How far the constituents may stray from 100 g and still be believed.
+#: Drinks are the reason this is not tighter: the table gives them per 100 *ml*,
+#: so a 1.05-density soft drink legitimately sums to ~106 g.
+MASS_BALANCE_TOLERANCE = 8.0
+
+
+def mass_balances(row: dict) -> bool:
+    """Do water, protein, fat, carbohydrate, fibre and ash add up to 100 g?
+
+    A far stronger alignment test than energy alone. Energy is one number
+    derived from four others, so a shifted row can satisfy it by coincidence -
+    and three of them did. This constrains six independent columns at once,
+    which a wrong shift has essentially no way to satisfy: the shifted
+    พริกขี้หนู summed to 42.8 g, ขมิ้น to 63.3 g.
+
+    Rows whose water column the PDF never carried cannot be checked, and are
+    left to the energy test rather than dropped.
+    """
+    try:
+        water = float(row["water_g"] or 0)
+    except (TypeError, ValueError):
+        return True
+    if water <= 0:
+        return True
+    try:
+        parts = [float(row[k] or 0) for k in ("protein_g", "fat_g", "carb_g", "fiber_g", "ash_g")]
+    except (TypeError, ValueError):
+        return True
+    return abs(water + sum(parts) - 100.0) <= MASS_BALANCE_TOLERANCE
 
 
 def parse(pdf_path: Path) -> list[dict]:
@@ -309,7 +370,7 @@ def main() -> int:
     complete = [r for r in thai if r.get("kcal") and r.get("protein_g") and r.get("fat_g")]
     usable, rejected, repaired = [], [], 0
     for row in complete:
-        if energy_is_consistent(row) and plausible(row):
+        if energy_is_consistent(row) and plausible(row) and mass_balances(row):
             usable.append(row)
         elif realign(row):
             usable.append(row)
@@ -332,7 +393,7 @@ def main() -> int:
     print(f"written                : {CSV_PATH.relative_to(REPO_ROOT)}")
     if rejected:
         print()
-        print(f"rejected {len(rejected)} row(s) whose energy does not match their macros")
+        print(f"rejected {len(rejected)} row(s) failing the energy or 100 g mass-balance check")
         print("(usually a column that slipped in the PDF text layer):")
         for row in rejected[:8]:
             print(f"  {row['food_id']:<9} {row['name_en'][:34]:<36} "
