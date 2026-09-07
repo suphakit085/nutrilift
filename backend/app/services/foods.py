@@ -6,7 +6,7 @@ reports whatever this returns, including "not found".
 
 from __future__ import annotations
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, case, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db.models import Food
@@ -15,11 +15,11 @@ from app.services.thai_text import compose_sara_am
 MAX_RESULTS = 5
 
 #: Rows whose macros are still an estimate rather than a value read out of a
-#: composition table. `source` says so, but a bare "TOVERIFY-INMU" means nothing
+#: composition table. `source` says so, but a bare "TOVERIFY-LABEL" means nothing
 #: to the model, which would report the number as a database fact like any
 #: other. The meal planner already drops these rows; lookup_food kept handing
 #: them over unlabelled, so the two paths treated the same data differently.
-#: 10 of 339 rows (see knowledge/README.md).
+#: Down to 1 of 356 rows - ชานมไข่มุก - since 7 ก.ย. 2569 (see knowledge/README.md).
 _ESTIMATE_SOURCE_PREFIX = "TOVERIFY"
 
 _ESTIMATE_WARNING = (
@@ -51,42 +51,92 @@ def _escape_like(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+def query_terms(q: str) -> list[str]:
+    """The syllables of a query, for the every-part-must-appear pass.
+
+    Row names come from composition tables, which list descriptors in table
+    order - "ไก่, อก, ดิบ", "อกไก่ไม่มีหนัง, ย่าง" - while a person types them in
+    spoken order: "อกไก่ดิบ", "อกไก่ย่างไม่มีหนัง". No substring bridges the two,
+    and Thai has no spaces to split on.
+
+    Syllables, not words: the word segmenter BM25 uses treats "อกไก่" and
+    "ไก่ย่าง" as single dictionary entries, and neither is a substring of
+    "ไก่, อก, ดิบ". Syllables - อก, ไก่, ย่าง - are, in any order. Bare numbers
+    and units are dropped: "100 กรัม" is a quantity, not part of any name.
+    """
+    from pythainlp.tokenize import syllable_tokenize
+
+    terms: list[str] = []
+    for raw in syllable_tokenize(q.lower(), engine="dict"):
+        token = raw.strip()
+        if len(token) < 2 or not any(ch.isalnum() for ch in token):
+            continue
+        if token.isdigit() or token in _QUANTITY_WORDS or token in terms:
+            continue
+        terms.append(token)
+    return terms
+
+
+#: Units and quantity words that ride along in a query ("อกไก่ย่าง 100 กรัม")
+#: but are never part of a food's name.
+_QUANTITY_WORDS = frozenset({
+    "กรัม", "กิโลกรัม", "กก.", "มิลลิลิตร", "มล.", "ลิตร",
+    "แคล", "แคลอรี่", "กิโลแคลอรี่", "g", "kg", "ml", "kcal",
+})
+
+
+def _name_matches(term: str):
+    pattern = f"%{_escape_like(term)}%"
+    return or_(Food.name_th.ilike(pattern, escape="\\"), Food.name_en.ilike(pattern, escape="\\"))
+
+
 def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
     """Matching strategy shared by lookup_food (LLM tool) and search_foods
-    (REST /foods/search): exact/substring on name, falling back to per-token
-    matching for multi-word queries (handles "ข้าวผัดกุ้ง ใหญ่").
+    (REST /foods/search), three passes, each only if the one before found
+    nothing:
+
+    1. the whole query as a substring of the name;
+    2. every word of the query somewhere in the name, in any order
+       ("อกไก่ย่างไม่มีหนัง" -> "อกไก่ไม่มีหนัง, ย่าง");
+    3. any word of the query, ranked by how many of them the name contains,
+       so "อกไก่ย่างสด" still surfaces the grilled breast above plain chicken.
     """
     # The table stores สระอำ composed (ingest rewrites the ASEAN source's
     # นิคหิต+สระอา form); fold the query the same way so "น้ำพริก" typed on any
     # keyboard finds "น้ำพริก" however the row was originally spelled. Before
     # this, 20 of the 28 rows containing น้ำ were unreachable.
     q = compose_sara_am(q)
-    pattern = f"%{_escape_like(q)}%"
-    stmt = (
-        select(Food)
-        .where(
-            or_(
-                Food.name_th.ilike(pattern, escape="\\"),
-                Food.name_en.ilike(pattern, escape="\\"),
-            )
-        )
-        .order_by(func.length(Food.name_th))
-        .limit(limit)
+    by_shortest_name = func.length(Food.name_th)
+
+    rows = list(
+        db.execute(select(Food).where(_name_matches(q)).order_by(by_shortest_name).limit(limit))
+        .scalars()
     )
-    rows = list(db.execute(stmt).scalars())
     if rows:
         return rows
 
-    tokens = [t for t in q.split() if len(t) >= 3]
-    if not tokens:
+    terms = query_terms(q)
+    if not terms:
         return []
-    conditions = [Food.name_th.ilike(f"%{_escape_like(t)}%", escape="\\") for t in tokens]
-    conditions += [Food.name_en.ilike(f"%{_escape_like(t)}%", escape="\\") for t in tokens]
-    return list(
-        db.execute(
-            select(Food).where(or_(*conditions)).order_by(func.length(Food.name_th)).limit(limit)
-        ).scalars()
+    if len(terms) >= 2:
+        stmt = (
+            select(Food)
+            .where(and_(*(_name_matches(t) for t in terms)))
+            .order_by(by_shortest_name)
+            .limit(limit)
+        )
+        rows = list(db.execute(stmt).scalars())
+        if rows:
+            return rows
+
+    matched = sum(case((_name_matches(t), 1), else_=0) for t in terms)
+    stmt = (
+        select(Food)
+        .where(or_(*(_name_matches(t) for t in terms)))
+        .order_by(desc(matched), by_shortest_name)
+        .limit(limit)
     )
+    return list(db.execute(stmt).scalars())
 
 
 def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
