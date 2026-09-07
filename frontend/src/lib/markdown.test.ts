@@ -82,6 +82,41 @@ test("a horizontal rule is not mistaken for a table divider", () => {
   );
 });
 
+test("an HTML break inside a cell becomes a real newline", () => {
+  // A table row is one line, so <br> is the only way the model can put a menu's
+  // several items in one cell. Reported on 7 ก.ย. 2569: the reader saw the tag.
+  const table = toBlocks(
+    "| มื้อ | รายการ |\n| --- | --- |\n| เช้า | - ปลากะพง: 1.25 × 100 กรัม<br>- มันสำปะหลัง: 3.25 × 100 กรัม |",
+  )[0];
+  if (table.kind !== "table") throw new Error("expected a table");
+  assert.equal(
+    table.rows[0][1],
+    "- ปลากะพง: 1.25 × 100 กรัม\n- มันสำปะหลัง: 3.25 × 100 กรัม",
+  );
+});
+
+test("every spelling of the break tag is handled", () => {
+  const table = toBlocks("| a | b |\n| --- | --- |\n| x<br>y<BR/>z<br />w | 1 |")[0];
+  if (table.kind !== "table") throw new Error("expected a table");
+  assert.equal(table.rows[0][0], "x\ny\nz\nw");
+});
+
+test("a break in ordinary prose is a newline too", () => {
+  const blocks = toBlocks("บรรทัดแรก<br>บรรทัดสอง");
+  assert.equal(blocks.length, 1);
+  assert.equal(blocks[0].kind, "paragraph");
+  if (blocks[0].kind !== "paragraph") return;
+  assert.equal(blocks[0].text, "บรรทัดแรก\nบรรทัดสอง");
+});
+
+test("no other HTML is touched", () => {
+  // Only <br> is understood. Anything else stays literal text rather than
+  // becoming markup - the renderer never interprets HTML from the model.
+  const blocks = toBlocks("<b>ตัวหนา</b> กับ <script>alert(1)</script>");
+  if (blocks[0].kind !== "paragraph") throw new Error("expected a paragraph");
+  assert.equal(blocks[0].text, "<b>ตัวหนา</b> กับ <script>alert(1)</script>");
+});
+
 test("headings, bullets and paragraphs still work", () => {
   const blocks = toBlocks("### มื้อเช้า\n\n- ข้าวสวย 2 ทัพพี\n- ไข่ต้ม 2 ฟอง\n\nกินให้ครบนะครับ");
   assert.deepEqual(

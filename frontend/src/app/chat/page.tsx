@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AnswerText } from "@/components/AnswerText";
+import { toolLabel } from "@/lib/tools";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -23,10 +24,6 @@ type Bubble = {
   pending?: boolean;
 };
 
-const TOOL_LABELS: Record<string, string> = {
-  calc_nutrition_targets: "กำลังคำนวณพลังงานและสารอาหาร…",
-  lookup_food: "กำลังค้นฐานข้อมูลอาหาร…",
-};
 
 const SUGGESTIONS = [
   "ควรกินโปรตีนวันละกี่กรัม",
@@ -560,8 +557,10 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
             key={index}
             className="mb-2.5 inline-flex items-center gap-1.5 rounded-sm bg-accent-soft px-3 py-1 text-xs text-accent"
           >
-            <span className="animate-pulse">⚙</span>
-            {TOOL_LABELS[tool] ?? tool}
+            <span className={bubble.pending ? "animate-pulse" : undefined}>
+              {bubble.pending ? "⚙" : "✓"}
+            </span>
+            {toolLabel(tool, Boolean(bubble.pending))}
           </div>
         ))}
 

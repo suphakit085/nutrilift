@@ -43,13 +43,23 @@ function isTableStart(header: string, divider: string): boolean {
   return splitRow(header).length === splitRow(divider).length;
 }
 
+/** A Markdown table row is one line, so the only way to get several lines into
+ *  a cell is an HTML break - which is what the model emits for a menu's list of
+ *  items. Turning it into a real newline here keeps the renderer free of HTML:
+ *  the cell is still plain text, and the cell element shows the newline. */
+const HTML_BREAK = /<br\s*\/?>/gi;
+
+export function breaksToNewlines(text: string): string {
+  return text.replace(HTML_BREAK, "\n");
+}
+
 /** Split "| a | b |" into ["a", "b"], tolerating a missing edge pipe. An
  *  escaped \| stays inside its cell. */
 function splitRow(line: string): string[] {
   const trimmed = line.trim().replace(/^\|/, "").replace(/\|$/, "");
   return trimmed
     .split(/(?<!\\)\|/)
-    .map((cell) => cell.trim().replace(/\\\|/g, "|"));
+    .map((cell) => breaksToNewlines(cell.trim().replace(/\\\|/g, "|")).trim());
 }
 
 function alignmentsOf(divider: string): Align[] {
@@ -69,7 +79,7 @@ export function toBlocks(source: string): Block[] {
 
   const flushParagraph = () => {
     if (paragraph.length) {
-      blocks.push({ kind: "paragraph", text: paragraph.join("\n") });
+      blocks.push({ kind: "paragraph", text: breaksToNewlines(paragraph.join("\n")) });
       paragraph = [];
     }
   };

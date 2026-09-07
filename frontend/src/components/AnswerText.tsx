@@ -79,16 +79,21 @@ export function AnswerText({ content }: { content: string }) {
           // The day-menu answer is a four-row table of food names and grams; on
           // a phone it is wider than the bubble, so the table scrolls inside its
           // own box rather than pushing the whole message pane sideways.
+          // `w-max` rather than `w-full`: a full-width table cannot overflow, so
+          // the scroll box never scrolls and the columns squeeze instead - which
+          // is what put "27.4" on two lines and split the หัวตาราง mid-word. The
+          // wrap reset is the other half of it: the bubble sets wrap-anywhere so
+          // long Thai prose breaks, and inside a cell that lands mid-number.
           return (
             <div key={i} className="my-3 -mx-1 overflow-x-auto">
-              <table className="w-full border-collapse text-left text-[0.95em]">
+              <table className="w-max min-w-full border-collapse text-left text-[0.95em] [overflow-wrap:normal] [word-break:normal]">
                 <thead>
                   <tr className="border-b border-border">
                     {block.header.map((cell, c) => (
                       <th
                         key={c}
                         scope="col"
-                        className="px-2 py-1.5 font-semibold"
+                        className="px-2 py-1.5 font-semibold whitespace-pre-line"
                         style={{ textAlign: block.align[c] ?? "left" }}
                       >
                         {inline(cell, `th${i}-${c}`)}
@@ -102,7 +107,7 @@ export function AnswerText({ content }: { content: string }) {
                       {row.map((cell, c) => (
                         <td
                           key={c}
-                          className="px-2 py-1.5 align-top"
+                          className="px-2 py-1.5 align-top whitespace-pre-line"
                           style={{ textAlign: block.align[c] ?? "left" }}
                         >
                           {inline(cell, `td${i}-${r}-${c}`)}

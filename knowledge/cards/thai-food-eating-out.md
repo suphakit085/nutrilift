@@ -4,7 +4,8 @@ title: สั่งอาหารไทยนอกบ้านยังไง�
 topic: thai-food
 lang: th
 sources:
-  - "ตัวเลขโภชนาการทั้งหมดในการ์ดนี้มาจากฐานข้อมูล foods.csv ของระบบ ซึ่งอ้างอิง ASEAN Food Composition Database 2014 และตารางคุณค่าทางโภชนาการอาหารไทย (DOH-NSS-2018, กองโภชนาการ กรมอนามัย) — ดูที่มารายรายการใน knowledge/README.md"
+  - "Institute of Nutrition, Mahidol University. ASEAN Food Composition Database, Electronic version 1, February 2014. ASEANFOODS Regional Centre and INFOODS Regional Database Centre."
+  - "กองโภชนาการ กรมอนามัย กระทรวงสาธารณสุข. ตารางแสดงคุณค่าทางโภชนาการของอาหารไทย (Nutrition Surveillance System). กันยายน 2561."
 ---
 
 # หลักการเลือกเมนูเวลาสั่งข้าวนอกบ้าน
