@@ -82,6 +82,9 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 
 ผลลัพธ์อยู่ใน `eval/reports/` — `*_answers.csv`, `*_summary.md`, `*_expert.csv` (แบบ blinded)
 
+> **ห้ามส่ง `*_expert_key.csv` ให้ผู้ประเมิน** ไฟล์นั้นแมปคอลัมน์ A/B กลับไปเป็น rag/norag
+> ส่งให้เมื่อไหร่การ blind ก็จบทันที — gitignore กันไว้แล้ว ส่งเฉพาะ `*_expert.csv`
+
 ---
 
 ## ตัวแปรสภาพแวดล้อม (`backend/.env`)
@@ -99,7 +102,11 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 | `HISTORY_TURNS` | `8` | จำนวนรอบสนทนาที่ส่งกลับเข้า prompt |
 | `RATE_LIMIT_CHAT_PER_HOUR` / `_PER_DAY` | `20` / `60` | จำกัดต่อผู้ใช้ ป้องกันบิล API บาน |
 | `RATE_LIMIT_CHAT_GLOBAL_PER_DAY` | `1500` | เพดานรวมทุกผู้ใช้ต่อวัน = เพดานค่าใช้จ่าย |
-| `RATE_LIMIT_AUTH_PER_15MIN` | `10` | จำกัดการล็อกอิน/สมัคร ต่อ IP |
+| `RATE_LIMIT_AUTH_PER_15MIN` | `60` | จำกัดการล็อกอิน/สมัคร ต่อ IP — ตั้งหลวมไว้เพราะห้องสอบ/ห้องเรียนใช้ NAT ร่วมกัน ตัวกันเดารหัสผ่านคือบรรทัดถัดไป |
+| `RATE_LIMIT_LOGIN_PER_EMAIL_PER_15MIN` | `10` | จำกัดการล็อกอินต่อ 1 อีเมล = ตัวกันเดารหัสผ่านจริง |
+| `CORS_ORIGINS` | `http://localhost:3000` | โดเมนของ frontend คั่นด้วย comma — ต้องแก้ตอน deploy |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `10080` (7 วัน) | อายุ JWT |
+| `RETRIEVAL_HYBRID` / `RETRIEVAL_CANDIDATE_MULTIPLIER` | `true` / `3` | ผสมคะแนน vector กับ keyword และจำนวน candidate ที่ดึงมาก่อนจัดอันดับ |
 
 ---
 
@@ -109,7 +116,8 @@ backend/.venv/Scripts/python.exe eval/calibrate_threshold.py --verbose
 backend/
   app/core/       config, JWT
   app/db/         SQLAlchemy models + session
-  app/api/        auth, profile, conversations, chat (SSE)
+  app/api/        auth (+ PDPA consent), profile, foods, food_log, chat (SSE)
+                  deps.py = get_current_user / get_consented_user (ด่านความยินยอม)
   app/services/
     nutrition.py  BMR/TDEE/มาโคร (pure functions + unit tests)  ← ตัวเลขทั้งหมดมาจากที่นี่
     foods.py      lookup_food
@@ -120,7 +128,7 @@ backend/
   ingest/         CLI นำการ์ดความรู้ + foods.csv เข้า DB
   alembic/        migrations
   tests/          pytest
-frontend/         Next.js: /login /profile /chat
+frontend/         Next.js: / (หน้าแรก) /login /consent /profile /chat /log
 knowledge/        การ์ดความรู้ (.md), foods.csv, SOURCES.md
 eval/             ชุดคำถาม + harness ประเมิน RAG vs no-RAG
 docs/             architecture.md
@@ -136,7 +144,32 @@ docs/             architecture.md
 31 ส.ค. 2569 — RAG พร้อมอ้างอิง, tool calling, ปฏิเสธนอกขอบเขต, safety flag ผ่านหมด)
 เหตุผลของการย้าย งบ/ความเป็นส่วนตัว/เพดาน request ที่ตรวจพบจริง ดู
 [`docs/architecture.md`](docs/architecture.md#gemini-free-tier)
-งานที่เหลือส่วนใหญ่เป็นการเขียนเนื้อหา — การ์ดความรู้ 12 ใบ และ `foods.csv` 312/339 แถวเป็นค่าจริงแล้ว
+ตอนนี้มีการ์ดความรู้ **26 ใบ** และ `foods.csv` **355/356 แถว**เป็นค่าจริงที่มีรหัสอ้างอิง
+(เหลือ 1 แถวเป็นค่าประมาณจากฉลาก ระบบติดธง `estimated` ไว้และไม่หยิบไปใช้ในแผนมื้ออาหาร)
+
+---
+
+## ความยินยอม (PDPA)
+
+ระบบเก็บข้อมูลสุขภาพ (เพศ วันเกิด ส่วนสูง น้ำหนัก เปอร์เซ็นต์ไขมัน) จึงขอความยินยอมแบบชัดแจ้ง
+
+- ตอนสมัครต้องติ๊ก 2 ช่องแยกกัน: อายุ 18+ และยินยอมให้เก็บ/ใช้ข้อมูล
+  ทั้งคู่เป็น field ที่ **ไม่มีค่า default** ใน `RegisterRequest` — ถ้า client ไม่ส่งมาเลยจะได้ 422
+  ไม่ใช่ผ่านไปเงียบ ๆ
+- เมื่อสมัครสำเร็จ ระบบบันทึก `users.consented_at` และ `users.consent_version`
+  ใน transaction เดียวกับที่สร้างบัญชี
+- route ที่แตะข้อมูลส่วนบุคคลใช้ `get_consented_user` ถ้ายังไม่ยินยอมจะได้ **403 + header
+  `X-Consent-Required`** แล้ว frontend พาไปหน้า `/consent` (`/auth/me` กับ `/auth/consent`
+  ไม่ติดด่าน ไม่งั้นจะไปหน้ายินยอมไม่ได้)
+- ข้อความประกาศอยู่ที่ `frontend/src/components/ConsentNotice.tsx` ที่เดียว ใช้ร่วมกันทั้ง
+  หน้าสมัครและหน้า `/consent`
+
+**แก้ข้อความประกาศเมื่อไหร่ ต้องเลื่อน `CONSENT_VERSION` ใน `backend/app/api/schemas.py` ด้วย**
+(ปัจจุบัน `2026-09-08`) ไม่งั้นคนที่ยินยอมไปแล้วจะถูกนับว่ายอมรับข้อความที่ไม่เคยเห็น
+พอเลื่อนเวอร์ชันแล้ว ระบบจะขอความยินยอมใหม่เฉพาะคนที่ยังค้างเวอร์ชันเก่าโดยอัตโนมัติ
+
+บัญชีที่สมัครก่อนมีฟีเจอร์นี้จะมีค่าเป็น `NULL` และต้องยินยอมก่อนใช้งานต่อ — ตั้งใจไม่เติมย้อนหลัง
+เพราะการเติมเท่ากับกุความยินยอมที่ไม่มีใครให้
 
 ---
 
@@ -145,3 +178,13 @@ docs/             architecture.md
 ระบบนี้ให้ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
 ไม่วินิจฉัยโรค ไม่ให้ข้อมูลสารต้องห้าม และส่งต่อผู้เชี่ยวชาญเมื่อผู้ใช้มีโรคประจำตัว
 ตั้งครรภ์ ให้นมบุตร หรืออายุต่ำกว่า 18 ปี
+
+กฎความปลอดภัยมี 8 ข้อ (`Flag` ใน `guardrails.py`) แต่ **บังคับไม่เท่ากัน** และหน้าเว็บก็แยกให้เห็น:
+
+- **6 ข้อตัดสินในโปรแกรม** โมเดลเปลี่ยนไม่ได้ — โรค/อาการป่วย และสารเร่งกล้ามเนื้อ ตอบด้วย
+  ข้อความปฏิเสธสำเร็จรูปโดยไม่เรียกโมเดลเลย, อายุต่ำกว่า 18 ไม่ผ่าน `_validate`,
+  นอกขอบเขตปฏิเสธก่อนเรียกโมเดล, น้ำหนักต่ำกว่าเกณฑ์เปลี่ยน cut เป็น maintain,
+  และพลังงานต่ำกว่า 1,200 kcal แนบคำเตือน (**ไม่ได้ปรับตัวเลขขึ้นให้**)
+- **2 ข้อเป็นคำสั่งใน prompt** (พฤติกรรมการกินผิดปกติ, ตั้งครรภ์/ให้นมบุตร) ถ้อยคำจึงมาจากโมเดล
+
+ยังไม่มีระบบรีเซ็ตรหัสผ่านและปุ่มลบบัญชีด้วยตนเอง — ต้องติดต่อผู้จัดทำ
