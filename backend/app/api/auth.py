@@ -2,13 +2,21 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import DB_SESSION, get_current_user, rate_limit_auth, rate_limit_login
-from app.api.schemas import LoginRequest, RegisterRequest, TokenResponse, UserOut
+from app.api.schemas import (
+    CONSENT_VERSION,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    UserOut,
+)
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.models import User
 
@@ -39,7 +47,15 @@ def register_user(db: Session, payload: RegisterRequest) -> TokenResponse:
     if existing is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, _EMAIL_TAKEN)
 
-    user = User(email=email, password_hash=hash_password(payload.password))
+    # The consent is stamped in the same transaction that creates the row, so
+    # an account can never exist without the record of what its owner agreed
+    # to. RegisterRequest has already rejected anything but an explicit true.
+    user = User(
+        email=email,
+        password_hash=hash_password(payload.password),
+        consented_at=datetime.now(UTC),
+        consent_version=CONSENT_VERSION,
+    )
     db.add(user)
     try:
         db.commit()

@@ -49,6 +49,16 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
+    #: PDPA: this service stores health-adjacent personal data (sex, birth date,
+    #: height, weight, body-fat percentage), so the consent that allows it has to
+    #: be evidence, not a tick that vanishes with the page. `consent_version`
+    #: records *which* wording was agreed to, so a later edit to the notice
+    #: cannot be mistaken for what an existing user actually saw.
+    #: Nullable on purpose: accounts created before this column existed have no
+    #: record, and back-filling a consent nobody gave would be worse than the gap.
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    consent_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
     profile: Mapped[Profile | None] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"
     )

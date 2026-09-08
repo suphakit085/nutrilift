@@ -222,10 +222,17 @@ export type DailySummary = {
 // --- endpoints -----------------------------------------------------------
 
 export const api = {
-  register: (email: string, password: string) =>
+  /** `consent` is not optional and has no default, mirroring RegisterRequest:
+   *  the server rejects a registration that does not carry both assertions, so
+   *  making them easy to forget here would only move the failure later. */
+  register: (
+    email: string,
+    password: string,
+    consent: { accepted_terms: boolean; is_adult: boolean },
+  ) =>
     request<{ access_token: string }>("/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...consent }),
     }),
 
   login: (email: string, password: string) =>
@@ -384,7 +391,7 @@ export function streamChat(
 
       if (!response.ok || !response.body) {
         handleUnauthorized(path, response.status);
-        // The server explains rate limits and quota exhaustion in `detail`;
+            // The server explains rate limits and quota exhaustion in `detail`;
         // showing only the status code would leave the user with no idea how
         // long to wait or what went wrong.
         let detail = `เชื่อมต่อไม่สำเร็จ (${response.status})`;

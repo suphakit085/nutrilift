@@ -13,30 +13,49 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.api.auth import normalise_email, register_user
-from app.api.schemas import PASSWORD_TOO_LONG, RegisterRequest
+from app.api.schemas import (
+    ADULT_REQUIRED,
+    CONSENT_REQUIRED,
+    CONSENT_VERSION,
+    PASSWORD_TOO_LONG,
+    RegisterRequest,
+)
 from app.db.models import User
 
 THAI_24 = "รหัสผ่านภาษาไทยยาวมากๆนะ"  # 24 chars = 72 bytes
 assert len(THAI_24) == 24 and len(THAI_24.encode()) == 72
 
 
+def valid(**overrides):
+    """A registration payload that differs from a good one only where stated."""
+    return RegisterRequest(
+        **{
+            "email": "a@example.com",
+            "password": "hunter22",
+            "accepted_terms": True,
+            "is_adult": True,
+            **overrides,
+        }
+    )
+
+
 # --- password byte limit ---------------------------------------------------
 
 
 def test_72_bytes_of_thai_is_accepted():
-    assert RegisterRequest(email="a@example.com", password=THAI_24).password == THAI_24
+    assert valid(password=THAI_24).password == THAI_24
 
 
 def test_73_bytes_is_rejected_with_a_thai_explanation():
     with pytest.raises(ValidationError) as excinfo:
-        RegisterRequest(email="a@example.com", password=THAI_24 + "ก")
+        valid(password=THAI_24 + "ก")
     assert PASSWORD_TOO_LONG in str(excinfo.value)
 
 
 def test_long_ascii_is_rejected_too():
     """128 ASCII chars passes max_length but bcrypt would drop 56 of them."""
     with pytest.raises(ValidationError, match="72"):
-        RegisterRequest(email="a@example.com", password="a" * 100)
+        valid(password="a" * 100)
 
 
 # --- email normalisation -----------------------------------------------------
@@ -86,7 +105,7 @@ class FakeSession:
 
 def test_register_stores_the_lowercased_email():
     db = FakeSession()
-    token = register_user(db, RegisterRequest(email="New.User@Example.com", password="hunter22"))
+    token = register_user(db, valid(email="New.User@Example.com"))
     (user,) = db.added
     assert isinstance(user, User)
     assert user.email == "new.user@example.com"
@@ -97,7 +116,7 @@ def test_register_stores_the_lowercased_email():
 def test_duplicate_email_is_409_before_hashing():
     db = FakeSession(existing=User(email="taken@example.com", password_hash="x"))
     with pytest.raises(HTTPException) as excinfo:
-        register_user(db, RegisterRequest(email="Taken@example.com", password="hunter22"))
+        register_user(db, valid(email="Taken@example.com"))
     assert excinfo.value.status_code == 409
     assert db.added == []
 
@@ -108,7 +127,44 @@ def test_unique_violation_on_commit_is_409_after_rollback():
     boom = IntegrityError("INSERT INTO users", {}, Exception("duplicate key"))
     db = FakeSession(commit_raises=boom)
     with pytest.raises(HTTPException) as excinfo:
-        register_user(db, RegisterRequest(email="race@example.com", password="hunter22"))
+        register_user(db, valid(email="race@example.com"))
     assert excinfo.value.status_code == 409
     assert excinfo.value.detail == "อีเมลนี้ถูกใช้สมัครแล้ว"
     assert db.rolled_back
+
+
+# --- consent and age gate -----------------------------------------------------
+
+
+def test_consent_must_be_explicit():
+    """Omitting the field entirely is the case a default would have allowed."""
+    with pytest.raises(ValidationError, match="accepted_terms"):
+        RegisterRequest(email="a@example.com", password="hunter22", is_adult=True)
+
+
+def test_consent_false_is_rejected_with_a_thai_explanation():
+    with pytest.raises(ValidationError) as excinfo:
+        valid(accepted_terms=False)
+    assert CONSENT_REQUIRED in str(excinfo.value)
+
+
+def test_age_must_be_asserted():
+    with pytest.raises(ValidationError, match="is_adult"):
+        RegisterRequest(email="a@example.com", password="hunter22", accepted_terms=True)
+
+
+def test_age_false_is_rejected_with_a_thai_explanation():
+    with pytest.raises(ValidationError) as excinfo:
+        valid(is_adult=False)
+    assert ADULT_REQUIRED in str(excinfo.value)
+
+
+def test_registering_stamps_the_consent_on_the_row():
+    """The account and the evidence for it are created together or not at all."""
+    db = FakeSession()
+    register_user(db, valid(email="consent@example.com"))
+    saved = db.added[0]
+    assert saved.consent_version == CONSENT_VERSION
+    assert saved.consented_at is not None
+    assert saved.consented_at.tzinfo is not None
+

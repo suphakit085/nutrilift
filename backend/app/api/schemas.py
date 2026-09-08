@@ -18,15 +18,45 @@ PASSWORD_MAX_BYTES = 72
 PASSWORD_TOO_LONG = "รหัสผ่านยาวเกินไป (ไม่เกิน 72 ไบต์ หรือประมาณ 24 ตัวอักษรไทย)"
 
 
+#: Bumped whenever the wording of the consent notice changes, so a stored
+#: consent can be traced back to the exact text that was agreed to.
+CONSENT_VERSION = "2026-09-08"
+
+CONSENT_REQUIRED = "ต้องยอมรับการเก็บและใช้ข้อมูลก่อนจึงจะสมัครได้"
+ADULT_REQUIRED = "บริการนี้สำหรับผู้ที่มีอายุ 18 ปีขึ้นไป"
+
+
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+    #: Required with no default, and rejected unless true. A default of False
+    #: would still reject, but a default of any kind lets a client register by
+    #: simply omitting the field - which is the exact failure a consent record
+    #: exists to rule out. The age gate is asserted here as well as enforced in
+    #: nutrition._validate, so a minor's email is never stored in the first
+    #: place rather than being turned away one screen later.
+    accepted_terms: bool
+    is_adult: bool
 
     @field_validator("password")
     @classmethod
     def _fits_in_bcrypt(cls, value: str) -> str:
         if len(value.encode("utf-8")) > PASSWORD_MAX_BYTES:
             raise ValueError(PASSWORD_TOO_LONG)
+        return value
+
+    @field_validator("accepted_terms")
+    @classmethod
+    def _consent_given(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError(CONSENT_REQUIRED)
+        return value
+
+    @field_validator("is_adult")
+    @classmethod
+    def _is_adult(cls, value: bool) -> bool:
+        if not value:
+            raise ValueError(ADULT_REQUIRED)
         return value
 
 

@@ -29,6 +29,30 @@ const RESTRICTION_OPTIONS = [
   "ไม่กินเนื้อวัว",
 ];
 
+/** Mirrors ProfileIn._birth_year_ce in backend/app/api/schemas.py. The server
+ *  already accepts พ.ศ. and converts it, but the form used to cap the input at
+ *  `ปีนี้ - 18` in ค.ศ., so 2547 was rejected before it could ever reach that
+ *  conversion - the support existed and was unreachable. The raw value is still
+ *  what gets sent; this only decides what to show the user and whether to
+ *  pre-check the age gate. The two constants must stay in step with the server:
+ *  if they disagree, the form and the API disagree about which era a year is. */
+const BE_THRESHOLD = 2400;
+const BE_OFFSET = 543;
+
+function toCE(year: number) {
+  return year >= BE_THRESHOLD ? year - BE_OFFSET : year;
+}
+
+/** Mirrors ProfileInput.age() in backend/app/services/nutrition.py, including
+ *  its month rule, so the hint under the field cannot claim an age the server
+ *  would then reject. */
+function ageFrom(yearCE: number, month: number | null) {
+  const now = new Date();
+  let years = now.getFullYear() - yearCE;
+  if (month !== null && now.getMonth() + 1 <= month) years -= 1;
+  return years;
+}
+
 const MONTHS_TH = [
   "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
   "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
@@ -76,6 +100,14 @@ export default function ProfilePage() {
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (birthYearCE < 1900 || birthYearCE > 2100) {
+      setError("ปีเกิดต้องอยู่ระหว่าง ค.ศ. 1900-2100 (หรือ พ.ศ. 2443-2643)");
+      return;
+    }
+    if (birthAge < 18) {
+      setError(`บริการนี้สำหรับผู้ที่มีอายุ 18 ปีขึ้นไป (ปีเกิดที่กรอกได้อายุ ${birthAge} ปี)`);
+      return;
+    }
     setError("");
     setStatus("กำลังบันทึก…");
     try {
@@ -107,6 +139,15 @@ export default function ProfilePage() {
 
   const inputClass =
     "mt-1.5 w-full rounded-sm border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface";
+
+  const birthYearCE = toCE(profile.birth_year);
+  const birthAge = ageFrom(birthYearCE, profile.birth_month);
+  const birthYearHint =
+    !profile.birth_year || birthYearCE < 1900 || birthYearCE > 2100
+      ? "กรอกได้ทั้ง ค.ศ. (เช่น 2004) และ พ.ศ. (เช่น 2547)"
+      : profile.birth_year >= BE_THRESHOLD
+        ? `พ.ศ. ${profile.birth_year} = ค.ศ. ${birthYearCE} · อายุ ${birthAge} ปี`
+        : `ค.ศ. ${birthYearCE} · อายุ ${birthAge} ปี`;
 
   return (
     <main className="mx-auto max-w-3xl p-6 pb-16">
@@ -153,32 +194,32 @@ export default function ProfilePage() {
           </label>
 
           <label className="block">
-            <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ.) · 18 ปีขึ้นไป</span>
-            {/* The server is the real gate (calc_nutrition_targets raises -> 422);
-                these bounds just stop the obvious case before a round-trip.
-                onInvalid/onInput replace the browser's built-in message, which
-                Chrome renders in English ("Value must be less than or equal to
-                2008.") regardless of the page language - the one bit of English
-                a Thai user would hit in the whole form. */}
+            <span className="field-label text-xs text-muted">ปีเกิด (ค.ศ. หรือ พ.ศ.) · 18 ปีขึ้นไป</span>
+            {/* min/max span both eras, because a single number input cannot
+                express two disjoint ranges and capping at ค.ศ. is what made
+                พ.ศ. impossible to enter. The age rule is checked in save()
+                against the converted year instead, and the server remains the
+                real gate (calc_nutrition_targets raises -> 422). */}
             <input
               type="number"
               required
-              min={new Date().getFullYear() - 100}
-              max={new Date().getFullYear() - 18}
-              onInvalid={(e) =>
-                e.currentTarget.setCustomValidity(
-                  `บริการนี้สำหรับผู้ที่อายุ 18 ปีขึ้นไป กรุณากรอกปีเกิดไม่เกิน ${
-                    new Date().getFullYear() - 18
-                  }`,
-                )
-              }
-              onInput={(e) => e.currentTarget.setCustomValidity("")}
+              name="birth-year"
+              min={1900}
+              max={new Date().getFullYear() + BE_OFFSET}
+              aria-describedby="birth-year-hint"
               value={profile.birth_year}
               onChange={(e) =>
                 setProfile({ ...profile, birth_year: Number(e.target.value) })
               }
               className={inputClass}
             />
+            {/* Reading the year back is the whole point: someone who types 2547
+                sees "พ.ศ. 2547 = ค.ศ. 2004" and knows it was understood, and
+                someone who typed it by mistake sees an age that is obviously
+                wrong before they submit. */}
+            <span id="birth-year-hint" className="mt-1.5 block text-xs text-muted">
+              {birthYearHint}
+            </span>
           </label>
 
           <label className="block">
