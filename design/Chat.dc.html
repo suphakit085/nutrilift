@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; font-family: "Noto Sans Thai", system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.75; }
+    * { box-sizing: border-box; }
+    a { color: #2f6614; text-decoration: none; }
+    a:hover { color: #0c0f0a; }
+    .d { font-family: "Chakra Petch", "Noto Sans Thai", system-ui, sans-serif; }
+    .m { font-family: "IBM Plex Mono", "Noto Sans Thai", ui-monospace, monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+    .lbl { font-family: "Chakra Petch", "Noto Sans Thai", sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.02em; line-height: 1.6; }
+    .lblx { font-family: "Chakra Petch", sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .cite { font-family: "IBM Plex Mono", ui-monospace, monospace; display: inline-block; border-radius: 3px; background: #dbe6cf; color: #2f6614; font-size: 12px; font-weight: 600; padding: 1px 5px; vertical-align: 1px; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; display: flex; flex-direction: column; background: #f0f2ee; color: #0c0f0a; overflow: hidden;">
+
+  <!-- ============ SHARED APP BAR ============ -->
+  <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #8e9683; padding: 0 28px; height: 60px; background: #ffffff; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 36px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="display: flex; width: 26px; height: 26px; align-items: center; justify-content: center; border-radius: 4px; background: #0d1109;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8fe83c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+        </span>
+        <span class="d" style="font-size: 17px; font-weight: 700; letter-spacing: -0.01em;">NutriLift</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <span class="d" style="font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 4px; background: #0c0f0a; color: #ffffff;">แชต</span>
+        <a href="#" class="d" style="font-size: 15px; font-weight: 500; padding: 8px 14px; color: #33362f;">บันทึกอาหาร</a>
+        <a href="#" class="d" style="font-size: 15px; font-weight: 500; padding: 8px 14px; color: #33362f;">เป้าหมายของฉัน</a>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <div style="display: flex; align-items: baseline; gap: 7px;">
+        <span class="lbl" style="color: #5a5e53;">เป้าวันนี้</span>
+        <span class="m" style="font-size: 14px; font-weight: 600;">2,962</span>
+        <span class="lbl" style="color: #5a5e53;">kcal</span>
+      </div>
+      <span style="width: 1px; height: 20px; background: #c7cec0;"></span>
+      <a href="#" style="font-size: 14px; color: #33362f;">ออกจากระบบ</a>
+    </div>
+  </div>
+
+  <div style="display: flex; flex: 1; min-height: 0;">
+
+    <!-- ============ CONVERSATION RAIL ============ -->
+    <div style="width: 244px; flex-shrink: 0; border-right: 1px solid #8e9683; display: flex; flex-direction: column; padding: 18px 0; background: #f7f9f5;">
+      <div style="padding: 0 18px;">
+        <a href="#" class="d" style="display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 4px; background: #0c0f0a; color: #ffffff; height: 42px; font-size: 14px; font-weight: 600;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          แชตใหม่
+        </a>
+      </div>
+
+      <div class="lblx" style="padding: 26px 18px 8px 18px; color: #5a5e53;">ประวัติ</div>
+
+      <div style="display: flex; flex-direction: column;">
+        <div style="display: flex; gap: 10px; padding: 12px 18px 12px 16px; border-top: 1px solid #c7cec0; border-left: 2px solid #2f6614; background: #ffffff;">
+          <div>
+            <div style="font-size: 14px; font-weight: 600; line-height: 1.5;">ช่วง cut ควรกินโปรตีน…</div>
+            <div class="lbl" style="color: #5a5e53; margin-top: 1px;">วันนี้ · 2 ข้อความ</div>
+          </div>
+        </div>
+        <div style="padding: 12px 18px; border-top: 1px solid #c7cec0;">
+          <div style="font-size: 14px; line-height: 1.5; color: #33362f;">อกไก่ย่างไม่มีหนัง 100 กรัม…</div>
+          <div class="lbl" style="color: #5a5e53; margin-top: 1px;">วันนี้</div>
+        </div>
+        <div style="padding: 12px 18px; border-top: 1px solid #c7cec0;">
+          <div style="font-size: 14px; line-height: 1.5; color: #33362f;">ขอเมนู 1 วันที่ตรงเป้าหมาย</div>
+          <div class="lbl" style="color: #5a5e53; margin-top: 1px;">เมื่อวาน</div>
+        </div>
+        <div style="padding: 12px 18px; border-top: 1px solid #c7cec0; border-bottom: 1px solid #c7cec0;">
+          <div style="font-size: 14px; line-height: 1.5; color: #33362f;">ครีเอทีนต้องโหลดไหม</div>
+          <div class="lbl" style="color: #5a5e53; margin-top: 1px;">เมื่อวาน</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MESSAGE COLUMN ============ -->
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+
+      <div style="flex: 1; overflow: hidden; padding: 34px 40px 0 40px;">
+        <div style="max-width: 720px; margin: 0 auto;">
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="border-radius: 6px; background: #0c0f0a; color: #ffffff; padding: 12px 18px; font-size: 15px; max-width: 78%;">ช่วง cut ควรกินโปรตีนวันละเท่าไหร่</div>
+          </div>
+
+          <div style="margin-top: 30px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px solid #8e9683;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="display: flex; width: 22px; height: 22px; align-items: center; justify-content: center; border-radius: 3px; background: #0d1109;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8fe83c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+                </span>
+                <span class="lblx" style="color: #0c0f0a;">โค้ชนัท</span>
+              </div>
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #5a5e53;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2f6614" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                ค้นจากฐานความรู้แล้ว
+              </span>
+            </div>
+
+            <div style="padding-top: 20px; font-size: 16px; line-height: 1.85; color: #0c0f0a;">
+              ช่วงลดไขมันแนะนำโปรตีน <span class="m" style="font-weight: 600;">1.8–2.2</span> กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน
+              เพื่อรักษามวลกล้ามเนื้อระหว่างขาดดุลพลังงาน และงานทบทวนวรรณกรรมพบว่าจุดที่ได้ประโยชน์สูงสุด
+              อยู่ราว <span class="m" style="font-weight: 600;">1.6</span> กรัมต่อกิโลกรัมต่อวัน <span class="cite">S1</span>
+              ไม่ต้องกังวลว่าต้องแบ่งมื้อละไม่เกิน 20–30 กรัม เพราะร่างกายใช้ได้มากกว่านั้น <span class="cite">S2</span>
+            </div>
+
+            <div style="margin-top: 24px; border-radius: 6px; background: #0d1109; color: #f1f3ec; padding: 20px 24px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px;">
+                <div>
+                  <div class="lblx" style="color: #8fe83c;">คำนวณให้จากโปรไฟล์ของคุณ</div>
+                  <div style="font-size: 13px; line-height: 1.7; color: #cdea9c; margin-top: 5px;">1.8 g/กก. ที่น้ำหนัก 72 กก. · ไม่ได้ให้โมเดลประมาณ</div>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 6px; white-space: nowrap;">
+                  <span class="m" style="font-size: 40px; font-weight: 600; line-height: 1; color: #8fe83c;">130</span>
+                  <span style="font-size: 13px; color: #cdea9c;">g/วัน</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 22px;">
+              <a href="#" class="d" style="border: 1px solid #8e9683; border-radius: 4px; padding: 9px 15px; font-size: 13px; font-weight: 600; color: #0c0f0a; background: #ffffff;">แล้วช่วง bulk ล่ะ</a>
+              <a href="#" class="d" style="border: 1px solid #8e9683; border-radius: 4px; padding: 9px 15px; font-size: 13px; font-weight: 600; color: #0c0f0a; background: #ffffff;">ขอเมนูที่ได้โปรตีนเท่านี้</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- composer -->
+      <div style="padding: 26px 40px 20px 40px; flex-shrink: 0;">
+        <div style="max-width: 720px; margin: 0 auto;">
+          <div style="display: flex; align-items: center; gap: 12px; border: 1px solid #8e9683; border-radius: 6px; background: #ffffff; padding: 5px 5px 5px 18px;">
+            <span style="flex: 1; font-size: 15px; color: #5a5e53;">พิมพ์คำถามเรื่องอาหารและโภชนาการ…</span>
+            <button class="d" style="border: 0; border-radius: 4px; background: #0c0f0a; color: #ffffff; height: 42px; padding: 0 24px; font-size: 15px; font-weight: 600; font-family: inherit;">ส่ง</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #5a5e53;">
+            <span>ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์</span>
+            <span>เรื่องโรค ยา และอาการป่วย อยู่นอกขอบเขต</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SOURCES RAIL ============ -->
+    <div style="width: 328px; flex-shrink: 0; border-left: 1px solid #8e9683; background: #ffffff; display: flex; flex-direction: column;">
+
+      <div style="background: #0d1109; color: #f1f3ec; padding: 18px 22px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span class="lblx" style="color: #8fe83c;">แหล่งอ้างอิงที่ใช้ตอบ</span>
+          <span class="m" style="font-size: 20px; font-weight: 600;">2</span>
+        </div>
+        <div style="font-size: 12px; line-height: 1.7; color: #8d9184; margin-top: 4px;">ทุกหมายเลขในคำตอบชี้มาที่รายการด้านล่าง</div>
+      </div>
+
+      <div style="padding: 0 22px;">
+        <div style="padding: 18px 0; border-bottom: 1px solid #c7cec0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span class="cite">S1</span>
+            <div style="flex: 1; height: 2px; background: #e7ebe3;"><div style="height: 2px; width: 79%; background: #2f6614;"></div></div>
+            <span class="m" style="font-size: 12px; color: #5a5e53;">0.79</span>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; line-height: 1.55; margin-top: 12px;">ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง</div>
+          <div style="font-size: 12px; color: #5a5e53; line-height: 1.6; margin-top: 3px;">หัวข้อ · ปริมาณโปรตีนต่อวันที่แนะนำ</div>
+          <div style="font-size: 12px; color: #5a5e53; line-height: 1.65; margin-top: 11px; padding-top: 11px; border-top: 1px solid #dbe6cf;">
+            Morton RW, Murphy KT, McKellar SR, et al. Br J Sports Med. 2018;52(6):376–384
+          </div>
+        </div>
+
+        <div style="padding: 18px 0;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <span class="cite">S2</span>
+            <div style="flex: 1; height: 2px; background: #e7ebe3;"><div style="height: 2px; width: 74%; background: #2f6614;"></div></div>
+            <span class="m" style="font-size: 12px; color: #5a5e53;">0.74</span>
+          </div>
+          <div style="font-size: 14px; font-weight: 600; line-height: 1.55; margin-top: 12px;">ความเชื่อว่า “กินโปรตีนเกิน 20-30 กรัมต่อมื้อเสียเปล่า”</div>
+          <div style="font-size: 12px; color: #5a5e53; line-height: 1.6; margin-top: 3px;">หัวข้อ · สรุปสำหรับคนเล่นเวท</div>
+          <div style="font-size: 12px; color: #5a5e53; line-height: 1.65; margin-top: 11px; padding-top: 11px; border-top: 1px solid #dbe6cf;">
+            Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? JISSN. 2018;15:10
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

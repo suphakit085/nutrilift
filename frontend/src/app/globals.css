@@ -9,6 +9,15 @@
   /* Borders carry structure instead of shadows - visibly darker than a
      typical hairline so cards read as built, not floating. */
   --border: #c7cec0;
+  /* A second, stronger rule for major structural dividers (section edges,
+     table heads) on pages with heavier hairline structure - --border alone
+     measured 1.61:1 against --surface, effectively invisible on a projector.
+     Additive: nothing that already renders with --border changes.
+     Measured on all three grounds it actually sits on, because the outline
+     CTA's border is its only hit-area boundary and so owes SC 1.4.11 3:1:
+     3.89:1 on --surface, 3.45:1 on --background, 3.22:1 on --surface-sunken.
+     (The earlier #8e9683 cleared 3:1 only on --surface: 2.73 on --background.) */
+  --rule: #7c8471;
   --foreground: #0c0f0a;
   --body: #33362f;
   /* #6f6a5f-class mutes read as "soft SaaS caption grey". This one is cooler
@@ -46,6 +55,7 @@
     --surface: #14170f;
     --surface-sunken: #0f120b;
     --border: #2b3023;
+    --rule: #626b4e; /* 3.22:1 on --surface, 3.47:1 on --background */
     --foreground: #f1f3ec;
     --body: #c7cabd;
     --muted: #8d9184;
@@ -74,6 +84,7 @@
   --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
   --color-border: var(--border);
+  --color-rule: var(--rule);
   --color-foreground: var(--foreground);
   --color-body: var(--body);
   --color-muted: var(--muted);
