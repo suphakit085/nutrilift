@@ -38,7 +38,11 @@ app.add_middleware(
     allow_headers=["*"],
     # Retry-After is not a CORS-safelisted response header, so without this the
     # frontend cannot read the 429 wait time from a different origin.
-    expose_headers=["Retry-After"],
+    # X-Consent-Required travels with a 403 and tells the client to send the
+    # user to the consent screen. The frontend is a different origin, so without
+    # listing it here the browser hides it and the client is left guessing from
+    # the Thai message text.
+    expose_headers=["Retry-After", "X-Consent-Required"],
 )
 
 app.include_router(auth.router)

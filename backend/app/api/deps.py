@@ -8,6 +8,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from app.api.schemas import CONSENT_VERSION
 from app.core.config import settings
 from app.core.ratelimit import Limit, RateLimiter, RateLimitExceeded, enforce
 from app.core.security import decode_access_token
@@ -60,6 +61,39 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None:
         raise _CREDENTIALS_ERROR
+    return user
+
+
+#: Sent as a header as well as a message, so a client can react to this one
+#: 403 without string-matching a Thai sentence that may be reworded.
+CONSENT_REQUIRED_HEADER = "X-Consent-Required"
+CONSENT_REQUIRED_DETAIL = "ต้องยินยอมให้เก็บและใช้ข้อมูลฉบับล่าสุดก่อนใช้งานต่อ"
+
+
+def consent_is_current(user: User) -> bool:
+    """Whether this account has agreed to the notice in force right now.
+
+    A NULL and a superseded version are one case: there is no agreement on
+    file for the current text. Accounts created before consent was recorded
+    fall in here, which is the point - they were never asked.
+    """
+    return user.consent_version == CONSENT_VERSION
+
+
+def get_consented_user(user: User = Depends(get_current_user)) -> User:
+    """Authentication *and* current consent - what data routes should ask for.
+
+    Enforced here rather than in the frontend so that consent is a property
+    of the API: a client that skips the screen, or calls the endpoints
+    directly, still cannot read or write personal data. /auth/me and
+    /auth/consent deliberately stay on get_current_user, or a user who owes
+    consent could never load the screen that collects it."""
+    if not consent_is_current(user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=CONSENT_REQUIRED_DETAIL,
+            headers={CONSENT_REQUIRED_HEADER: "1"},
+        )
     return user
 
 
@@ -165,7 +199,7 @@ def global_chat_limit() -> Limit:
     return Limit(settings.rate_limit_chat_global_per_day, 24 * 3600)
 
 
-def rate_limit_chat(user: User = Depends(get_current_user)) -> User:
+def rate_limit_chat(user: User = Depends(get_consented_user)) -> User:
     """Throttle chat turns per user, and cap total spend across all users.
 
     The global cap is checked first so one heavy user cannot exhaust it and

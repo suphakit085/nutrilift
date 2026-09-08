@@ -70,6 +70,23 @@ function handleUnauthorized(path: string, status: number): void {
   }
 }
 
+/**
+ * A 403 carrying X-Consent-Required means this account has not agreed to the
+ * notice currently in force - either it was created before consent was
+ * recorded, or the wording has since changed. The token is still valid, so
+ * unlike a 401 nothing is cleared; the user is sent to the screen that
+ * collects the agreement and can carry on afterwards.
+ *
+ * Keyed on the header rather than the message so rewording the Thai text
+ * cannot quietly break the redirect.
+ */
+function handleConsentRequired(response: Response): void {
+  if (response.status !== 403 || !response.headers.get("X-Consent-Required")) return;
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/consent")) {
+    window.location.assign(new URL("/consent", window.location.origin).href);
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   const response = await fetch(`${API_BASE}${path}`, {
@@ -83,6 +100,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     handleUnauthorized(path, response.status);
+    handleConsentRequired(response);
     let detail = `เกิดข้อผิดพลาด (${response.status})`;
     try {
       const body = await response.json();
@@ -98,6 +116,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 // --- types ---------------------------------------------------------------
+
+export type CurrentUser = {
+  id: string;
+  email: string;
+  created_at: string;
+  consent_version: string | null;
+  needs_consent: boolean;
+};
 
 export type Profile = {
   sex: "male" | "female";
@@ -241,7 +267,11 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
-  me: () => request<{ id: string; email: string }>("/auth/me"),
+  /** `needs_consent` folds "never asked" and "asked about older wording"
+   *  into one flag; the server decides which, this only reacts. */
+  me: () => request<CurrentUser>("/auth/me"),
+
+  acceptConsent: () => request<CurrentUser>("/auth/consent", { method: "POST" }),
 
   getProfile: () => request<Profile>("/profile"),
 
@@ -391,7 +421,8 @@ export function streamChat(
 
       if (!response.ok || !response.body) {
         handleUnauthorized(path, response.status);
-            // The server explains rate limits and quota exhaustion in `detail`;
+        handleConsentRequired(response);
+        // The server explains rate limits and quota exhaustion in `detail`;
         // showing only the status code would leave the user with no idea how
         // long to wait or what went wrong.
         let detail = `เชื่อมต่อไม่สำเร็จ (${response.status})`;

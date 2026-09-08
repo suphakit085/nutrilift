@@ -7,18 +7,27 @@
   password must be rejected up front rather than silently truncated.
 """
 
+import uuid
+from datetime import UTC, datetime
+
 import pytest
 from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app.api.auth import normalise_email, register_user
+from app.api.deps import (
+    CONSENT_REQUIRED_HEADER,
+    consent_is_current,
+    get_consented_user,
+)
 from app.api.schemas import (
     ADULT_REQUIRED,
     CONSENT_REQUIRED,
     CONSENT_VERSION,
     PASSWORD_TOO_LONG,
     RegisterRequest,
+    UserOut,
 )
 from app.db.models import User
 
@@ -168,3 +177,46 @@ def test_registering_stamps_the_consent_on_the_row():
     assert saved.consented_at is not None
     assert saved.consented_at.tzinfo is not None
 
+
+# --- the gate for accounts that never consented -------------------------------
+
+
+class _Row:
+    """Minimal stand-in for a User row; only the consent fields matter here."""
+
+    def __init__(self, version):
+        self.consent_version = version
+
+
+def test_account_with_no_consent_record_is_not_current():
+    """Rows created before consent existed carry NULL - they were never asked."""
+    assert consent_is_current(_Row(None)) is False
+
+
+def test_account_on_an_older_notice_is_not_current():
+    assert consent_is_current(_Row("1999-01-01")) is False
+
+
+def test_account_on_the_live_notice_is_current():
+    assert consent_is_current(_Row(CONSENT_VERSION)) is True
+
+
+def test_gate_refuses_and_flags_itself_in_a_header():
+    """403 plus a header, so the client need not match a Thai sentence."""
+    with pytest.raises(HTTPException) as excinfo:
+        get_consented_user(_Row(None))
+    assert excinfo.value.status_code == 403
+    assert excinfo.value.headers == {CONSENT_REQUIRED_HEADER: "1"}
+
+
+def test_gate_passes_a_consented_user_straight_through():
+    row = _Row(CONSENT_VERSION)
+    assert get_consented_user(row) is row
+
+
+def test_userout_reports_whether_consent_is_owed():
+    """/auth/me is how the client learns it must show the screen."""
+    common = {"id": uuid.uuid4(), "email": "a@example.com", "created_at": datetime.now(UTC)}
+    assert UserOut(**common, consent_version=None).needs_consent is True
+    assert UserOut(**common, consent_version="1999-01-01").needs_consent is True
+    assert UserOut(**common, consent_version=CONSENT_VERSION).needs_consent is False

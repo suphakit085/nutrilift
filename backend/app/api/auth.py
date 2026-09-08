@@ -83,3 +83,21 @@ def login(payload: LoginRequest, request: Request, db: Session = DB_SESSION) -> 
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(get_current_user)) -> User:
     return user
+
+
+@router.post("/consent", response_model=UserOut)
+def accept_consent(user: User = Depends(get_current_user), db: Session = DB_SESSION) -> User:
+    """Record agreement to the notice currently in force.
+
+    Deliberately re-stamps instead of returning early when a consent already
+    exists: someone who agreed to an older wording is agreeing again, to
+    different text, and the row should say when that happened.
+
+    Guarded by get_current_user rather than get_consented_user - a user who owes
+    consent is exactly who needs to call this.
+    """
+    user.consented_at = datetime.now(UTC)
+    user.consent_version = CONSENT_VERSION
+    db.commit()
+    db.refresh(user)
+    return user

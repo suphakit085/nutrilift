@@ -73,7 +73,15 @@ export default function LoginPage() {
           })
         : await api.login(email, password);
       setToken(result.access_token);
-      router.push(registering ? "/profile" : "/chat");
+      if (registering) {
+        router.push("/profile");
+        return;
+      }
+      // An account created before consent was recorded, or one that predates a
+      // reworded notice, has to agree before it can reach any data route -
+      // asking here is friendlier than letting /chat bounce off a 403.
+      const me = await api.me();
+      router.push(me.needs_consent ? "/consent" : "/chat");
     } catch (err) {
       setError((err as Error).message);
     } finally {

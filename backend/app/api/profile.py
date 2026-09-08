@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import DB_SESSION, get_current_user, profile_to_input
+from app.api.deps import DB_SESSION, get_consented_user, profile_to_input
 from app.api.schemas import ProfileIn, ProfileOut
 from app.db.models import Profile, User
 from app.services.nutrition import NutritionInputError, calc_nutrition_targets
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 
 @router.get("", response_model=ProfileOut)
 def get_profile(
-    user: User = Depends(get_current_user), db: Session = DB_SESSION
+    user: User = Depends(get_consented_user), db: Session = DB_SESSION
 ) -> Profile:
     profile = db.get(Profile, user.id)
     if profile is None:
@@ -26,7 +26,7 @@ def get_profile(
 @router.put("", response_model=ProfileOut)
 def upsert_profile(
     payload: ProfileIn,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ) -> Profile:
     profile = db.get(Profile, user.id)
@@ -50,7 +50,7 @@ def upsert_profile(
 
 
 @router.get("/targets")
-def get_targets(user: User = Depends(get_current_user), db: Session = DB_SESSION) -> dict:
+def get_targets(user: User = Depends(get_consented_user), db: Session = DB_SESSION) -> dict:
     """BMR / TDEE / macro targets computed from the stored profile."""
     profile = db.get(Profile, user.id)
     if profile is None:

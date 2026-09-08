@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
-from app.api.deps import DB_SESSION, get_current_user, profile_to_input, rate_limit_chat
+from app.api.deps import DB_SESSION, get_consented_user, profile_to_input, rate_limit_chat
 from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut
 from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
@@ -37,7 +37,7 @@ INTERNAL_ERROR_MESSAGE = "เกิดข้อผิดพลาดภายใ
 
 @router.get("/conversations", response_model=list[ConversationOut])
 def list_conversations(
-    user: User = Depends(get_current_user), db: Session = DB_SESSION
+    user: User = Depends(get_consented_user), db: Session = DB_SESSION
 ) -> list[Conversation]:
     return list(
         db.execute(
@@ -52,7 +52,7 @@ def list_conversations(
     "/conversations", response_model=ConversationOut, status_code=status.HTTP_201_CREATED
 )
 def create_conversation(
-    user: User = Depends(get_current_user), db: Session = DB_SESSION
+    user: User = Depends(get_consented_user), db: Session = DB_SESSION
 ) -> Conversation:
     conversation = Conversation(user_id=user.id)
     db.add(conversation)
@@ -64,7 +64,7 @@ def create_conversation(
 @router.get("/conversations/{conversation_id}", response_model=ConversationDetail)
 def get_conversation(
     conversation_id: uuid.UUID,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ) -> Conversation:
     return _owned_conversation(db, user, conversation_id)
@@ -73,7 +73,7 @@ def get_conversation(
 @router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_conversation(
     conversation_id: uuid.UUID,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ) -> None:
     db.delete(_owned_conversation(db, user, conversation_id))

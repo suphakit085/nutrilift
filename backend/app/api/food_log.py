@@ -8,7 +8,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import DB_SESSION, get_current_user, profile_to_input
+from app.api.deps import DB_SESSION, get_consented_user, profile_to_input
 from app.api.schemas import DailySummaryOut, FoodLogEntryIn, FoodLogEntryOut, FoodLogEntryUpdate
 from app.db.models import Profile, User
 from app.services import food_log
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/food-log", tags=["food-log"])
 @router.post("", response_model=FoodLogEntryOut, status_code=status.HTTP_201_CREATED)
 def create_entry(
     payload: FoodLogEntryIn,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ):
     entry = food_log.create_entry(
@@ -39,7 +39,7 @@ def create_entry(
 @router.get("", response_model=list[FoodLogEntryOut])
 def list_entries(
     date_: date = Query(alias="date"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ):
     return food_log.list_entries(db, user, date_)
@@ -48,7 +48,7 @@ def list_entries(
 @router.get("/summary", response_model=DailySummaryOut)
 def summary(
     date_: date = Query(alias="date"),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ):
     entries = food_log.list_entries(db, user, date_)
@@ -87,7 +87,7 @@ def summary(
 def update_entry(
     entry_id: uuid.UUID,
     payload: FoodLogEntryUpdate,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ):
     entry = food_log.get_owned_entry(db, user, entry_id)
@@ -105,7 +105,7 @@ def update_entry(
 @router.delete("/{entry_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_entry(
     entry_id: uuid.UUID,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ) -> None:
     entry = food_log.get_owned_entry(db, user, entry_id)

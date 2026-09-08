@@ -6,7 +6,7 @@ import uuid
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
 
 # --- auth ---------------------------------------------------------------
 
@@ -76,6 +76,19 @@ class UserOut(BaseModel):
     id: uuid.UUID
     email: EmailStr
     created_at: datetime
+    consent_version: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def needs_consent(self) -> bool:
+        """Whether this account still owes agreement to the live notice.
+
+        A NULL (registered before consent was recorded) and a superseded
+        version are the same situation to a caller: there is no agreement
+        on file for the text currently in force, so it has to be asked for
+        again. Collapsing both into one flag keeps that decision in one
+        place instead of in every client that reads this."""
+        return self.consent_version != CONSENT_VERSION
 
 
 # --- profile ------------------------------------------------------------
