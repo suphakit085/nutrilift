@@ -7,7 +7,7 @@ import { getToken } from "@/lib/api";
 /** Every number, citation, food row, and calculated figure below was pulled
  *  from the running system on 8 ก.ย. 2569, not written by hand:
  *   - eval/reports/baseline-v9_summary.md and baseline-v9_wilcoxon.md (n=150)
- *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (356 rows)
+ *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (377 rows)
  *   - a real POST /conversations/{id}/chat response for "ช่วง cut ควรกินโปรตีนวันละเท่าไหร่"
  *   - a real GET /profile/targets response for a male/24y/175cm/72kg/bulk profile
  *   - the Flag enum in backend/app/services/guardrails.py (8 members)
@@ -22,7 +22,7 @@ const EVIDENCE_ROWS = [
 
 const STATS = [
   { value: "26", label: "การ์ดความรู้ที่เขียนเองจากงานวิจัย" },
-  { value: "355", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
+  { value: "376", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
   { value: "150", label: "คำถามในชุดประเมิน ถามซ้ำสองแบบ" },
   { value: "0", label: "อ้างแหล่งที่ไม่มีจริง จาก 340 มาร์กเกอร์" },
 ] as const;
@@ -468,7 +468,7 @@ export default function LandingPage() {
                 <br />
                 บอกที่มาได้
               </h2>
-              {/* Not "ตามรอยกลับได้": 1 of the 356 rows is a TOVERIFY-LABEL
+              {/* Not "ตามรอยกลับได้": 1 of the 377 rows is a TOVERIFY-LABEL
                   estimate that traces to no published table, so a headline
                   promising traceability would be contradicted by the very
                   paragraph under it. Every row can state its origin - that is
@@ -479,7 +479,7 @@ export default function LandingPage() {
                   the model words it is a prompt instruction, which is exactly
                   the distinction section 04 draws. */}
               <p className="mt-5 text-[15px] leading-[1.8] text-body">
-                ตารางอาหารมี 356 แถว ในนั้น 355 แถวมาจากฐานข้อมูลองค์ประกอบอาหารที่เผยแพร่จริง
+                ตารางอาหารมี 377 แถว ในนั้น 376 แถวมาจากฐานข้อมูลองค์ประกอบอาหารที่เผยแพร่จริง
                 มีรหัสให้เปิดตรวจย้อนได้ทีละรายการ เหลือ 1 แถวที่ยังเป็นค่าประมาณจากฉลาก
                 ระบบติดธงไว้ในข้อมูลว่าเป็นค่าประมาณ และไม่หยิบไปใช้ในแผนมื้ออาหาร
               </p>
