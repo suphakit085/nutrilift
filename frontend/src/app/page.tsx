@@ -45,7 +45,7 @@ const CALC = {
 };
 
 const FOOD_ROWS = [
-  { name: "ข้าวสวย", serving: "1 ทัพพี", kcal: "77", protein: "1.3", source: "ASEAN-FCD-2014-INMU:MYA14" },
+  { name: "ข้าวสวย", serving: "120 กรัม", kcal: "155", protein: "2.6", source: "ASEAN-FCD-2014-INMU:MYA14" },
   { name: "อกไก่ไม่มีหนัง, ย่าง", serving: "100 กรัม", kcal: "151", protein: "30.5", source: "USDA-FDC-SR:171534" },
   { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
   { name: "เต้าหู้ขาวแข็ง", serving: "100 กรัม", kcal: "126", protein: "12.9", source: "ThaiFCD-Online-v3:C48" },
@@ -526,8 +526,8 @@ export default function LandingPage() {
               <p className="mt-4 text-[13px] leading-[1.7] text-muted">
                 แถวที่เป็นหน่วยเสิร์ฟคำนวณจากค่าต่อ 100 กรัมของแหล่งอ้างอิง ด้วยน้ำหนัก
                 หนึ่งหน่วยบริโภคอ้างอิงตามประกาศกระทรวงสาธารณสุข ฉบับที่ 445 พ.ศ. 2566
-                (ข้าวหรือเส้นสุก 120 ก. + แกงหรือกับข้าว 200 ก. = 1 จาน 320 ก.)
-                ส่วนแถว 100 กรัม เป็นค่าจากแหล่งโดยตรง
+                (ข้าวหรือเส้นสุก 120 ก. · แกงหรือกับข้าว 200 ก. · ผลไม้ 140 ก. ·
+                จานเดียว = 120 + 200 = 320 ก.) ส่วนแถว 100 กรัม เป็นค่าจากแหล่งโดยตรง
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
