@@ -342,41 +342,41 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 เต้าหู้ขาวแข็ง,Firm tofu,โปรตีนพืช,100 กรัม,100,126,12.9,0.0,7.2,4.8,ThaiFCD-Online-v3:C48
 ถั่วเหลืองต้ม,Boiled soybeans,โปรตีนพืช,100 กรัม,100,175,14.8,2.7,9.9,8.3,ThaiFCD-Online-v3:C110
 เวย์โปรตีน (ผงชงดื่ม),"Beverages, Protein powder whey based",อาหารเสริม,1 สกู๊ป (32 กรัม),32,113,25.0,2.0,0.5,1.0,USDA-FDC-SR:173180
-ข้าวมันไก่,Chicken rice,จานเดียว,1 จาน,350,767,18.8,98.0,33.3,0.0,DOH-NSS-2018:11045
-ข้าวผัดหมู,"Fried rice with pork, vegetable and egg",จานเดียว,1 จาน,350,634,21.0,72.8,28.7,0.7,DOH-NSS-2018:11044
-ข้าวกะเพราไก่,Basil chicken rice,จานเดียว,1 จาน,350,609,31.3,77.7,19.2,0.0,DOH-NSS-2018:11063
-"ก๋วยเตี๋ยวผัดไทย, ใส่ไข่","Rice noodles, fried, Thai style, with egg",จานเดียว,1 จาน,350,837,27.0,85.1,43.1,2.1,DOH-NSS-2018:11007
+ข้าวมันไก่,Chicken rice,จานเดียว,1 จาน,320,701,17.2,89.6,30.4,0.0,DOH-NSS-2018:11045
+ข้าวผัดหมู,"Fried rice with pork, vegetable and egg",จานเดียว,1 จาน,320,579,19.2,66.5,26.2,0.6,DOH-NSS-2018:11044
+ข้าวกะเพราไก่,Basil chicken rice,จานเดียว,1 จาน,320,557,28.6,71.0,17.5,0.0,DOH-NSS-2018:11063
+"ก๋วยเตี๋ยวผัดไทย, ใส่ไข่","Rice noodles, fried, Thai style, with egg",จานเดียว,1 จาน,320,765,24.6,77.8,39.4,1.9,DOH-NSS-2018:11007
 ส้มตำปู-กุ้ง,Papaya salad with crab and dried shrimp,กับข้าว,1 จาน,200,170,7.4,25.6,4.2,3.2,DOH-NSS-2018:11090
 ต้มยำกุ้งน้ำใส,Clear tom yum goong,กับข้าว,1 ถ้วย,250,110,11.7,7.2,3.6,1.8,ThaiFCD-Online-v3:T212
 ลาบคั่วหมู,Spicy roasted minced pork salad,กับข้าว,1 จาน,150,263,19.5,2.8,18.2,4.8,DOH-NSS-2018:11184
 ไก่ทอดกระเทียมพริกไทย,Fried chicken with garlic and pepper,กับข้าว,1 ชิ้น,100,186,18.4,5.7,10.0,0.0,DOH-NSS-2018:11102
 แกงเขียวหวานไก่,Green curry with chicken,กับข้าว,1 ถ้วย,200,202,15.8,6.1,12.1,2.8,ThaiFCD-Online-v3:T184
-ข้าวราดผัดผักรวม,Rice topped with stir-fried mixed vegetables,จานเดียว,1 จาน,350,413,10.9,75.6,7.4,0.0,DOH-NSS-2018:11071
+ข้าวราดผัดผักรวม,Rice topped with stir-fried mixed vegetables,จานเดียว,1 จาน,320,378,10.0,69.2,6.7,0.0,DOH-NSS-2018:11071
 กล้วยน้ำว้าสุก,Ripe cultivated banana (Kluai Nam-wa),ผลไม้,1 ผล,70,83,0.5,19.0,0.1,1.7,ThaiFCD-Online-v3:E3
 มะละกอสุก,Ripe papaya,ผลไม้,1 ถ้วย,150,60,1.4,12.2,0.2,2.0,ASEAN-FCD-2014-INMU:AAE83
 ชานมไข่มุก,Bubble milk tea,เครื่องดื่ม,1 แก้ว 500 มล.,500,340,4.0,62.0,8.0,0.5,TOVERIFY-LABEL
-"ก๋วยเตี๋ยวเส้นใหญ่, ผัดซีอิ๊ว","Rice noodles, big size with pork, egg and soysauce, fried",จานเดียว,1 จาน,350,693,17.5,89.6,29.4,0.0,DOH-NSS-2018:11026
-"ก๋วยเตี๋ยวเส้นใหญ่, ผัดซีอิ๊ว, ใส่ไข่","Rice noodles, big size with pork, egg and soysauce, fried, with egg",จานเดียว,1 จาน,350,683,22.1,72.5,33.9,1.1,DOH-NSS-2018:11027
-"ก๋วยเตี๋ยวเส้นใหญ่, ราดหน้า, หมู","Rice noodles, big size topped with pork, chinese kale and gravy",จานเดียว,1 จาน,350,392,11.5,46.5,17.9,0.4,DOH-NSS-2018:11031
-"ก๋วยเตี๋ยวเส้นเล็ก, หมู, แห้ง","Rice noodles, small size with pork, without soup",จานเดียว,1 จาน,350,949,31.9,111.4,41.5,0.0,DOH-NSS-2018:11017
-ข้าวคลุกกะปิ,"Rice with shrimp paste, ground shrimp, pork, omelet",จานเดียว,1 จาน,350,669,23.1,88.2,24.9,0.7,DOH-NSS-2018:11043
-ข้าวราดแกงเขียวหวานไก่,Rice topped with chicken green curry,จานเดียว,1 จาน,350,466,18.3,67.4,13.7,1.4,DOH-NSS-2018:11047
-ข้าวราดแกงพะแนงหมู,"Rice topped with curry, pork (Pha-naeng)",จานเดียว,1 จาน,350,476,25.5,72.9,9.3,0.0,DOH-NSS-2018:11052
-ข้าวราดแกงมัสมั่นไก่,"Rice topped with curry, matsaman, chicken",จานเดียว,1 จาน,350,483,15.4,64.8,17.8,0.0,DOH-NSS-2018:11053
-ข้าวราดแกงส้มผักรวม,"Rice topped with tamarind flavor soup, mixed vegetables",จานเดียว,1 จาน,350,298,10.2,62.2,0.8,0.0,DOH-NSS-2018:11055
-ข้าวราดไข่เจียวหมูสับ,Rice topped with minced pork omelet,จานเดียว,1 จาน,350,826,28.5,55.8,54.5,0.0,DOH-NSS-2018:11058
-ข้าวราดต้มพะโล้,Rice topped with pork and egg in five spices soup,จานเดียว,1 จาน,350,553,26.0,68.7,19.5,0.0,DOH-NSS-2018:11061
-ข้าวราดผัดคะน้าหมูกรอบ,Rice topped with stir-fried crispy pork and kale,จานเดียว,1 จาน,350,578,19.3,71.1,24.0,0.0,DOH-NSS-2018:11065
-ข้าวราดหมูทอดกระเทียมพริกไทย,"Rice topped with fried pork, garlic and pepper",จานเดียว,1 จาน,350,676,21.3,109.1,17.2,0.0,DOH-NSS-2018:11084
-ข้าวหมูแดง,Rice with roasted (red) pork and gravy,จานเดียว,1 จาน,350,592,21.7,82.3,19.6,0.7,DOH-NSS-2018:11087
-"ข้าวซอย, ไก่",Noodle with chicken curry,จานเดียว,1 จาน,350,529,20.4,25.8,37.0,5.6,DOH-NSS-2018:11182
-"สุกี้, ไก่, น้ำ","Suki with chicken, vegetables and soup",จานเดียว,1 จาน,350,165,13.2,19.2,3.9,0.0,DOH-NSS-2018:11091
-"สุกี้, รวมมิตร, แห้ง","Suki with meat, seafood and vegetables, stir-fried",จานเดียว,1 จาน,350,364,20.0,35.9,15.5,0.0,DOH-NSS-2018:11093
+"ก๋วยเตี๋ยวเส้นใหญ่, ผัดซีอิ๊ว","Rice noodles, big size with pork, egg and soysauce, fried",จานเดียว,1 จาน,320,634,16.0,81.9,26.8,0.0,DOH-NSS-2018:11026
+"ก๋วยเตี๋ยวเส้นใหญ่, ผัดซีอิ๊ว, ใส่ไข่","Rice noodles, big size with pork, egg and soysauce, fried, with egg",จานเดียว,1 จาน,320,624,20.2,66.2,31.0,1.0,DOH-NSS-2018:11027
+"ก๋วยเตี๋ยวเส้นใหญ่, ราดหน้า, หมู","Rice noodles, big size topped with pork, chinese kale and gravy",จานเดียว,1 จาน,320,358,10.5,42.5,16.4,0.3,DOH-NSS-2018:11031
+"ก๋วยเตี๋ยวเส้นเล็ก, หมู, แห้ง","Rice noodles, small size with pork, without soup",จานเดียว,1 จาน,320,867,29.2,101.9,38.0,0.0,DOH-NSS-2018:11017
+ข้าวคลุกกะปิ,"Rice with shrimp paste, ground shrimp, pork, omelet",จานเดียว,1 จาน,320,611,21.2,80.7,22.8,0.6,DOH-NSS-2018:11043
+ข้าวราดแกงเขียวหวานไก่,Rice topped with chicken green curry,จานเดียว,1 จาน,320,426,16.7,61.6,12.5,1.3,DOH-NSS-2018:11047
+ข้าวราดแกงพะแนงหมู,"Rice topped with curry, pork (Pha-naeng)",จานเดียว,1 จาน,320,435,23.3,66.7,8.5,0.0,DOH-NSS-2018:11052
+ข้าวราดแกงมัสมั่นไก่,"Rice topped with curry, matsaman, chicken",จานเดียว,1 จาน,320,442,14.1,59.2,16.3,0.0,DOH-NSS-2018:11053
+ข้าวราดแกงส้มผักรวม,"Rice topped with tamarind flavor soup, mixed vegetables",จานเดียว,1 จาน,320,272,9.3,56.9,0.7,0.0,DOH-NSS-2018:11055
+ข้าวราดไข่เจียวหมูสับ,Rice topped with minced pork omelet,จานเดียว,1 จาน,320,755,26.1,51.0,49.8,0.0,DOH-NSS-2018:11058
+ข้าวราดต้มพะโล้,Rice topped with pork and egg in five spices soup,จานเดียว,1 จาน,320,506,23.8,62.8,17.8,0.0,DOH-NSS-2018:11061
+ข้าวราดผัดคะน้าหมูกรอบ,Rice topped with stir-fried crispy pork and kale,จานเดียว,1 จาน,320,528,17.6,65.0,21.9,0.0,DOH-NSS-2018:11065
+ข้าวราดหมูทอดกระเทียมพริกไทย,"Rice topped with fried pork, garlic and pepper",จานเดียว,1 จาน,320,618,19.5,99.7,15.7,0.0,DOH-NSS-2018:11084
+ข้าวหมูแดง,Rice with roasted (red) pork and gravy,จานเดียว,1 จาน,320,541,19.8,75.2,17.9,0.6,DOH-NSS-2018:11087
+"ข้าวซอย, ไก่",Noodle with chicken curry,จานเดียว,1 จาน,320,483,18.7,23.6,33.8,5.1,DOH-NSS-2018:11182
+"สุกี้, ไก่, น้ำ","Suki with chicken, vegetables and soup",จานเดียว,1 ถ้วย,200,94,7.5,11.0,2.2,0.0,DOH-NSS-2018:11091
+"สุกี้, รวมมิตร, แห้ง","Suki with meat, seafood and vegetables, stir-fried",จานเดียว,1 ถ้วย,200,208,11.4,20.5,8.9,0.0,DOH-NSS-2018:11093
 พะแนงหมู,"Pork, curry (Pha-naeng)",กับข้าว,1 ถ้วย,200,316,24.5,13.4,18.3,0.0,DOH-NSS-2018:11127
 หมูทอดกระเทียมพริกไทย,Fried pork with garlic and pepper,กับข้าว,1 ชิ้น,100,241,18.7,5.5,16.0,0.0,DOH-NSS-2018:11130
 "ปลาทูน่า, สเต็กในน้ำเกลือ","Tuna steak, canned in brine",ปลาและอาหารทะเล,100 กรัม,100,117,25.9,0.0,1.5,0.0,DOH-NSS-2018:11122
 "ปลาทูน่าเนื้อขาว, ชนิดก้อน, ในน้ำแร่","White tuna, canned in water",ปลาและอาหารทะเล,100 กรัม,100,115,27.9,0.0,0.4,0.0,DOH-NSS-2018:11117
-โจ๊กหมู,Porridge rice with minced pork,จานเดียว,1 ถ้วย,250,143,3.9,17.1,6.6,0.0,ThaiFCD-Online-v3:T68
+โจ๊กหมู,Porridge rice with minced pork,จานเดียว,1 ถ้วย,200,114,3.1,13.7,5.3,0.0,ThaiFCD-Online-v3:T68
 "หมู, สันใน, ต้ม","Pork, tender loin, boiled",เนื้อสัตว์,100 กรัม,100,153,33.4,0.0,2.2,0.0,ThaiFCD-Online-v3:F89
 "หมู, สันใน, ทอด","Pork, tender loin, fried",เนื้อสัตว์,100 กรัม,100,243,37.2,0.0,10.5,0.0,ThaiFCD-Online-v3:F90
 "หมู, สันนอก, ต้ม","Pork, loin, boiled",เนื้อสัตว์,100 กรัม,100,204,33.0,0.1,7.9,0.0,ThaiFCD-Online-v3:F86

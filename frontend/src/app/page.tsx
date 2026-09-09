@@ -47,7 +47,7 @@ const CALC = {
 const FOOD_ROWS = [
   { name: "ข้าวสวย", serving: "1 ทัพพี", kcal: "77", protein: "1.3", source: "ASEAN-FCD-2014-INMU:MYA14" },
   { name: "อกไก่ไม่มีหนัง, ย่าง", serving: "100 กรัม", kcal: "151", protein: "30.5", source: "USDA-FDC-SR:171534" },
-  { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "837", protein: "27.0", source: "DOH-NSS-2018:11007" },
+  { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
   { name: "เต้าหู้ขาวแข็ง", serving: "100 กรัม", kcal: "126", protein: "12.9", source: "ThaiFCD-Online-v3:C48" },
 ] as const;
 
@@ -516,16 +516,18 @@ export default function LandingPage() {
                 </div>
               ))}
 
-              {/* Traceability has one honest limit, and stating it is stronger
-                  than letting an examiner find it: knowledge/README.md records
-                  that "1 จาน = 350 กรัม" is this project's assumption, not the
-                  source's, and the hand-picked serving rows are reduced from the
-                  same per-100 g code. So the code traces the composition; the
-                  portion weight is ours. */}
+              {/* The portion weight used to be this project's own invention.
+                  It is now built from the reference amounts in ประกาศ 445 -
+                  120 g of cooked grain plus 200 g of topping - so the whole
+                  figure traces to something published: composition from the
+                  food table, portion from the labelling notification. The
+                  caveat that remains, and that the note states, is that 445 is
+                  written for packaged food. */}
               <p className="mt-4 text-[13px] leading-[1.7] text-muted">
-                แถวที่เป็นหน่วยเสิร์ฟคำนวณจากค่าต่อ 100 กรัมของแหล่งอ้างอิง
-                ด้วยน้ำหนักที่โปรเจกกำหนดเอง (1 ทัพพี = 60 ก., 1 จาน = 350 ก.) ส่วนแถว 100 กรัม
-                เป็นค่าจากแหล่งโดยตรง
+                แถวที่เป็นหน่วยเสิร์ฟคำนวณจากค่าต่อ 100 กรัมของแหล่งอ้างอิง ด้วยน้ำหนัก
+                หนึ่งหน่วยบริโภคอ้างอิงตามประกาศกระทรวงสาธารณสุข ฉบับที่ 445 พ.ศ. 2566
+                (ข้าวหรือเส้นสุก 120 ก. + แกงหรือกับข้าว 200 ก. = 1 จาน 320 ก.)
+                ส่วนแถว 100 กรัม เป็นค่าจากแหล่งโดยตรง
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
