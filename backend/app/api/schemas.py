@@ -20,7 +20,7 @@ PASSWORD_TOO_LONG = "รหัสผ่านยาวเกินไป (ไม
 
 #: Bumped whenever the wording of the consent notice changes, so a stored
 #: consent can be traced back to the exact text that was agreed to.
-CONSENT_VERSION = "2026-09-08"
+CONSENT_VERSION = "2026-09-11"
 
 CONSENT_REQUIRED = "ต้องยอมรับการเก็บและใช้ข้อมูลก่อนจึงจะสมัครได้"
 ADULT_REQUIRED = "บริการนี้สำหรับผู้ที่มีอายุ 18 ปีขึ้นไป"

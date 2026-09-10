@@ -11,7 +11,13 @@
  *
  *  Keep CONSENT_VERSION in backend/app/api/schemas.py in step with edits here:
  *  changing this text without bumping it leaves existing users marked as having
- *  agreed to wording they never saw. */
+ *  agreed to wording they never saw.
+ *
+ *  The "ข้อมูลที่ส่งออกนอกระบบ" paragraph describes what chat.py actually sends
+ *  to Gemini: the conversation plus _profile_summary_th. An earlier version
+ *  told users nothing was shared with third parties, which was false - so if
+ *  the prompt ever starts carrying more fields, this paragraph has to say so,
+ *  and src/lib/consentNotice.test.ts fails if the old claim comes back. */
 
 /** PDPA: the data controller for this service. Change this to whichever address
  *  should receive access/erasure requests before real participants use it. */
@@ -32,7 +38,18 @@ export default function ConsentNotice() {
       <p>
         <strong className="font-semibold text-foreground">ใช้ทำอะไร:</strong>{" "}
         คำนวณเป้าหมายพลังงานและสารอาหารเฉพาะบุคคล และประเมินผลระบบเพื่อจัดทำปริญญานิพนธ์
-        ข้อมูลที่ใช้รายงานผลจะสรุปเป็นภาพรวม ไม่ระบุตัวบุคคล และไม่มีการส่งต่อหรือขายให้บุคคลที่สาม
+        ข้อมูลที่ใช้รายงานผลจะสรุปเป็นภาพรวม ไม่ระบุตัวบุคคล และผู้จัดทำไม่ขายข้อมูลให้ผู้ใด
+      </p>
+      <p>
+        <strong className="font-semibold text-foreground">ข้อมูลที่ส่งออกนอกระบบ:</strong>{" "}
+        ข้อความที่คุณพิมพ์ในแชต ประวัติการสนทนาในห้องนั้น และสรุปโปรไฟล์ (เพศ อายุ ส่วนสูง น้ำหนัก
+        เปอร์เซ็นต์ไขมัน จำนวนวันเล่นเวท เป้าหมาย และข้อจำกัดด้านอาหาร) จะถูกส่งไปประมวลผลที่
+        Google Gemini API ในต่างประเทศเพื่อสร้างคำตอบ อีเมลและรหัสผ่านไม่ถูกส่ง ระบบใช้ Gemini
+        แบบไม่เสียค่าใช้จ่าย ซึ่งตามเงื่อนไขของ Google ข้อมูลที่ส่งไปอาจถูกนำไปพัฒนาผลิตภัณฑ์ของ Google
+        และอาจมีเจ้าหน้าที่ของ Google อ่านได้{" "}
+        <strong className="font-semibold text-foreground">
+          จึงไม่ควรพิมพ์ชื่อ-นามสกุล เลขบัตรประชาชน ข้อมูลติดต่อ หรือข้อมูลอื่นที่ระบุตัวตนของคุณลงในแชต
+        </strong>
       </p>
       <p>
         <strong className="font-semibold text-foreground">สิทธิของคุณ:</strong> ขอดู แก้ไข
