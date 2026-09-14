@@ -22,6 +22,8 @@ type Bubble = {
   citations?: Citation[];
   tools?: string[];
   pending?: boolean;
+  /** Transient status while pending (e.g. the backend is retrying a 429). */
+  notice?: string;
 };
 
 
@@ -193,7 +195,15 @@ export default function ChatPage() {
       },
       onDelta: (chunk) => {
         if (!isCurrent()) return;
-        updateLast((bubble) => ({ ...bubble, content: bubble.content + chunk }));
+        updateLast((bubble) => ({
+          ...bubble,
+          content: bubble.content + chunk,
+          notice: undefined,
+        }));
+      },
+      onRetry: (message) => {
+        if (!isCurrent()) return;
+        updateLast((bubble) => ({ ...bubble, notice: message }));
       },
       onTool: (name) => {
         if (!isCurrent()) return;
@@ -563,6 +573,10 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
             {toolLabel(tool, Boolean(bubble.pending))}
           </div>
         ))}
+
+        {bubble.pending && bubble.notice && (
+          <div className="mb-2 text-xs text-muted animate-pulse">{bubble.notice}</div>
+        )}
 
         <div>
           <AnswerText content={bubble.content} />

@@ -35,7 +35,8 @@ DEFAULT_RETRY_DELAY_S = 20.0
 _RETRY_DELAY_RE = re.compile(r"retry in ([\d.]+)s")
 
 
-def _retry_delay_seconds(message: str) -> float:
+def retry_delay_seconds(message: str) -> float:
+    """Seconds Google asks us to wait, +2 s of slack; the default when unstated."""
     match = _RETRY_DELAY_RE.search(message)
     return float(match.group(1)) + 2.0 if match else DEFAULT_RETRY_DELAY_S
 
@@ -85,7 +86,7 @@ def embed_texts(
         except genai_errors.ClientError as exc:
             if exc.code != 429 or attempt >= max_retries:
                 raise
-            delay = _retry_delay_seconds(str(exc))
+            delay = retry_delay_seconds(str(exc))
             if max_delay_s is not None:
                 delay = min(delay, max_delay_s)
             logger.warning(

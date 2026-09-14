@@ -335,6 +335,8 @@ export type ChatStreamHandlers = {
   onSources?: (citations: Citation[]) => void;
   onDelta?: (text: string) => void;
   onTool?: (name: string) => void;
+  /** The backend hit the model's per-minute limit and is retrying by itself. */
+  onRetry?: (message: string) => void;
   onDone?: (payload: { text: string; citations: Citation[] }) => void;
   onError?: (message: string) => void;
 };
@@ -467,6 +469,9 @@ export function streamChat(
               break;
             case "tool":
               handlers.onTool?.(String(payload.name ?? ""));
+              break;
+            case "retry":
+              handlers.onRetry?.(String(payload.message ?? ""));
               break;
             case "done":
               finished = true;

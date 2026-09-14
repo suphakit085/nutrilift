@@ -241,3 +241,25 @@ test("EOF after an error frame does not report a second error", async () => {
 
   assert.deepEqual(errors, ["โควต้าหมด"]);
 });
+
+test("a retry frame reaches onRetry and the stream still finishes", async () => {
+  const notice = "โมเดลกำลังคิวแน่น ระบบจะลองใหม่ให้อัตโนมัติใน 6 วินาที";
+  const body =
+    frame("retry", { message: notice, wait_s: 6 }) +
+    frame("delta", { text: "ตอบ" }) +
+    frame("done", { text: "ตอบ", citations: [] });
+  const notices: string[] = [];
+
+  const done = await withMockFetch(body, () =>
+    new Promise<{ text: string }>((resolve, reject) => {
+      streamChat("c1", "สวัสดี", {
+        onRetry: (m) => notices.push(m),
+        onError: (m) => reject(new Error(m)),
+        onDone: resolve,
+      });
+    }),
+  );
+
+  assert.deepEqual(notices, [notice]);
+  assert.equal(done.text, "ตอบ");
+});

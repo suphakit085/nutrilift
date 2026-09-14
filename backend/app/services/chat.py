@@ -16,16 +16,18 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from collections.abc import Iterator
 from typing import Any
 
+from google.genai import errors as genai_errors
 from google.genai import types
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.foods import all_foods, lookup_food
-from app.services.llm import get_client
+from app.services.llm import get_client, retry_delay_seconds
 from app.services.meal_plan import MealPlanError, build_day_plan
 from app.services.nutrition import (
     GOAL_LABELS_TH,
@@ -38,6 +40,32 @@ from app.services.nutrition import (
 logger = logging.getLogger(__name__)
 
 MAX_TOOL_ITERATIONS = 4
+
+#: Per-minute 429s on the generator. gemini-3.5-flash-lite's free tier allows
+#: 15 requests/minute across *everyone* using this deployment, so two people
+#: sending at once already brushes it - and until 2026-09-15 a single 429 here
+#: ended the turn with "โควตาของวันนี้เต็มแล้ว", which was both wrong (the day's
+#: quota was fine) and unrecoverable for the user. Retry a couple of times with
+#: the delay Google names, capped so a person watching a spinner never waits
+#: long; embedding calls in retrieval.py already do the same. A per-*day* 429
+#: looks identical on the wire, so the cap is also the bound on wasted waiting
+#: when that is what actually happened: at most 2 x 12 s before the daily
+#: message shows.
+GENERATE_MAX_RETRIES = 2
+GENERATE_MAX_DELAY_S = 12.0
+#: Google's daily-cap messages sometimes name the window; when they do, do not
+#: bother retrying. Best effort only - see the note above.
+_PER_DAY_TOKENS = ("per_day", "perday", "per day", "daily")
+
+
+def rate_limit_retry_delay(exc: Exception) -> float | None:
+    """Seconds to wait before retrying ``exc``, or ``None`` if it is not worth it."""
+    if getattr(exc, "code", None) != 429:
+        return None
+    text = str(exc).lower()
+    if any(token in text for token in _PER_DAY_TOKENS):
+        return None
+    return min(retry_delay_seconds(str(exc)), GENERATE_MAX_DELAY_S)
 
 #: Raw JSON schema per tool. Passed to Gemini via ``FunctionDeclaration(
 #: parameters_json_schema=...)``, which accepts standard JSON schema directly -
@@ -409,6 +437,7 @@ def stream_chat(
     ``{"type": "sources", "sources": [...]}``   once, before generation
     ``{"type": "delta", "text": "..."}``        many
     ``{"type": "tool", "name": ..., "args": ...}``  when a tool runs
+    ``{"type": "retry", "message": ..., "wait_s": n}``  a per-minute 429, retrying
     ``{"type": "done", ...}``                   once, with citations/usage/flags
     ``{"type": "error", "message": ...}``       on failure
     """
@@ -537,18 +566,47 @@ def stream_chat(
             # parts are near-empty (it only carries finish_reason/usage).
             turn_parts: list[types.Part] = []
             usage_meta = None
-            for chunk in client.models.generate_content_stream(
-                model=chosen_model, contents=contents, config=config
-            ):
-                if chunk.candidates:
-                    candidate_content = chunk.candidates[0].content
-                    if candidate_content and candidate_content.parts:
-                        turn_parts.extend(candidate_content.parts)
-                if chunk.text:
-                    text_parts.append(chunk.text)
-                    yield {"type": "delta", "text": chunk.text}
-                if chunk.usage_metadata:
-                    usage_meta = chunk.usage_metadata
+            for attempt in range(GENERATE_MAX_RETRIES + 1):
+                streamed = False
+                try:
+                    for chunk in client.models.generate_content_stream(
+                        model=chosen_model, contents=contents, config=config
+                    ):
+                        if chunk.candidates:
+                            candidate_content = chunk.candidates[0].content
+                            if candidate_content and candidate_content.parts:
+                                turn_parts.extend(candidate_content.parts)
+                        if chunk.text:
+                            streamed = True
+                            text_parts.append(chunk.text)
+                            yield {"type": "delta", "text": chunk.text}
+                        if chunk.usage_metadata:
+                            usage_meta = chunk.usage_metadata
+                    break
+                except genai_errors.ClientError as exc:
+                    delay = rate_limit_retry_delay(exc)
+                    # Only a 429 that hit *before anything was produced* is safe
+                    # to retry: text already on screen or a function call
+                    # already collected would be emitted twice.
+                    if (
+                        delay is None
+                        or streamed
+                        or turn_parts
+                        or attempt >= GENERATE_MAX_RETRIES
+                    ):
+                        raise
+                    logger.warning(
+                        "generate_content 429, retrying in %.0fs (%d/%d)",
+                        delay, attempt + 1, GENERATE_MAX_RETRIES,
+                    )
+                    yield {
+                        "type": "retry",
+                        "message": (
+                            f"โมเดลกำลังคิวแน่น ระบบจะลองใหม่ให้อัตโนมัติใน {delay:.0f} วินาที"
+                        ),
+                        "wait_s": delay,
+                    }
+                    time.sleep(delay)
 
             if usage_meta is not None:
                 usage_total["input_tokens"] += usage_meta.prompt_token_count or 0
