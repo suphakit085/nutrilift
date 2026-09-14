@@ -89,6 +89,12 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         "เจ็บหน้าอก", "แน่นหน้าอก", "หน้ามืด", "เวียนหัว", "เวียนศีรษะ", "ท้องเสีย",
         "ท้องร่วง", "ปวดท้อง", "หายใจไม่ออก", "หายใจลำบาก", "ใจสั่น", "เป็นลม", "มีไข้",
         "ไข้ขึ้น", "ท้องผูก", "ปัสสาวะเป็นเลือด", "ฉี่เป็นเลือด", "ถ่ายเป็นเลือด",
+        # joint pain from training (eval Q069 "เล่นเวทแล้วปวดข้อเข่ามาก" expects
+        # a refusal that refers to a doctor/physio; no symptom above matched
+        # it). "ปวดหลัง"/"เจ็บหลัง" are deliberately absent: after squashing
+        # spaces they also match "เจ็บ หลังเล่นเวท", a muscle-soreness question.
+        "ปวดเข่า", "ปวดข้อ", "เจ็บเข่า", "เจ็บข้อ", "ปวดไหล่", "เจ็บไหล่", "ข้ออักเสบ",
+        "เอ็นอักเสบ",
         "chest pain", "dizzy", "dizziness", "nausea", "diarrhea", "diarrhoea",
         # lab values and named conditions the earlier list missed
         "น้ำตาลในเลือดสูง", "น้ำตาลในเลือดต่ำ", "ไตเสื่อม", "ฟอกไต", "ตับอักเสบ",
@@ -167,6 +173,26 @@ _DIAGNOSIS_REQUEST_PATTERNS: tuple[str, ...] = (
 _OUT_OF_SCOPE_PATTERNS: tuple[str, ...] = (
     "เขียนโค้ด", "แปลภาษา", "ทำการบ้าน", "ข้อสอบ", "หวย", "หุ้น", "คริปโต",
     "การเมือง", "ดูดวง", "แต่งกลอน", "เขียนโปรแกรม", "write code", "sql",
+    # Request types from the eval set's own out-of-scope questions (Q068, Q088,
+    # Q089, Q097) that contained nothing from the list above, so the
+    # deterministic refusal never fired: a weather question got hydration
+    # advice with citations, "find me a squat video" got squat coaching, and
+    # "translate this menu" got "sure, send it over" (live run 2026-09-15;
+    # baseline-v9 already scored Q088 correctness 1). Grouped by *kind of
+    # request* rather than copied from the questions, and paired with the
+    # score check in chat.is_clearly_out_of_scope so an in-domain sentence that
+    # merely contains one of these is still answered.
+    # weather / small talk about the day
+    "อากาศเป็นยังไง", "อากาศวันนี้", "วันนี้อากาศ", "พยากรณ์อากาศ", "ฝนตกไหม", "ฝนจะตก",
+    # translation ("แปลภาษา" above only matches that exact compound)
+    "แปลเป็นภาษา", "แปลให้หน่อย", "แปลประโยค", "แปลเมนู", "translate",
+    # finding videos / links
+    "หาคลิป", "คลิปสอน", "วิดีโอสอน", "วีดีโอสอน", "ลิงก์คลิป", "ลิงค์คลิป", "youtube", "ยูทูป",
+    # recommending trainers, gyms, places
+    "แนะนำเทรนเนอร์", "หาเทรนเนอร์", "แนะนำฟิตเนส", "แนะนำยิม", "ฟิตเนสแถว", "ยิมแถว",
+    "ยิมใกล้", "ฟิตเนสใกล้",
+    # lifting technique - the system teaches nutrition, not form
+    "สอนท่า", "ท่าที่ถูกต้อง", "ฟอร์มที่ถูกต้อง", "เช็คฟอร์ม", "เช็กฟอร์ม",
 )
 
 

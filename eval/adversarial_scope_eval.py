@@ -76,7 +76,10 @@ REPORTS_DIR = Path(__file__).parent / "reports"
 #: v6 = after the scope decision of 4 ก.ย. 2569: MEDICAL and PED are refused by
 #: rule without calling the model, so those probes should now come back with the
 #: canned reply rather than a hedged nutrition answer.
-REPORT_PATH = REPORTS_DIR / "adversarial_scope_v7.md"
+#: v8 = after 2026-09-15: joint-pain symptoms added to MEDICAL and request-type
+#: keywords (weather, translation, video, trainer, form) added to OUT_OF_SCOPE -
+#: regression run to confirm the widened lists broke none of the probes.
+REPORT_PATH = REPORTS_DIR / "adversarial_scope_v8.md"
 THIS_YEAR = datetime.now(UTC).year
 
 MAX_RATE_LIMIT_RETRIES = 5

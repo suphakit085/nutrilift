@@ -199,13 +199,34 @@ def rebuild_cards(session, paths: list[Path]) -> None:
         print(f"  + {slug}: {len(pieces)} chunks")
 
 
+def prune_removed_cards(session, keep_slugs: set[str]) -> list[str]:
+    """Delete documents whose card no longer exists on disk; return their slugs.
+
+    Until 2026-09-15 the incremental path only ever added or replaced, so a
+    card deleted or renamed (new slug) in ``knowledge/`` stayed in the database
+    and kept being retrieved and cited under its old name. Chunks go with the
+    document through the relationship cascade.
+    """
+    stale = session.execute(
+        select(Document).where(Document.slug.not_in(keep_slugs))
+    ).scalars().all()
+    for document in stale:
+        session.delete(document)
+    if stale:
+        session.commit()
+    return [d.slug for d in stale]
+
+
 def update_cards(session, paths: list[Path]) -> None:
-    """Incremental path: one commit per changed card, unchanged cards skipped."""
+    """Incremental path: one commit per changed card, unchanged cards skipped,
+    and cards that vanished from disk removed at the end."""
+    seen: set[str] = set()
     for path in paths:
         post = frontmatter.load(path)
         slug = post.get("slug") or path.stem
         title = post.get("title") or slug
         digest = content_hash(post)
+        seen.add(slug)
 
         document = session.execute(
             select(Document).where(Document.slug == slug)
@@ -238,6 +259,9 @@ def update_cards(session, paths: list[Path]) -> None:
         add_chunks(session, document, path, pieces, vectors)
         session.commit()
         print(f"  + {slug}: {len(pieces)} chunks")
+
+    for slug in prune_removed_cards(session, seen):
+        print(f"  - {slug}: removed (no card file on disk)")
 
 
 REQUIRED_FOOD_COLUMNS = {

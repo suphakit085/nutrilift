@@ -68,3 +68,35 @@ def test_system_prompt_threads_sex_and_goal_through():
     assert GOAL_GUIDANCE_TH["cut"] in prompt
     assert "ผู้ใช้เป็นหญิงวัยเจริญพันธุ์" in prompt
     assert "ผู้ใช้เป็นชาย" not in prompt
+
+
+# --- brackets are reserved for real citations (prompt v1.10.0) ---------------
+# baseline-v9 stored "[อ้างอิงจากระบบ]" (Q097, nothing retrieved) and
+# "[รายงานจากฐานข้อมูลอาหารของระบบ]" x5 (Q098, tool data); a live run on
+# 2026-09-15 produced "[S-NONE]". The chat bubble renders answer text verbatim,
+# so every one of these reached the screen. cited_only() ignores them, which is
+# exactly why nothing noticed.
+
+from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VERSION  # noqa: E402
+
+
+def test_prompt_version_bumped_with_the_bracket_rule():
+    assert PROMPT_VERSION == "v1.11.0"
+
+
+def test_base_prompt_reserves_square_brackets_for_citations():
+    assert "วงเล็บเหลี่ยม" in BASE_SYSTEM_PROMPT
+    assert "[S-NONE]" in BASE_SYSTEM_PROMPT  # named as a thing not to write
+
+
+def test_no_context_note_forbids_any_marker():
+    """With nothing retrieved there is no S-number to cite, and the base rule 1
+    still says "ใส่หมายเลขกำกับ" - the note must cancel it explicitly, as the
+    use_rag=False branch already did."""
+    assert "ห้ามใส่ [S1]" in NO_CONTEXT_NOTE
+    prompt = build_system_prompt(passages=[], use_rag=True)
+    assert NO_CONTEXT_NOTE.strip() in prompt
+
+
+def test_food_tool_attribution_is_prose_not_a_bracket_label():
+    assert "ไม่ใช่ป้ายในวงเล็บเหลี่ยม" in BASE_SYSTEM_PROMPT

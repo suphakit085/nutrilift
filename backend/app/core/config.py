@@ -102,6 +102,15 @@ class Settings(BaseSettings):
     # How far below the best-matching chunk a sibling chunk may score and
     # still be included. Only applies once the domain gate above has passed.
     retrieval_relative_window: float = 0.10
+    # Used by chat.is_clearly_out_of_scope together with the keyword rule. The
+    # retrieval gate above cannot do this job on its own any more: measured on
+    # 2026-09-15 with 26 cards, the eval set's off-domain questions scored
+    # 0.520-0.644 and in-domain ones 0.622-0.850, so no single value separates
+    # them and 4 of 7 off-domain questions passed the 0.63 gate. A keyword hit
+    # plus a best dense score under this value refuses without a model call; a
+    # keyword hit on a question retrieval is confident about (>= this) is still
+    # answered. See eval/calibrate_threshold.py --verbose for the current spread.
+    retrieval_out_of_scope_score: float = 0.66
     # Fuse dense ranking with BM25 over the same candidates. Turned on after
     # hit@k fell to 0.833 at 12 cards; see services/bm25.py for the numbers.
     retrieval_hybrid: bool = True

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
@@ -167,8 +167,14 @@ class ConversationDetail(ConversationOut):
 
 
 class ChatRequest(BaseModel):
+    """``use_rag`` used to be a field here (default True). Nothing in the UI
+    ever sent False, and the evaluation harness drives ``collect_answer``
+    directly, so the only thing the field did was let any client turn off
+    retrieval, citations and the out-of-scope refusal (chat.py gates that on
+    use_rag) by flipping one JSON key. Removed 2026-09-15; an old client that
+    still sends it is ignored (pydantic's default is extra="ignore")."""
+
     message: str = Field(min_length=1, max_length=4000)
-    use_rag: bool = True
 
 
 # --- food log -------------------------------------------------------------
@@ -190,11 +196,26 @@ class FoodSearchResult(BaseModel):
     fiber_g: float | None
 
 
+#: A diary entry may be dated at most this far past the server's UTC date.
+#: Thailand is UTC+7, so a user logging breakfast at 01:00 local time is
+#: already on "tomorrow" by the server clock; one day of slack covers every
+#: timezone without letting someone pre-fill next week.
+FOOD_LOG_MAX_DAYS_AHEAD = 1
+
+
 class FoodLogEntryIn(BaseModel):
     food_id: uuid.UUID
     quantity_servings: float = Field(default=1.0, gt=0, le=50)
     meal_type: Literal["breakfast", "lunch", "dinner", "snack"]
     logged_date: date
+
+    @field_validator("logged_date")
+    @classmethod
+    def _not_in_the_future(cls, value: date) -> date:
+        limit = datetime.now(UTC).date() + timedelta(days=FOOD_LOG_MAX_DAYS_AHEAD)
+        if value > limit:
+            raise ValueError("บันทึกล่วงหน้าได้ไม่เกิน 1 วัน")
+        return value
 
 
 class FoodLogEntryUpdate(BaseModel):

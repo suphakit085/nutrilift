@@ -398,7 +398,6 @@ export function streamChat(
   conversationId: string,
   message: string,
   handlers: ChatStreamHandlers,
-  useRag = true,
 ): () => void {
   const controller = new AbortController();
   const path = `/conversations/${conversationId}/chat`;
@@ -415,7 +414,7 @@ export function streamChat(
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ message, use_rag: useRag }),
+          body: JSON.stringify({ message }),
         },
       );
 

@@ -206,7 +206,9 @@ def chat(
             user_message=payload.message,
             profile=profile,
             history=history,
-            use_rag=payload.use_rag,
+            # Always on for the web app; the no-RAG arm exists only inside
+            # eval/run_eval.py, which calls collect_answer() directly.
+            use_rag=True,
             is_first_message=is_first_message,
         )
     )

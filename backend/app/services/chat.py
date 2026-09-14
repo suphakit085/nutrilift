@@ -324,12 +324,40 @@ def is_clearly_out_of_scope(guard: guardrails.GuardResult, passages: list) -> bo
     evaluation run and answered in full in the next. Safety behaviour that
     varies between runs cannot be reported as a property of the system.
 
-    Requiring *both* the keyword rule and an empty retrieval keeps this precise.
-    A nutrition question that merely trips a keyword still retrieves context and
-    is answered normally; only a question that is off-domain by both measures is
-    refused outright.
+    Requiring *both* the keyword rule and weak retrieval keeps this precise. A
+    nutrition question that merely trips a keyword still retrieves confident
+    context and is answered normally; only a question that is off-domain by
+    both measures is refused outright.
+
+    "Weak retrieval" used to mean *empty* retrieval. That stopped working as the
+    knowledge base grew: with 26 cards, "วันนี้อากาศเป็นยังไงบ้าง เดี๋ยวจะไปเล่นเวท"
+    still pulls the hydration card above the 0.63 gate, so the empty-retrieval
+    test could never fire for it (4 of the eval set's 7 off-domain questions
+    were in that position on 2026-09-15). The best dense score is now compared
+    with ``settings.retrieval_out_of_scope_score`` instead; the retrieval gate
+    keeps its own, lower, threshold because it answers a different question.
     """
-    return guardrails.Flag.OUT_OF_SCOPE in guard.flags and not passages
+    if guardrails.Flag.OUT_OF_SCOPE not in guard.flags:
+        return False
+    if not passages:
+        return True
+    best = _best_score(passages)
+    return best is not None and best < settings.retrieval_out_of_scope_score
+
+
+def _best_score(passages: list) -> float | None:
+    """Highest dense score among retrieved passages (objects or dicts).
+
+    ``None`` when no passage carries a score - callers treat that as confident
+    context, so a caller that only knows *whether* something was retrieved
+    keeps the pre-2026-09-15 behaviour.
+    """
+    scores = []
+    for p in passages:
+        value = p.get("score") if isinstance(p, dict) else getattr(p, "score", None)
+        if value is not None:
+            scores.append(float(value))
+    return max(scores) if scores else None
 
 
 def _profile_summary_th(profile: ProfileInput | None) -> str | None:

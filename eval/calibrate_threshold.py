@@ -112,7 +112,13 @@ def main() -> int:
 
     print("ผลของแต่ละ threshold:")
     print(f"  {'threshold':>9}  {'เก็บที่ตรงประเด็น':>18}  {'ปล่อยนอกเรื่องผ่าน':>20}")
-    candidates = sorted({round(v, 2) for v in [0.20, 0.25, 0.28, 0.30, 0.32, 0.35, 0.40]})
+    # Gemini-embedding-001 similarities sit far above the OpenAI-era range this
+    # list used to cover (0.20-0.40); with those candidates the current value
+    # never even appeared in the table.
+    candidates = sorted(
+        {round(v, 2) for v in [0.55, 0.58, 0.60, 0.62, 0.63, 0.64, 0.65, 0.66, 0.68, 0.70]}
+        | {round(settings.retrieval_min_score, 2)}
+    )
     for threshold in candidates:
         kept = sum(1 for s, _ in on_scores if s >= threshold)
         leaked = sum(1 for s, _ in off_scores if s >= threshold)

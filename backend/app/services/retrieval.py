@@ -152,15 +152,22 @@ def search(
         return []
 
     if settings.retrieval_hybrid and len(scored) > 1:
-        # Fuse over *all* candidates, not just those inside the dense window.
-        # Applying the window first defeats the purpose: the chunk BM25 is meant
-        # to rescue is usually the one dense ranked just too low to survive it.
-        # Measured on the five questions dense was failing, windowing first
-        # rescued 1 of 5; fusing first rescued 4 of 5, with off-domain queries
-        # still returning nothing.
-        kept = _fuse_with_bm25(query, scored)[:k]
+        # Fuse over *all* candidates first, then window the fused order. Fusing
+        # first matters: the chunk BM25 is meant to rescue is usually the one
+        # dense ranked just too low to make top-k on its own (measured on the
+        # five questions dense was failing: windowing before fusion rescued
+        # 1 of 5, fusing first rescued 4 of 5).
+        #
+        # The window still has to be applied afterwards. Until 2026-09-15 it
+        # was not - this branch took the fused top-k unfiltered - so any
+        # candidate BM25 happened to like reached the model regardless of its
+        # dense score. Over the 150-question eval set that put 164 of 876
+        # passages (19%) below the documented cutoff into the prompt; applying
+        # the cutoff changed hit@k and MRR by nothing.
+        ranked = _fuse_with_bm25(query, scored)
     else:
-        kept = [item for item in scored if item[2] >= cutoff][:k]
+        ranked = scored
+    kept = [item for item in ranked if item[2] >= cutoff][:k]
 
     passages: list[Passage] = []
     for chunk, document, score in kept:

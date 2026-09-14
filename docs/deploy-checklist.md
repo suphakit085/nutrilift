@@ -49,6 +49,9 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
     ไว้เป็น placeholder เท่านั้น ห้ามใช้ค่านี้ใน prod) — สร้างด้วย `openssl rand -hex 32` หรือเทียบเท่า
   - `GEMINI_API_KEY` → ใช้ key จริงเดียวกับที่ใช้รัน eval (อยู่ใน `backend/.env` ปัจจุบัน)
   - `ENVIRONMENT=production` (Render ตั้ง env `RENDER` ให้เองอยู่แล้ว แต่ตั้งไว้ให้ชัด)
+  - `RATE_LIMIT_AUTH_PER_15MIN=60` → **คัดลอกจาก `.env.example` ไม่ใช่จาก `backend/.env` ในเครื่อง**
+    ไฟล์ในเครื่องเคยค้างค่าเก่า 10 อยู่จนถึง 15 ก.ย. 2569 ซึ่งทำให้นักศึกษาคนที่ 11 ที่สมัครจาก
+    Wi-Fi มหาลัย (IP เดียวกัน) โดนบล็อกทันที — ตรวจได้จากข้อความ 429 ตอนสมัคร ต้องบอกว่า "จำกัด 60 ครั้ง"
   - `CORS_ORIGINS` → **ใส่ placeholder ไปก่อน** (เช่น `https://localhost`) เพราะยังไม่รู้ URL ของ Vercel
     จนกว่าจะ deploy frontend เสร็จ (ขั้นตอน 3) — ต้องกลับมาแก้เป็น URL จริงทีหลัง แล้ว redeploy
 - [ ] Deploy แล้วดู log ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
