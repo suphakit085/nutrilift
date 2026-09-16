@@ -5,11 +5,11 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
 
 **อัปเดต 11 ก.ย. 2569** — ตรวจความพร้อมรอบใหม่หลังเพิ่มระบบ PDPA, migration `c93f5a17d284`, ข้อมูลอาหาร
 383 แถว และน้ำหนักหน่วยบริโภคตามประกาศ สธ. ฉบับที่ 445: backend 507 tests, frontend 36 tests, โปรเซส backend
-ใช้แรม ~178 MB เมื่อโหลดตัวตัดคำไทยครบ (วัดบนเครื่อง; free tier ของ Render ให้ 512 MB) — แก้จำนวนแถว
+ใช้แรม ~178 MB เมื่อโหลดตัวตัดคำไทยครบ (วัดบนเครื่อง; Railway Hobby ให้ได้ถึง 8 GB ต่อ service คิดตามที่ใช้จริง — ที่ ~200 MB อยู่ในเครดิต $5) — แก้จำนวนแถว
 ในขั้นที่ 1, smoke test ในหัวข้อ 4 และข้อจำกัดท้ายไฟล์ให้ตรงกับของจริงแล้ว
 
-ต้องมีบัญชี (ฟรี tier พอสำหรับโปรเจกนี้): [Supabase](https://supabase.com), [Render](https://render.com)
-หรือ [Railway](https://railway.app), [Vercel](https://vercel.com) — ขั้นตอนที่ต้องล็อกอิน/คลิกในเว็บ
+ต้องมีบัญชี: [Supabase](https://supabase.com) (ฟรี), [Railway](https://railway.app) (**Hobby $5/เดือน** — เหตุผลด้านล่าง),
+[Vercel](https://vercel.com) (ฟรี) — ขั้นตอนที่ต้องล็อกอิน/คลิกในเว็บ
 ทำเองได้เท่านั้น (ไม่มี API ให้ Claude ทำแทน)
 
 ## 1. Database — Supabase (Postgres + pgvector)
@@ -38,30 +38,48 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
       ต้องมี `GEMINI_API_KEY` ใน env ตอนรันด้วย เพราะขั้นนี้เรียก embedding API (~144 chunks = 3 batch calls, ไม่กินโควตาแชท)
 - [ ] ตรวจว่า `SELECT count(*) FROM chunks` และ `SELECT count(*) FROM foods` บน Supabase ตรงกับที่รันในเครื่อง
 
-## 2. Backend — Render หรือ Railway
+## 2. Backend — Railway (Hobby plan)
 
-- [ ] สร้าง Web Service ใหม่ ชี้ไปที่ repo นี้ path `backend/` ใช้ `backend/Dockerfile` ที่มีอยู่แล้ว
-      (มี `EXPOSE 8000` และอ่าน `${PORT}` จาก env — เข้ากับ Render/Railway ที่ inject `PORT` เองได้เลย
-      ไม่ต้องแก้ Dockerfile)
+**ทำไม Railway Hobby ไม่ใช่ free tier (ตัดสินใจ 17 ก.ย. 2569)** — รอบนี้เป็นการส่งงานจริง ระบบต้องตอบได้ทันที
+ไม่ว่ากรรมการหรือผู้ทดสอบ SUS จะเปิดเวลาไหน ทางเลือกฟรีทุกตัวหลับเมื่อไม่มีคนใช้: Render cold start 30-60 วิ,
+Koyeb 1-5 วิ แต่ CPU แค่ 0.1 vCPU, Cloud Run ฟรีแต่ต้องผูกบัตรและตั้ง min-instances จึงจะไม่หลับ (เริ่มมีค่าใช้จ่าย),
+Fly.io ไม่มีฟรีแล้ว Railway Hobby $5/เดือน (~175 บาท) ไม่หลับ มี $5 usage credit รวมอยู่ ระบบนี้ใช้ RAM ~178 MB
+กับผู้ใช้ 20-30 คน ไม่น่าเกินเครดิต จ่ายเฉพาะเดือนที่ใช้ (ช่วง SUS ถึงวันสอบ ~2-3 เดือน) อยู่ในงบที่แผนวางไว้
+ถ้ายังไม่พร้อมจ่าย เริ่มจาก Trial ($5 ครั้งเดียว ใช้ได้ ~30 วัน ไม่ต้องผูกบัตร) แล้วอัปเกรดเป็น Hobby ก่อนเก็บ SUS
+ได้โดยไม่ต้อง deploy ใหม่ — **อย่าปล่อยให้ตกไปที่ Free plan** ($1/เดือน) เพราะไม่พอรันทั้งเดือน service จะถูกหยุด
+
+- [ ] สมัคร Railway → New Project → **Deploy from GitHub repo** เลือก repo นี้
+- [ ] ใน service ที่สร้าง ตั้ง **Settings → Source → Root Directory = `backend`** (Railway จะเจอ `backend/Dockerfile`
+      และ build ด้วย Docker เอง ไม่ใช้ Nixpacks) Dockerfile มี `EXPOSE 8000` และอ่าน `${PORT}` จาก env
+      ซึ่ง Railway inject ให้เอง ไม่ต้องแก้อะไร
+- [ ] **Settings → Networking → Generate Domain** เพื่อได้ URL public (รูปแบบ `https://xxx.up.railway.app`)
+      ตอนถูกถาม port ให้ใส่ 8000
+- [ ] **Settings → Deploy → Replicas = 1** (ค่าเริ่มต้นคือ 1 อยู่แล้ว ห้ามเพิ่ม — ดูข้อ worker ด้านล่าง)
+- [ ] เปิด **Settings → Deploy → Restart policy = On failure** (ค่าเริ่มต้น) เพื่อให้ `alembic upgrade head` ที่ล้ม
+      ตอน boot ทำให้ service รีสตาร์ตแล้วเห็น error ใน log ไม่ใช่ค้างเงียบ
 - [ ] ตั้ง environment variables ให้ครบตาม `backend/.env.example` **ยกเว้น**:
   - `DATABASE_URL` → connection string จาก Supabase (ขั้นตอน 1)
   - `JWT_SECRET` → **สร้างใหม่เป็น random string จริง** (`.env.example` ใส่ `change-me-to-a-long-random-string`
     ไว้เป็น placeholder เท่านั้น ห้ามใช้ค่านี้ใน prod) — สร้างด้วย `openssl rand -hex 32` หรือเทียบเท่า
   - `GEMINI_API_KEY` → ใช้ key จริงเดียวกับที่ใช้รัน eval (อยู่ใน `backend/.env` ปัจจุบัน)
-  - `ENVIRONMENT=production` (Render ตั้ง env `RENDER` ให้เองอยู่แล้ว แต่ตั้งไว้ให้ชัด)
+  - `ENVIRONMENT=production` (Railway ตั้ง env `RAILWAY_*` ให้เองและโค้ดตรวจจับอยู่แล้ว แต่ตั้งไว้ให้ชัด)
   - `RATE_LIMIT_AUTH_PER_15MIN=60` → **คัดลอกจาก `.env.example` ไม่ใช่จาก `backend/.env` ในเครื่อง**
     ไฟล์ในเครื่องเคยค้างค่าเก่า 10 อยู่จนถึง 15 ก.ย. 2569 ซึ่งทำให้นักศึกษาคนที่ 11 ที่สมัครจาก
     Wi-Fi มหาลัย (IP เดียวกัน) โดนบล็อกทันที — ตรวจได้จากข้อความ 429 ตอนสมัคร ต้องบอกว่า "จำกัด 60 ครั้ง"
   - `CORS_ORIGINS` → **ใส่ placeholder ไปก่อน** (เช่น `https://localhost`) เพราะยังไม่รู้ URL ของ Vercel
-    จนกว่าจะ deploy frontend เสร็จ (ขั้นตอน 3) — ต้องกลับมาแก้เป็น URL จริงทีหลัง แล้ว redeploy
-- [ ] Deploy แล้วดู log ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
-      permission — ถ้ามี กลับไปเปิด extension ผ่าน Supabase dashboard ก่อนแล้ว trigger deploy ใหม่)
-- [ ] ทดสอบ `GET /health` (หรือ endpoint สุขภาพที่มี) ผ่าน URL public ของ Render/Railway
-- [ ] **สำคัญ**: ตั้งจำนวน worker/instance = **1 เท่านั้น** — `docs/architecture.md` หัวข้อ 7 บันทึกไว้ชัดว่า
-      rate limiter เก็บตัวนับใน memory ของโปรเซส ถ้ารันหลาย worker เพดานจริงจะคูณตามจำนวน worker
-      (เพดานที่ตั้งใจไว้คือเพดานค่าใช้จ่ายรวม ไม่ใช่แค่กันสแปม จึงพลาดไม่ได้)
-- [ ] เช็คว่า free tier ของ Render **sleep เมื่อไม่มีการใช้งาน** (cold start ~30-60 วิ) — ถ้าจะเก็บ SUS
-      จากผู้ใช้จริง ควรรู้ล่วงหน้าว่าอาจมีดีเลย์รอบแรก หรือพิจารณาจ่ายเพื่อกันไม่ให้ sleep ช่วงเก็บข้อมูล
+    จนกว่าจะ deploy frontend เสร็จ (ขั้นตอน 3) — ต้องกลับมาแก้เป็น URL จริงทีหลัง Railway จะ redeploy
+    ให้เองเมื่อ env เปลี่ยน
+  - ใส่ env ทีเดียวได้ด้วยปุ่ม **Raw Editor** ในแท็บ Variables (วางเป็นบรรทัด `KEY=value` ทั้งชุด)
+- [ ] Deploy แล้วดู **Deploy Logs** ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
+      permission — ถ้ามี กลับไปเปิด extension ผ่าน Supabase dashboard ก่อนแล้ว Redeploy) และไม่มีบรรทัด
+      `Refusing to start in production with unsafe settings` (แปลว่า JWT_SECRET หรือ GEMINI_API_KEY ยังเป็น placeholder)
+- [ ] ทดสอบ `GET /health` ผ่าน URL public ของ Railway ต้องได้ `{"status":"ok", ...}`
+- [ ] **สำคัญ**: replica = **1 เท่านั้น** และ uvicorn ใน Dockerfile รัน 1 worker อยู่แล้ว — `docs/architecture.md`
+      หัวข้อ 7 บันทึกไว้ชัดว่า rate limiter เก็บตัวนับใน memory ของโปรเซส ถ้ารันหลาย replica เพดานจริงจะคูณ
+      ตามจำนวน (เพดานที่ตั้งใจไว้คือเพดานค่าใช้จ่ายรวม ไม่ใช่แค่กันสแปม จึงพลาดไม่ได้)
+- [ ] ตรวจในแท็บ **Metrics** หลังใช้งานสัก 1 วันว่า memory อยู่ราว 200 MB และ usage ในหน้า billing ยังต่ำกว่า $5
+      credit ที่ Hobby ให้ — ถ้าเกินแปลว่ามีอะไรผิด (เช่น replica > 1) ไม่ใช่ปกติของระบบนี้
+- [ ] ตั้ง **เตือนตัวเองอัปเกรด Trial → Hobby** ก่อนวันที่ 30 ของ trial หรือก่อนเริ่มเก็บ SUS แล้วแต่อะไรถึงก่อน
 
 ## 3. Frontend — Vercel
 
@@ -69,7 +87,7 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
 - [ ] ตั้ง env var `NEXT_PUBLIC_API_BASE` = URL ของ backend จากขั้นตอน 2 (ต้องมี `https://` ไม่มี trailing slash
       — ดูรูปแบบใน `frontend/.env.local.example`)
 - [ ] Deploy แล้วได้ URL Vercel (เช่น `https://xxx.vercel.app`)
-- [ ] **กลับไปที่ backend (ขั้นตอน 2)** แก้ `CORS_ORIGINS` เป็น URL Vercel จริง แล้ว redeploy backend
+- [ ] **กลับไปที่ backend (ขั้นตอน 2)** แก้ `CORS_ORIGINS` ใน Railway Variables เป็น URL Vercel จริง (Railway redeploy ให้เอง)
       (ระบบใช้ Bearer token ผ่าน `Authorization` header เก็บใน `localStorage` ไม่ใช่ cookie จึงไม่มีปัญหา
       SameSite/credentials ข้าม origin แต่ CORS origin ต้องตรงเป๊ะ)
 
@@ -88,8 +106,8 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
       ไม่ใช้ "ข้าวสวย 1 ทัพพี" แล้วเพราะหน่วยทัพพีถูกตัดออกในรอบที่ 7) → ตรวจว่ายังเรียกเครื่องมือ
       ถูกต้องบน production (ไม่ใช่แค่ในเครื่อง — เพิ่งแก้บั๊กนี้ไปเมื่อ 2 ก.ย. บน `baseline-v5`)
 - [ ] ถามคำถามนอกขอบเขต/เสี่ยง (เช่นเรื่องสเตียรอยด์) → ต้องปฏิเสธถูกต้อง
-- [ ] ทดสอบ SSE streaming ผ่าน Vercel → Render จริง (ไม่ใช่ localhost) — เคยมีบั๊ก CRLF frame-splitting
-      ที่บันทึกไว้ในสถาปัตยกรรม ควรตรวจว่า reverse proxy ของ Render/Vercel ไม่ buffer/แก้ line ending
+- [ ] ทดสอบ SSE streaming ผ่าน Vercel → Railway จริง (ไม่ใช่ localhost) — เคยมีบั๊ก CRLF frame-splitting
+      ที่บันทึกไว้ในสถาปัตยกรรม ควรตรวจว่า reverse proxy ของ Railway/Vercel ไม่ buffer/แก้ line ending
       จนพัง SSE parser ฝั่ง frontend อีกรอบ
 - [ ] เปิดจากมือถือ/browser อื่นดูว่า layout ไม่พัง (responsive)
 
