@@ -14,29 +14,36 @@ MUST ทั้ง 8 ข้อทำเสร็จในโค้ดแล้ว
 
 ## 1. Database — Supabase (Postgres + pgvector)
 
-- [ ] สร้างโปรเจกต์ใหม่ใน Supabase (เลือก region ใกล้ผู้ใช้เป้าหมาย เช่น Singapore)
-- [ ] เปิด extension `vector` (Database → Extensions → เปิด `vector`) — schema เดิม assume ว่ามี
+**เสร็จ 18 ก.ย. 2569** — โปรเจกต์ `lyvsvixmbjxrkvevuxoi` region **Singapore (ap-southeast-1)** (สร้างครั้งแรกพลาดเป็น Sydney
+เปลี่ยน region ทีหลังไม่ได้ จึงลบแล้วสร้างใหม่ตอนยังว่าง), Postgres 17.6, pgvector 0.8.2, ต่อผ่าน transaction pooler
+port 6543 · migration ถึง `c93f5a17d284` · ingest จากเครื่อง: 26 documents / 144 chunks (1536 มิติ ไม่มี null) /
+383 foods ตรงกับในเครื่องทุกตัว · round trip จากไทย ~39 ms · รัน `eval/retrieval_audit.py` ชี้ไปที่ Supabase ได้
+hit@6 0.992 / MRR 0.902 และกฎนอกขอบเขต 7/7 เท่ากับในเครื่อง · migration รันจากเครื่องไปแล้ว ตอน Railway boot
+`alembic upgrade head` จะเป็น no-op · connection string เก็บใน `backend/supabase.env` (gitignore)
+
+- [x] สร้างโปรเจกต์ใหม่ใน Supabase (เลือก region ใกล้ผู้ใช้เป้าหมาย เช่น Singapore)
+- [x] เปิด extension `vector` (Database → Extensions → เปิด `vector`) — schema เดิม assume ว่ามี
       อยู่แล้ว (migration แรกสร้าง `CREATE EXTENSION vector` เอง แต่ Supabase อาจต้องเปิดสิทธิ์ก่อน
       ถ้า migration รันไม่ผ่านเพราะ permission ให้เปิดผ่าน dashboard ก่อนแล้วรัน migrate ใหม่)
-- [ ] คัดลอก connection string (แบบ **connection pooling / pgbouncer**, port 6543 ไม่ใช่ 5432 โดยตรง
+- [x] คัดลอก connection string (แบบ **connection pooling / pgbouncer**, port 6543 ไม่ใช่ 5432 โดยตรง
       เพราะ backend จะรันบน serverless/managed host ที่เปิด-ปิด connection บ่อย) มาเป็น `DATABASE_URL`
       รูปแบบ `postgresql+psycopg://...` (ต้องมี `+psycopg` ต่อท้าย `postgresql` ตามที่โค้ดใช้ driver นี้
       อยู่แล้วใน `.env.example`)
-- [ ] ไม่ต้องแก้อะไรเรื่อง prepared statement — pooler port 6543 เป็น **transaction mode** ซึ่งเข้ากันไม่ได้กับ
+- [x] ไม่ต้องแก้อะไรเรื่อง prepared statement — pooler port 6543 เป็น **transaction mode** ซึ่งเข้ากันไม่ได้กับ
       prepared statement ที่ psycopg3 เปิดให้อัตโนมัติหลัง query เดิมรันครบ 5 ครั้ง (อาการคือ error
       `prepared statement "_pg3_0" does not exist` โผล่หลังใช้งานไปสักพัก ไม่ใช่ตอน deploy — เหมือน flake)
       `app/db/session.py` ปิด `prepare_threshold` ไว้แล้ว และ `alembic/env.py` ใช้ค่าเดียวกัน
       (ล็อกไว้ด้วย `tests/test_db_connect_args.py`)
-- [ ] **ยังไม่ต้องรัน migration ที่นี่** — `backend/Dockerfile` รัน `alembic upgrade head` เองตอน boot
+- [x] **ยังไม่ต้องรัน migration ที่นี่** — `backend/Dockerfile` รัน `alembic upgrade head` เองตอน boot
       (บรรทัด `CMD` มี `alembic upgrade head && uvicorn ...`) ต่อเมื่อ deploy backend แล้วเท่านั้น
-- [ ] หลัง backend deploy และ migrate สำเร็จ (ดูขั้นตอน 2) กลับมารัน ingest จากเครื่องตัวเอง ชี้
+- [x] หลัง backend deploy และ migrate สำเร็จ (ดูขั้นตอน 2) กลับมารัน ingest จากเครื่องตัวเอง ชี้
       `DATABASE_URL` ไปที่ Supabase ชั่วคราว:
       ```
       cd backend && DATABASE_URL=<supabase-url> .venv/Scripts/python.exe -m ingest
       ```
       (ตรวจว่า `knowledge/cards/*.md` และ `knowledge/foods.csv` ครบก่อนรัน — ปัจจุบัน 26 การ์ด, 383 แถวอาหาร)
       ต้องมี `GEMINI_API_KEY` ใน env ตอนรันด้วย เพราะขั้นนี้เรียก embedding API (~144 chunks = 3 batch calls, ไม่กินโควตาแชท)
-- [ ] ตรวจว่า `SELECT count(*) FROM chunks` และ `SELECT count(*) FROM foods` บน Supabase ตรงกับที่รันในเครื่อง
+- [x] ตรวจว่า `SELECT count(*) FROM chunks` และ `SELECT count(*) FROM foods` บน Supabase ตรงกับที่รันในเครื่อง
 
 ## 2. Backend — Railway (Hobby plan)
 
