@@ -47,3 +47,6 @@ design/*.html
 Thumbs.db
 .idea/
 .vscode/
+
+# SUS answers from real participants (open-ended text) - keep local
+eval/sus/responses*.csv
