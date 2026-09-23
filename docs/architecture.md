@@ -4,6 +4,10 @@
 
 ---
 
+**ระบบที่ deploy จริง (24 ก.ย. 2569)** — เว็บ `https://nutrilift-azure.vercel.app` (Vercel) · API
+`https://nutrilift-production-8288.up.railway.app` (Railway, Singapore) · ฐานข้อมูล Supabase Postgres 17 + pgvector
+(Singapore) · ขั้นตอนและผลตรวจทั้งหมดอยู่ใน `docs/deploy-checklist.md`
+
 ## 1. ภาพรวมระบบ
 
 ```

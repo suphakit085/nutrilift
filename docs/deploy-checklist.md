@@ -47,6 +47,8 @@ hit@6 0.992 / MRR 0.902 และกฎนอกขอบเขต 7/7 เท่
 
 ## 2. Backend — Railway (Hobby plan)
 
+**ขึ้นแล้ว 23 ก.ย. 2569** — `https://nutrilift-production-8288.up.railway.app` region Singapore, 1 replica
+
 **ทำไม Railway Hobby ไม่ใช่ free tier (ตัดสินใจ 17 ก.ย. 2569)** — รอบนี้เป็นการส่งงานจริง ระบบต้องตอบได้ทันที
 ไม่ว่ากรรมการหรือผู้ทดสอบ SUS จะเปิดเวลาไหน ทางเลือกฟรีทุกตัวหลับเมื่อไม่มีคนใช้: Render cold start 30-60 วิ,
 Koyeb 1-5 วิ แต่ CPU แค่ 0.1 vCPU, Cloud Run ฟรีแต่ต้องผูกบัตรและตั้ง min-instances จึงจะไม่หลับ (เริ่มมีค่าใช้จ่าย),
@@ -55,16 +57,16 @@ Fly.io ไม่มีฟรีแล้ว Railway Hobby $5/เดือน (~1
 ถ้ายังไม่พร้อมจ่าย เริ่มจาก Trial ($5 ครั้งเดียว ใช้ได้ ~30 วัน ไม่ต้องผูกบัตร) แล้วอัปเกรดเป็น Hobby ก่อนเก็บ SUS
 ได้โดยไม่ต้อง deploy ใหม่ — **อย่าปล่อยให้ตกไปที่ Free plan** ($1/เดือน) เพราะไม่พอรันทั้งเดือน service จะถูกหยุด
 
-- [ ] สมัคร Railway → New Project → **Deploy from GitHub repo** เลือก repo นี้
-- [ ] ใน service ที่สร้าง ตั้ง **Settings → Source → Root Directory = `backend`** (Railway จะเจอ `backend/Dockerfile`
+- [x] สมัคร Railway → New Project → **Deploy from GitHub repo** เลือก repo นี้
+- [x] ใน service ที่สร้าง ตั้ง **Settings → Source → Root Directory = `backend`** (Railway จะเจอ `backend/Dockerfile`
       และ build ด้วย Docker เอง ไม่ใช้ Nixpacks) Dockerfile มี `EXPOSE 8000` และอ่าน `${PORT}` จาก env
       ซึ่ง Railway inject ให้เอง ไม่ต้องแก้อะไร
-- [ ] **Settings → Networking → Generate Domain** เพื่อได้ URL public (รูปแบบ `https://xxx.up.railway.app`)
+- [x] **Settings → Networking → Generate Domain** เพื่อได้ URL public (รูปแบบ `https://xxx.up.railway.app`)
       ตอนถูกถาม port ให้ใส่ 8000
-- [ ] **Settings → Deploy → Replicas = 1** (ค่าเริ่มต้นคือ 1 อยู่แล้ว ห้ามเพิ่ม — ดูข้อ worker ด้านล่าง)
-- [ ] เปิด **Settings → Deploy → Restart policy = On failure** (ค่าเริ่มต้น) เพื่อให้ `alembic upgrade head` ที่ล้ม
+- [x] **Settings → Deploy → Replicas = 1** (ค่าเริ่มต้นคือ 1 อยู่แล้ว ห้ามเพิ่ม — ดูข้อ worker ด้านล่าง)
+- [x] เปิด **Settings → Deploy → Restart policy = On failure** (ค่าเริ่มต้น) เพื่อให้ `alembic upgrade head` ที่ล้ม
       ตอน boot ทำให้ service รีสตาร์ตแล้วเห็น error ใน log ไม่ใช่ค้างเงียบ
-- [ ] ตั้ง environment variables ให้ครบตาม `backend/.env.example` **ยกเว้น**:
+- [x] ตั้ง environment variables ให้ครบตาม `backend/.env.example` **ยกเว้น**:
   - `DATABASE_URL` → connection string จาก Supabase (ขั้นตอน 1)
   - `JWT_SECRET` → **สร้างใหม่เป็น random string จริง** (`.env.example` ใส่ `change-me-to-a-long-random-string`
     ไว้เป็น placeholder เท่านั้น ห้ามใช้ค่านี้ใน prod) — สร้างด้วย `openssl rand -hex 32` หรือเทียบเท่า
@@ -84,11 +86,11 @@ Fly.io ไม่มีฟรีแล้ว Railway Hobby $5/เดือน (~1
       ปฏิเสธด้วยกฎ 5.7 → 0.8 วินาที, event แรกของแชต 5 → 0.5 วินาที) ให้อยู่ที่เดียวกับ Supabase — ค่าเริ่มต้นเป็น US
       วัดจริงบนค่าเริ่มต้น: `/foods/search` ที่เป็น query เดียว 1.4 วินาที (ในเครื่องที่ต่อ Supabase ตรง ~0.1 วินาที)
       และทุกเทิร์นแชตเสียราว 5 วินาทีก่อน event แรก เพราะทุก query ข้ามแปซิฟิก
-- [ ] Deploy แล้วดู **Deploy Logs** ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
+- [x] Deploy แล้วดู **Deploy Logs** ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
       permission — ถ้ามี กลับไปเปิด extension ผ่าน Supabase dashboard ก่อนแล้ว Redeploy) และไม่มีบรรทัด
       `Refusing to start in production with unsafe settings` (แปลว่า JWT_SECRET หรือ GEMINI_API_KEY ยังเป็น placeholder)
-- [ ] ทดสอบ `GET /health` ผ่าน URL public ของ Railway ต้องได้ `{"status":"ok", ...}`
-- [ ] **สำคัญ**: replica = **1 เท่านั้น** และ uvicorn ใน Dockerfile รัน 1 worker อยู่แล้ว — `docs/architecture.md`
+- [x] ทดสอบ `GET /health` ผ่าน URL public ของ Railway ต้องได้ `{"status":"ok", ...}`
+- [x] **สำคัญ**: replica = **1 เท่านั้น** และ uvicorn ใน Dockerfile รัน 1 worker อยู่แล้ว — `docs/architecture.md`
       หัวข้อ 7 บันทึกไว้ชัดว่า rate limiter เก็บตัวนับใน memory ของโปรเซส ถ้ารันหลาย replica เพดานจริงจะคูณ
       ตามจำนวน (เพดานที่ตั้งใจไว้คือเพดานค่าใช้จ่ายรวม ไม่ใช่แค่กันสแปม จึงพลาดไม่ได้)
 - [ ] ตรวจในแท็บ **Metrics** หลังใช้งานสัก 1 วันว่า memory อยู่ราว 200 MB และ usage ในหน้า billing ยังต่ำกว่า $5
@@ -97,30 +99,39 @@ Fly.io ไม่มีฟรีแล้ว Railway Hobby $5/เดือน (~1
 
 ## 3. Frontend — Vercel
 
-- [ ] Import repo เข้า Vercel, ตั้ง root directory เป็น `frontend/`
-- [ ] ตั้ง env var `NEXT_PUBLIC_API_BASE` = URL ของ backend จากขั้นตอน 2 (ต้องมี `https://` ไม่มี trailing slash
+**ขึ้นแล้ว 24 ก.ย. 2569** — `https://nutrilift-azure.vercel.app` ทั้ง 6 หน้าตอบ 200, bundle ชี้ Railway ไม่มี localhost ค้าง
+
+- [x] Import repo เข้า Vercel, ตั้ง root directory เป็น `frontend/`
+- [x] ตั้ง env var `NEXT_PUBLIC_API_BASE` = URL ของ backend จากขั้นตอน 2 (ต้องมี `https://` ไม่มี trailing slash
       — ดูรูปแบบใน `frontend/.env.local.example`)
-- [ ] Deploy แล้วได้ URL Vercel (เช่น `https://xxx.vercel.app`)
-- [ ] **กลับไปที่ backend (ขั้นตอน 2)** แก้ `CORS_ORIGINS` ใน Railway Variables เป็น URL Vercel จริง (Railway redeploy ให้เอง)
+- [x] Deploy แล้วได้ URL Vercel (เช่น `https://xxx.vercel.app`)
+- [x] **กลับไปที่ backend (ขั้นตอน 2)** แก้ `CORS_ORIGINS` ใน Railway Variables เป็น URL Vercel จริง (Railway redeploy ให้เอง)
       (ระบบใช้ Bearer token ผ่าน `Authorization` header เก็บใน `localStorage` ไม่ใช่ cookie จึงไม่มีปัญหา
       SameSite/credentials ข้าม origin แต่ CORS origin ต้องตรงเป๊ะ)
 
 ## 4. Smoke test บนของจริง (ตามหัวข้อ 8 ใน `docs/architecture.md`)
 
+**ผลอัตโนมัติ 24 ก.ย. 2569: 14/14 ผ่าน** ยิง HTTPS จริงโดยใส่ `Origin` ของ Vercel ทุก request (เหมือนที่เบราว์เซอร์ส่ง):
+preflight อนุญาต Vercel และยังบล็อก origin อื่น, สมัคร/ล็อกอิน/โปรไฟล์/เป้าหมาย/ไดอารี่ (ข้าวสวย 2 หน่วย = 310 kcal),
+SSE ผ่าน CORS เป็น `text/event-stream` สตรีมทีละชิ้น 12 delta คำแรก 2.3 วินาที คำตอบมี [S1][S2], เทิร์นถูกบันทึกและตั้งชื่อห้อง,
+ตั้ง `consent_version = NULL` ใน Supabase แล้วได้ 403 + `X-Consent-Required` ที่เบราว์เซอร์อ่านได้ (อยู่ใน expose headers)
+และยินยอมใหม่แล้วใช้งานต่อได้ · ก่อนหน้านั้น 12/12 จากชุด backend (lookup_food 557 kcal, ปฏิเสธสเตียรอยด์และอากาศด้วยกฎ)
+· **ที่เหลือต้องใช้ตาคน**: ข้อแรก (หน้าสมัคร 2 ช่องติ๊กและย่อหน้า Gemini) และข้อสุดท้าย (มือถือ)
+
 - [ ] สมัครบัญชีใหม่ผ่านหน้าเว็บจริง — ต้องติ๊กครบ 2 ช่อง (อายุ 18+ และยินยอม PDPA) ปุ่มสมัครถึงจะผ่าน
       และประกาศต้องแสดงย่อหน้า "ข้อมูลที่ส่งออกนอกระบบ" (ส่งไป Google Gemini) ครบ ไม่ถูกพับ → login → กรอกโปรไฟล์
-- [ ] ตรวจบน Supabase ว่าบัญชีที่เพิ่งสมัครมี `consented_at` และ `consent_version = '2026-09-11'`
+- [x] ตรวจบน Supabase ว่าบัญชีที่เพิ่งสมัครมี `consented_at` และ `consent_version = '2026-09-11'`
       (`SELECT email, consented_at, consent_version FROM users;`)
-- [ ] ตรวจการเด้งไปหน้ายินยอมข้าม origin จริง: ใน Supabase ตั้ง `consent_version = NULL` ให้บัญชีทดสอบ แล้วเปิด
+- [x] ตรวจการเด้งไปหน้ายินยอมข้าม origin จริง: ใน Supabase ตั้ง `consent_version = NULL` ให้บัญชีทดสอบ แล้วเปิด
       `/chat` บน Vercel → ต้องเด้งไป `/consent` ถ้าไม่เด้งแปลว่า `CORS_ORIGINS` ไม่ตรง URL Vercel
       เบราว์เซอร์จึงซ่อน header `X-Consent-Required` (ในเครื่องทดสอบผ่านแล้ว แต่เป็นคนละ origin กับของจริง)
-- [ ] ถามคำถามที่ควรใช้ RAG (เช่น "ครีเอทีนกินยังไง") → ได้คำตอบ streaming พร้อม `[S1]` citations และแผง
+- [x] ถามคำถามที่ควรใช้ RAG (เช่น "ครีเอทีนกินยังไง") → ได้คำตอบ streaming พร้อม `[S1]` citations และแผง
       แหล่งอ้างอิงแสดงถูก
-- [ ] ถามคำถามที่ควรเรียก `lookup_food` (เช่น "ราดหน้าหมู 1 จานให้พลังงานเท่าไหร่" — ค่าในตาราง 1 จาน 320 ก. = 358 kcal;
+- [x] ถามคำถามที่ควรเรียก `lookup_food` (เช่น "ราดหน้าหมู 1 จานให้พลังงานเท่าไหร่" — ค่าในตาราง 1 จาน 320 ก. = 358 kcal;
       ไม่ใช้ "ข้าวสวย 1 ทัพพี" แล้วเพราะหน่วยทัพพีถูกตัดออกในรอบที่ 7) → ตรวจว่ายังเรียกเครื่องมือ
       ถูกต้องบน production (ไม่ใช่แค่ในเครื่อง — เพิ่งแก้บั๊กนี้ไปเมื่อ 2 ก.ย. บน `baseline-v5`)
-- [ ] ถามคำถามนอกขอบเขต/เสี่ยง (เช่นเรื่องสเตียรอยด์) → ต้องปฏิเสธถูกต้อง
-- [ ] ทดสอบ SSE streaming ผ่าน Vercel → Railway จริง (ไม่ใช่ localhost) — เคยมีบั๊ก CRLF frame-splitting
+- [x] ถามคำถามนอกขอบเขต/เสี่ยง (เช่นเรื่องสเตียรอยด์) → ต้องปฏิเสธถูกต้อง
+- [x] ทดสอบ SSE streaming ผ่าน Vercel → Railway จริง (ไม่ใช่ localhost) — เคยมีบั๊ก CRLF frame-splitting
       ที่บันทึกไว้ในสถาปัตยกรรม ควรตรวจว่า reverse proxy ของ Railway/Vercel ไม่ buffer/แก้ line ending
       จนพัง SSE parser ฝั่ง frontend อีกรอบ
 - [ ] เปิดจากมือถือ/browser อื่นดูว่า layout ไม่พัง (responsive)
