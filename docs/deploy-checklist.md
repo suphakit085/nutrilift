@@ -77,6 +77,13 @@ Fly.io ไม่มีฟรีแล้ว Railway Hobby $5/เดือน (~1
     จนกว่าจะ deploy frontend เสร็จ (ขั้นตอน 3) — ต้องกลับมาแก้เป็น URL จริงทีหลัง Railway จะ redeploy
     ให้เองเมื่อ env เปลี่ยน
   - ใส่ env ทีเดียวได้ด้วยปุ่ม **Raw Editor** ในแท็บ Variables (วางเป็นบรรทัด `KEY=value` ทั้งชุด)
+- [x] **ต้องตั้ง Variable `PORT=8000` เอง** (พบจริง 23 ก.ย. 2569) — Railway inject `PORT` ให้คอนเทนเนอร์เป็นค่าของมันเอง
+      uvicorn จึงฟังคนละ port กับที่โดเมนชี้ (8000) อาการคือ `502 Application failed to respond` ทั้งที่ deployment
+      เป็นสีเขียว ตั้ง `PORT=8000` แล้วหายทันที (ก่อน deploy เสร็จจะได้ `404 Application not found` ซึ่งเป็นอีกอาการ)
+- [x] **Settings → Deploy → Region เลือก Southeast Asia (Singapore)** (ย้ายแล้ว 23 ก.ย.: ค้นอาหาร 1.4 → 0.07 วินาที,
+      ปฏิเสธด้วยกฎ 5.7 → 0.8 วินาที, event แรกของแชต 5 → 0.5 วินาที) ให้อยู่ที่เดียวกับ Supabase — ค่าเริ่มต้นเป็น US
+      วัดจริงบนค่าเริ่มต้น: `/foods/search` ที่เป็น query เดียว 1.4 วินาที (ในเครื่องที่ต่อ Supabase ตรง ~0.1 วินาที)
+      และทุกเทิร์นแชตเสียราว 5 วินาทีก่อน event แรก เพราะทุก query ข้ามแปซิฟิก
 - [ ] Deploy แล้วดู **Deploy Logs** ว่า `alembic upgrade head` ผ่าน (ไม่มี error เรื่อง `CREATE EXTENSION vector`
       permission — ถ้ามี กลับไปเปิด extension ผ่าน Supabase dashboard ก่อนแล้ว Redeploy) และไม่มีบรรทัด
       `Refusing to start in production with unsafe settings` (แปลว่า JWT_SECRET หรือ GEMINI_API_KEY ยังเป็น placeholder)
