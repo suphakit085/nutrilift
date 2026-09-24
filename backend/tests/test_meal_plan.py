@@ -262,3 +262,70 @@ def test_vegan_shortfall_is_reported_rather_than_hidden(real_foods):
     assert plan["within_tolerance"] is False
     assert plan["deviation_pct"]["protein_g"] < 0
     assert plan["warnings"]
+
+
+# --- menus people actually eat (production_review_2026-09-24.md, B6) ---------
+# Before: every profile got tuna in mineral water + cassava + sapodilla + 25 g
+# of unsalted butter for breakfast, 300 g egg white, duck-egg yolk, and portions
+# printed as "0.25 x 100 กรัม" (with a multiplication sign).
+
+
+from app.services.meal_plan import EVERYDAY_FOODS, MEAL_PREFERENCES, portion_text  # noqa: E402
+
+
+def test_every_everyday_food_is_a_real_row(real_foods):
+    names = {r["name_th"] for r in real_foods}
+    listed = [n for names_ in EVERYDAY_FOODS.values() for n in names_]
+    listed += [n for names_ in MEAL_PREFERENCES.values() for n in names_]
+    assert [n for n in listed if n not in names] == []
+
+
+def _plan_for(real_foods, sex="male", goal="cut", restrictions=(), variant=0):
+    male = sex == "male"
+    p = ProfileInput(sex=sex, birth_year=1998, birth_month=1, height_cm=175 if male else 160,
+                     weight_kg=75 if male else 55, activity_level="moderate", goal=goal)
+    t = calc_nutrition_targets(p)
+    macros = {k: t["macros"][k] for k in ("protein_g", "carb_g", "fat_g")}
+    targets = {"kcal": t["energy_target_kcal"], **macros}
+    return build_day_plan(real_foods, targets, list(restrictions), variant=variant)
+
+
+@pytest.mark.parametrize("goal", ["cut", "bulk", "maintain"])
+@pytest.mark.parametrize("sex", ["male", "female"])
+def test_unrestricted_menus_use_everyday_foods_and_hit_target(real_foods, sex, goal):
+    plan = _plan_for(real_foods, sex, goal)
+    assert plan["within_tolerance"], plan["deviation_pct"]
+    everyday = {n for names in EVERYDAY_FOODS.values() for n in names}
+    everyday |= {n for names in MEAL_PREFERENCES.values() for n in names}
+    served = [i["name_th"] for m in plan["meals"] for i in m["items"]]
+    assert all(n in everyday for n in served), served
+    for odd in ("เนยสด", "ไข่แดง", "มันสำปะหลัง", "ละมุด"):
+        assert not any(odd in n for n in served), served
+
+
+def test_breakfast_is_bread_and_egg_and_lunch_is_rice(real_foods):
+    plan = _plan_for(real_foods)
+    meals = {m["key"]: [i["name_th"] for i in m["items"]] for m in plan["meals"]}
+    assert "ขนมปังโฮลวีท" in meals["breakfast"] and "ไข่ไก่ต้ม" in meals["breakfast"]
+    assert "ข้าวสวย" in meals["lunch"]
+    assert "เวย์โปรตีน (ผงชงดื่ม)" in meals["snack"]
+
+
+@pytest.mark.parametrize("variant", [0, 1, 2])
+def test_eggs_and_scoops_come_whole(real_foods, variant):
+    plan = _plan_for(real_foods, "female", "cut", variant=variant)
+    for meal in plan["meals"]:
+        for item in meal["items"]:
+            if "ฟอง" in item["portion_desc_th"] or "สกู๊ป" in item["portion_desc_th"]:
+                assert item["portion"] == int(item["portion"]) and item["portion"] >= 1, item
+
+
+def test_portion_text_uses_grams_or_whole_units():
+    per_100g = {"serving_desc": "100 กรัม", "serving_g": 100}
+    assert portion_text(0.5, per_100g) == "50 กรัม"
+    assert portion_text(1.25, per_100g) == "125 กรัม"
+    egg = {"serving_desc": "1 ฟอง (46 กรัม)", "serving_g": 46}
+    assert portion_text(2, egg) == "2 ฟอง (รวม 92 กรัม)"
+    rice = {"serving_desc": "1 หน่วยบริโภค (120 ก.)", "serving_g": 120}
+    assert portion_text(1.5, rice) == "1.5 หน่วยบริโภค (รวม 180 กรัม)"
+    assert chr(0xD7) not in portion_text(0.25, per_100g)  # the multiplication sign

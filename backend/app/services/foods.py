@@ -6,6 +6,8 @@ reports whatever this returns, including "not found".
 
 from __future__ import annotations
 
+from typing import Literal
+
 from sqlalchemy import and_, case, desc, func, or_, select
 from sqlalchemy.orm import Session
 
@@ -26,6 +28,14 @@ _ESTIMATE_WARNING = (
     "รายการที่ estimated เป็น true ยังเป็นค่าประมาณ ไม่ได้อ่านจากตารางคุณค่าทางโภชนาการ "
     "ถ้าจะรายงานตัวเลขของรายการนั้น ต้องบอกผู้ใช้ให้ชัดว่าเป็นค่าประมาณที่ยังไม่ได้ยืนยัน "
     "และไม่ควรใช้ในการนับแคลอรี่อย่างจริงจัง"
+)
+
+
+_PARTIAL_WARNING = (
+    "ไม่พบชื่อที่ตรงกับคำค้นทั้งคำ รายการด้านล่างมีคำบางส่วนตรงกันเท่านั้นและอาจเป็นคนละอาหาร "
+    "ใช้ตัวเลขได้เฉพาะเมื่อ name_th บ่งชัดว่าเป็นอาหารเดียวกับที่ผู้ใช้ถาม (เช่น ต่างแค่ลำดับคำ) "
+    "และต้องบอกชื่อรายการตาม name_th ให้ผู้ใช้เห็นเสมอ ถ้าไม่ใช่อาหารเดียวกัน "
+    "ให้บอกว่าไม่มีข้อมูลเมนูนี้ และห้ามใช้ตัวเลขของรายการเหล่านี้แทน"
 )
 
 
@@ -90,16 +100,30 @@ def _name_matches(term: str):
     return or_(Food.name_th.ilike(pattern, escape="\\"), Food.name_en.ilike(pattern, escape="\\"))
 
 
+MatchLevel = Literal["exact", "partial"]
+
+
 def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
+    return search_with_level(db, q, limit)[0]
+
+
+def search_with_level(db: Session, q: str, limit: int) -> tuple[list[Food], MatchLevel]:
     """Matching strategy shared by lookup_food (LLM tool) and search_foods
     (REST /foods/search), three passes, each only if the one before found
     nothing:
 
-    1. the whole query as a substring of the name;
-    2. every word of the query somewhere in the name, in any order
-       ("อกไก่ย่างไม่มีหนัง" -> "อกไก่ไม่มีหนัง, ย่าง");
-    3. any word of the query, ranked by how many of them the name contains,
-       so "อกไก่ย่างสด" still surfaces the grilled breast above plain chicken.
+    1. the whole query as a substring of the name - ``"exact"``;
+    2. every syllable of the query somewhere in the name, in any order
+       ("อกไก่ย่างไม่มีหนัง" -> "อกไก่ไม่มีหนัง, ย่าง") - ``"partial"``;
+    3. *more than half* of the syllables, ranked by how many the name contains,
+       so "อกไก่ย่างสด" still surfaces the grilled breast - ``"partial"``.
+
+    Passes 2 and 3 match syllables, which also sit inside unrelated words, so
+    their results are labelled ``partial`` for the caller to present as "not
+    this name exactly". Until 2026-09-24 pass 3 accepted a single syllable and
+    everything came back as found: "อเมริกาโน่" returned พริกหยวก, "น้ำอัดลม"
+    returned บวบกลม, and the chatbot answered "มันหวาน 100 กรัม" with the 339 kcal
+    of a sweetened condensed-milk row (production_review_2026-09-24.md, B2).
     """
     # The table stores สระอำ composed (ingest rewrites the ASEAN source's
     # นิคหิต+สระอา form); fold the query the same way so "น้ำพริก" typed on any
@@ -113,11 +137,11 @@ def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
         .scalars()
     )
     if rows:
-        return rows
+        return rows, "exact"
 
     terms = query_terms(q)
     if not terms:
-        return []
+        return [], "partial"
     if len(terms) >= 2:
         stmt = (
             select(Food)
@@ -127,16 +151,18 @@ def _search_rows(db: Session, q: str, limit: int) -> list[Food]:
         )
         rows = list(db.execute(stmt).scalars())
         if rows:
-            return rows
+            return rows, "partial"
 
     matched = sum(case((_name_matches(t), 1), else_=0) for t in terms)
+    needed = len(terms) // 2 + 1
     stmt = (
         select(Food)
         .where(or_(*(_name_matches(t) for t in terms)))
+        .where(matched >= needed)
         .order_by(desc(matched), by_shortest_name)
         .limit(limit)
     )
-    return list(db.execute(stmt).scalars())
+    return list(db.execute(stmt).scalars()), "partial"
 
 
 def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
@@ -150,7 +176,7 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
     if not q:
         return {"query": query, "found": False, "results": [], "note": "ไม่ได้ระบุชื่ออาหาร"}
 
-    rows = _search_rows(db, q, limit)
+    rows, level = search_with_level(db, q, limit)
 
     if not rows:
         return {
@@ -165,9 +191,11 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
 
     results = [_row_to_dict(f) for f in rows]
     note = "ค่าต่อ 1 หน่วยเสิร์ฟตามที่ระบุใน serving_desc"
+    if level == "partial":
+        note = _PARTIAL_WARNING + " · " + note
     if any(r["estimated"] for r in results):
         note += " · " + _ESTIMATE_WARNING
-    return {"query": q, "found": True, "results": results, "note": note}
+    return {"query": q, "found": True, "match": level, "results": results, "note": note}
 
 
 def all_foods(db: Session) -> list[dict]:
@@ -181,12 +209,13 @@ def all_foods(db: Session) -> list[dict]:
     return [_row_to_dict(f) for f in rows]
 
 
-def search_foods(db: Session, query: str, limit: int = 20) -> list[Food]:
+def search_foods(db: Session, query: str, limit: int = 20) -> tuple[list[Food], MatchLevel]:
     """Food search for the diary UI. Returns ORM rows (with `id`, needed to
     log an entry) unlike lookup_food's dict payload, which is fed to the LLM
-    as text and deliberately omits it.
+    as text and deliberately omits it, plus the match level so the page can
+    say "not this name exactly" instead of presenting a near-miss as the food.
     """
     q = (query or "").strip()
     if not q:
-        return []
-    return _search_rows(db, q, limit)
+        return [], "exact"
+    return search_with_level(db, q, limit)

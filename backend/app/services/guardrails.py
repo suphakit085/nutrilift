@@ -84,6 +84,10 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         "medication", "medicine", "prescription", "prescribed", "antibiotic",
         "ibuprofen", "paracetamol", "aspirin", "painkiller", "insulin", "metformin",
         "statin", "antidepressant",
+        # named drugs and classes where a supplement question is itself the
+        # risk: anticoagulants interact with fish oil, vitamin K, turmeric
+        "วาร์ฟาริน", "warfarin", "ยาละลายลิ่มเลือด", "ยาต้านการแข็งตัว", "ยาต้านเกล็ดเลือด",
+        "clopidogrel", "แอสไพริน", "ยาซึมเศร้า", "ยาจิตเวช", "anticoagulant", "blood thinner",
         # symptoms - the rule covers อาการป่วย, not only named diseases. "ปวดหัว"
         # is deliberately absent: "ปวดหัวกับการนับแคล" is an idiom, not a symptom.
         "เจ็บหน้าอก", "แน่นหน้าอก", "หน้ามืด", "เวียนหัว", "เวียนศีรษะ", "ท้องเสีย",
@@ -154,8 +158,18 @@ _KCAL_CONTEXT_AFTER = 12
 #: (a picky eater) is not "กินยา" (taking medication), "ตลอด" is not "อด…", and
 #: "หยุดยาว" (a long break) is not "หยุดยา". Each entry is folded the same way
 #: as the patterns.
+#:
+#: "กินยาว" and "หยุดยาว" used to be listed bare, which also erased the start
+#: of every drug whose name begins with ว: "กินยาวาร์ฟารินอยู่ กินน้ำมันปลาได้ไหม"
+#: (an anticoagulant plus fish oil, a real bleeding risk) and "กินยาวันละ 2 เม็ด"
+#: reached the model with no MEDICAL flag, and "หยุดยาวาร์ฟาริน" would have lost
+#: "หยุดยา" the same way (production_review_2026-09-24.md, B3). The idioms are
+#: now spelled out in full instead; "ยาวิตามิน" stays exempt on purpose, because
+#: a vitamin supplement is in scope (tests/test_guardrails_hidden_bugs.py).
 _FALSE_FRIENDS: tuple[str, ...] = (
-    "กินยาก", "กินยาว", "ตลอด", "หยุดยาว", "ตัวยาว",
+    "กินยาก", "ตลอด", "ตัวยาว",
+    "ยาวิตามิน", "กินยาวๆ", "กินยาว ๆ", "กินยาวไป", "กินยาวนาน", "กินยาวได้",
+    "วันหยุดยาว", "ช่วงหยุดยาว", "หยุดยาวๆ", "หยุดยาว ๆ", "หยุดยาวหลาย",
     "ราคาของขึ้น", "ของขึ้นราคา", "ข้าวของขึ้น",
 )
 

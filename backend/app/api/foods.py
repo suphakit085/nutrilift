@@ -20,4 +20,7 @@ def search(
     user: User = Depends(get_consented_user),
     db: Session = DB_SESSION,
 ) -> list:
-    return search_foods(db, q, limit)
+    rows, level = search_foods(db, q, limit)
+    return [
+        FoodSearchResult.model_validate(row).model_copy(update={"match": level}) for row in rows
+    ]

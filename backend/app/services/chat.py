@@ -20,6 +20,7 @@ import time
 from collections.abc import Iterator
 from typing import Any
 
+import httpx
 from google.genai import errors as genai_errors
 from google.genai import types
 from sqlalchemy.orm import Session
@@ -66,6 +67,29 @@ def rate_limit_retry_delay(exc: Exception) -> float | None:
     if any(token in text for token in _PER_DAY_TOKENS):
         return None
     return min(retry_delay_seconds(str(exc)), GENERATE_MAX_DELAY_S)
+
+
+#: Pause before retrying a 503 "model overloaded" - seen live on production
+#: and in eval runs, and it usually clears within seconds.
+OVERLOADED_RETRY_DELAY_S = 3.0
+
+
+def transient_retry(exc: Exception, attempt: int) -> tuple[float, str] | None:
+    """(delay, message for the user) if ``exc`` is worth one more try, else None.
+
+    Covers the three failures seen on the live system that a second attempt
+    fixes: a per-minute 429, a 503 overload, and a stalled connection (the
+    read timeout in llm.get_client). A stall only gets one retry - two more
+    silent 45 s waits would be worse than the "took too long" message.
+    """
+    delay = rate_limit_retry_delay(exc)
+    if delay is not None:
+        return delay, f"โมเดลกำลังคิวแน่น ระบบจะลองใหม่ให้อัตโนมัติใน {delay:.0f} วินาที"
+    if isinstance(exc, genai_errors.ServerError) and getattr(exc, "code", None) in (500, 503):
+        return OVERLOADED_RETRY_DELAY_S, "ผู้ให้บริการโมเดลขัดข้องชั่วคราว ระบบกำลังลองใหม่ให้อัตโนมัติ"
+    if isinstance(exc, httpx.TimeoutException) and attempt == 0:
+        return 0.0, "โมเดลตอบช้ากว่าปกติ ระบบกำลังลองใหม่ให้อัตโนมัติ"
+    return None
 
 #: Raw JSON schema per tool. Passed to Gemini via ``FunctionDeclaration(
 #: parameters_json_schema=...)``, which accepts standard JSON schema directly -
@@ -583,30 +607,26 @@ def stream_chat(
                         if chunk.usage_metadata:
                             usage_meta = chunk.usage_metadata
                     break
-                except genai_errors.ClientError as exc:
-                    delay = rate_limit_retry_delay(exc)
-                    # Only a 429 that hit *before anything was produced* is safe
-                    # to retry: text already on screen or a function call
+                except (genai_errors.APIError, httpx.TimeoutException) as exc:
+                    retry = transient_retry(exc, attempt)
+                    # Only a failure that hit *before anything was produced* is
+                    # safe to retry: text already on screen or a function call
                     # already collected would be emitted twice.
                     if (
-                        delay is None
+                        retry is None
                         or streamed
                         or turn_parts
                         or attempt >= GENERATE_MAX_RETRIES
                     ):
                         raise
+                    delay, notice = retry
                     logger.warning(
-                        "generate_content 429, retrying in %.0fs (%d/%d)",
-                        delay, attempt + 1, GENERATE_MAX_RETRIES,
+                        "generate_content %s, retrying in %.0fs (%d/%d)",
+                        type(exc).__name__, delay, attempt + 1, GENERATE_MAX_RETRIES,
                     )
-                    yield {
-                        "type": "retry",
-                        "message": (
-                            f"โมเดลกำลังคิวแน่น ระบบจะลองใหม่ให้อัตโนมัติใน {delay:.0f} วินาที"
-                        ),
-                        "wait_s": delay,
-                    }
-                    time.sleep(delay)
+                    yield {"type": "retry", "message": notice, "wait_s": delay}
+                    if delay:
+                        time.sleep(delay)
 
             if usage_meta is not None:
                 usage_total["input_tokens"] += usage_meta.prompt_token_count or 0

@@ -18,7 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.db.models import Food
-from app.services.foods import _search_rows, lookup_food, query_terms
+from app.services.foods import _search_rows, lookup_food, query_terms, search_with_level
 
 NAMES = [
     ("ไก่, อก, ดิบ", "Chicken, breast, w/ skin, raw"),
@@ -28,6 +28,12 @@ NAMES = [
     ("ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", "Rice noodles, fried, Thai style, with egg"),
     ("ข้าวสวย", "Cooked jasmine rice"),
     ("น้ำพริกกะปิ", "Shrimp-paste chilli dip"),
+    # rows the old single-syllable pass returned for unrelated queries
+    ("พริกหยวก", "Sweet pepper"),
+    ("บวบกลม", "Sponge gourd"),
+    ("กระชาย", "Fingerroot"),
+    ("นมข้น, แปลงไขมัน, สูตรน้ำมันปาล์มผสมมันเนย, หวาน", "Sweetened condensed milk, filled"),
+    ("ข้าวขาหมู", "Stewed pork leg on rice"),
 ]
 
 
@@ -85,3 +91,34 @@ def test_english_words_in_any_order(db):
 
 def test_nothing_in_common_is_still_not_found(db):
     assert lookup_food(db, "ทุเรียน")["found"] is False
+
+
+# --- one shared syllable is not a match (production_review_2026-09-24, B2) --
+
+
+@pytest.mark.parametrize("query", ["อเมริกาโน่", "น้ำอัดลม", "ชาเขียว", "ชาบู", "ข้าวโอ๊ต", "หมูปิ้ง"])
+def test_a_single_shared_syllable_is_not_found(db, query):
+    assert _search_rows(db, query, 5) == []
+    assert lookup_food(db, query)["found"] is False
+
+
+def test_exact_and_partial_are_labelled(db):
+    assert search_with_level(db, "ผัดไทย", 5)[1] == "exact"
+    assert search_with_level(db, "อกไก่ย่างไม่มีหนัง", 5)[1] == "partial"
+    assert search_with_level(db, "อกไก่ย่างสด", 5)[1] == "partial"
+
+
+def test_partial_results_tell_the_model_to_name_the_row_and_not_substitute(db):
+    """"มันหวาน" still reaches the condensed-milk row through every-syllable
+    matching (มัน is inside น้ำมัน). It must arrive labelled, so the model says
+    which row it is looking at instead of quoting 339 kcal as sweet potato."""
+    out = lookup_food(db, "มันหวาน")
+    assert out["match"] == "partial"
+    assert "ห้ามใช้ตัวเลขของรายการเหล่านี้แทน" in out["note"]
+    assert "name_th" in out["note"]
+
+
+def test_exact_results_carry_no_partial_warning(db):
+    out = lookup_food(db, "ข้าวสวย")
+    assert out["match"] == "exact"
+    assert "บางส่วน" not in out["note"]

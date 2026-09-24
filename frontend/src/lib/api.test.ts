@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { STREAM_CUT_MESSAGE, parseSSEFrames, streamChat } from "./api.ts";
+import { STREAM_CUT_MESSAGE, errorDetail, parseSSEFrames, streamChat } from "./api.ts";
 
 /**
  * A frame in the exact wire format the server produces.
@@ -262,4 +262,36 @@ test("a retry frame reaches onRetry and the stream still finishes", async () => 
 
   assert.deepEqual(notices, [notice]);
   assert.equal(done.text, "ตอบ");
+});
+
+// --- validation errors in Thai (production_review_2026-09-24.md B7) --------
+// Real bodies captured from production on 2026-09-24.
+
+test("a pydantic range error names the field in Thai", () => {
+  const body = { detail: [{ type: "greater_than_equal", loc: ["body", "body_fat_pct"],
+    msg: "Input should be greater than or equal to 3", input: 2, ctx: { ge: 3.0 } }] };
+  assert.equal(errorDetail(body, "x"), "เปอร์เซ็นต์ไขมันต้องไม่น้อยกว่า 3");
+});
+
+test("upper bound and length errors", () => {
+  assert.equal(
+    errorDetail({ detail: [{ type: "less_than_equal", loc: ["body", "height_cm"], ctx: { le: 250 } }] }, "x"),
+    "ส่วนสูงต้องไม่เกิน 250",
+  );
+  assert.equal(
+    errorDetail({ detail: [{ type: "string_too_long", loc: ["body", "message"], ctx: { max_length: 4000 } }] }, "x"),
+    "ข้อความยาวเกิน 4000 ตัวอักษร",
+  );
+});
+
+test("our own Thai validator message is shown without the English prefix", () => {
+  const body = { detail: [{ type: "value_error", loc: ["body", "logged_date"],
+    msg: "Value error, บันทึกล่วงหน้าได้ไม่เกิน 1 วัน" }] };
+  assert.equal(errorDetail(body, "x"), "บันทึกล่วงหน้าได้ไม่เกิน 1 วัน");
+});
+
+test("a string detail passes through and anything else falls back", () => {
+  assert.equal(errorDetail({ detail: "ส่วนสูงต้องอยู่ระหว่าง 120-230 ซม." }, "x"), "ส่วนสูงต้องอยู่ระหว่าง 120-230 ซม.");
+  assert.equal(errorDetail({}, "เกิดข้อผิดพลาด (500)"), "เกิดข้อผิดพลาด (500)");
+  assert.equal(errorDetail(null, "fb"), "fb");
 });

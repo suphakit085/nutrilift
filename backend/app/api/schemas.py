@@ -194,6 +194,9 @@ class FoodSearchResult(BaseModel):
     carb_g: float
     fat_g: float
     fiber_g: float | None
+    #: "partial" = no name contains the query as typed; these rows only share
+    #: some syllables with it and may be a different food (see foods.py).
+    match: Literal["exact", "partial"] = "exact"
 
 
 #: A diary entry may be dated at most this far past the server's UTC date.

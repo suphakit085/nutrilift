@@ -41,9 +41,25 @@ def retry_delay_seconds(message: str) -> float:
     return float(match.group(1)) + 2.0 if match else DEFAULT_RETRY_DELAY_S
 
 
+#: Longest silence tolerated on a Gemini connection. The SDK's default is no
+#: timeout at all, and the chat endpoint's SSE pings every 15 s keep the
+#: browser from ever giving up either, so a stalled model call used to leave
+#: the user on a spinner forever and pin a worker thread for good. Measured on
+#: production 2026-09-24: 2 of ~110 turns stalled past 150 s, while a healthy
+#: first token arrives in 1-3 s and the slowest real one seen was 33 s on a bad
+#: day. httpx applies this per read, so a long answer that keeps streaming is
+#: never cut; only silence is.
+MODEL_READ_TIMEOUT_S = 45
+
+
 @lru_cache
 def get_client() -> genai.Client:
-    return genai.Client(api_key=settings.gemini_api_key)
+    from google.genai import types
+
+    return genai.Client(
+        api_key=settings.gemini_api_key,
+        http_options=types.HttpOptions(timeout=int(MODEL_READ_TIMEOUT_S * 1000)),
+    )
 
 
 def embed_texts(

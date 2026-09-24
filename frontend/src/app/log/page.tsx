@@ -126,20 +126,26 @@ export default function LogPage() {
         >
           ◀
         </button>
+        {/* Capped at today: the API refuses entries more than a day past its
+            own UTC date, and the page used to let you browse to next week and
+            then fail every add with "เกิดข้อผิดพลาด (422)". Local today is
+            always within that limit, even just after midnight in Thailand. */}
         <input
           type="date"
           value={date}
+          max={todayStr()}
           onChange={(e) => {
             // Clearing the picker yields "" - keep the current date rather than
             // requesting `?date=`.
-            if (e.target.value) changeDate(e.target.value);
+            if (e.target.value) changeDate(e.target.value > todayStr() ? todayStr() : e.target.value);
           }}
           className="rounded-sm border border-border bg-surface-sunken px-3.5 py-2 text-base outline-none focus:border-accent focus:bg-surface"
         />
         <button
           onClick={() => changeDate(shiftDate(date, 1))}
+          disabled={date >= todayStr()}
           aria-label="วันถัดไป"
-          className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
+          className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-border disabled:hover:text-foreground"
         >
           ▶
         </button>
@@ -475,6 +481,9 @@ function AddFoodSearch({
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FoodSearchResult[]>([]);
+  // The query the current `results` answer. Lets the picker tell "still
+  // searching" from "searched and found nothing" - before, both were silence.
+  const [searchedFor, setSearchedFor] = useState("");
   const [selected, setSelected] = useState<FoodSearchResult | null>(null);
   const [qty, setQty] = useState("1");
   const [qtyError, setQtyError] = useState("");
@@ -485,12 +494,19 @@ function AddFoodSearch({
     const timer = setTimeout(() => {
       if (q.length === 0) {
         setResults([]);
+        setSearchedFor("");
         return;
       }
       api
         .searchFoods(q)
-        .then(setResults)
-        .catch(() => setResults([]));
+        .then((rows) => {
+          setResults(rows);
+          setSearchedFor(q);
+        })
+        .catch(() => {
+          setResults([]);
+          setSearchedFor(q);
+        });
     }, 300);
     return () => clearTimeout(timer);
   }, [query]);
@@ -531,6 +547,23 @@ function AddFoodSearch({
         placeholder="ค้นหาเมนู เช่น ข้าวมันไก่"
         className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-base outline-none focus:border-accent"
       />
+
+      {!selected && query.trim() && searchedFor === query.trim() && results.length === 0 && (
+        <p className="mt-2 rounded-sm px-2.5 py-2 text-xs text-muted">
+          ไม่พบเมนูนี้ในฐานข้อมูลอาหาร ลองค้นด้วยชื่ออื่นหรือวัตถุดิบหลัก เช่น &ldquo;อกไก่&rdquo;
+          &ldquo;ข้าวผัด&rdquo;
+        </p>
+      )}
+
+      {/* Near-misses are labelled rather than listed as if they were the
+          food: "อเมริกาโน่" used to offer พริกหยวก as the first row
+          (production_review_2026-09-24.md B2). */}
+      {!selected && results.length > 0 && results[0].match === "partial" && (
+        <p className="mt-2 rounded-sm bg-macro-carb-soft px-2.5 py-2 text-xs">
+          ไม่พบชื่อที่ตรงกับ &ldquo;{searchedFor}&rdquo; ทั้งคำ รายการด้านล่างมีคำบางส่วนตรงกันเท่านั้น
+          อาจเป็นคนละอาหาร ตรวจชื่อก่อนเลือก
+        </p>
+      )}
 
       {!selected && results.length > 0 && (
         <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto">

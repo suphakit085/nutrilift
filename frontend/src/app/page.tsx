@@ -5,8 +5,12 @@ import Link from "next/link";
 import { getToken } from "@/lib/api";
 
 /** Every number, citation, food row, and calculated figure below was pulled
- *  from the running system on 8 ก.ย. 2569, not written by hand:
- *   - eval/reports/baseline-v9_summary.md and baseline-v9_wilcoxon.md (n=150)
+ *  from the running system on 8 ก.ย. 2569, not written by hand; the
+ *  evaluation figures were refreshed to the deployed prompt on 24 ก.ย. 2569:
+ *   - eval/reports/baseline-v10_summary.md and baseline-v10_wilcoxon.md (n=150)
+ *   - citation markers: distinct [Sn] per answer across the 150 RAG answers of
+ *     baseline-v10; 1 of 335 (Q124 wrote [S8] with 6 passages) pointed at a
+ *     passage that was not retrieved
  *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (383 rows)
  *   - a real POST /conversations/{id}/chat response for "ช่วง cut ควรกินโปรตีนวันละเท่าไหร่"
  *   - a real GET /profile/targets response for a male/24y/175cm/72kg/bulk profile
@@ -15,16 +19,16 @@ import { getToken } from "@/lib/api";
  *  re-derived from memory. */
 
 const EVIDENCE_ROWS = [
-  { metric: "ความถูกต้อง", withRag: "4.887", withoutRag: "4.693", p: "0.0019" },
-  { metric: "ความครบถ้วน", withRag: "4.900", withoutRag: "4.747", p: "0.0114" },
-  { metric: "อ้างอิงตรงเนื้อหา", withRag: "4.947", withoutRag: "4.700", p: "0.0002" },
+  { metric: "ความถูกต้อง", withRag: "4.900", withoutRag: "4.680", p: "0.0001" },
+  { metric: "ความครบถ้วน", withRag: "4.933", withoutRag: "4.787", p: "0.0014" },
+  { metric: "อ้างอิงตรงเนื้อหา", withRag: "4.960", withoutRag: "4.740", p: "0.0008" },
 ] as const;
 
 const STATS = [
   { value: "26", label: "การ์ดความรู้ที่เขียนเองจากงานวิจัย" },
   { value: "382", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
   { value: "150", label: "คำถามในชุดประเมิน ถามซ้ำสองแบบ" },
-  { value: "0", label: "อ้างแหล่งที่ไม่มีจริง จาก 340 มาร์กเกอร์" },
+  { value: "1", label: "อ้างแหล่งที่ไม่มีจริง จาก 335 มาร์กเกอร์" },
 ] as const;
 
 const REFERENCES = [
@@ -411,7 +415,7 @@ export default function LandingPage() {
               </div>
               <p className="mt-5 text-[13px] leading-[1.7] text-band-soft/60">
                 Wilcoxon signed-rank แบบจับคู่รายข้อ · n = 150 คู่ · มีนัยสำคัญที่ระดับ 0.05 ทั้งสามตัวชี้วัด ·
-                ค้นคืนถูกภายใน 6 อันดับแรก <span className="stat-figure text-band-soft/80">0.976</span>
+                ค้นคืนถูกภายใน 6 อันดับแรก <span className="stat-figure text-band-soft/80">0.992</span>
               </p>
             </div>
           </div>

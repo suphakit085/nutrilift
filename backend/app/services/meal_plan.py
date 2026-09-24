@@ -30,6 +30,7 @@ measure ("ข้าวสวย 3 ทัพพี"), not 1.37 servings.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from app.services.thai_text import normalize_thai
@@ -92,6 +93,9 @@ _ROLE_CATEGORIES: dict[str, frozenset[str]] = {
     "protein": frozenset({
         "เนื้อสัตว์", "ปลาและอาหารทะเล", "ไข่", "ไข่-นม", "นมและผลิตภัณฑ์",
         "ถั่วและเมล็ด", "โปรตีนพืช", "กับข้าว",
+        # whey is the one row here (USDA 173180); a post-training shake is what
+        # this app's users actually drink, and the macro gates below still apply
+        "อาหารเสริม",
     }),
     "carb": frozenset({"ข้าว-แป้ง", "หัวและมันต่าง ๆ"}),
     "fat": frozenset({"ถั่วและเมล็ด", "น้ำมันและไขมัน", "ไข่", "ไข่-นม"}),
@@ -321,22 +325,24 @@ class Meal:
 #: time, which the profile does not record.
 MEAL_TEMPLATE: tuple[Meal, ...] = (
     Meal("breakfast", "มื้อเช้า", (
-        Slot("protein", 0.5, 3.0, 300),
+        Slot("protein", 0.25, 3.0, 300),
         Slot("carb", 0.5, 5.0, 350),
         Slot("fruit", 0.5, 2.0, 300),
-        Slot("fat", 0.25, 2.0, 50),
+        # 110 g = two whole eggs, the breakfast fat of choice now that eggs
+        # are portioned whole (a 50 g cap allowed exactly one)
+        Slot("fat", 0.25, 2.0, 110),
     )),
     Meal("lunch", "มื้อกลางวัน", (
-        Slot("protein", 0.5, 3.0, 300),
+        Slot("protein", 0.25, 3.0, 300),
         Slot("carb", 0.5, 8.0, 500),
         Slot("vegetable", 0.5, 2.0, 250),
-        Slot("fat", 0.25, 2.0, 80),
+        Slot("fat", 0.25, 2.0, 110),
     )),
     Meal("dinner", "มื้อเย็น", (
-        Slot("protein", 0.5, 3.0, 300),
+        Slot("protein", 0.25, 3.0, 300),
         Slot("carb", 0.5, 8.0, 500),
         Slot("vegetable", 0.5, 2.0, 250),
-        Slot("fat", 0.25, 2.0, 80),
+        Slot("fat", 0.25, 2.0, 110),
     )),
     Meal("snack", "มื้อว่าง / หลังฝึก", (
         Slot("protein", 0.5, 2.5, 250),
@@ -370,6 +376,11 @@ class _Item:
         # clamps 1.0 to 0.6, which is not a multiple of PORTION_STEP), and that
         # value then survives to the answer as "0.6 x 100 กรัม".
         self.choices = _grid(self.lo, self.hi)
+        if _is_countable(self.food):
+            # whole eggs and whole scoops, at least one
+            whole = [float(n) for n in range(1, int(self.hi + 1e-9) + 1)]
+            self.choices = whole or [1.0]
+            self.lo, self.hi = self.choices[0], self.choices[-1]
         self.mult = min(self.choices, key=lambda c: abs(c - self.mult))
 
     def macros(self) -> dict[str, float]:
@@ -380,6 +391,11 @@ class _Item:
             "carb_g": float(f["carb_g"]) * self.mult,
             "fat_g": float(f["fat_g"]) * self.mult,
         }
+
+
+def _is_countable(food: dict) -> bool:
+    serving = str(food.get("serving_desc") or "")
+    return serving.strip().startswith("1 ") and any(unit in serving for unit in _COUNTABLE_UNITS)
 
 
 def _totals(items: list[_Item]) -> dict[str, float]:
@@ -451,27 +467,118 @@ def _optimize(items: list[_Item], targets: dict[str, float]) -> None:
 # Public API
 # ---------------------------------------------------------------------------
 
+#: Foods a Thai lifter actually eats, per role, in order of preference. They
+#: are tried before the rest of the table, which is still there as a fallback
+#: (for restrictions that remove most of these). Ranking the whole 383-row
+#: table by macro purity alone put tuna in mineral water, cassava, sapodilla and
+#: 25 g of unsalted butter on the same breakfast plate, 300 g of egg white and
+#: duck-egg yolk in one day, and gave every profile that same set of rows
+#: (production_review_2026-09-24.md B6). Every name below is a row in
+#: knowledge/foods.csv; tests/test_meal_plan.py checks that they still are.
+EVERYDAY_FOODS: dict[str, tuple[str, ...]] = {
+    "protein": (
+        "อกไก่ไม่มีหนัง, ต้ม", "ปลานิล, ต้ม", "หมู, สันใน, ต้ม", "เต้าหู้ขาวแข็ง",
+        "อกไก่ไม่มีหนัง, ย่าง", "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ", "กุ้งต้ม",
+        "เนื้อวัวไม่ติดมัน", "สะโพกไก่ไม่มีหนัง, อบ", "ปลาทู, นึ่ง, ต้ม",
+        "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "ปลากะพงขาว, นึ่ง", "หมู, สับ, ต้ม",
+        "ถั่วเหลือง, เมล็ดแห้ง",
+    ),
+    "carb": ("ข้าวสวย", "ขนมปังโฮลวีท", "ข้าวเจ้า, สุก", "มันฝรั่ง", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
+    "fat": (
+        "ไข่ไก่ต้ม", "ไข่ดาว", "ไข่ไก่, ทั้งฟอง", "ถั่วลิสง, เมล็ดแห้ง",
+        "มะม่วงหิมพานต์, เมล็ดสด", "เมล็ดฟักทอง, พันธุ์ต่างๆ, แกะเปลือก, คั่ว",
+    ),
+    "vegetable": (
+        "บร็อคโคลี่", "ผักกวางตุ้ง", "ผักบุ้งไทย", "กระหล่ำปลี", "แครอท", "ถั่วฝักยาว",
+        "ผักกาดขาว/ ผักกาดขาวใบห่อ", "ปวยเล้ง", "แตงกวา", "มะเขือเทศ",
+    ),
+    "fruit": (
+        "กล้วยหอม", "ฝรั่ง", "มะละกอสุก", "กล้วยน้ำว้าสุก", "แตงโม", "มังคุด",
+    ),
+}
+
+#: Per-meal order that goes in front of ``EVERYDAY_FOODS`` for that meal, so
+#: breakfast gets bread and a boiled egg, lunch and dinner get rice, and the
+#: post-training snack gets a whey shake - rather than whichever row happened
+#: to be next in line.
+MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
+    # The lean staples alone left the day ~20-30% short on fat (there is no
+    # cooking-oil row in the table), so dinner leans on fattier fish and thigh.
+    ("breakfast", "protein"): (
+        "อกไก่ไม่มีหนัง, ต้ม", "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "หมู, สับ, ต้ม",
+    ),
+    ("lunch", "protein"): ("อกไก่ไม่มีหนัง, ย่าง", "ปลานิล, ต้ม", "เนื้อวัวไม่ติดมัน", "กุ้งต้ม"),
+    ("dinner", "protein"): (
+        "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ", "สะโพกไก่ไม่มีหนัง, อบ", "ปลาทู, นึ่ง, ต้ม",
+    ),
+    ("breakfast", "carb"): ("ขนมปังโฮลวีท", "ข้าวสวย"),
+    ("breakfast", "fat"): ("ไข่ไก่ต้ม", "ไข่ดาว"),
+    ("breakfast", "fruit"): ("กล้วยหอม", "มะละกอสุก"),
+    ("lunch", "carb"): ("ข้าวสวย", "ข้าวเจ้า, สุก", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
+    ("lunch", "fat"): ("ถั่วลิสง, เมล็ดแห้ง", "มะม่วงหิมพานต์, เมล็ดสด"),
+    ("dinner", "carb"): ("ข้าวเจ้า, สุก", "ข้าวสวย", "มันฝรั่ง"),
+    ("dinner", "fat"): ("มะม่วงหิมพานต์, เมล็ดสด", "ถั่วลิสง, เมล็ดแห้ง"),
+    ("snack", "protein"): ("เวย์โปรตีน (ผงชงดื่ม)",),
+    ("snack", "carb"): ("มันฝรั่ง", "ขนมปังโฮลวีท"),
+    ("snack", "fruit"): ("กล้วยหอม", "ฝรั่ง"),
+}
+
+#: Serving units that only make sense whole - nobody boils a quarter of an egg
+#: or scoops a quarter of a scoop. Rows served in these units are portioned in
+#: whole numbers, at least one.
+_COUNTABLE_UNITS: tuple[str, ...] = ("ฟอง", "สกู๊ป", "ลูก", "ผล", "ชิ้น", "แผ่น", "ไม้")
+
+
 def _pick(
     pool: list[dict],
     role: str,
     used_names: set[str],
     used_categories: set[str],
     variant: int,
+    meal: str = "",
 ) -> dict | None:
     """Best remaining candidate for a role, rotated by ``variant``.
 
-    Rotation (rather than random choice) is what makes "ขออีกแบบ" reproducible:
-    variant 0 and variant 1 each always give the same menu. A food is never
-    repeated, and a category already used for this role is skipped on the first
-    pass - the food table holds 85 seafood rows against 28 meat rows, so ranking
-    alone would serve four different fish in one day.
+    Everyday foods come first - this meal's ``MEAL_PREFERENCES``, then the
+    role's ``EVERYDAY_FOODS`` - taking the first one not already on the menu.
+    Only when none is left (usually a restriction removed them) does the rest
+    of the table come in, ranked by how cleanly each serves the role. Rotation
+    (rather than random choice) is what makes "ขออีกแบบ" reproducible: variant 0
+    and variant 1 each always give the same menu. Among the fallback rows a
+    category already used for this role is skipped on the first pass - the food
+    table holds 85 seafood rows against 28 meat rows, so ranking alone would
+    serve four different fish in one day.
     """
     ranked = [f for f in pool if role in roles_of(f)]
-    ranked.sort(key=lambda f: (-_role_score(f, role), f["name_th"]))
     if not ranked:
         return None
-    offset = variant % len(ranked)
-    ordered = ranked[offset:] + ranked[:offset]
+    by_name = {normalize_thai(f["name_th"]): f for f in ranked}
+
+    def available(names: tuple[str, ...]) -> list[dict]:
+        return [by_name[normalize_thai(n)] for n in names if normalize_thai(n) in by_name]
+
+    # the meal's own list and the role's list rotate separately, so "ขออีกแบบ"
+    # moves lunch from chicken to fish rather than lunch's fat slot onto eggs
+    meal_first = available(MEAL_PREFERENCES.get((meal, role), ()))
+    general = [f for f in available(EVERYDAY_FOODS.get(role, ())) if f not in meal_first]
+    everyday: list[dict] = []
+    for group in (meal_first, general):
+        if group:
+            offset = variant % len(group)
+            everyday += group[offset:] + group[:offset]
+    for food in everyday:
+        if food["name_th"] not in used_names:
+            return food
+    position = {normalize_thai(f["name_th"]) for f in everyday}
+    rest = sorted(
+        (f for f in ranked if normalize_thai(f["name_th"]) not in position),
+        key=lambda f: (-_role_score(f, role), f["name_th"]),
+    )
+    ordered = []
+    if rest:
+        offset = variant % len(rest)
+        ordered = rest[offset:] + rest[:offset]
+    ordered += everyday
     for food in ordered:
         category = (food.get("category") or "")
         if food["name_th"] not in used_names and category not in used_categories:
@@ -536,7 +643,7 @@ def build_day_plan(
     for meal in MEAL_TEMPLATE:
         for slot in meal.slots:
             seen = used_categories.setdefault(slot.role, set())
-            food = _pick(pool, slot.role, used_names, seen, variant)
+            food = _pick(pool, slot.role, used_names, seen, variant, meal.key)
             if food is None:
                 missing_roles.append(f"{meal.label_th}:{slot.role}")
                 continue
@@ -575,7 +682,7 @@ def build_day_plan(
                     "name_th": i.food["name_th"],
                     "role": i.slot.role,
                     "portion": round(i.mult, 2),
-                    "portion_desc_th": f"{_format_portion(i.mult)} × {i.food['serving_desc']}",
+                    "portion_desc_th": portion_text(i.mult, i.food),
                     "grams": round(i.mult * float(i.food.get("serving_g") or 0), 1),
                     **{k: round(v, 1) for k, v in i.macros().items()},
                     "source": i.food.get("source"),
@@ -643,6 +750,29 @@ def build_day_plan(
 def _format_portion(mult: float) -> str:
     """1.0 -> "1", 1.5 -> "1.5" - avoids "1.0 × 1 ทัพพี" in the Thai output."""
     return str(int(mult)) if abs(mult - round(mult)) < 1e-9 else f"{mult:g}"
+
+
+_GRAM_SERVING_RE = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*(กรัม|ก\.|g)\s*$")
+_UNIT_SERVING_RE = re.compile(r"^\s*1\s+([^(]+?)\s*(\(.*\))?\s*$")
+
+
+def portion_text(mult: float, food: dict) -> str:
+    """A portion a person can measure, in the table's own unit.
+
+    "0.5 × 100 กรัม" and "0.25 × 100 กรัม" were what users read before
+    2026-09-24 (production_review_2026-09-24.md B6). Rows served per 100 g now
+    read as grams ("50 กรัม"); rows served per piece read as pieces with the
+    total weight ("2 ฟอง (รวม 92 กรัม)"). Anything else keeps the old form.
+    """
+    serving = str(food.get("serving_desc") or "").strip()
+    grams = mult * float(food.get("serving_g") or 0)
+    grams_txt = f"{round(grams):g}"
+    if _GRAM_SERVING_RE.match(serving) and grams > 0:
+        return f"{grams_txt} กรัม"
+    unit = _UNIT_SERVING_RE.match(serving)
+    if unit and grams > 0:
+        return f"{_format_portion(mult)} {unit.group(1)} (รวม {grams_txt} กรัม)"
+    return f"{_format_portion(mult)} × {serving}"
 
 
 def summarize_plan_th(plan: dict) -> str:

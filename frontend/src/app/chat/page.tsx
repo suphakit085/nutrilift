@@ -27,6 +27,9 @@ type Bubble = {
 };
 
 
+/** Mirrors ChatRequest.message max_length in backend/app/api/schemas.py. */
+const MAX_MESSAGE_CHARS = 4000;
+
 const SUGGESTIONS = [
   "ควรกินโปรตีนวันละกี่กรัม",
   "ช่วง cut ควรลดแคลอรี่เท่าไหร่",
@@ -114,6 +117,9 @@ export default function ChatPage() {
             role: message.role,
             content: message.content,
             citations: message.citations ?? undefined,
+            // Stored with the row; without this a reopened room lost the
+            // "ดึงข้อมูลอาหาร" / "จัดเมนู" badges the live answer had shown.
+            tools: message.tool_calls?.map((call) => call.name) ?? undefined,
           })),
         );
         const last = [...detail.messages].reverse().find((m) => m.citations?.length);
@@ -125,6 +131,23 @@ export default function ChatPage() {
     },
     [stopStream],
   );
+
+  /** The user gave up on the answer in flight. The server finishes (and saves)
+   *  whatever it was doing; this only frees the screen. */
+  function cancelStream() {
+    stopStream();
+    setBubbles((prev) => {
+      const last = prev[prev.length - 1];
+      if (!last || last.role !== "assistant" || last.content.trim()) return prev;
+      const next = [...prev];
+      next[next.length - 1] = {
+        ...last,
+        content: "(หยุดการตอบแล้ว ส่งคำถามใหม่ได้เลย)",
+        notice: undefined,
+      };
+      return next;
+    });
+  }
 
   async function send(text: string) {
     const message = text.trim();
@@ -372,15 +395,29 @@ export default function ChatPage() {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="พิมพ์คำถามเรื่องอาหารและโภชนาการ…"
+              maxLength={MAX_MESSAGE_CHARS}
               className="min-w-0 flex-1 bg-transparent py-2 outline-none placeholder:text-muted"
             />
-            <button
-              type="submit"
-              disabled={streaming || !input.trim()}
-              className="shrink-0 rounded-sm bg-cta px-6 py-2.5 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98] disabled:opacity-30"
-            >
-              ส่ง
-            </button>
+            {/* While an answer streams the button becomes "หยุด". Before this
+                a stalled model call left the button disabled with no way out
+                but reloading the page (production_review_2026-09-24.md B1). */}
+            {streaming ? (
+              <button
+                type="button"
+                onClick={cancelStream}
+                className="shrink-0 rounded-sm border border-border px-6 py-2.5 font-medium transition hover:border-accent hover:text-accent active:scale-[0.98]"
+              >
+                หยุด
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={!input.trim()}
+                className="shrink-0 rounded-sm bg-cta px-6 py-2.5 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98] disabled:opacity-30"
+              >
+                ส่ง
+              </button>
+            )}
           </div>
           <p className="mt-3 text-center text-xs text-muted">
             ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
@@ -584,16 +621,48 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
         </div>
 
         {bubble.citations && bubble.citations.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5 border-t border-border pt-3">
-            {bubble.citations.map((citation) => (
-              <span
-                key={citation.label}
-                className="rounded-sm bg-surface-sunken px-2.5 py-1 text-[11px] text-muted"
-              >
-                <span className="stat-figure font-medium text-accent">[{citation.label}]</span>{" "}
-                {citation.title}
-              </span>
-            ))}
+          <div className="mt-4 border-t border-border pt-3">
+            <div className="flex flex-wrap gap-1.5">
+              {bubble.citations.map((citation) => (
+                <span
+                  key={citation.label}
+                  className="rounded-sm bg-surface-sunken px-2.5 py-1 text-[11px] text-muted"
+                >
+                  <span className="stat-figure font-medium text-accent">[{citation.label}]</span>{" "}
+                  {citation.title}
+                </span>
+              ))}
+            </div>
+            {/* The sources panel with the actual papers is a desktop sidebar
+                (lg and up). Below that the chips were all a phone user ever
+                saw - no paper, no section - which is most SUS participants
+                (production_review_2026-09-24.md B4). */}
+            <details className="mt-2 lg:hidden">
+              <summary className="cursor-pointer text-xs font-medium text-accent">
+                ดูหัวข้อและงานวิจัยที่อ้างอิง
+              </summary>
+              <ul className="mt-2 space-y-2">
+                {bubble.citations.map((citation) => (
+                  <li
+                    key={citation.label}
+                    className="rounded-sm bg-surface-sunken px-3 py-2.5 text-xs leading-relaxed"
+                  >
+                    <div className="font-medium">
+                      <span className="stat-figure text-accent">[{citation.label}]</span>{" "}
+                      {citation.title}
+                    </div>
+                    {citation.heading && <div className="mt-0.5 text-muted">{citation.heading}</div>}
+                    {citation.source_refs && citation.source_refs.length > 0 && (
+                      <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-[11px] text-muted">
+                        {citation.source_refs.map((reference) => (
+                          <li key={reference}>{reference}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </details>
           </div>
         )}
       </div>

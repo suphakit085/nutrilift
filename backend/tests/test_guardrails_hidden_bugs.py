@@ -8,7 +8,7 @@ turns, one such false positive silenced the next eight questions too.
 
 import pytest
 
-from app.services.guardrails import Flag, check
+from app.services.guardrails import Flag, check, refusal_reply
 from app.services.thai_text import normalize_thai, strip_invisible
 
 # --- invisible characters ------------------------------------------------
@@ -80,12 +80,34 @@ def test_ped_gaps_from_the_review(message: str) -> None:
         "ไข่ทั้งฟองมีคอเลสเตอรอลเท่าไหร่",
         "ช่วงหยุดยาวกินเยอะไป ทำไงดี",
         "คาร์บทำให้อินซูลินขึ้น จริงไหม",
+        "เวย์กินยาว ๆ ได้ไหม มีผลเสียไหม",
+        "ครีเอทีนกินยาวนานได้ไหม",
+        "ทานยาวิตามินรวมทุกวันดีไหม",
     ],
 )
 def test_no_hard_refusal_on_ordinary_questions(message: str) -> None:
     flags = check(message).flags
     assert Flag.PED not in flags
     assert Flag.MEDICAL not in flags
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        # all three reached the model unflagged on production 2026-09-24: the
+        # bare "กินยาว"/"หยุดยาว" false friends erased "กินยา"/"หยุดยา"
+        "กินยาวาร์ฟารินอยู่ กินน้ำมันปลาเสริมได้ไหม",
+        "กินยาวันละ 2 เม็ด ยังเล่นเวทได้ไหม",
+        "หยุดยาวาร์ฟารินได้ไหม จะได้กินน้ำมันปลา",
+        "warfarin + fish oil ok?",
+        "กินวาร์ฟารินอยู่ กินขมิ้นชันได้ไหม",
+        "ทานยาละลายลิ่มเลือดอยู่ กินวิตามินเคได้ไหม",
+    ],
+)
+def test_medication_questions_starting_with_wor_waen_are_refused(message: str) -> None:
+    guard = check(message)
+    assert Flag.MEDICAL in guard.flags
+    assert refusal_reply(guard) is not None
 
 
 @pytest.mark.parametrize(

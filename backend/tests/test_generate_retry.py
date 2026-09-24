@@ -8,6 +8,7 @@ Gemini client and a no-op sleep.
 
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from google.genai import errors as genai_errors
 from google.genai import types
@@ -135,3 +136,57 @@ def test_other_client_errors_are_not_retried(harness):
 def test_rate_limit_retry_delay(exc, expected):
     got = chat.rate_limit_retry_delay(exc)
     assert got == (pytest.approx(expected) if expected is not None else None)
+
+
+# --- stalls and overloads (production_review_2026-09-24.md, B1) --------------
+# 2 of ~110 live turns stalled past 150 s: the SDK had no timeout and SSE pings
+# kept the browser waiting forever. The client now times out on silence and the
+# turn gets one more try, or a Thai "took too long" message.
+
+
+def _overloaded():
+    body = {"error": {"code": 503, "message": "The model is overloaded."}}
+    return genai_errors.ServerError(503, body)
+
+
+def test_client_has_a_read_timeout():
+    from app.services import llm
+
+    llm.get_client.cache_clear()
+    try:
+        client = llm.get_client()
+        assert client._api_client._http_options.timeout == llm.MODEL_READ_TIMEOUT_S * 1000
+    finally:
+        llm.get_client.cache_clear()
+
+
+def test_a_stall_before_output_is_retried_once(harness):
+    events, models, sleeps = harness([httpx.ReadTimeout("read timed out"), [_chunk("ตอบแล้ว")]])
+    assert [e["type"] for e in events] == ["sources", "retry", "delta", "done"]
+    assert "ช้ากว่าปกติ" in events[1]["message"]
+    assert models.calls == 2 and sleeps == []
+
+
+def test_a_second_stall_ends_with_the_took_too_long_message(harness):
+    events, models, _ = harness([httpx.ReadTimeout("read timed out")] * 3)
+    assert [e["type"] for e in events] == ["sources", "retry", "error"]
+    assert models.calls == 2
+    assert "นานเกินไป" in events[-1]["message"]
+
+
+def test_a_stall_mid_answer_is_not_retried(harness):
+    def cut_stream():
+        yield _chunk("ครึ่ง")
+        raise httpx.ReadTimeout("read timed out")
+
+    events, models, _ = harness([cut_stream()])
+    assert [e["type"] for e in events] == ["sources", "delta", "error"]
+    assert models.calls == 1
+
+
+def test_overload_503_is_retried(harness):
+    events, models, sleeps = harness([_overloaded(), [_chunk("ok")]])
+    assert [e["type"] for e in events] == ["sources", "retry", "delta", "done"]
+    assert models.calls == 2
+    assert "ขัดข้องชั่วคราว" in events[1]["message"]
+    assert sleeps == [chat.OVERLOADED_RETRY_DELAY_S]

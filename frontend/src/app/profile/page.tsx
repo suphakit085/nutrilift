@@ -140,6 +140,17 @@ export default function ProfilePage() {
   const inputClass =
     "mt-1.5 w-full rounded-sm border border-border bg-surface-sunken px-3.5 py-2.5 outline-none transition focus:border-accent focus:bg-surface";
 
+  const lowActivity = profile.activity_level === "sedentary" || profile.activity_level === "light";
+  const highActivity = profile.activity_level === "active" || profile.activity_level === "very_active";
+  const activityMismatch =
+    profile.training_days >= 5 && lowActivity
+      ? `คุณเล่นเวท ${profile.training_days} วัน/สัปดาห์ แต่เลือกระดับกิจกรรมต่ำ ระบบคำนวณพลังงานจากระดับกิจกรรม` +
+        " ไม่ใช่จำนวนวัน ถ้าฝึกจริงตามนี้ควรเลือก “ปานกลาง” ขึ้นไป ไม่งั้นพลังงานที่คำนวณได้จะต่ำกว่าที่ใช้จริง"
+      : profile.training_days <= 1 && highActivity
+        ? "คุณเล่นเวทไม่เกิน 1 วัน/สัปดาห์ แต่เลือกระดับกิจกรรมสูง ถ้างานประจำไม่ได้ใช้แรงมาก" +
+          " ควรลดระดับลง ไม่งั้นพลังงานที่คำนวณได้จะสูงกว่าที่ใช้จริง"
+        : "";
+
   const birthYearCE = toCE(profile.birth_year);
   const birthAge = ageFrom(birthYearCE, profile.birth_month);
   const birthYearHint =
@@ -250,10 +261,14 @@ export default function ProfilePage() {
 
           <label className="block">
             <span className="field-label text-xs text-muted">ส่วนสูง (ซม.)</span>
+            {/* Same limits as nutrition._validate, so the browser stops a bad
+                value before the request instead of after it. */}
             <input
               type="number"
               step="0.1"
               required
+              min={120}
+              max={230}
               value={profile.height_cm}
               onChange={(e) =>
                 setProfile({ ...profile, height_cm: Number(e.target.value) })
@@ -268,6 +283,8 @@ export default function ProfilePage() {
               type="number"
               step="0.1"
               required
+              min={30}
+              max={300}
               value={profile.weight_kg}
               onChange={(e) =>
                 setProfile({ ...profile, weight_kg: Number(e.target.value) })
@@ -284,6 +301,8 @@ export default function ProfilePage() {
             <input
               type="number"
               step="0.1"
+              min={3}
+              max={60}
               value={profile.body_fat_pct ?? ""}
               onChange={(e) =>
                 setProfile({
@@ -328,6 +347,15 @@ export default function ProfilePage() {
               </option>
             ))}
           </select>
+          {/* The energy formula uses this level only; training days do not
+              enter it. "เล่นเวท 6 วัน" with "แทบไม่ออกกำลังกาย" used to save
+              silently and give a TDEE far too low
+              (production_review_2026-09-24.md B10). */}
+          {activityMismatch && (
+            <span className="mt-1.5 block rounded-sm bg-macro-carb-soft px-3 py-2 text-xs">
+              {activityMismatch}
+            </span>
+          )}
         </label>
 
         <label className="block">

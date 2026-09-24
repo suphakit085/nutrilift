@@ -87,6 +87,65 @@ function handleConsentRequired(response: Response): void {
   }
 }
 
+/** Thai names for the request fields a validation error can point at. */
+const FIELD_TH: Record<string, string> = {
+  email: "อีเมล",
+  password: "รหัสผ่าน",
+  birth_year: "ปีเกิด",
+  birth_month: "เดือนเกิด",
+  height_cm: "ส่วนสูง",
+  weight_kg: "น้ำหนัก",
+  body_fat_pct: "เปอร์เซ็นต์ไขมัน",
+  training_days: "จำนวนวันเล่นเวท",
+  message: "ข้อความ",
+  quantity_servings: "จำนวนหน่วยบริโภค",
+  logged_date: "วันที่",
+  meal_type: "มื้ออาหาร",
+  q: "คำค้น",
+};
+
+type ValidationIssue = { type?: string; loc?: (string | number)[]; msg?: string; ctx?: Record<string, unknown> };
+
+/**
+ * Turn a FastAPI error body into one Thai sentence.
+ *
+ * `detail` is a string for errors the app raises itself, but a *list* for
+ * request validation (pydantic) - and until 2026-09-24 every list fell through
+ * to "เกิดข้อผิดพลาด (422)": a 2% body fat, a 260 cm height, a 4,001-character
+ * message or a diary date three days ahead all said nothing about what was
+ * wrong (production_review_2026-09-24.md B7).
+ */
+export function errorDetail(body: unknown, fallback: string): string {
+  const detail = (body as { detail?: unknown } | null)?.detail;
+  if (typeof detail === "string") return detail;
+  if (!Array.isArray(detail) || detail.length === 0) return fallback;
+  const issue = detail[0] as ValidationIssue;
+  const field = String(issue.loc?.[issue.loc.length - 1] ?? "");
+  const name = FIELD_TH[field] ?? "ข้อมูลที่กรอก";
+  const ctx = issue.ctx ?? {};
+  switch (issue.type) {
+    case "greater_than_equal":
+      return `${name}ต้องไม่น้อยกว่า ${ctx.ge}`;
+    case "greater_than":
+      return `${name}ต้องมากกว่า ${ctx.gt}`;
+    case "less_than_equal":
+      return `${name}ต้องไม่เกิน ${ctx.le}`;
+    case "less_than":
+      return `${name}ต้องน้อยกว่า ${ctx.lt}`;
+    case "string_too_long":
+      return `${name}ยาวเกิน ${ctx.max_length} ตัวอักษร`;
+    case "string_too_short":
+      return `${name}สั้นเกินไป`;
+    case "missing":
+      return `กรุณากรอก${name}`;
+    case "value_error":
+      // our own Thai validators arrive as "Value error, <Thai text>"
+      return (issue.msg ?? "").replace(/^Value error,\s*/, "") || `${name}ไม่ถูกต้อง`;
+    default:
+      return `${name}ไม่ถูกต้อง`;
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   const response = await fetch(`${API_BASE}${path}`, {
@@ -103,8 +162,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     handleConsentRequired(response);
     let detail = `เกิดข้อผิดพลาด (${response.status})`;
     try {
-      const body = await response.json();
-      if (typeof body?.detail === "string") detail = body.detail;
+      detail = errorDetail(await response.json(), detail);
     } catch {
       /* non-JSON error body */
     }
@@ -205,6 +263,9 @@ export type FoodSearchResult = {
   carb_g: number;
   fat_g: number;
   fiber_g: number | null;
+  /** "partial": no name contains the query as typed - these only share some
+   *  syllables with it and may be a different food. */
+  match?: "exact" | "partial";
 };
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
@@ -428,8 +489,7 @@ export function streamChat(
         // long to wait or what went wrong.
         let detail = `เชื่อมต่อไม่สำเร็จ (${response.status})`;
         try {
-          const body = await response.json();
-          if (typeof body?.detail === "string") detail = body.detail;
+          detail = errorDetail(await response.json(), detail);
         } catch {
           /* not a JSON error body */
         }

@@ -17,6 +17,9 @@ dependencies = [
     "bcrypt<4.1",
     "python-multipart>=0.0.17",
     "google-genai>=2.20",
+    # already pulled in by google-genai; listed because chat.py catches
+    # httpx.TimeoutException directly (the SDK surfaces it unwrapped)
+    "httpx>=0.27",
     "sse-starlette>=2.1",
     "python-frontmatter>=1.1",
     "pythainlp>=5.0",
