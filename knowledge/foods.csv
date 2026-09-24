@@ -382,3 +382,7 @@ cream,"VNJ382 Milk, powder, full cream Susu tepung penuh krim",นมและ�
 "หมู, สันนอก, ต้ม","Pork, loin, boiled",เนื้อสัตว์,100 กรัม,100,204,33.0,0.1,7.9,0.0,ThaiFCD-Online-v3:F86
 "หมู, สับ, ต้ม","Pork, minced, boiled",เนื้อสัตว์,100 กรัม,100,231,24.4,0.0,14.8,0.0,ThaiFCD-Online-v3:F102
 "ลูกชิ้น, หมู, ลวก","Meat ball, pork, blanched",เนื้อสัตว์,100 กรัม,100,141,13.2,8.3,6.0,0.0,ThaiFCD-Online-v3:F156
+เทมเป้,Tempeh,โปรตีนพืช,100 กรัม,100,239,22.0,6.5,12.8,5.1,FINELI-THL:31249
+"โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ","Soya mince, white or dark, boiled without salt",โปรตีนพืช,100 กรัม,100,127,18.8,8.0,0.9,5.7,FINELI-THL:33026
+"ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)","Meal replacement, soy protein powder, c. 80% protein",อาหารเสริม,100 กรัม,100,355,82.7,1.4,0.5,5.0,FINELI-THL:34996
+น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก),"Cooking oil, average, 87% rapeseed, 8% sunflower, 5% olive oil",น้ำมันและไขมัน,10 กรัม,10,88.3,0,0,10.0,0,FINELI-THL:541

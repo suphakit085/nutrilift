@@ -108,14 +108,24 @@ def test_exact_and_partial_are_labelled(db):
     assert search_with_level(db, "อกไก่ย่างสด", 5)[1] == "partial"
 
 
-def test_partial_results_tell_the_model_to_name_the_row_and_not_substitute(db):
-    """"มันหวาน" still reaches the condensed-milk row through every-syllable
-    matching (มัน is inside น้ำมัน). It must arrive labelled, so the model says
-    which row it is looking at instead of quoting 339 kcal as sweet potato."""
+def test_partial_results_never_expose_another_food_s_numbers(db):
+    """มันหวาน matches น้ำมัน ... หวาน by syllable, but must not inherit its macros."""
     out = lookup_food(db, "มันหวาน")
+    assert out["found"] is False
     assert out["match"] == "partial"
-    assert "ห้ามใช้ตัวเลขของรายการเหล่านี้แทน" in out["note"]
-    assert "name_th" in out["note"]
+    assert out["results"] == []
+    assert any("นมข้น" in name for name in out["candidates"])
+    assert "100" not in str(out)
+    assert "ห้ามเดาค่า" in out["note"]
+
+
+def test_reordered_name_is_a_suggestion_until_user_confirms_exact_row(db):
+    out = lookup_food(db, "อกไก่ย่างไม่มีหนัง")
+    assert out["found"] is False
+    assert out["candidates"] == ["อกไก่ไม่มีหนัง, ย่าง"]
+    confirmed = lookup_food(db, out["candidates"][0])
+    assert confirmed["found"] is True
+    assert confirmed["results"][0]["kcal"] == 100
 
 
 def test_exact_results_carry_no_partial_warning(db):

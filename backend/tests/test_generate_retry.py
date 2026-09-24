@@ -149,9 +149,11 @@ def _overloaded():
     return genai_errors.ServerError(503, body)
 
 
-def test_client_has_a_read_timeout():
+def test_client_has_a_read_timeout(monkeypatch):
     from app.services import llm
 
+    # Constructing the SDK client should not depend on a developer's real key.
+    monkeypatch.setattr(llm.settings, "gemini_api_key", "test-api-key")
     llm.get_client.cache_clear()
     try:
         client = llm.get_client()

@@ -33,9 +33,8 @@ _ESTIMATE_WARNING = (
 
 _PARTIAL_WARNING = (
     "ไม่พบชื่อที่ตรงกับคำค้นทั้งคำ รายการด้านล่างมีคำบางส่วนตรงกันเท่านั้นและอาจเป็นคนละอาหาร "
-    "ใช้ตัวเลขได้เฉพาะเมื่อ name_th บ่งชัดว่าเป็นอาหารเดียวกับที่ผู้ใช้ถาม (เช่น ต่างแค่ลำดับคำ) "
-    "และต้องบอกชื่อรายการตาม name_th ให้ผู้ใช้เห็นเสมอ ถ้าไม่ใช่อาหารเดียวกัน "
-    "ให้บอกว่าไม่มีข้อมูลเมนูนี้ และห้ามใช้ตัวเลขของรายการเหล่านี้แทน"
+    "ยังไม่มีตัวเลขสารอาหารที่ยืนยันได้สำหรับคำค้นนี้ ห้ามเดาค่าหรือใช้ตัวเลขของรายการใกล้เคียงแทน "
+    "ให้บอกชื่อรายการที่พบตาม name_th และขอให้ผู้ใช้ยืนยันชื่ออาหารที่ต้องการ"
 )
 
 
@@ -189,10 +188,21 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
             ),
         }
 
+    if level == "partial":
+        # A shared Thai syllable is not proof of food identity: "มันหวาน" can
+        # match the "น้ำมัน ... หวาน" in condensed milk. Do not hand the model
+        # nutrition numbers it could accidentally attribute to the query.
+        return {
+            "query": q,
+            "found": False,
+            "match": "partial",
+            "results": [],
+            "candidates": [f.name_th for f in rows],
+            "note": _PARTIAL_WARNING,
+        }
+
     results = [_row_to_dict(f) for f in rows]
     note = "ค่าต่อ 1 หน่วยเสิร์ฟตามที่ระบุใน serving_desc"
-    if level == "partial":
-        note = _PARTIAL_WARNING + " · " + note
     if any(r["estimated"] for r in results):
         note += " · " + _ESTIMATE_WARNING
     return {"query": q, "found": True, "match": level, "results": results, "note": note}

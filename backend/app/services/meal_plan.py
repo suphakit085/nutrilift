@@ -368,7 +368,14 @@ class _Item:
 
     def __post_init__(self) -> None:
         serving_g = float(self.food.get("serving_g") or 0) or 100.0
-        gram_cap = self.slot.max_grams / serving_g
+        # A composition table reports powder per 100 g, but a shake should not
+        # quietly become 200 g of dry powder to make the macros look good.
+        max_grams = self.slot.max_grams
+        if self.food.get("category") == "อาหารเสริม" and "ผง" in self.food.get("name_th", ""):
+            max_grams = min(max_grams, 70.0)
+        if self.food.get("name_th") == "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)":
+            max_grams = min(max_grams, 20.0)
+        gram_cap = max_grams / serving_g
         self.lo = self.slot.min_mult
         self.hi = max(self.lo, min(self.slot.max_mult, gram_cap))
         # Snap onto the allowed grid straight away. Clamping alone could leave a
@@ -478,10 +485,11 @@ def _optimize(items: list[_Item], targets: dict[str, float]) -> None:
 EVERYDAY_FOODS: dict[str, tuple[str, ...]] = {
     "protein": (
         "อกไก่ไม่มีหนัง, ต้ม", "ปลานิล, ต้ม", "หมู, สันใน, ต้ม", "เต้าหู้ขาวแข็ง",
+        "โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ", "เทมเป้",
         "อกไก่ไม่มีหนัง, ย่าง", "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ", "กุ้งต้ม",
         "เนื้อวัวไม่ติดมัน", "สะโพกไก่ไม่มีหนัง, อบ", "ปลาทู, นึ่ง, ต้ม",
         "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "ปลากะพงขาว, นึ่ง", "หมู, สับ, ต้ม",
-        "ถั่วเหลือง, เมล็ดแห้ง",
+        "ถั่วเหลือง, เมล็ดแห้ง", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
     ),
     "carb": ("ข้าวสวย", "ขนมปังโฮลวีท", "ข้าวเจ้า, สุก", "มันฝรั่ง", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
     "fat": (
@@ -502,8 +510,8 @@ EVERYDAY_FOODS: dict[str, tuple[str, ...]] = {
 #: post-training snack gets a whey shake - rather than whichever row happened
 #: to be next in line.
 MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
-    # The lean staples alone left the day ~20-30% short on fat (there is no
-    # cooking-oil row in the table), so dinner leans on fattier fish and thigh.
+    # Lean staples need a deliberate fat source, so dinner leans on fattier fish
+    # and thigh, while a measured cooking-oil portion can support restricted diets.
     ("breakfast", "protein"): (
         "อกไก่ไม่มีหนัง, ต้ม", "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "หมู, สับ, ต้ม",
     ),
@@ -515,10 +523,18 @@ MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
     ("breakfast", "fat"): ("ไข่ไก่ต้ม", "ไข่ดาว"),
     ("breakfast", "fruit"): ("กล้วยหอม", "มะละกอสุก"),
     ("lunch", "carb"): ("ข้าวสวย", "ข้าวเจ้า, สุก", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
-    ("lunch", "fat"): ("ถั่วลิสง, เมล็ดแห้ง", "มะม่วงหิมพานต์, เมล็ดสด"),
+    ("lunch", "fat"): (
+        "ถั่วลิสง, เมล็ดแห้ง", "มะม่วงหิมพานต์, เมล็ดสด",
+        "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)",
+    ),
     ("dinner", "carb"): ("ข้าวเจ้า, สุก", "ข้าวสวย", "มันฝรั่ง"),
-    ("dinner", "fat"): ("มะม่วงหิมพานต์, เมล็ดสด", "ถั่วลิสง, เมล็ดแห้ง"),
-    ("snack", "protein"): ("เวย์โปรตีน (ผงชงดื่ม)",),
+    ("dinner", "fat"): (
+        "มะม่วงหิมพานต์, เมล็ดสด", "ถั่วลิสง, เมล็ดแห้ง",
+        "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)",
+    ),
+    ("snack", "protein"): (
+        "เวย์โปรตีน (ผงชงดื่ม)", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
+    ),
     ("snack", "carb"): ("มันฝรั่ง", "ขนมปังโฮลวีท"),
     ("snack", "fruit"): ("กล้วยหอม", "ฝรั่ง"),
 }
@@ -527,6 +543,10 @@ MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
 #: or scoops a quarter of a scoop. Rows served in these units are portioned in
 #: whole numbers, at least one.
 _COUNTABLE_UNITS: tuple[str, ...] = ("ฟอง", "สกู๊ป", "ลูก", "ผล", "ชิ้น", "แผ่น", "ไม้")
+
+_SNACK_ONLY_PROTEINS = frozenset({
+    "เวย์โปรตีน (ผงชงดื่ม)", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
+})
 
 
 def _pick(
@@ -549,10 +569,20 @@ def _pick(
     table holds 85 seafood rows against 28 meat rows, so ranking alone would
     serve four different fish in one day.
     """
-    ranked = [f for f in pool if role in roles_of(f)]
+    ranked = [
+        f for f in pool
+        if role in roles_of(f)
+        and (meal == "snack" or f["name_th"] not in _SNACK_ONLY_PROTEINS)
+    ]
     if not ranked:
         return None
     by_name = {normalize_thai(f["name_th"]): f for f in ranked}
+    # Keep the existing whey shake on ordinary profiles; the soy powder is a
+    # fallback for vegan users, not a rotation that changes other profiles.
+    if meal == "snack" and role == "protein":
+        whey = by_name.get(normalize_thai("เวย์โปรตีน (ผงชงดื่ม)"))
+        if whey and whey["name_th"] not in used_names:
+            return whey
 
     def available(names: tuple[str, ...]) -> list[dict]:
         return [by_name[normalize_thai(n)] for n in names if normalize_thai(n) in by_name]
@@ -626,6 +656,10 @@ def build_day_plan(
     for food in foods:
         if str(food.get("source") or "").startswith("TOVERIFY"):
             estimated_dropped += 1
+            continue
+        # This powder fixes a documented vegan gap. Other profiles already have
+        # whole-food or whey options and should keep their established menus.
+        if food.get("name_th") == "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)" and "วีแกน" not in restrictions:
             continue
         if _never_suggest(food):
             continue

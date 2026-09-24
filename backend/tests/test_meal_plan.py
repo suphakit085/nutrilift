@@ -254,14 +254,25 @@ def test_real_table_respects_a_seafood_allergy(real_foods):
     assert plan["excluded_counts"]["แพ้อาหารทะเล"] > 50
 
 
-def test_vegan_shortfall_is_reported_rather_than_hidden(real_foods):
-    # The food table's only plant proteins are tofu and soybeans, so a 140 g
-    # protein target is genuinely unreachable. Documented in architecture.md;
-    # this test pins the behaviour (report it) rather than the gap itself.
-    plan = build_day_plan(real_foods, TARGETS, ["วีแกน"])
-    assert plan["within_tolerance"] is False
-    assert plan["deviation_pct"]["protein_g"] < 0
-    assert plan["warnings"]
+def test_sourced_plant_proteins_and_cooking_oil_obey_restrictions(real_foods):
+    sourced = {r["name_th"]: r for r in real_foods if r["source"].startswith("FINELI-THL:")}
+    assert len(sourced) == 4
+    for name, row in sourced.items():
+        assert excluded_by(row, ["วีแกน"]) is None, name
+        if name != "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)":
+            assert excluded_by(row, ["แพ้ถั่ว"]) == "แพ้ถั่ว", name
+    assert excluded_by(sourced["น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)"], ["แพ้ถั่ว"]) is None
+
+
+@pytest.mark.parametrize("restrictions", [["วีแกน"], ["แพ้ถั่ว"], ["มังสวิรัติ", "แพ้ถั่ว"]])
+def test_restricted_menu_uses_measured_sources_and_hits_target(real_foods, restrictions):
+    plan = _plan_for(real_foods, restrictions=restrictions)
+    assert plan["within_tolerance"], plan["deviation_pct"]
+    items = [i for meal in plan["meals"] for i in meal["items"]]
+    by_name = {r["name_th"]: r for r in real_foods}
+    assert all(excluded_by(by_name[i["name_th"]], restrictions) is None for i in items)
+    assert all(i["grams"] <= 20 for i in items if i["name_th"].startswith("น้ำมันปรุงอาหาร"))
+    assert all(i["grams"] <= 70 for i in items if i["name_th"].startswith("ผงโปรตีนถั่วเหลือง"))
 
 
 # --- menus people actually eat (production_review_2026-09-24.md, B6) ---------

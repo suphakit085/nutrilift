@@ -11,7 +11,7 @@ import { getToken } from "@/lib/api";
  *   - citation markers: distinct [Sn] per answer across the 150 RAG answers of
  *     baseline-v10; 1 of 335 (Q124 wrote [S8] with 6 passages) pointed at a
  *     passage that was not retrieved
- *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (383 rows)
+ *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (387 rows)
  *   - a real POST /conversations/{id}/chat response for "ช่วง cut ควรกินโปรตีนวันละเท่าไหร่"
  *   - a real GET /profile/targets response for a male/24y/175cm/72kg/bulk profile
  *   - the Flag enum in backend/app/services/guardrails.py (8 members)
@@ -26,7 +26,7 @@ const EVIDENCE_ROWS = [
 
 const STATS = [
   { value: "26", label: "การ์ดความรู้ที่เขียนเองจากงานวิจัย" },
-  { value: "382", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
+  { value: "386", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
   { value: "150", label: "คำถามในชุดประเมิน ถามซ้ำสองแบบ" },
   { value: "1", label: "อ้างแหล่งที่ไม่มีจริง จาก 335 มาร์กเกอร์" },
 ] as const;
@@ -53,6 +53,7 @@ const FOOD_ROWS = [
   { name: "อกไก่ไม่มีหนัง, ย่าง", serving: "100 กรัม", kcal: "151", protein: "30.5", source: "USDA-FDC-SR:171534" },
   { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
   { name: "เต้าหู้ขาวแข็ง", serving: "100 กรัม", kcal: "126", protein: "12.9", source: "ThaiFCD-Online-v3:C48" },
+  { name: "เทมเป้", serving: "100 กรัม", kcal: "239", protein: "22.0", source: "FINELI-THL:31249" },
 ] as const;
 
 const FOOD_SOURCES = [
@@ -60,6 +61,7 @@ const FOOD_SOURCES = [
   "ตารางคุณค่าอาหารไทย · กรมอนามัย 2561",
   "Thai FCD Online v3 · INMU 2568",
   "USDA FoodData Central",
+  "Fineli · Finnish Institute for Health and Welfare (THL) · CC BY 4.0",
 ] as const;
 
 /** The 8 members of Flag in backend/app/services/guardrails.py, split by
@@ -541,6 +543,12 @@ export default function LandingPage() {
                   </span>
                 ))}
               </div>
+              <p className="mt-3 text-[12px] text-muted">
+                ข้อมูล Fineli: Finnish Institute for Health and Welfare (THL) ·{" "}
+                <a href="https://fineli.fi/fineli/en/avoin-data" className="underline">แหล่งข้อมูล</a>
+                {" · "}
+                <a href="https://creativecommons.org/licenses/by/4.0/" className="underline">CC BY 4.0</a>
+              </p>
             </div>
           </div>
         </section>
