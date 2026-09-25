@@ -346,6 +346,18 @@ def _confirmation_required(query: str, candidates: list[str]) -> dict:
     }
 
 
+def _unverified_food_reply(candidates: list[str]) -> str:
+    """Fixed no-number reply when the food lookup did not verify a row."""
+    if candidates:
+        options = "\n".join(f"- {name}" for name in candidates)
+        return (
+            "ผมยังยืนยันตัวเลขโภชนาการให้ไม่ได้ครับ เพราะชื่อที่พิมพ์มายังไม่ตรงกับรายการในฐานข้อมูล\n\n"
+            f"ชื่อที่ใกล้เคียงและพบในฐานข้อมูล:\n{options}\n\n"
+            "รายการเหล่านี้อาจเป็นคนละอาหาร กรุณาพิมพ์ชื่อรายการที่ต้องการตามตัวเลือกเพื่อยืนยันก่อนครับ"
+        )
+    return "ยังไม่พบรายการนี้ในฐานข้อมูลอาหาร จึงยืนยันค่าแคลอรี่หรือสารอาหารให้ไม่ได้ครับ"
+
+
 def _run_food_lookup(
     db: Session,
     query: str,
@@ -648,6 +660,9 @@ def stream_chat(
     text_parts: list[str] = []
     tool_calls_log: list[dict] = []
     partial_candidates_this_turn: list[str] = []
+    food_lookup_unverified = False
+    food_lookup_candidates: list[str] = []
+    tool_chain_active = False
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
     try:
@@ -658,6 +673,7 @@ def stream_chat(
             # for the next iteration's history, since the terminal chunk's
             # parts are near-empty (it only carries finish_reason/usage).
             turn_parts: list[types.Part] = []
+            turn_text_parts: list[str] = []
             usage_meta = None
             for attempt in range(GENERATE_MAX_RETRIES + 1):
                 streamed = False
@@ -671,22 +687,34 @@ def stream_chat(
                                 turn_parts.extend(candidate_content.parts)
                         if chunk.text:
                             streamed = True
-                            text_parts.append(chunk.text)
-                            yield {"type": "delta", "text": chunk.text}
+                            turn_text_parts.append(chunk.text)
                         if chunk.usage_metadata:
                             usage_meta = chunk.usage_metadata
                     break
                 except (genai_errors.APIError, httpx.TimeoutException) as exc:
                     retry = transient_retry(exc, attempt)
                     # Only a failure that hit *before anything was produced* is
-                    # safe to retry: text already on screen or a function call
-                    # already collected would be emitted twice.
+                    # safe to retry: a function call already collected would
+                    # execute twice. Plain text is buffered until the model
+                    # turn ends so it can be screened alongside tool calls;
+                    # if a plain-text turn stalls, flush its text before the
+                    # error just as the previous streaming implementation did.
                     if (
                         retry is None
                         or streamed
                         or turn_parts
                         or attempt >= GENERATE_MAX_RETRIES
                     ):
+                        if (
+                            streamed
+                            and turn_text_parts
+                            and not any(part.function_call is not None for part in turn_parts)
+                            and not tool_chain_active
+                        ):
+                            text_parts.extend(turn_text_parts)
+                            for part in turn_text_parts:
+                                yield {"type": "delta", "text": part}
+                            turn_text_parts.clear()
                         raise
                     delay, notice = retry
                     logger.warning(
@@ -707,8 +735,18 @@ def stream_chat(
 
             function_calls = [p.function_call for p in turn_parts if p.function_call is not None]
             if not function_calls:
+                if not tool_chain_active:
+                    text_parts.extend(turn_text_parts)
+                    for part in turn_text_parts:
+                        yield {"type": "delta", "text": part}
+                elif not food_lookup_unverified:
+                    text_parts.extend(turn_text_parts)
                 break
 
+            # Buffer text once the model starts a tool chain. If a food lookup
+            # cannot verify the row, replace any estimates before they reach
+            # the client. Plain text-only answers still stream as they arrive.
+            tool_chain_active = True
             response_parts = []
             for call in function_calls:
                 args = call.args or {}
@@ -729,6 +767,11 @@ def stream_chat(
                     for candidate in result.get("candidates") or []:
                         if candidate not in partial_candidates_this_turn:
                             partial_candidates_this_turn.append(candidate)
+                if call.name == "lookup_food" and not result.get("found"):
+                    food_lookup_unverified = True
+                    for candidate in result.get("candidates") or []:
+                        if candidate not in food_lookup_candidates:
+                            food_lookup_candidates.append(candidate)
                 _release_connection(db)
                 call_log = {"name": call.name, "arguments": args}
                 if call.name == "lookup_food":
@@ -750,6 +793,8 @@ def stream_chat(
                     )
                 )
             contents.append(types.Content(role="user", parts=response_parts))
+            if not food_lookup_unverified:
+                text_parts.extend(turn_text_parts)
         else:
             logger.warning("tool loop hit MAX_TOOL_ITERATIONS=%s", MAX_TOOL_ITERATIONS)
 
@@ -758,7 +803,16 @@ def stream_chat(
         yield {"type": "error", "message": user_facing_error(exc)}
         return
 
-    answer_text = "".join(text_parts)
+    if tool_chain_active:
+        answer_text = (
+            _unverified_food_reply(food_lookup_candidates)
+            if food_lookup_unverified
+            else "".join(text_parts)
+        )
+        if answer_text:
+            yield {"type": "delta", "text": answer_text}
+    else:
+        answer_text = "".join(text_parts)
 
     yield {
         "type": "done",

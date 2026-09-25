@@ -67,7 +67,7 @@ def test_model_cannot_confirm_its_own_partial_suggestion(monkeypatch):
     models = _FakeModels([
         _function_chunk("อกไก่ย่างไม่มีหนัง", "partial"),
         _function_chunk(CANDIDATE, "self-confirm"),
-        _text_chunk("กรุณายืนยันชื่อรายการก่อนครับ"),
+        _text_chunk("รายการนี้มีโปรตีน 30.5 กรัม และพลังงาน 151 kcal ครับ"),
     ])
     monkeypatch.setattr(chat, "lookup_food", lookup)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_args, **_kwargs: [])
@@ -78,6 +78,8 @@ def test_model_cannot_confirm_its_own_partial_suggestion(monkeypatch):
 
     assert done["type"] == "done"
     assert calls == ["อกไก่ย่างไม่มีหนัง"]
+    assert "30.5" not in done["text"] and "151" not in done["text"]
+    assert "ยังยืนยันตัวเลขโภชนาการให้ไม่ได้" in done["text"]
     assert done["tool_calls"][1]["lookup_result"]["confirmation_required"] is True
     assert done["tool_calls"][1]["lookup_result"]["candidates"] == [CANDIDATE]
 
