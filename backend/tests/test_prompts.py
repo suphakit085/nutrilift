@@ -81,7 +81,7 @@ from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VER
 
 
 def test_prompt_version_bumped_with_the_bracket_rule():
-    assert PROMPT_VERSION == "v1.12.0"
+    assert PROMPT_VERSION == "v1.13.0"
 
 
 def test_base_prompt_reserves_square_brackets_for_citations():

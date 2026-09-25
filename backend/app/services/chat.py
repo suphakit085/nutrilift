@@ -37,6 +37,7 @@ from app.services.nutrition import (
     calc_nutrition_targets,
     summarize_targets_th,
 )
+from app.services.thai_text import normalize_thai
 
 logger = logging.getLogger(__name__)
 
@@ -166,7 +167,9 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
         "name": "lookup_food",
         "description": (
             "ค้นหาพลังงานและสารอาหารของเมนูอาหารไทยจากฐานข้อมูล "
-            "ใช้ทุกครั้งที่ต้องระบุแคลอรี่หรือมาโครของอาหาร ห้ามตอบจากความจำ"
+            "ใช้ทุกครั้งที่ต้องระบุแคลอรี่หรือมาโครของอาหาร ห้ามตอบจากความจำ "
+            "ถ้าผลเป็น partial ให้บอกชื่อที่เสนอและรอผู้ใช้พิมพ์ยืนยันชื่อนั้นในข้อความถัดไป "
+            "ห้ามเรียกค้นซ้ำด้วยชื่อที่ระบบเสนอเอง"
         ),
         "parameters": {
             "type": "object",
@@ -328,6 +331,56 @@ def _execute_tool(db: Session, profile: ProfileInput | None, name: str, args: di
     return {"error": "unknown_tool", "message": f"ไม่รู้จักเครื่องมือ {name}"}
 
 
+def _confirmation_required(query: str, candidates: list[str]) -> dict:
+    return {
+        "query": query,
+        "found": False,
+        "match": "confirmation_required",
+        "confirmation_required": True,
+        "results": [],
+        "candidates": candidates,
+        "note": (
+            "ผู้ใช้ยังไม่ได้ยืนยันชื่ออาหารในข้อความล่าสุด ห้ามค้นชื่อรายการที่เสนอซ้ำหรือรายงานตัวเลข "
+            "ให้บอกผู้ใช้ว่าต้องพิมพ์ชื่อรายการที่ต้องการตามตัวเลือกให้ชัดเจนก่อน"
+        ),
+    }
+
+
+def _run_food_lookup(
+    db: Session,
+    query: str,
+    *,
+    user_message: str,
+    pending_confirmations: list[str],
+    partial_candidates_this_turn: list[str],
+) -> dict:
+    """Only return macros after the user names a suggested row in a later turn.
+
+    A model can call a tool again with its own previous suggestion, so a
+    ``found=false`` payload alone is not a confirmation gate. Block all further
+    food lookups after a partial match in this turn. Across turns, unlock only
+    a candidate that also appears in the current user message.
+    """
+    candidates = partial_candidates_this_turn or pending_confirmations
+    if partial_candidates_this_turn:
+        return _confirmation_required(query, candidates)
+
+    normalized_query = normalize_thai(query)
+    normalized_user = normalize_thai(user_message)
+    for candidate in pending_confirmations:
+        normalized_candidate = normalize_thai(candidate)
+        if normalized_candidate and normalized_candidate in normalized_query:
+            if normalized_candidate not in normalized_user:
+                return _confirmation_required(query, pending_confirmations)
+            # Use the canonical database name after the user has explicitly
+            # repeated it, even if the model included a serving amount as well.
+            result = lookup_food(db, candidate)
+            if result.get("found"):
+                result["confirmation_for"] = candidate
+            return result
+    return lookup_food(db, query)
+
+
 # ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
@@ -455,6 +508,7 @@ def stream_chat(
     history: list[dict] | None = None,
     use_rag: bool = True,
     model: str | None = None,
+    pending_food_confirmations: list[str] | None = None,
 ) -> Iterator[dict]:
     """Run one turn. Yields event dicts:
 
@@ -579,6 +633,7 @@ def stream_chat(
 
     text_parts: list[str] = []
     tool_calls_log: list[dict] = []
+    partial_candidates_this_turn: list[str] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
     try:
@@ -643,9 +698,32 @@ def stream_chat(
             response_parts = []
             for call in function_calls:
                 args = call.args or {}
-                result = _execute_tool(db, profile, call.name, args)
+                if call.name == "lookup_food":
+                    result = _run_food_lookup(
+                        db,
+                        str(args.get("query") or ""),
+                        user_message=user_message,
+                        pending_confirmations=pending_food_confirmations or [],
+                        partial_candidates_this_turn=partial_candidates_this_turn,
+                    )
+                else:
+                    result = _execute_tool(db, profile, call.name, args)
+                if call.name == "lookup_food" and result.get("match") == "partial":
+                    for candidate in result.get("candidates") or []:
+                        if candidate not in partial_candidates_this_turn:
+                            partial_candidates_this_turn.append(candidate)
                 _release_connection(db)
-                tool_calls_log.append({"name": call.name, "arguments": args})
+                call_log = {"name": call.name, "arguments": args}
+                if call.name == "lookup_food":
+                    call_log["lookup_result"] = {
+                        "found": bool(result.get("found")),
+                        "match": result.get("match"),
+                        "confirmation_required": bool(result.get("confirmation_required")),
+                        "candidates": result.get("candidates") or [],
+                        "confirmation_for": result.get("confirmation_for"),
+                    }
+                    result.pop("confirmation_for", None)
+                tool_calls_log.append(call_log)
                 yield {"type": "tool", "name": call.name, "args": args}
                 response_parts.append(
                     types.Part(

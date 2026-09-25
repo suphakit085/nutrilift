@@ -87,6 +87,24 @@ def _owned_conversation(db: Session, user: User, conversation_id: uuid.UUID) -> 
     return conversation
 
 
+def _pending_food_confirmations(messages: list[Message]) -> list[str]:
+    """Replay food-lookup outcomes to find candidates the user has not named yet."""
+    pending: dict[str, None] = {}
+    for message in messages:
+        if message.role != "assistant":
+            continue
+        for call in message.tool_calls or []:
+            if call.get("name") != "lookup_food":
+                continue
+            outcome = call.get("lookup_result") or {}
+            if outcome.get("confirmation_for"):
+                pending.pop(outcome["confirmation_for"], None)
+            if outcome.get("match") in {"partial", "confirmation_required"}:
+                for candidate in outcome.get("candidates") or []:
+                    pending[candidate] = None
+    return list(pending)
+
+
 # --- chat ---------------------------------------------------------------
 
 
@@ -103,6 +121,7 @@ def turn_events(
     history: list[dict],
     use_rag: bool,
     is_first_message: bool,
+    pending_food_confirmations: list[str] | None = None,
     stream: Callable[..., Iterator[dict]] = stream_chat,
 ) -> Iterator[dict]:
     """Persist the user turn, stream the assistant turn, persist the result.
@@ -139,6 +158,7 @@ def turn_events(
             profile=profile,
             history=history,
             use_rag=use_rag,
+            pending_food_confirmations=pending_food_confirmations or [],
         ):
             event_type = event.pop("type")
             if event_type == "done":
@@ -210,5 +230,6 @@ def chat(
             # eval/run_eval.py, which calls collect_answer() directly.
             use_rag=True,
             is_first_message=is_first_message,
+            pending_food_confirmations=_pending_food_confirmations(conversation.messages),
         )
     )
