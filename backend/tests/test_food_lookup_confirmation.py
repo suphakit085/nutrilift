@@ -113,6 +113,44 @@ def test_pending_candidate_requires_user_to_repeat_the_name(monkeypatch):
     assert calls == [CANDIDATE]
 
 
+def test_model_cannot_use_an_exact_database_name_absent_from_user_message(monkeypatch):
+    calls = []
+
+    def lookup(_db, query):
+        calls.append(query)
+        return {
+            "query": query,
+            "found": True,
+            "match": "exact",
+            "results": [{"name_th": CANDIDATE, "protein_g": 30.5}],
+        }
+
+    monkeypatch.setattr(chat, "lookup_food", lookup)
+    result = chat._run_food_lookup(
+        None,
+        CANDIDATE,
+        user_message="อกไก่ย่างไม่มีหนังมีโปรตีนเท่าไร",
+        pending_confirmations=[],
+        partial_candidates_this_turn=[],
+    )
+
+    assert calls == [CANDIDATE]
+    assert result["found"] is False
+    assert result["results"] == []
+    assert result["match"] == "confirmation_required"
+    assert result["candidates"] == [CANDIDATE]
+
+    confirmed = chat._run_food_lookup(
+        None,
+        CANDIDATE,
+        user_message="ยืนยัน " + CANDIDATE,
+        pending_confirmations=[],
+        partial_candidates_this_turn=[],
+    )
+    assert confirmed["found"] is True
+    assert confirmed["results"][0]["protein_g"] == 30.5
+
+
 def test_pending_confirmation_is_carried_until_user_confirms_a_candidate():
     partial_message = SimpleNamespace(
         role="assistant",

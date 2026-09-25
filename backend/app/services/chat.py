@@ -378,7 +378,21 @@ def _run_food_lookup(
             if result.get("found"):
                 result["confirmation_for"] = candidate
             return result
-    return lookup_food(db, query)
+    result = lookup_food(db, query)
+    if result.get("found"):
+        # The model can normalize a user's reordered phrase into a canonical
+        # database name before its first lookup. Require that canonical name in
+        # the actual user message too, or the model has effectively confirmed
+        # its own guess without ever returning a partial result.
+        normalized_user = normalize_thai(user_message)
+        unseen = [
+            row["name_th"]
+            for row in result.get("results", [])
+            if normalize_thai(row.get("name_th") or "") not in normalized_user
+        ]
+        if unseen:
+            return _confirmation_required(query, unseen)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -708,7 +722,10 @@ def stream_chat(
                     )
                 else:
                     result = _execute_tool(db, profile, call.name, args)
-                if call.name == "lookup_food" and result.get("match") == "partial":
+                if (
+                    call.name == "lookup_food"
+                    and result.get("match") in {"partial", "confirmation_required"}
+                ):
                     for candidate in result.get("candidates") or []:
                         if candidate not in partial_candidates_this_turn:
                             partial_candidates_this_turn.append(candidate)
