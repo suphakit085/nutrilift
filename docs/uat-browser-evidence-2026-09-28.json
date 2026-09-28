@@ -1,0 +1,503 @@
+[
+  {
+    "id": "UI-01",
+    "title": "Anonymous profile redirects to login",
+    "expected": "/login",
+    "actual": "https://nutrilift-azure.vercel.app/login",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-02",
+    "title": "Empty signup form rejected",
+    "expected": "invalid",
+    "actual": false,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-03",
+    "title": "Malformed email rejected",
+    "expected": "typeMismatch",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-04",
+    "title": "Password confirmation mismatch warning",
+    "expected": "visible mismatch warning",
+    "actual": "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-05",
+    "title": "Show and hide password",
+    "expected": "text then password",
+    "actual": {
+      "shown": "text",
+      "hidden": "password"
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-06",
+    "title": "Consent remains required after age check",
+    "expected": "invalid",
+    "actual": false,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-07",
+    "title": "Complete signup form can submit",
+    "expected": "valid",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-SIGNUP-390",
+    "title": "Signup responsive 390",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 390,
+      "document": 375
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-SIGNUP-768",
+    "title": "Signup responsive 768",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 768,
+      "document": 753
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-SIGNUP-1280",
+    "title": "Signup responsive 1280",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 1280,
+      "document": 1265
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-08",
+    "title": "Wrong password shows Thai error and remains on login",
+    "expected": "error and /login",
+    "actual": "อีเมลหรือรหัสผ่านไม่ถูกต้อง; /login",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-09",
+    "title": "Account without current consent redirects",
+    "expected": "/consent",
+    "actual": "https://nutrilift-azure.vercel.app/consent",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-10",
+    "title": "Consent acceptance requires explicit checkbox",
+    "expected": "disabled",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-11",
+    "title": "Declining consent logs out",
+    "expected": "/login and no token",
+    "actual": {
+      "url": "https://nutrilift-azure.vercel.app/login",
+      "tokenPresent": false
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-12",
+    "title": "Accept renewed consent enters chat",
+    "expected": "/chat after checking consent",
+    "actual": "/chat; profile accessible afterwards",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-13",
+    "title": "Profile rejects zero height",
+    "expected": "invalid",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-14",
+    "title": "Save female profile with body fat and restrictions",
+    "expected": "saved confirmation",
+    "actual": "บันทึกแล้ว",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-15",
+    "title": "Reload retains profile and multiple restrictions",
+    "expected": "female / 2000 / 60 / 22 / selected",
+    "actual": {
+      "sex": "female",
+      "year": "2000",
+      "weight": "60",
+      "bodyfat": "22",
+      "nuts": "true"
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-PROFILE-390",
+    "title": "Profile responsive 390",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 390,
+      "document": 375
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-PROFILE-768",
+    "title": "Profile responsive 768",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 768,
+      "document": 753
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-PROFILE-1280",
+    "title": "Profile responsive 1280",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 1280,
+      "document": 1265
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-16",
+    "title": "Unknown food has explanatory empty search state",
+    "expected": "no results with Thai guidance",
+    "actual": "ไม่พบเมนูนี้ในฐานข้อมูลอาหาร ลองค้นด้วยชื่ออื่นหรือวัตถุดิบหลัก",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-17",
+    "title": "Add rice through search and serving selector",
+    "expected": "155 kcal, one item, target decreases",
+    "actual": "1 serving; consumed 155; remaining 2253 of 2408",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-18",
+    "title": "Edit serving quantity updates diary",
+    "expected": "310 kcal",
+    "actual": "310 kcal",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-19",
+    "title": "Diary survives reload",
+    "expected": "310 kcal after reload",
+    "actual": "310 kcal",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-20",
+    "title": "Previous date shows different diary",
+    "expected": "no rice row",
+    "actual": 0,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-21",
+    "title": "Return to today restores diary",
+    "expected": "rice row and next day disabled",
+    "actual": {
+      "rice": 1,
+      "nextDisabled": true
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-DIARY-390",
+    "title": "Diary responsive 390",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 390,
+      "document": 375
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-DIARY-768",
+    "title": "Diary responsive 768",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 768,
+      "document": 753
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-DIARY-1280",
+    "title": "Diary responsive 1280",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 1280,
+      "document": 1265
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-22",
+    "title": "Cancel diary deletion retains item",
+    "expected": "rice row still present",
+    "actual": 1,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-23",
+    "title": "Confirm diary deletion removes item",
+    "expected": "no rice row",
+    "actual": 0,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-24",
+    "title": "Empty chat cannot send",
+    "expected": "disabled",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-25",
+    "title": "Whitespace-only chat cannot send",
+    "expected": "disabled",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-26",
+    "title": "Composer length limit",
+    "expected": "4000",
+    "actual": "4000",
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-27",
+    "title": "History opens saved answer",
+    "expected": "saved protein answer",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-28",
+    "title": "New chat clears active conversation",
+    "expected": "starter suggestions",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-29",
+    "title": "Suggested question streams cited answer",
+    "expected": "creatine answer with sources",
+    "actual": {
+      "hasSources": true,
+      "hasAnswer": true
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-30",
+    "title": "Stop streaming releases composer",
+    "expected": "send button returns and input enabled",
+    "actual": {
+      "inputEnabled": true
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-CHAT-390",
+    "title": "Chat responsive 390",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 390,
+      "document": 390
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-CHAT-768",
+    "title": "Chat responsive 768",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 768,
+      "document": 768
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-CHAT-1280",
+    "title": "Chat responsive 1280",
+    "expected": "no horizontal overflow",
+    "actual": {
+      "viewport": 1280,
+      "document": 1280
+    },
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-31",
+    "title": "Mobile citation details expand",
+    "expected": "research titles visible",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-32",
+    "title": "Mobile menu opens",
+    "expected": "visible menu dialog",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-33",
+    "title": "Escape closes mobile menu",
+    "expected": "dialog removed",
+    "actual": true,
+    "status": "PASS",
+    "method": "Browser UI"
+  },
+  {
+    "id": "UI-34",
+    "title": "Rate limit response shows error and releases input",
+    "expected": "Thai error and input enabled",
+    "actual": {
+      "error": "UAT: กรุณารอสักครู่แล้วลองใหม่",
+      "enabled": true
+    },
+    "status": "PASS",
+    "method": "Browser UI with simulated response"
+  },
+  {
+    "id": "UI-35",
+    "title": "Network failure does not leave streaming stuck",
+    "expected": "error and input enabled",
+    "actual": {
+      "error": "Failed to fetch",
+      "enabled": true
+    },
+    "status": "PASS",
+    "method": "Browser UI with simulated response"
+  },
+  {
+    "id": "UI-36",
+    "title": "Real chat recovers after stop and network failures",
+    "expected": "HTTP 200 completed reply and no error",
+    "actual": {
+      "http": 200,
+      "errorCount": 1,
+      "hasRiceEnergy": false
+    },
+    "status": "FAIL",
+    "method": "Browser UI / live API"
+  },
+  {
+    "id": "UI-37",
+    "title": "HTML in assistant answer does not execute",
+    "expected": "no script execution or injected image",
+    "actual": {
+      "executed": false,
+      "images": 0
+    },
+    "status": "PASS",
+    "method": "Browser UI with simulated response"
+  },
+  {
+    "id": "UI-38",
+    "title": "Failed conversation deletion restores sidebar row",
+    "expected": "row restored with error",
+    "actual": 1,
+    "status": "PASS",
+    "method": "Browser UI with simulated response"
+  },
+  {
+    "id": "UI-39",
+    "title": "Delete conversation remains deleted after reload",
+    "expected": "deleted row absent",
+    "actual": 0,
+    "status": "PASS",
+    "method": "Browser UI / live API"
+  },
+  {
+    "id": "UI-40",
+    "title": "Invalid session returns to login and clears token",
+    "expected": "/login and no token",
+    "actual": {
+      "url": "https://nutrilift-azure.vercel.app/login",
+      "tokenPresent": false
+    },
+    "status": "PASS",
+    "method": "Browser UI / live API"
+  },
+  {
+    "id": "UI-36-R1",
+    "title": "Repeat stop, 429, network abort, then real food question",
+    "expected": "completed real reply with 155 kcal and no error",
+    "actual": {
+      "initialError": null,
+      "seconds": 46.766,
+      "error": "ระบบใช้เวลาตอบนานเกินไป ลองส่งคำถามอีกครั้งนะครับ",
+      "mainText": "โค้ชนัท\nครีเอทีนกินยังไง ต้องโหลดไหม\n\nสำหรับวิธีรับประทานครีเอทีน โมโนไฮเดรต (Creatine Monohydrate) ที่มีหลักฐานรองรับและนิยมใช้กันทั่วไป มี 2 แนวทางหลัก ๆ ดังนี้ครับ [S1]\n\nแนวทางที่ 1 (กินต่อเนื่องทุกวัน): กินวันละประมาณ 3-5 กรัมต่อเนื่องทุกวัน วิธีนี้จะช่วยให้ระดับครีเอทีนในกล้ามเนื้อสะสมจนถึงระดับอิ่มตัวได้ภายใน 3-4 สัปดาห์ [S1] โดยรูปแบบขนาดเล็กแบบกินทุกๆ วันนี้ได้ผลดีและเป็นวิธีที่แนะนำ ทำให้คุณ \"ไม่จำเป็นต้องมีช่วงโหลด\" เลยครับ [S2]\nแนวทางที่ 2 (ช่วงโหลด): กินราว 0.3 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน แบ่งกินเป็น 4 ครั้งต่อวัน เป็นเวลา 5-7 วัน หลังจากนั้นให้ลดลงมาเหลือ 3-5 กรัมต่อวันเพื่อคงระดับไว้ ซึ่งวิธีนี้จะช่วยให้อิ่มตัวเร็วขึ้น แต่ผลลัพธ์ปลายทางระยะยาวก็ไม่ได้แตกต่างจากแนวทางแรกครับ [S1]\n\nนอกจากนี้ รูปแบบโมโนไฮเดรตถือว่ามีหลักฐานรองรับมากที่สุดและราคาคุ้มค่าที่สุด [S1] สำหรับเวลาในการกินจะมีผลน้อยมาก ความสม่ำเสมอในการกินทุกวันสำคัญกว่าครับ [S1] และเมื่อเริ่มกิน น้ำหนักตัวอาจเพิ่มขึ้นเล็กน้อย 1-2 กิโลกรัมในช่วงแรก ซึ่งเกิดจากการดึงน้ำเข้าไปเก็บไว้ภายในเซลล์กล้ามเนื้อ (ไม่ใช่ไขมันหรือการบวมน้ำใต้ผิวหนัง) ครับ [S4, S5]\n\n[S1] ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)\n[S2] ความเชื่อผิด ๆ เกี่ยวกับครีเอทีน (ผมร่วง บวมน้ำ ไตพัง)\n[S4] ความเชื่อผิด ๆ เกี่ยวกับครีเอทีน (ผมร่วง บวมน้ำ ไตพัง)\n[S5] ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)\nช่วยอธิบายโปรตีนสำหรับการฝึกเวทอย่างละเอียด\n\n(หยุดการตอบแล้ว ส่งคำถามใหม่ได้เลย)\n\nทดสอบข้อผิดพลาดชั่วคราว\nทดสอบเครือข่าย\nข้าวสวย 120 กรัมมีพลังงานเท่าไร\n✓\nค้นจากฐานข้อมูลอาหารแล้ว\n\nระบบใช้เวลาตอบนานเกินไป ลองส่งคำถามอีกครั้งนะครับ\n\nส่ง\n\nข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์"
+    },
+    "status": "FAIL",
+    "method": "Browser UI / live API after simulated errors"
+  }
+]
