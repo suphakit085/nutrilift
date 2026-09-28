@@ -5,6 +5,9 @@
 
 ## สถานะล่าสุด (28 ก.ย. 2569)
 
+- รอบแก้ไข: push โค้ด `8ed4590` แล้ว; backend **607 tests ผ่าน** และทดสอบผ่าน backend ในเครื่องกับ Supabase/Gemini จริง **89/89 ผ่าน**
+  (API 76, แชต 11, UI recovery 1, cleanup 1) ดู [รายงานแก้ไขและทดสอบซ้ำ](docs/UAT-fix-report-2026-09-28.md)
+  ยังรอ Railway login/deploy และ retest production จึงยังไม่ปิด D-01 ถึง D-03; เวลาแชตยังแกว่งถึงประมาณ 60 วินาที
 - ตรวจระบบฉบับขยาย **156 testcase: ผ่าน 150 / ไม่ผ่าน 6**; ตรวจซ้ำ 3 ครั้ง (ผ่าน 2 / ไม่ผ่าน 1)
   พร้อม backend 599 tests, frontend 44 tests และ menu sweep 162 กรณีผ่านทั้งหมด
   ดู [รายงานเต็มและหลักฐานราย testcase](docs/UAT-system-report-2026-09-28.md)
