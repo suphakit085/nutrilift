@@ -101,14 +101,15 @@ def test_delay_is_capped_for_a_live_user(harness):
     assert events[1]["wait_s"] == chat.GENERATE_MAX_DELAY_S
 
 
-def test_no_retry_once_text_has_reached_the_user(harness):
+def test_incomplete_buffered_text_is_discarded_before_retry(harness):
     def cut_stream():
         yield _chunk("ครึ่ง")
         raise _err(RATE_LIMIT)
 
-    events, models, sleeps = harness([cut_stream()])
-    assert [e["type"] for e in events] == ["sources", "delta", "error"]
-    assert models.calls == 1 and sleeps == []
+    events, models, sleeps = harness([cut_stream(), [_chunk("คำตอบครบ")]])
+    assert [e["type"] for e in events] == ["sources", "retry", "delta", "done"]
+    assert models.calls == 2 and len(sleeps) == 1
+    assert events[-1]["text"] == "คำตอบครบ"
 
 
 def test_daily_cap_is_not_retried(harness):
@@ -176,14 +177,56 @@ def test_a_second_stall_ends_with_the_took_too_long_message(harness):
     assert "นานเกินไป" in events[-1]["message"]
 
 
-def test_a_stall_mid_answer_is_not_retried(harness):
+def test_a_stall_mid_buffered_answer_is_retried(harness):
     def cut_stream():
         yield _chunk("ครึ่ง")
         raise httpx.ReadTimeout("read timed out")
 
-    events, models, _ = harness([cut_stream()])
-    assert [e["type"] for e in events] == ["sources", "delta", "error"]
-    assert models.calls == 1
+    events, models, _ = harness([cut_stream(), [_chunk("ครบ")]])
+    assert [e["type"] for e in events] == ["sources", "retry", "delta", "done"]
+    assert models.calls == 2
+    assert events[-1]["text"] == "ครบ"
+
+
+def test_internal_heading_split_across_chunks_never_reaches_client(harness):
+    events, _, _ = harness([[_chunk("ปรึกษาแพทย์ [ข้อจำกัดด้าน"),
+                            _chunk("ความปลอดภัย] [S1]")]])
+    assert events[-1]["text"] == "ปรึกษาแพทย์  [S1]"
+    assert "".join(e["text"] for e in events if e["type"] == "delta") == events[-1]["text"]
+
+
+def test_timed_out_tool_turn_is_discarded_without_executing_it(harness, monkeypatch):
+    calls = []
+    monkeypatch.setattr(chat, "_execute_tool", lambda *args: calls.append(args))
+
+    def cut_stream():
+        yield SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[
+            types.Part(function_call=types.FunctionCall(name="calc_nutrition_targets", args={}))
+        ]))], text=None, usage_metadata=None)
+        raise httpx.ReadTimeout("read timed out")
+
+    events, models, _ = harness([cut_stream(), [_chunk("กรุณากรอกโปรไฟล์")]])
+    assert events[-1]["type"] == "done"
+    assert models.calls == 2 and calls == []
+
+
+def test_verified_food_survives_timeout_after_lookup(harness, monkeypatch):
+    row = {"name_th": "ข้าวสวย", "serving_desc": "1 หน่วย", "serving_g": 120,
+           "kcal": 155, "protein_g": 2.6, "carb_g": 35.3, "fat_g": 0.1, "estimated": True}
+    monkeypatch.setattr(chat, "_run_food_lookup", lambda *a, **kw:
+                        {"found": True, "match": "exact", "results": [row]})
+    tool = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[
+        types.Part(function_call=types.FunctionCall(name="lookup_food", args={"query": "ข้าวสวย"}))
+    ]))], text=None, usage_metadata=None)
+    events, models, _ = harness([
+        [tool], httpx.ReadTimeout("timeout"), httpx.ReadTimeout("timeout")
+    ])
+    assert events[-1]["type"] == "done"
+    assert models.calls == 3
+    assert "155 kcal" in events[-1]["text"]
+    assert "120 กรัม" in events[-1]["text"]
+    assert "ค่าประมาณที่ยังไม่ได้ยืนยัน" in events[-1]["text"]
+    assert "ยังไม่ได้ปรับ" in events[-1]["text"]
 
 
 def test_overload_503_is_retried(harness):

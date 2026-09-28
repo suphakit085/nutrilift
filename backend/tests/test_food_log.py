@@ -1,7 +1,22 @@
 from datetime import date
 
+import pytest
+from pydantic import ValidationError
+
+from app.api.schemas import FoodLogEntryUpdate
 from app.db.models import FoodLogEntry
 from app.services.food_log import daily_totals
+
+
+@pytest.mark.parametrize("field", ["quantity_servings", "meal_type"])
+def test_patch_rejects_explicit_null(field):
+    with pytest.raises(ValidationError):
+        FoodLogEntryUpdate.model_validate({field: None})
+
+
+@pytest.mark.parametrize("payload", [{}, {"quantity_servings": 2}, {"meal_type": "lunch"}])
+def test_patch_preserves_omitted_fields(payload):
+    assert FoodLogEntryUpdate.model_validate(payload).model_dump(exclude_unset=True) == payload
 
 
 def make_entry(**overrides) -> FoodLogEntry:

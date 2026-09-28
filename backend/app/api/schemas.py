@@ -225,6 +225,14 @@ class FoodLogEntryUpdate(BaseModel):
     quantity_servings: float | None = Field(default=None, gt=0, le=50)
     meal_type: Literal["breakfast", "lunch", "dinner", "snack"] | None = None
 
+    @field_validator("quantity_servings", "meal_type")
+    @classmethod
+    def _reject_explicit_null(cls, value):
+        # Defaults are not validated: omission still means "leave unchanged".
+        if value is None:
+            raise ValueError("ต้องระบุค่าเมื่อส่งฟิลด์นี้")
+        return value
+
 
 class FoodLogEntryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

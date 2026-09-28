@@ -80,8 +80,10 @@ def test_model_cannot_confirm_its_own_partial_suggestion(monkeypatch):
     assert calls == ["อกไก่ย่างไม่มีหนัง"]
     assert "30.5" not in done["text"] and "151" not in done["text"]
     assert "ยังยืนยันตัวเลขโภชนาการให้ไม่ได้" in done["text"]
-    assert done["tool_calls"][1]["lookup_result"]["confirmation_required"] is True
-    assert done["tool_calls"][1]["lookup_result"]["candidates"] == [CANDIDATE]
+    assert len(done["tool_calls"]) == 1
+    assert done["tool_calls"][0]["lookup_result"]["candidates"] == [CANDIDATE]
+    # The next scripted call remains unused: no second model request is needed.
+    assert next(models.script).candidates[0].content.parts[0].function_call.id == "self-confirm"
 
 
 def test_pending_candidate_requires_user_to_repeat_the_name(monkeypatch):

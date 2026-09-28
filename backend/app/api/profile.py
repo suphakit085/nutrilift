@@ -42,7 +42,7 @@ def upsert_profile(
         calc_nutrition_targets(profile_to_input(profile))  # type: ignore[arg-type]
     except NutritionInputError as exc:
         db.rollback()
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(exc)) from exc
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
 
     db.commit()
     db.refresh(profile)
@@ -58,4 +58,4 @@ def get_targets(user: User = Depends(get_consented_user), db: Session = DB_SESSI
     try:
         return calc_nutrition_targets(profile_to_input(profile))  # type: ignore[arg-type]
     except NutritionInputError as exc:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(exc)) from exc
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
