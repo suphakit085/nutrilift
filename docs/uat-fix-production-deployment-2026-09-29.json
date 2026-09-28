@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-28T18:47:12.390054+00:00",
+  "deployment_id": "cf42b2f5-8310-431d-930f-bc8a52badbba",
+  "commit": "d755368a2772019b7483941a1c022d51f9d09531",
+  "fix_commit": "8ed4590",
+  "railway_status": "Active / Deployment successful (verified in dashboard)",
+  "health_http": 200,
+  "health": {
+    "status": "ok",
+    "llm_model": "gemini-3.5-flash-lite",
+    "embed_model": "gemini-embedding-001"
+  }
+}

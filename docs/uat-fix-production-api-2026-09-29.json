@@ -1,0 +1,1292 @@
+[
+  {
+    "id": "AUTH-01",
+    "title": "Anonymous access rejected: /auth/me",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:45.999394+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-02",
+    "title": "Anonymous access rejected: /profile",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.051577+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-03",
+    "title": "Anonymous access rejected: /conversations",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.106604+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-04",
+    "title": "Anonymous access rejected: /foods/search",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.158547+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-05",
+    "title": "Anonymous access rejected: /food-log",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.209341+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-06",
+    "title": "Invalid token rejected",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "ไม่ได้เข้าสู่ระบบ หรือโทเคนหมดอายุ"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.251908+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-07",
+    "title": "Missing consent",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "accepted_terms"
+          ],
+          "type": "missing"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.297619+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-08",
+    "title": "Consent false",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "accepted_terms"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.346539+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-09",
+    "title": "Underage assertion",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "is_adult"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.394292+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-10",
+    "title": "Invalid email",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "email"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.438315+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-11",
+    "title": "Short password",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "password"
+          ],
+          "type": "string_too_short"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.482758+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-12",
+    "title": "Password over 72 bytes",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "password"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.531145+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-13A",
+    "title": "Register disposable account A",
+    "expected": "HTTP 201 and token",
+    "actual": {
+      "http": 201
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:46.965694+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-13B",
+    "title": "Register disposable account B",
+    "expected": "HTTP 201 and token",
+    "actual": {
+      "http": 201
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:47.276997+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-14",
+    "title": "Duplicate email with uppercase",
+    "expected": "HTTP 409",
+    "actual": {
+      "http": 409,
+      "detail": "อีเมลนี้ถูกใช้สมัครแล้ว"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:47.334704+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-15",
+    "title": "Wrong password",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:47.597117+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-16",
+    "title": "Unknown account",
+    "expected": "HTTP 401",
+    "actual": {
+      "http": 401,
+      "detail": "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:47.661752+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-17",
+    "title": "Uppercase login",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": "token issued; not recorded"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:47.976452+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "AUTH-18",
+    "title": "Current consent on account",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "consent_version": "2026-09-11",
+        "needs_consent": false
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.037934+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-01",
+    "title": "Empty profile",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ยังไม่ได้กรอกโปรไฟล์"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.107465+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-02",
+    "title": "Targets require profile",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ยังไม่ได้กรอกโปรไฟล์"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.176651+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-03",
+    "title": "Reject height_cm=0",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "height_cm"
+          ],
+          "type": "greater_than"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.240702+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-04",
+    "title": "Reject height_cm=251",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "height_cm"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.299502+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-05",
+    "title": "Reject weight_kg=-1",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "weight_kg"
+          ],
+          "type": "greater_than"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.357044+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-06",
+    "title": "Reject weight_kg=401",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "weight_kg"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.415689+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-07",
+    "title": "Reject birth_month=13",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "birth_month"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.482569+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-08",
+    "title": "Reject birth_year=2015",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "detail": "บริการนี้สำหรับผู้ที่อายุ 18-100 ปี ผู้ที่อายุต่ำกว่า 18 ปีควรปรึกษาแพทย์หรือนักกำหนดอาหารร่วมกับผู้ปกครอง"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.568152+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-09",
+    "title": "Reject body_fat_pct=2",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "body_fat_pct"
+          ],
+          "type": "greater_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.627021+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-10",
+    "title": "Reject body_fat_pct=61",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "body_fat_pct"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.699310+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-11",
+    "title": "Reject training_days=8",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "training_days"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.762938+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-12",
+    "title": "Reject activity_level=invalid",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "activity_level"
+          ],
+          "type": "literal_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.824676+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-13",
+    "title": "Reject goal=invalid",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "goal"
+          ],
+          "type": "literal_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.884159+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-14",
+    "title": "Accept Buddhist year and Thai dietary restrictions",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "birth_year": 2000,
+        "restrictions": [
+          "วีแกน",
+          "แพ้ถั่ว"
+        ]
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:48.976855+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-15",
+    "title": "Read saved profile",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": "saved values persist"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.062257+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-male-cut",
+    "title": "Targets: male, cut",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1719,
+        "expected_bmr": 1719,
+        "tdee": 2664,
+        "target": 2198,
+        "macro_energy_rounding_difference": 6
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.224191+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-male-maintain",
+    "title": "Targets: male, maintain",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1719,
+        "expected_bmr": 1719,
+        "tdee": 2664,
+        "target": 2664,
+        "macro_energy_rounding_difference": 4
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.382376+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-male-bulk",
+    "title": "Targets: male, bulk",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1719,
+        "expected_bmr": 1719,
+        "tdee": 2664,
+        "target": 2997,
+        "macro_energy_rounding_difference": 3
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.531387+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-female-cut",
+    "title": "Targets: female, cut",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1553,
+        "expected_bmr": 1553,
+        "tdee": 2407,
+        "target": 1986,
+        "macro_energy_rounding_difference": 6
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.672631+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-female-maintain",
+    "title": "Targets: female, maintain",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1553,
+        "expected_bmr": 1553,
+        "tdee": 2407,
+        "target": 2407,
+        "macro_energy_rounding_difference": 5
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.826343+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-female-bulk",
+    "title": "Targets: female, bulk",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1553,
+        "expected_bmr": 1553,
+        "tdee": 2407,
+        "target": 2708,
+        "macro_energy_rounding_difference": 4
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:49.972155+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-BF",
+    "title": "Body fat selects lean-mass formula",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "bmr": 1666,
+        "formula": "Katch-McArdle"
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:50.117645+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CALC-UW",
+    "title": "Underweight cut uses maintenance with warning",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "effective_goal": "maintain",
+        "warnings": [
+          "ปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เพื่อรักษาระดับฮอร์โมนและการดูดซึมวิตามินที่ละลายในไขมัน",
+          "BMI 14.7 ต่ำกว่าเกณฑ์ 18.5 (น้ำหนักน้อยกว่าเกณฑ์) ระบบไม่กำหนดพลังงานขาดดุลให้ จึงปรับเป้าหมายพลังงานจากลดไขมันเป็นระดับรักษาน้ำหนัก (เท่ากับ TDEE) ควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อนตัดสินใจลดไขมัน"
+        ]
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:50.260834+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "PROF-16",
+    "title": "Profile remains private to account A",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ยังไม่ได้กรอกโปรไฟล์"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:50.426624+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "FOOD-01",
+    "title": "Exact Thai food search",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "count": 1,
+        "first_name": "ข้าวสวย"
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:50.517941+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "FOOD-02",
+    "title": "Unknown food returns empty",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "count": 0
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.419069+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "FOOD-03",
+    "title": "Empty food query rejected",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "query",
+            "q"
+          ],
+          "type": "string_too_short"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.481613+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "FOOD-04",
+    "title": "Excessively long food query rejected",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "query",
+            "q"
+          ],
+          "type": "string_too_long"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.549517+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-01",
+    "title": "Empty diary has zero consumption and no target without profile",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "date": "2026-09-28",
+        "entries_count": 0,
+        "consumed": {
+          "kcal": 0.0,
+          "protein_g": 0.0,
+          "carb_g": 0.0,
+          "fat_g": 0.0
+        },
+        "target": null,
+        "remaining": null,
+        "by_meal": {
+          "breakfast": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          },
+          "lunch": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          },
+          "dinner": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          },
+          "snack": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          }
+        }
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.647580+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-02",
+    "title": "Reject diary quantity_servings=0",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "quantity_servings"
+          ],
+          "type": "greater_than"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.720989+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-03",
+    "title": "Reject diary quantity_servings=-1",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "quantity_servings"
+          ],
+          "type": "greater_than"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.785629+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-04",
+    "title": "Reject diary quantity_servings=51",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "quantity_servings"
+          ],
+          "type": "less_than_equal"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.855406+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-05",
+    "title": "Reject diary meal_type=invalid",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "meal_type"
+          ],
+          "type": "literal_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.916196+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-06",
+    "title": "Reject diary logged_date=2026-10-01",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "logged_date"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:51.985270+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-07",
+    "title": "Reject diary food_id=00000000-0000-0000-0000-000000000000",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบเมนูอาหารนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.048086+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-08",
+    "title": "Fractional serving scales nutrition",
+    "expected": "HTTP 201 and semantic check",
+    "actual": {
+      "http": 201,
+      "observation": {
+        "quantity": 0.5,
+        "kcal": 77.5
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.143336+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-09",
+    "title": "Account B cannot modify A diary",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบรายการนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.206116+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-10",
+    "title": "Account B cannot delete A diary",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบรายการนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.272597+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-11",
+    "title": "Account B cannot list A diary",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "count": 0
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.342425+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-12",
+    "title": "Update diary quantity and meal",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "meal": "dinner",
+        "quantity": 2.0,
+        "kcal": 310.0
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.447147+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-13",
+    "title": "Reject explicit null quantity",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "quantity_servings"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.504509+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-14",
+    "title": "Reject explicit null meal",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "meal_type"
+          ],
+          "type": "value_error"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.565114+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-15",
+    "title": "Summary reflects updated quantity and remaining energy",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "date": "2026-09-28",
+        "entries_count": 1,
+        "consumed": {
+          "kcal": 310.0,
+          "protein_g": 5.2,
+          "carb_g": 70.6,
+          "fat_g": 0.4
+        },
+        "target": {
+          "kcal": 2664,
+          "protein_g": 135,
+          "carb_g": 379,
+          "fat_g": 68
+        },
+        "remaining": {
+          "kcal": 2354.0,
+          "protein_g": 129.8,
+          "carb_g": 308.4,
+          "fat_g": 67.6
+        },
+        "by_meal": {
+          "breakfast": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          },
+          "lunch": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          },
+          "dinner": {
+            "kcal": 310.0,
+            "protein_g": 5.2,
+            "carb_g": 70.6,
+            "fat_g": 0.4
+          },
+          "snack": {
+            "kcal": 0.0,
+            "protein_g": 0.0,
+            "carb_g": 0.0,
+            "fat_g": 0.0
+          }
+        }
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.634225+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-16",
+    "title": "Different date does not show today's entries",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": {
+        "count": 0
+      }
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.700515+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-17",
+    "title": "Allow diary date offset -1",
+    "expected": "HTTP 201",
+    "actual": {
+      "http": 201
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.780611+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-18",
+    "title": "Allow diary date offset 1",
+    "expected": "HTTP 201",
+    "actual": {
+      "http": 201
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.861076+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-19",
+    "title": "Delete own diary entry",
+    "expected": "HTTP 204",
+    "actual": {
+      "http": 204
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:52.937222+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "LOG-20",
+    "title": "Deleting missing diary entry returns 404",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบรายการนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.005027+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-01",
+    "title": "Create empty conversation",
+    "expected": "HTTP 201",
+    "actual": {
+      "http": 201
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.103510+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-02",
+    "title": "Read own empty conversation",
+    "expected": "HTTP 200 and semantic check",
+    "actual": {
+      "http": 200,
+      "observation": "empty message list"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.179493+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-03",
+    "title": "Account B cannot read A conversation",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบห้องแชตนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.252988+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-04",
+    "title": "Account B cannot delete A conversation",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบห้องแชตนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.314005+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-05",
+    "title": "Account B cannot send to A conversation",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบห้องแชตนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.376495+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-06",
+    "title": "Empty message rejected",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "message"
+          ],
+          "type": "string_too_short"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.436988+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-07",
+    "title": "Message over 4000 characters rejected",
+    "expected": "HTTP 422",
+    "actual": {
+      "http": 422,
+      "errors": [
+        {
+          "field": [
+            "body",
+            "message"
+          ],
+          "type": "string_too_long"
+        }
+      ]
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.502808+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-08",
+    "title": "Delete own conversation",
+    "expected": "HTTP 204",
+    "actual": {
+      "http": 204
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.572149+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CHAT-09",
+    "title": "Deleted conversation no longer accessible",
+    "expected": "HTTP 404",
+    "actual": {
+      "http": 404,
+      "detail": "ไม่พบห้องแชตนี้"
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:43:53.644142+00:00",
+    "method": "Live API"
+  },
+  {
+    "id": "CLEAN-01",
+    "title": "Remove disposable users and verify all dependent records",
+    "expected": "All remaining row counts zero",
+    "actual": {
+      "users": 0,
+      "profiles": 0,
+      "conversations": 0,
+      "food_log_entries": 0,
+      "messages": 0
+    },
+    "status": "PASS",
+    "at": "2026-09-28T18:46:57.111081+00:00",
+    "method": "Production DB verification"
+  }
+]
