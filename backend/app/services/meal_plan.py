@@ -30,6 +30,7 @@ measure ("ข้าวสวย 3 ทัพพี"), not 1.37 servings.
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 
@@ -90,13 +91,21 @@ def _contains(haystack: str, needle: str) -> bool:
 #: chicken-essence drink (32 kcal, 8 g protein) as the best protein in the
 #: table, because nothing else in it contributes any energy.
 _ROLE_CATEGORIES: dict[str, frozenset[str]] = {
-    "protein": frozenset({
-        "เนื้อสัตว์", "ปลาและอาหารทะเล", "ไข่", "ไข่-นม", "นมและผลิตภัณฑ์",
-        "ถั่วและเมล็ด", "โปรตีนพืช", "กับข้าว",
-        # whey is the one row here (USDA 173180); a post-training shake is what
-        # this app's users actually drink, and the macro gates below still apply
-        "อาหารเสริม",
-    }),
+    "protein": frozenset(
+        {
+            "เนื้อสัตว์",
+            "ปลาและอาหารทะเล",
+            "ไข่",
+            "ไข่-นม",
+            "นมและผลิตภัณฑ์",
+            "ถั่วและเมล็ด",
+            "โปรตีนพืช",
+            "กับข้าว",
+            # whey is the one row here (USDA 173180); a post-training shake is what
+            # this app's users actually drink, and the macro gates below still apply
+            "อาหารเสริม",
+        }
+    ),
     "carb": frozenset({"ข้าว-แป้ง", "หัวและมันต่าง ๆ"}),
     "fat": frozenset({"ถั่วและเมล็ด", "น้ำมันและไขมัน", "ไข่", "ไข่-นม"}),
     "vegetable": frozenset({"ผัก"}),
@@ -126,11 +135,22 @@ def _kcal_per_100g(food: dict) -> float:
     serving_g = float(food.get("serving_g") or 0)
     return float(food["kcal"]) / serving_g * 100.0 if serving_g > 0 else float(food["kcal"])
 
+
 #: Names that disqualify a row from every role: condiments, sweetened packing
 #: liquid, and preparations nobody serves as a portion.
 _NAME_EXCLUSIONS: tuple[str, ...] = (
-    "ผงชูรส", "เกลือ", "น้ำปลา", "ซีอิ๊ว", "กะปิ", "น้ำตาล", "ซอส", "น้ำเชื่อม",
-    "น้ำสลัด", "กะทิ", "ผงปรุงรส", "แป้ง",
+    "ผงชูรส",
+    "เกลือ",
+    "น้ำปลา",
+    "ซีอิ๊ว",
+    "กะปิ",
+    "น้ำตาล",
+    "ซอส",
+    "น้ำเชื่อม",
+    "น้ำสลัด",
+    "กะทิ",
+    "ผงปรุงรส",
+    "แป้ง",
 )
 
 #: Deprioritised, not excluded: still real food, but a menu should reach for the
@@ -219,8 +239,26 @@ def _role_score(food: dict, role: str) -> float:
 #: cover is excluded, and `excluded_counts` in the result reports how much each
 #: rule removed so the answer can explain why the menu looks narrow.
 _MEAT_TOKENS = (
-    "หมู", "ไก่", "เนื้อ", "วัว", "เป็ด", "ปลา", "กุ้ง", "หอย", "ปู", "ปลาหมึก", "แฮม",
-    "เบคอน", "ไส้กรอก", "ลูกชิ้น", "ตับ", "เลือด", "กระเพาะ", "ขาหมู", "น้ำปลา", "กะปิ",
+    "หมู",
+    "ไก่",
+    "เนื้อ",
+    "วัว",
+    "เป็ด",
+    "ปลา",
+    "กุ้ง",
+    "หอย",
+    "ปู",
+    "ปลาหมึก",
+    "แฮม",
+    "เบคอน",
+    "ไส้กรอก",
+    "ลูกชิ้น",
+    "ตับ",
+    "เลือด",
+    "กระเพาะ",
+    "ขาหมู",
+    "น้ำปลา",
+    "กะปิ",
 )
 _MEAT_CATEGORIES = frozenset({"เนื้อสัตว์", "ปลาและอาหารทะเล"})
 #: Thai writes compounds without spaces, so a short token matches inside
@@ -228,8 +266,19 @@ _MEAT_CATEGORIES = frozenset({"เนื้อสัตว์", "ปลาแล
 #: Dairy is caught by the category gate; these spell out the forms that appear
 #: as free-standing names, none shorter than three characters.
 _DAIRY_TOKENS = (
-    "นมวัว", "นมสด", "นมจืด", "นมข้น", "นมผง", "นมเปรี้ยว", "นมพร่อง", "นมถั่ว",
-    "ชีส", "เนย", "โยเกิร์ต", "เวย์", "ครีม",
+    "นมวัว",
+    "นมสด",
+    "นมจืด",
+    "นมข้น",
+    "นมผง",
+    "นมเปรี้ยว",
+    "นมพร่อง",
+    "นมถั่ว",
+    "ชีส",
+    "เนย",
+    "โยเกิร์ต",
+    "เวย์",
+    "ครีม",
 )
 
 #: The same no-spaces problem in the other direction: "ไข่ไก่" contains "ไก่"
@@ -245,8 +294,21 @@ _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
     "ฮาลาล": (
         # blood and amphibians are haram alongside pork and alcohol; the ASEAN
         # table has boiled chicken/duck blood and frog as plain "เนื้อสัตว์" rows
-        ("หมู", "แฮม", "เบคอน", "ไส้กรอก", "ขาหมู", "เลือด", "กบ", "เขียด",
-         "สุรา", "เบียร์", "ไวน์", "เหล้า", "แอลกอฮอล์"),
+        (
+            "หมู",
+            "แฮม",
+            "เบคอน",
+            "ไส้กรอก",
+            "ขาหมู",
+            "เลือด",
+            "กบ",
+            "เขียด",
+            "สุรา",
+            "เบียร์",
+            "ไวน์",
+            "เหล้า",
+            "แอลกอฮอล์",
+        ),
         frozenset(),
     ),
     "มังสวิรัติ": (_MEAT_TOKENS, _MEAT_CATEGORIES),
@@ -259,8 +321,19 @@ _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
         frozenset({"นมและผลิตภัณฑ์"}),
     ),
     "แพ้ถั่ว": (
-        ("ถั่ว", "เต้าหู้", "เต้าเจี้ยว", "นัต", "อัลมอนด์", "แมคคาเดเมีย", "พิสตาชิโอ",
-         "งา", "เม็ดมะม่วงหิมพานต์", "มะม่วงหิมพานต์", "โปรตีนเกษตร"),
+        (
+            "ถั่ว",
+            "เต้าหู้",
+            "เต้าเจี้ยว",
+            "นัต",
+            "อัลมอนด์",
+            "แมคคาเดเมีย",
+            "พิสตาชิโอ",
+            "งา",
+            "เม็ดมะม่วงหิมพานต์",
+            "มะม่วงหิมพานต์",
+            "โปรตีนเกษตร",
+        ),
         frozenset({"ถั่วและเมล็ด", "โปรตีนพืช"}),
     ),
     "แพ้อาหารทะเล": (
@@ -298,6 +371,7 @@ def excluded_by(food: dict, restrictions: list[str] | tuple[str, ...]) -> str | 
 # Meal template
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class Slot:
     """One role to fill within a meal, with the portion range allowed for it."""
@@ -324,37 +398,54 @@ class Meal:
 #: pairing the nutrient-timing card describes; nothing here depends on training
 #: time, which the profile does not record.
 MEAL_TEMPLATE: tuple[Meal, ...] = (
-    Meal("breakfast", "มื้อเช้า", (
-        Slot("protein", 0.25, 3.0, 300),
-        Slot("carb", 0.5, 5.0, 350),
-        Slot("fruit", 0.5, 2.0, 300),
-        # 110 g = two whole eggs, the breakfast fat of choice now that eggs
-        # are portioned whole (a 50 g cap allowed exactly one)
-        Slot("fat", 0.25, 2.0, 110),
-    )),
-    Meal("lunch", "มื้อกลางวัน", (
-        Slot("protein", 0.25, 3.0, 300),
-        Slot("carb", 0.5, 8.0, 500),
-        Slot("vegetable", 0.5, 2.0, 250),
-        Slot("fat", 0.25, 2.0, 110),
-    )),
-    Meal("dinner", "มื้อเย็น", (
-        Slot("protein", 0.25, 3.0, 300),
-        Slot("carb", 0.5, 8.0, 500),
-        Slot("vegetable", 0.5, 2.0, 250),
-        Slot("fat", 0.25, 2.0, 110),
-    )),
-    Meal("snack", "มื้อว่าง / หลังฝึก", (
-        Slot("protein", 0.5, 2.5, 250),
-        Slot("carb", 0.5, 4.0, 300),
-        Slot("fruit", 0.5, 2.0, 300),
-    )),
+    Meal(
+        "breakfast",
+        "มื้อเช้า",
+        (
+            Slot("protein", 0.25, 3.0, 300),
+            Slot("carb", 0.5, 5.0, 350),
+            Slot("fruit", 0.5, 2.0, 300),
+            # 110 g = two whole eggs, the breakfast fat of choice now that eggs
+            # are portioned whole (a 50 g cap allowed exactly one)
+            Slot("fat", 0.25, 2.0, 110),
+        ),
+    ),
+    Meal(
+        "lunch",
+        "มื้อกลางวัน",
+        (
+            Slot("protein", 0.25, 3.0, 300),
+            Slot("carb", 0.5, 8.0, 500),
+            Slot("vegetable", 0.5, 2.0, 250),
+            Slot("fat", 0.25, 2.0, 110),
+        ),
+    ),
+    Meal(
+        "dinner",
+        "มื้อเย็น",
+        (
+            Slot("protein", 0.25, 3.0, 300),
+            Slot("carb", 0.5, 8.0, 500),
+            Slot("vegetable", 0.5, 2.0, 250),
+            Slot("fat", 0.25, 2.0, 110),
+        ),
+    ),
+    Meal(
+        "snack",
+        "มื้อว่าง / หลังฝึก",
+        (
+            Slot("protein", 0.5, 2.5, 250),
+            Slot("carb", 0.5, 4.0, 300),
+            Slot("fruit", 0.5, 2.0, 300),
+        ),
+    ),
 )
 
 
 # ---------------------------------------------------------------------------
 # Portion solving
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class _Item:
@@ -373,7 +464,7 @@ class _Item:
         max_grams = self.slot.max_grams
         if self.food.get("category") == "อาหารเสริม" and "ผง" in self.food.get("name_th", ""):
             max_grams = min(max_grams, 70.0)
-        if self.food.get("name_th") == "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)":
+        if self.food.get("name_th") in {"น้ำมันมะกอก", "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)"}:
             max_grams = min(max_grams, 20.0)
         gram_cap = max_grams / serving_g
         self.lo = self.slot.min_mult
@@ -484,24 +575,52 @@ def _optimize(items: list[_Item], targets: dict[str, float]) -> None:
 #: knowledge/foods.csv; tests/test_meal_plan.py checks that they still are.
 EVERYDAY_FOODS: dict[str, tuple[str, ...]] = {
     "protein": (
-        "อกไก่ไม่มีหนัง, ต้ม", "ปลานิล, ต้ม", "หมู, สันใน, ต้ม", "เต้าหู้ขาวแข็ง",
-        "โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ", "เทมเป้",
-        "อกไก่ไม่มีหนัง, ย่าง", "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ", "กุ้งต้ม",
-        "เนื้อวัวไม่ติดมัน", "สะโพกไก่ไม่มีหนัง, อบ", "ปลาทู, นึ่ง, ต้ม",
-        "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "ปลากะพงขาว, นึ่ง", "หมู, สับ, ต้ม",
-        "ถั่วเหลือง, เมล็ดแห้ง", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
+        "อกไก่ไม่มีหนัง, ต้ม",
+        "ปลานิล, ต้ม",
+        "หมู, สันใน, ต้ม",
+        "เต้าหู้ขาวแข็ง",
+        "โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ",
+        "เทมเป้สุก",
+        "อกไก่ไม่มีหนัง, ย่าง",
+        "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ",
+        "กุ้งต้ม",
+        "เนื้อวัวสะโพกต้ม",
+        "สะโพกไก่ไม่มีหนัง, อบ",
+        "ปลาทู, นึ่ง, ต้ม",
+        "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ",
+        "ปลากะพงขาว, นึ่ง",
+        "หมู, สับ, ต้ม",
+        "ถั่วเหลือง, เมล็ดแห้ง",
+        "ผงโปรตีนถั่วเหลืองไอโซเลท (ทั่วไป)",
     ),
     "carb": ("ข้าวสวย", "ขนมปังโฮลวีท", "ข้าวเจ้า, สุก", "มันฝรั่ง", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
     "fat": (
-        "ไข่ไก่ต้ม", "ไข่ดาว", "ไข่ไก่, ทั้งฟอง", "ถั่วลิสง, เมล็ดแห้ง",
-        "มะม่วงหิมพานต์, เมล็ดสด", "เมล็ดฟักทอง, พันธุ์ต่างๆ, แกะเปลือก, คั่ว",
+        "ไข่ไก่ต้ม",
+        "ไข่ดาว",
+        "ไข่ไก่, ทั้งฟอง",
+        "ถั่วลิสง, เมล็ดแห้ง",
+        "มะม่วงหิมพานต์, เมล็ดสด",
+        "เมล็ดฟักทอง, พันธุ์ต่างๆ, แกะเปลือก, คั่ว",
     ),
     "vegetable": (
-        "บร็อคโคลี่", "ผักกวางตุ้ง", "ผักบุ้งไทย", "กระหล่ำปลี", "แครอท", "ถั่วฝักยาว",
-        "ผักกาดขาว/ ผักกาดขาวใบห่อ", "ปวยเล้ง", "แตงกวา", "มะเขือเทศ",
+        "บร็อคโคลี่",
+        "ผักกวางตุ้ง",
+        "ผักบุ้งไทย",
+        "กระหล่ำปลี",
+        "แครอท",
+        "ถั่วฝักยาว",
+        "ผักกาดขาว/ ผักกาดขาวใบห่อ",
+        "ปวยเล้ง",
+        "แตงกวา",
+        "มะเขือเทศ",
     ),
     "fruit": (
-        "กล้วยหอม", "ฝรั่ง", "มะละกอสุก", "กล้วยน้ำว้าสุก", "แตงโม", "มังคุด",
+        "กล้วยหอม",
+        "ฝรั่ง",
+        "มะละกอสุก",
+        "กล้วยน้ำว้าสุก",
+        "แตงโม",
+        "มังคุด",
     ),
 }
 
@@ -513,27 +632,34 @@ MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
     # Lean staples need a deliberate fat source, so dinner leans on fattier fish
     # and thigh, while a measured cooking-oil portion can support restricted diets.
     ("breakfast", "protein"): (
-        "อกไก่ไม่มีหนัง, ต้ม", "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ", "หมู, สับ, ต้ม",
+        "อกไก่ไม่มีหนัง, ต้ม",
+        "ปลาทูน่า, ในน้ำ, บรรจุกระป๋อง, เฉพาะเนื้อ",
+        "หมู, สับ, ต้ม",
     ),
-    ("lunch", "protein"): ("อกไก่ไม่มีหนัง, ย่าง", "ปลานิล, ต้ม", "เนื้อวัวไม่ติดมัน", "กุ้งต้ม"),
+    ("lunch", "protein"): ("อกไก่ไม่มีหนัง, ย่าง", "ปลานิล, ต้ม", "เนื้อวัวสะโพกต้ม", "กุ้งต้ม"),
     ("dinner", "protein"): (
-        "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ", "สะโพกไก่ไม่มีหนัง, อบ", "ปลาทู, นึ่ง, ต้ม",
+        "ปลาแซลมอนแอตแลนติก (เลี้ยง), อบ",
+        "สะโพกไก่ไม่มีหนัง, อบ",
+        "ปลาทู, นึ่ง, ต้ม",
     ),
     ("breakfast", "carb"): ("ขนมปังโฮลวีท", "ข้าวสวย"),
     ("breakfast", "fat"): ("ไข่ไก่ต้ม", "ไข่ดาว"),
     ("breakfast", "fruit"): ("กล้วยหอม", "มะละกอสุก"),
     ("lunch", "carb"): ("ข้าวสวย", "ข้าวเจ้า, สุก", "ก๋วยเตี๋ยวเส้นใหญ่, สด"),
     ("lunch", "fat"): (
-        "ถั่วลิสง, เมล็ดแห้ง", "มะม่วงหิมพานต์, เมล็ดสด",
-        "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)",
+        "ถั่วลิสง, เมล็ดแห้ง",
+        "มะม่วงหิมพานต์, เมล็ดสด",
+        "น้ำมันมะกอก",
     ),
     ("dinner", "carb"): ("ข้าวเจ้า, สุก", "ข้าวสวย", "มันฝรั่ง"),
     ("dinner", "fat"): (
-        "มะม่วงหิมพานต์, เมล็ดสด", "ถั่วลิสง, เมล็ดแห้ง",
-        "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)",
+        "มะม่วงหิมพานต์, เมล็ดสด",
+        "ถั่วลิสง, เมล็ดแห้ง",
+        "น้ำมันมะกอก",
     ),
     ("snack", "protein"): (
-        "เวย์โปรตีน (ผงชงดื่ม)", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
+        "เวย์โปรตีน (ผงชงดื่ม)",
+        "ผงโปรตีนถั่วเหลืองไอโซเลท (ทั่วไป)",
     ),
     ("snack", "carb"): ("มันฝรั่ง", "ขนมปังโฮลวีท"),
     ("snack", "fruit"): ("กล้วยหอม", "ฝรั่ง"),
@@ -544,9 +670,12 @@ MEAL_PREFERENCES: dict[tuple[str, str], tuple[str, ...]] = {
 #: whole numbers, at least one.
 _COUNTABLE_UNITS: tuple[str, ...] = ("ฟอง", "สกู๊ป", "ลูก", "ผล", "ชิ้น", "แผ่น", "ไม้")
 
-_SNACK_ONLY_PROTEINS = frozenset({
-    "เวย์โปรตีน (ผงชงดื่ม)", "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)",
-})
+_SNACK_ONLY_PROTEINS = frozenset(
+    {
+        "เวย์โปรตีน (ผงชงดื่ม)",
+        "ผงโปรตีนถั่วเหลืองไอโซเลท (ทั่วไป)",
+    }
+)
 
 
 def _pick(
@@ -570,9 +699,9 @@ def _pick(
     serve four different fish in one day.
     """
     ranked = [
-        f for f in pool
-        if role in roles_of(f)
-        and (meal == "snack" or f["name_th"] not in _SNACK_ONLY_PROTEINS)
+        f
+        for f in pool
+        if role in roles_of(f) and (meal == "snack" or f["name_th"] not in _SNACK_ONLY_PROTEINS)
     ]
     if not ranked:
         return None
@@ -610,7 +739,7 @@ def _pick(
         ordered = rest[offset:] + rest[:offset]
     ordered += everyday
     for food in ordered:
-        category = (food.get("category") or "")
+        category = food.get("category") or ""
         if food["name_th"] not in used_names and category not in used_categories:
             return food
     for food in ordered:
@@ -654,12 +783,25 @@ def build_day_plan(
     excluded_counts: dict[str, int] = {}
     estimated_dropped = 0
     for food in foods:
-        if str(food.get("source") or "").startswith("TOVERIFY"):
+        # Public callers may pass CSV rows; database callers supply dictionaries.
+        if isinstance(food.get("nutrition_meta"), str):
+            food = {
+                **food,
+                "nutrition_meta": json.loads(food["nutrition_meta"])
+                if food["nutrition_meta"]
+                else None,
+            }
+        if (
+            food.get("estimated")
+            or str(food.get("source") or "").startswith("TOVERIFY")
+            or (food.get("nutrition_meta") or {}).get("verification_status")
+            in {"unverified", "proxy_unverified"}
+        ):
             estimated_dropped += 1
             continue
         # This powder fixes a documented vegan gap. Other profiles already have
         # whole-food or whey options and should keep their established menus.
-        if food.get("name_th") == "ผงโปรตีนถั่วเหลือง (โปรตีนประมาณ 80%)" and "วีแกน" not in restrictions:
+        if food.get("name_th") == "ผงโปรตีนถั่วเหลืองไอโซเลท (ทั่วไป)" and "วีแกน" not in restrictions:
             continue
         if _never_suggest(food):
             continue
@@ -708,28 +850,36 @@ def build_day_plan(
         meal_items = [i for i in items if i.meal.key == meal.key]
         if not meal_items:
             continue
-        meals_out.append({
-            "key": meal.key,
-            "label_th": meal.label_th,
-            "items": [
-                {
-                    "name_th": i.food["name_th"],
-                    "role": i.slot.role,
-                    "portion": round(i.mult, 2),
-                    "portion_desc_th": portion_text(i.mult, i.food),
-                    "grams": round(i.mult * float(i.food.get("serving_g") or 0), 1),
-                    **{k: round(v, 1) for k, v in i.macros().items()},
-                    "source": i.food.get("source"),
-                }
-                for i in meal_items
-            ],
-            **{
-                k: round(sum(i.macros()[k] for i in meal_items), 1)
-                for k in ("kcal", "protein_g", "carb_g", "fat_g")
-            },
-        })
+        meals_out.append(
+            {
+                "key": meal.key,
+                "label_th": meal.label_th,
+                "items": [
+                    {
+                        "name_th": i.food["name_th"],
+                        "role": i.slot.role,
+                        "portion": round(i.mult, 2),
+                        "portion_desc_th": portion_text(i.mult, i.food),
+                        "grams": round(i.mult * float(i.food.get("serving_g") or 0), 1),
+                        **{k: round(v, 1) for k, v in i.macros().items()},
+                        "source": i.food.get("source"),
+                        "nutrition_meta": i.food.get("nutrition_meta"),
+                        "warnings": i.food.get("warnings", []),
+                    }
+                    for i in meal_items
+                ],
+                **{
+                    k: round(sum(i.macros()[k] for i in meal_items), 1)
+                    for k in ("kcal", "protein_g", "carb_g", "fat_g")
+                },
+            }
+        )
 
     warnings: list[str] = []
+    if any(i.food.get("fiber_g") is None for i in items):
+        warnings.append(
+            "เมนูนี้มีอาหารที่ไม่มีค่าใยอาหารรวมครบ จึงยืนยันใยอาหารรวมทั้งวันไม่ได้ ห้ามนับค่าที่ไม่ทราบเป็นศูนย์"
+        )
     if not within_tolerance:
         off = [
             f"{k} {deviations[k]:+.1f}%"
@@ -741,9 +891,7 @@ def build_day_plan(
             "ต้องบอกผู้ใช้ตามตรงว่าตัวไหนเกิน/ขาดกี่ % ห้ามนำเสนอว่าตรงเป้าแล้ว"
         )
     if missing_roles:
-        warnings.append(
-            "ข้อจำกัดอาหารทำให้บางมื้อขาดองค์ประกอบที่ตั้งใจไว้: " + ", ".join(missing_roles)
-        )
+        warnings.append("ข้อจำกัดอาหารทำให้บางมื้อขาดองค์ประกอบที่ตั้งใจไว้: " + ", ".join(missing_roles))
     if unknown:
         warnings.append(
             "ระบบไม่รู้จักข้อจำกัดอาหารนี้จึงไม่ได้กรองให้: "
@@ -800,7 +948,7 @@ def portion_text(mult: float, food: dict) -> str:
     """
     serving = str(food.get("serving_desc") or "").strip()
     grams = mult * float(food.get("serving_g") or 0)
-    grams_txt = f"{round(grams):g}"
+    grams_txt = f"{round(grams, 1):g}"
     if _GRAM_SERVING_RE.match(serving) and grams > 0:
         return f"{grams_txt} กรัม"
     unit = _UNIT_SERVING_RE.match(serving)

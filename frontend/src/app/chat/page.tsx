@@ -53,6 +53,8 @@ export default function ChatPage() {
   // (new chat, switched room, deleted room, unmounted) are ignored instead of
   // appending its tokens onto whatever is on screen now.
   const abortRef = useRef<(() => void) | null>(null);
+  const currentTurnRef = useRef<{conversationId: string; requestId: string} | null>(null);
+  const cancellationRef = useRef<{conversationId: string; requestId: string; promise: Promise<Error | null>} | null>(null);
   const streamIdRef = useRef(0);
   // Same idea for opening a room: a slow fetch for room A must not overwrite
   // room B, which the user opened afterwards.
@@ -62,6 +64,7 @@ export default function ChatPage() {
     streamIdRef.current += 1;
     abortRef.current?.();
     abortRef.current = null;
+    currentTurnRef.current = null;
     setStreaming(false);
     setBubbles((prev) =>
       prev.some((b) => b.pending)
@@ -115,14 +118,14 @@ export default function ChatPage() {
         setBubbles(
           detail.messages.map((message: ChatMessage) => ({
             role: message.role,
-            content: message.content,
+            content: message.cancelled && message.role === "assistant" ? "(หยุดการตอบแล้ว)" : message.content,
             citations: message.citations ?? undefined,
             // Stored with the row; without this a reopened room lost the
             // "ดึงข้อมูลอาหาร" / "จัดเมนู" badges the live answer had shown.
             tools: message.tool_calls?.map((call) => call.name) ?? undefined,
           })),
         );
-        const last = [...detail.messages].reverse().find((m) => m.citations?.length);
+        const last = [...detail.messages].reverse().find((m) => !m.cancelled && m.citations?.length);
         setSources(last?.citations ?? []);
       } catch (err) {
         if (openSeqRef.current !== seq) return;
@@ -132,10 +135,18 @@ export default function ChatPage() {
     [stopStream],
   );
 
-  /** The user gave up on the answer in flight. The server finishes (and saves)
-   *  whatever it was doing; this only frees the screen. */
+  /** Persist cancellation so this turn is excluded from future model history. */
   function cancelStream() {
+    const turn = currentTurnRef.current;
     stopStream();
+    const cancellationStreamId = streamIdRef.current;
+    if (turn) {
+      cancellationRef.current = { ...turn, promise: api.cancelTurn(turn.conversationId, turn.requestId)
+        .then(() => null).catch((error: Error) => {
+          if (streamIdRef.current === cancellationStreamId) setError(`ยืนยันการหยุดคำตอบไม่สำเร็จ: ${error.message}`);
+          return error;
+        }) };
+    }
     setBubbles((prev) => {
       const last = prev[prev.length - 1];
       if (!last || last.role !== "assistant" || last.content.trim()) return prev;
@@ -165,6 +176,13 @@ export default function ChatPage() {
 
     let conversationId = activeId;
     try {
+      const cancellation = cancellationRef.current;
+      if (cancellation && cancellation.conversationId === conversationId) {
+        const error = await cancellation.promise;
+        if (error) await api.cancelTurn(cancellation.conversationId, cancellation.requestId);
+        if (!isCurrent()) return;
+        cancellationRef.current = null;
+      }
       if (!conversationId) {
         const created = await api.createConversation();
         if (!isCurrent()) return;
@@ -209,9 +227,12 @@ export default function ChatPage() {
 
     const finish = () => {
       abortRef.current = null;
+      currentTurnRef.current = null;
       setStreaming(false);
     };
 
+    const requestId = crypto.randomUUID();
+    currentTurnRef.current = {conversationId, requestId};
     abortRef.current = streamChat(conversationId, message, {
       onSources: (citations) => {
         if (isCurrent()) setSources(citations);
@@ -254,7 +275,7 @@ export default function ChatPage() {
         updateLast((bubble) => ({ ...bubble, pending: false }));
         finish();
       },
-    });
+    }, requestId);
   }
 
   function startNew() {

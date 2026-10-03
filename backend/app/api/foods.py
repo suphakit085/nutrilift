@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import DB_SESSION, get_consented_user
 from app.api.schemas import FoodSearchResult
 from app.db.models import User
-from app.services.foods import search_foods
+from app.services.foods import food_quality, search_foods
 
 router = APIRouter(prefix="/foods", tags=["foods"])
 
@@ -22,5 +22,8 @@ def search(
 ) -> list:
     rows, level = search_foods(db, q, limit)
     return [
-        FoodSearchResult.model_validate(row).model_copy(update={"match": level}) for row in rows
+        FoodSearchResult.model_validate(row).model_copy(
+            update={"match": level, **food_quality(row)}
+        )
+        for row in rows
     ]

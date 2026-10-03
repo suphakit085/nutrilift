@@ -118,6 +118,23 @@ def test_read_transactions_are_released_between_events():
 # --- empty assistant turn -------------------------------------------------
 
 
+def test_provider_finish_reasons_are_saved_with_message_usage():
+    def stream(session, **kwargs):
+        yield {
+            "type": "done",
+            "text": "โปรตีนเป็นสารอาหาร",
+            "usage": {"output_tokens": 10},
+            "finish_reasons": ["STOP"],
+        }
+
+    session = FakeSession()
+    run(session, stream)
+    assert messages(session, "assistant")[0].usage == {
+        "output_tokens": 10,
+        "finish_reasons": ["STOP"],
+    }
+
+
 @pytest.mark.parametrize("text", ["", "   \n", None])
 def test_empty_assistant_turn_is_not_persisted(text):
     def stream(session, **kwargs):

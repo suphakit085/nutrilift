@@ -20,7 +20,7 @@ from ingest.__main__ import prune_removed_cards
 def test_chat_request_ignores_use_rag():
     payload = ChatRequest.model_validate({"message": "โปรตีนวันละเท่าไหร่", "use_rag": False})
     assert not hasattr(payload, "use_rag")
-    assert payload.model_dump() == {"message": "โปรตีนวันละเท่าไหร่"}
+    assert payload.model_dump() == {"message": "โปรตีนวันละเท่าไหร่", "request_id": None}
 
 
 def test_chat_endpoint_source_hardwires_rag_on():

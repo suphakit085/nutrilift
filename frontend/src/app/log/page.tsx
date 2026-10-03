@@ -574,7 +574,7 @@ function AddFoodSearch({
                 onClick={() => setSelected(food)}
                 className="flex w-full items-center justify-between rounded-sm px-2.5 py-2 text-left text-sm transition hover:bg-surface"
               >
-                <span className="truncate">{food.name_th}</span>
+                <span className="truncate">{food.name_th}{food.estimated ? " · ค่าประมาณ" : ""}</span>
                 <span className="shrink-0 text-xs text-muted">
                   {food.serving_desc} · <span className="stat-figure">{Math.round(food.kcal)} kcal</span>
                 </span>
@@ -612,6 +612,11 @@ function AddFoodSearch({
             </button>
           </div>
           {qtyError && <p className="mt-1.5 text-xs text-red-600">{qtyError}</p>}
+          {(selected.warnings ?? []).length > 0 && (
+            <ul className="mt-2 space-y-1 rounded-sm bg-macro-carb-soft p-2 text-xs" aria-label="ข้อจำกัดข้อมูลอาหาร">
+              {selected.warnings!.map((warning) => <li key={warning}>{warning}</li>)}
+            </ul>
+          )}
         </div>
       )}
     </div>

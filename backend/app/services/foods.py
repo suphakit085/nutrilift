@@ -6,6 +6,7 @@ reports whatever this returns, including "not found".
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from sqlalchemy import and_, case, desc, func, or_, select
@@ -38,9 +39,34 @@ _PARTIAL_WARNING = (
 )
 
 
+def food_quality(food: Food) -> dict:
+    meta = getattr(food, "nutrition_meta", None) or {}
+    estimated = str(food.source or "").startswith(_ESTIMATE_SOURCE_PREFIX) or meta.get(
+        "verification_status"
+    ) in {"unverified", "proxy_unverified"}
+    warnings = []
+    if estimated:
+        warnings.append("ตัวเลขรายการนี้ยังยืนยันกับแหล่งตรงไม่ได้ เป็นค่าประมาณ ไม่ควรใช้เป็นค่าที่แน่นอน")
+    if meta.get("source_comparison") == "official_primary_web_rendering_compared_cached_capture":
+        warnings.append(
+            "ตรวจเทียบกับหน้า Fineli ที่เก็บจากผลแสดงของเว็บซึ่งเป็น cached rendering "
+            "ยังไม่ได้ไฟล์ CSV/API ต้นทาง และรอผู้ตรวจทาน"
+        )
+    if food.fiber_g is None or meta.get("fiber_definition") in {"unknown", "crude"}:
+        warnings.append("ยังไม่มีค่าใยอาหารรวมที่ยืนยันได้ ไม่ใช่ใยอาหารศูนย์กรัม")
+    if meta.get("carb_definition") in {"total", "by_difference"}:
+        warnings.append("คาร์โบไฮเดรตนี้เป็นค่ารวมตามนิยามต้นทาง รวมใยอาหารด้วย ไม่ใช่คาร์โบไฮเดรตที่ใช้ได้")
+    if meta.get("portion_basis") == "project_estimate":
+        warnings.append("ขนาดเสิร์ฟเป็นค่าประมาณของรายการนี้ ปริมาณจริงอาจต่างตามสูตรหรือร้าน")
+    if meta.get("volume_mass_assumed"):
+        warnings.append("น้ำหนักที่ใช้แปลงปริมาตรของเสิร์ฟนี้เป็นค่าประมาณ ควรชั่งหรือดูฉลากเมื่อจำเป็นต้องแม่นยำ")
+    return {"estimated": estimated, "warnings": warnings, "nutrition_meta": meta or None}
+
+
 def _row_to_dict(food: Food) -> dict:
+    quality = food_quality(food)
     return {
-        "estimated": str(food.source or "").startswith(_ESTIMATE_SOURCE_PREFIX),
+        **quality,
         "name_th": food.name_th,
         "name_en": food.name_en,
         "category": food.category,
@@ -50,7 +76,9 @@ def _row_to_dict(food: Food) -> dict:
         "protein_g": food.protein_g,
         "carb_g": food.carb_g,
         "fat_g": food.fat_g,
-        "fiber_g": food.fiber_g,
+        "fiber_g": None
+        if (quality["nutrition_meta"] or {}).get("fiber_definition") in {"unknown", "crude"}
+        else food.fiber_g,
         "source": food.source,
     }
 
@@ -88,10 +116,23 @@ def query_terms(q: str) -> list[str]:
 
 #: Units and quantity words that ride along in a query ("อกไก่ย่าง 100 กรัม")
 #: but are never part of a food's name.
-_QUANTITY_WORDS = frozenset({
-    "กรัม", "กิโลกรัม", "กก.", "มิลลิลิตร", "มล.", "ลิตร",
-    "แคล", "แคลอรี่", "กิโลแคลอรี่", "g", "kg", "ml", "kcal",
-})
+_QUANTITY_WORDS = frozenset(
+    {
+        "กรัม",
+        "กิโลกรัม",
+        "กก.",
+        "มิลลิลิตร",
+        "มล.",
+        "ลิตร",
+        "แคล",
+        "แคลอรี่",
+        "กิโลแคลอรี่",
+        "g",
+        "kg",
+        "ml",
+        "kcal",
+    }
+)
 
 
 def _name_matches(term: str):
@@ -129,11 +170,21 @@ def search_with_level(db: Session, q: str, limit: int) -> tuple[list[Food], Matc
     # keyboard finds "น้ำพริก" however the row was originally spelled. Before
     # this, 20 of the 28 rows containing น้ำ were unreachable.
     q = compose_sara_am(q)
+    # People routinely include a serving quantity after an exact food name.
+    # Strip only a trailing quantity+unit for the exact-name pass; quantities
+    # still flow through query_terms for the broader partial matching passes.
+    exact_q = re.sub(
+        r"\s*\d+(?:\.\d+)?\s*(?:กิโลกรัม|กรัม|กก\.?|มิลลิลิตร|มล\.?|ลิตร|kg|g|ml)\s*$",
+        "",
+        q,
+        flags=re.IGNORECASE,
+    ).strip()
     by_shortest_name = func.length(Food.name_th)
 
     rows = list(
-        db.execute(select(Food).where(_name_matches(q)).order_by(by_shortest_name).limit(limit))
-        .scalars()
+        db.execute(
+            select(Food).where(_name_matches(exact_q)).order_by(by_shortest_name).limit(limit)
+        ).scalars()
     )
     if rows:
         return rows, "exact"
@@ -205,6 +256,8 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
     note = "ค่าต่อ 1 หน่วยเสิร์ฟตามที่ระบุใน serving_desc"
     if any(r["estimated"] for r in results):
         note += " · " + _ESTIMATE_WARNING
+    if any(r["warnings"] for r in results):
+        note += " · ต้องรายงานข้อจำกัดที่อยู่ใน warnings ด้วย ห้ามเปลี่ยนค่าที่ไม่ทราบเป็นศูนย์"
     return {"query": q, "found": True, "match": level, "results": results, "note": note}
 
 

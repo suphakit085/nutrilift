@@ -27,6 +27,8 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -207,9 +209,9 @@ def prune_removed_cards(session, keep_slugs: set[str]) -> list[str]:
     and kept being retrieved and cited under its old name. Chunks go with the
     document through the relationship cascade.
     """
-    stale = session.execute(
-        select(Document).where(Document.slug.not_in(keep_slugs))
-    ).scalars().all()
+    stale = (
+        session.execute(select(Document).where(Document.slug.not_in(keep_slugs))).scalars().all()
+    )
     for document in stale:
         session.delete(document)
     if stale:
@@ -293,9 +295,10 @@ def ingest_foods(session) -> int:
         print(f"! foods.csv is missing columns: {sorted(missing)}")
         return 1
 
-    session.execute(delete(Food))
+    # Parse and validate the entire input before changing the database.
+    prepared = []
     for row in rows:
-        session.add(
+        prepared.append(
             Food(
                 name_th=compose_sara_am(row["name_th"].strip()),
                 name_en=(row.get("name_en") or "").strip() or None,
@@ -308,8 +311,24 @@ def ingest_foods(session) -> int:
                 fat_g=float(row["fat_g"]),
                 fiber_g=float(row["fiber_g"]) if (row.get("fiber_g") or "").strip() else None,
                 source=(row.get("source") or "").strip() or None,
+                nutrition_meta=json.loads(row["nutrition_meta"])
+                if row.get("nutrition_meta")
+                else None,
             )
         )
+    for food in prepared:
+        if not food.name_th or not food.serving_desc:
+            raise ValueError("Food name and serving description must not be empty")
+        if food.nutrition_meta is not None and not isinstance(food.nutrition_meta, dict):
+            raise ValueError(f"Food metadata must be an object: {food.name_th}")
+        for key in ("serving_g", "kcal", "protein_g", "carb_g", "fat_g", "fiber_g"):
+            value = getattr(food, key)
+            if value is not None and (
+                not math.isfinite(value) or value < 0 or (key == "serving_g" and value == 0)
+            ):
+                raise ValueError(f"Invalid nutrient {key}: {food.name_th}")
+    session.execute(delete(Food))
+    session.add_all(prepared)
     session.commit()
     print(f"  + foods: {len(rows)} rows")
     return 0
@@ -318,9 +337,7 @@ def ingest_foods(session) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Ingest knowledge cards and the food table")
     parser.add_argument("--only", choices=["cards", "foods"], help="ingest just one source")
-    parser.add_argument(
-        "--rebuild", action="store_true", help="delete and re-embed all cards"
-    )
+    parser.add_argument("--rebuild", action="store_true", help="delete and re-embed all cards")
     args = parser.parse_args()
 
     exit_code = 0

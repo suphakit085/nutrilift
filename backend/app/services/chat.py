@@ -92,6 +92,7 @@ def transient_retry(exc: Exception, attempt: int) -> tuple[float, str] | None:
         return 0.0, "โมเดลตอบช้ากว่าปกติ ระบบกำลังลองใหม่ให้อัตโนมัติ"
     return None
 
+
 #: Raw JSON schema per tool. Passed to Gemini via ``FunctionDeclaration(
 #: parameters_json_schema=...)``, which accepts standard JSON schema directly -
 #: no translation needed from the shape used for the previous OpenAI Responses
@@ -226,19 +227,26 @@ def _clean_overrides(args: dict) -> dict:
     return cleaned
 
 
-def _run_calc_tool(profile: ProfileInput | None, args: dict) -> dict:
+def _run_calc_tool(
+    profile: ProfileInput | None, args: dict, guard: guardrails.GuardResult | None = None
+) -> dict:
+    if guard is not None and not guardrails.personalization_allowed(guard):
+        return {
+            "error": "safety_boundary",
+            "message": "ไม่อนุญาตให้คำนวณเป้าหมายเฉพาะบุคคลในบริบทสุขภาพนี้ ให้ส่งต่อผู้ดูแล",
+        }
     if profile is None:
         return {
             "error": "no_profile",
             "message": (
-                "ผู้ใช้ยังไม่ได้กรอกโปรไฟล์ จึงคำนวณค่าเฉพาะบุคคลไม่ได้ "
-                "ให้ตอบเป็นหลักการทั่วไปและชวนผู้ใช้ไปกรอกโปรไฟล์"
+                "ผู้ใช้ยังไม่ได้กรอกโปรไฟล์ จึงคำนวณค่าเฉพาะบุคคลไม่ได้ ให้ตอบเป็นหลักการทั่วไปและชวนผู้ใช้ไปกรอกโปรไฟล์"
             ),
         }
     overrides = _clean_overrides(args)
     merged = ProfileInput(
         sex=overrides.get("sex", profile.sex),
         birth_year=profile.birth_year,
+        birth_month=profile.birth_month,
         height_cm=overrides.get("height_cm", profile.height_cm),
         weight_kg=overrides.get("weight_kg", profile.weight_kg),
         activity_level=overrides.get("activity_level", profile.activity_level),
@@ -265,7 +273,12 @@ def _run_calc_tool(profile: ProfileInput | None, args: dict) -> dict:
     return result
 
 
-def _run_menu_tool(db: Session, profile: ProfileInput | None, args: dict) -> dict:
+def _run_menu_tool(
+    db: Session,
+    profile: ProfileInput | None,
+    args: dict,
+    guard: guardrails.GuardResult | None = None,
+) -> dict:
     """Build a day's menu for the stored profile.
 
     Targets come from ``calc_nutrition_targets`` rather than from the model, so
@@ -273,12 +286,16 @@ def _run_menu_tool(db: Session, profile: ProfileInput | None, args: dict) -> dic
     the calculator rejects (under 18, out-of-range measurements) yields no menu
     at all, the same as it yields no targets.
     """
+    if guard is not None and not guardrails.personalization_allowed(guard):
+        return {
+            "error": "safety_boundary",
+            "message": "ไม่อนุญาตให้จัดเมนูเฉพาะบุคคลในบริบทสุขภาพนี้ ให้ส่งต่อผู้ดูแล",
+        }
     if profile is None:
         return {
             "error": "no_profile",
             "message": (
-                "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร "
-                "ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
+                "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
             ),
         }
     try:
@@ -321,11 +338,17 @@ def _release_connection(db: Session) -> None:
         db.rollback()
 
 
-def _execute_tool(db: Session, profile: ProfileInput | None, name: str, args: dict) -> dict:
+def _execute_tool(
+    db: Session,
+    profile: ProfileInput | None,
+    name: str,
+    args: dict,
+    guard: guardrails.GuardResult | None = None,
+) -> dict:
     if name == "calc_nutrition_targets":
-        return _run_calc_tool(profile, args)
+        return _run_calc_tool(profile, args, guard)
     if name == "suggest_day_menu":
-        return _run_menu_tool(db, profile, args)
+        return _run_menu_tool(db, profile, args, guard)
     if name == "lookup_food":
         return lookup_food(db, args.get("query", ""))
     return {"error": "unknown_tool", "message": f"ไม่รู้จักเครื่องมือ {name}"}
@@ -426,14 +449,21 @@ _INTERNAL_REFERENCE_RE = re.compile(
 
 
 def clean_answer(text: str) -> str:
-    """Remove internal prompt headings misused as citations, including split chunks."""
-    return _INTERNAL_REFERENCE_RE.sub("", text)
+    """Remove internal labels and scope recency claims to the supplied corpus.
+
+    Retrieval has no live literature search, so it cannot establish that a
+    cited study is the latest as of today. Keep the study/date/citation intact.
+    """
+    cleaned = _INTERNAL_REFERENCE_RE.sub("", text)
+    return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
 
 
 def _food_timeout_reply(results: list[dict]) -> str:
     """Report verified database servings without guessing the requested portion."""
-    lines = ["โมเดลตอบช้ากว่าปกติ จึงแสดงข้อมูลอาหารจากฐานข้อมูลของระบบให้ก่อนครับ",
-             "ค่าด้านล่างเป็นค่าต่อหน่วยเสิร์ฟที่ระบุ ยังไม่ได้ปรับตามปริมาณอื่นที่คุณถาม"]
+    lines = [
+        "โมเดลตอบช้ากว่าปกติ จึงแสดงข้อมูลอาหารจากฐานข้อมูลของระบบให้ก่อนครับ",
+        "ค่าด้านล่างเป็นค่าต่อหน่วยเสิร์ฟที่ระบุ ยังไม่ได้ปรับตามปริมาณอื่นที่คุณถาม",
+    ]
     for result in results:
         for row in result["results"]:
             lines.append(
@@ -443,7 +473,108 @@ def _food_timeout_reply(results: list[dict]) -> str:
             )
             if row.get("estimated"):
                 lines.append("รายการนี้เป็นค่าประมาณที่ยังไม่ได้ยืนยัน ไม่ควรใช้ในการนับแคลอรี่อย่างจริงจัง")
+            lines.extend(row.get("warnings") or [])
     return "\n\n".join(lines)
+
+
+def _append_food_data_notes(answer: str, results: list[dict]) -> str:
+    """Keep database limitations visible even when the model omits them."""
+    notes: dict[str, list[str]] = {}
+    for result in results:
+        for row in result.get("results") or []:
+            warnings = list(row.get("warnings") or [])
+            if (row.get("nutrition_meta") or {}).get("carb_definition") == "available":
+                warnings.append(
+                    "คาร์โบไฮเดรตของรายการนี้เป็นคาร์โบไฮเดรตที่ใช้ได้ แยกจากใยอาหาร ไม่รวมใยอาหารในค่านี้"
+                )
+            for warning in warnings:
+                if warning not in answer:
+                    names = notes.setdefault(warning, [])
+                    if row["name_th"] not in names:
+                        names.append(row["name_th"])
+    if not notes:
+        return answer
+    lines = [answer, "ข้อจำกัดข้อมูลอาหาร"]
+    for warning, names in notes.items():
+        lines.append("- " + warning + " (รายการ: " + ", ".join(names) + ")")
+    return "\n\n".join(lines)
+
+
+def _menu_reply(plan: dict) -> str:
+    """Render calculated portions and totals without model transcription."""
+    target = plan["targets"]
+    lines = [
+        f"ตัวอย่างเมนูอาหาร 1 วัน ชุดที่ {plan.get('variant', 0) + 1} จากฐานข้อมูลอาหารของระบบ",
+        (
+            f"เป้าหมาย: พลังงาน {target['kcal']:g} kcal, โปรตีน {target['protein_g']:g} กรัม, "
+            f"คาร์โบไฮเดรต {target['carb_g']:g} กรัม, ไขมัน {target['fat_g']:g} กรัม"
+        ),
+        "| มื้ออาหาร | รายการอาหารและปริมาณ | พลังงาน (kcal) | โปรตีน (g) | คาร์บ (g) | ไขมัน (g) |",
+        "| --- | --- | ---: | ---: | ---: | ---: |",
+    ]
+    for meal in plan["meals"]:
+        foods = "<br>".join(
+            (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
+            for item in meal["items"]
+        )
+        macros = " | ".join(f"{meal[key]:.1f}" for key in ("kcal", "protein_g", "carb_g", "fat_g"))
+        lines.append(f"| {meal['label_th']} | {foods} | {macros} |")
+    total = " | ".join(
+        f"{plan['totals'][key]:.1f}" for key in ("kcal", "protein_g", "carb_g", "fat_g")
+    )
+    lines.append(f"| รวมทั้งวัน | | {total} |")
+    lines.append("")
+    lines.append(
+        "สารอาหารรวมอยู่ในเกณฑ์เป้าหมายของระบบ"
+        if plan["within_tolerance"]
+        else "เมนูนี้ยังเข้าเป้าหมายไม่ครบทุกตัว ดูส่วนต่างด้านล่าง"
+    )
+    lines.append(
+        "รายการนี้เป็นวัตถุดิบและปริมาณ ปรับวิธีปรุงได้ แต่การเพิ่มน้ำมันหรือเครื่องปรุงจะเปลี่ยนตัวเลขจากที่คำนวณไว้"
+    )
+    return "\n".join(lines)
+
+
+def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
+    """Report menu limitations independently of the model's wording."""
+    warnings: list[str] = []
+    for plan in plans:
+        rows = [item for meal in plan.get("meals") or [] for item in meal["items"]]
+        answer = _append_food_data_notes(answer, [{"results": rows}])
+        if any("ใยอาหาร" in warning for warning in plan.get("warnings") or []):
+            warnings.append("เมนูนี้มีอาหารที่ยังไม่มีข้อมูลใยอาหารครบ จึงยังยืนยันใยอาหารรวมทั้งวันไม่ได้")
+        if not plan.get("within_tolerance", True):
+            labels = {
+                "kcal": "พลังงาน",
+                "protein_g": "โปรตีน",
+                "carb_g": "คาร์โบไฮเดรต",
+                "fat_g": "ไขมัน",
+            }
+            for key, delta in (plan.get("deviation_pct") or {}).items():
+                tolerance = (plan.get("tolerance_pct") or {}).get(key, 0)
+                if key in labels and abs(delta) > tolerance:
+                    direction = "เกิน" if delta > 0 else "ขาด"
+                    warnings.append(
+                        f"เมนูนี้ยังเข้าเป้าไม่ครบ: {labels[key]}{direction} {abs(delta):.1f}%"
+                    )
+        if plan.get("restrictions_unknown"):
+            warnings.append(
+                "ระบบยังไม่รองรับข้อจำกัดอาหาร: "
+                + ", ".join(plan["restrictions_unknown"])
+                + " กรุณาตรวจรายการอาหารก่อนใช้เมนูนี้"
+            )
+        if any("ขาดองค์ประกอบ" in warning for warning in plan.get("warnings") or []):
+            warnings.append("ข้อจำกัดอาหารทำให้บางมื้อมีอาหารไม่ครบกลุ่มที่ใช้จัดเมนู")
+        if any("แพ้" in restriction for restriction in plan.get("restrictions_applied") or []):
+            warnings.append(
+                "การกรองอาหารใช้ชื่อและประเภทในฐานข้อมูล กรุณาตรวจฉลาก ส่วนผสม และการปนเปื้อนของอาหารจริงด้วย"
+            )
+        if plan.get("disclaimer"):
+            warnings.append(plan["disclaimer"])
+    missing = [warning for warning in dict.fromkeys(warnings) if warning not in answer]
+    if missing:
+        answer += "\n\nข้อจำกัดของเมนู\n" + "\n".join("- " + warning for warning in missing)
+    return answer
 
 
 def cited_only(answer_text: str, citations: list[dict]) -> list[dict]:
@@ -551,6 +682,14 @@ def _history_to_contents(history: list[dict]) -> list[types.Content]:
     return contents
 
 
+def _incomplete_answer(text: str) -> bool:
+    # A transport-complete stream can contain an unfinished fragment (X03).
+    # Short, meaningful replies remain possible; this is not semantic grading.
+    cleaned = clean_answer(text).strip()
+    visible = re.sub(r"[\s*#`|]+", "", cleaned)
+    return len(visible) < 2 or visible in {"ขอ", "ขออภัย", "ครับ", "ค่ะ", "ขอโทษ", "สำหรับ", "ดังนี้"}
+
+
 def stream_chat(
     db: Session,
     *,
@@ -560,6 +699,7 @@ def stream_chat(
     use_rag: bool = True,
     model: str | None = None,
     pending_food_confirmations: list[str] | None = None,
+    persistent_safety_flags: list[str] | None = None,
 ) -> Iterator[dict]:
     """Run one turn. Yields event dicts:
 
@@ -575,8 +715,32 @@ def stream_chat(
     # 200 กรัมได้ไหม" in turn 2 is exactly the case the medical scope rule exists
     # for, and the second message names nothing.
     guard = guardrails.combine(
-        guardrails.check(user_message), guardrails.check_history(history or [])
+        guardrails.check(user_message),
+        guardrails.check_history(history or [], lookback=None),
+        guardrails.from_stored_flags(persistent_safety_flags),
+        guardrails.check_profile(profile),
     )
+
+    # Safety precedes retrieval and all model/tool calls, including outages.
+    safety = guardrails.safety_reply(guard)
+    if safety:
+        route, reply = safety
+        _release_connection(db)
+        yield {"type": "sources", "sources": []}
+        yield {"type": "delta", "text": reply}
+        yield {
+            "type": "done",
+            "text": reply,
+            "citations": [],
+            "retrieved": [],
+            "tool_calls": [],
+            "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(),
+            "model": "rule:" + route,
+            "prompt_version": prompts.PROMPT_VERSION,
+            "use_rag": use_rag,
+        }
+        return
 
     # Retrieval failure (embedding API down, DB unreachable) must not kill the
     # turn - fall back to answering without context and say so in the prompt.
@@ -636,7 +800,7 @@ def stream_chat(
 
     targets: dict | None = None
     targets_summary = None
-    if profile is not None:
+    if profile is not None and guardrails.personalization_allowed(guard):
         try:
             targets = calc_nutrition_targets(profile)
             targets_summary = summarize_targets_th(targets)
@@ -654,8 +818,11 @@ def stream_chat(
         # guard_instructions / safety_flags as the text rules.
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
-
-    effective_goal = (targets or {}).get("effective_goal") or (profile.goal if profile else None)
+    effective_goal = (
+        ((targets or {}).get("effective_goal") or (profile.goal if profile else None))
+        if guardrails.personalization_allowed(guard)
+        else None
+    )
     system_prompt = prompts.build_system_prompt(
         profile_summary=_profile_summary_th(profile),
         targets_summary=targets_summary,
@@ -689,7 +856,9 @@ def stream_chat(
     food_lookup_candidates: list[str] = []
     tool_chain_active = False
     verified_food_results: list[dict] = []
+    verified_menu_results: list[dict] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+    finish_reasons: list[str] = []
 
     try:
         for _ in range(MAX_TOOL_ITERATIONS):
@@ -701,6 +870,7 @@ def stream_chat(
             turn_parts: list[types.Part] = []
             turn_text_parts: list[str] = []
             usage_meta = None
+            finish_reason = None
             for attempt in range(GENERATE_MAX_RETRIES + 1):
                 streamed = False
                 try:
@@ -708,6 +878,9 @@ def stream_chat(
                         model=chosen_model, contents=contents, config=config
                     ):
                         if chunk.candidates:
+                            reason = getattr(chunk.candidates[0], "finish_reason", None)
+                            if reason is not None:
+                                finish_reason = getattr(reason, "value", str(reason))
                             candidate_content = chunk.candidates[0].content
                             if candidate_content and candidate_content.parts:
                                 turn_parts.extend(candidate_content.parts)
@@ -722,10 +895,7 @@ def stream_chat(
                     # This model turn is buffered: no text has been sent and
                     # no collected function call has executed yet. Discard the
                     # incomplete turn before retrying to avoid duplicate output.
-                    if (
-                        retry is None
-                        or attempt >= GENERATE_MAX_RETRIES
-                    ):
+                    if retry is None or attempt >= GENERATE_MAX_RETRIES:
                         if (
                             streamed
                             and turn_text_parts
@@ -740,10 +910,14 @@ def stream_chat(
                     turn_parts.clear()
                     turn_text_parts.clear()
                     usage_meta = None
+                    finish_reason = None
                     delay, notice = retry
                     logger.warning(
                         "generate_content %s, retrying in %.0fs (%d/%d)",
-                        type(exc).__name__, delay, attempt + 1, GENERATE_MAX_RETRIES,
+                        type(exc).__name__,
+                        delay,
+                        attempt + 1,
+                        GENERATE_MAX_RETRIES,
                     )
                     yield {"type": "retry", "message": notice, "wait_s": delay}
                     if delay:
@@ -758,6 +932,20 @@ def stream_chat(
                 contents.append(types.Content(role="model", parts=turn_parts))
 
             function_calls = [p.function_call for p in turn_parts if p.function_call is not None]
+            if finish_reason:
+                finish_reasons.append(finish_reason)
+            if finish_reason not in (None, "STOP") or (
+                not function_calls and _incomplete_answer("".join(turn_text_parts))
+            ):
+                yield {
+                    "type": "error",
+                    "code": "incomplete_answer",
+                    "message": "คำตอบยังไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง",
+                    "finish_reason": finish_reason,
+                    "usage": usage_total,
+                    "safety_flags": guard.as_json(),
+                }
+                return
             if not function_calls:
                 if not tool_chain_active:
                     answer = clean_answer("".join(turn_text_parts))
@@ -783,13 +971,15 @@ def stream_chat(
                         partial_candidates_this_turn=partial_candidates_this_turn,
                     )
                 else:
-                    result = _execute_tool(db, profile, call.name, args)
+                    result = _execute_tool(db, profile, call.name, args, guard)
                 if call.name == "lookup_food" and result.get("found"):
                     verified_food_results.append(result)
-                if (
-                    call.name == "lookup_food"
-                    and result.get("match") in {"partial", "confirmation_required"}
-                ):
+                if call.name == "suggest_day_menu" and result.get("meals"):
+                    verified_menu_results.append(result)
+                if call.name == "lookup_food" and result.get("match") in {
+                    "partial",
+                    "confirmation_required",
+                }:
                     for candidate in result.get("candidates") or []:
                         if candidate not in partial_candidates_this_turn:
                             partial_candidates_this_turn.append(candidate)
@@ -819,6 +1009,10 @@ def stream_chat(
                     )
                 )
             contents.append(types.Content(role="user", parts=response_parts))
+            # The planner supplies a complete displayable answer. Another model
+            # turn can alter portion numbers while keeping the original totals.
+            if verified_menu_results and not food_lookup_unverified:
+                break
             # This response is already deterministic. A further model call
             # cannot confirm the user's choice and only adds timeout risk.
             if food_lookup_unverified:
@@ -846,8 +1040,13 @@ def stream_chat(
         answer_text = (
             _unverified_food_reply(food_lookup_candidates)
             if food_lookup_unverified
+            else "\n\n".join(_menu_reply(plan) for plan in verified_menu_results)
+            if verified_menu_results
             else clean_answer("".join(text_parts))
         )
+        if not food_lookup_unverified:
+            answer_text = _append_food_data_notes(answer_text, verified_food_results)
+            answer_text = _append_menu_data_notes(answer_text, verified_menu_results)
         if answer_text:
             yield {"type": "delta", "text": answer_text}
     else:
@@ -864,6 +1063,7 @@ def stream_chat(
         "retrieved": citations,
         "tool_calls": tool_calls_log,
         "usage": usage_total,
+        "finish_reasons": finish_reasons,
         "safety_flags": guard.as_json(),
         "model": chosen_model,
         "prompt_version": prompts.PROMPT_VERSION,
@@ -881,15 +1081,22 @@ def stream_chat(
 #: model id and quota shape are ours, not theirs. The detail still goes to the
 #: log via logger.exception above.
 _ERROR_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
-    (("resource_exhausted", "429", "quota"),
-     ("ตอนนี้ระบบใช้โควตาการตอบของวันนี้เต็มแล้ว ลองใหม่อีกครั้งในภายหลังนะครับ "
-      "(คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)")),
-    (("deadline_exceeded", "timeout", "timed out"),
-     "ระบบใช้เวลาตอบนานเกินไป ลองส่งคำถามอีกครั้งนะครับ"),
-    (("unauthenticated", "api key", "permission_denied", "401", "403"),
-     "ระบบเชื่อมต่อกับผู้ให้บริการโมเดลไม่ได้ กรุณาแจ้งผู้ดูแลระบบครับ"),
-    (("unavailable", "503", "500", "internal"),
-     "ผู้ให้บริการโมเดลขัดข้องชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่นะครับ"),
+    (
+        ("resource_exhausted", "429", "quota"),
+        (
+            "ตอนนี้ระบบใช้โควตาการตอบของวันนี้เต็มแล้ว ลองใหม่อีกครั้งในภายหลังนะครับ "
+            "(คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)"
+        ),
+    ),
+    (("deadline_exceeded", "timeout", "timed out"), "ระบบใช้เวลาตอบนานเกินไป ลองส่งคำถามอีกครั้งนะครับ"),
+    (
+        ("unauthenticated", "api key", "permission_denied", "401", "403"),
+        "ระบบเชื่อมต่อกับผู้ให้บริการโมเดลไม่ได้ กรุณาแจ้งผู้ดูแลระบบครับ",
+    ),
+    (
+        ("unavailable", "503", "500", "internal"),
+        "ผู้ให้บริการโมเดลขัดข้องชั่วคราว ลองใหม่อีกครั้งในอีกสักครู่นะครับ",
+    ),
 )
 
 

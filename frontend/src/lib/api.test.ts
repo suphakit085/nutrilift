@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { STREAM_CUT_MESSAGE, errorDetail, parseSSEFrames, streamChat } from "./api.ts";
+import { STREAM_CUT_MESSAGE, api, errorDetail, parseSSEFrames, streamChat } from "./api.ts";
 
 /**
  * A frame in the exact wire format the server produces.
@@ -294,4 +294,53 @@ test("a string detail passes through and anything else falls back", () => {
   assert.equal(errorDetail({ detail: "ส่วนสูงต้องอยู่ระหว่าง 120-230 ซม." }, "x"), "ส่วนสูงต้องอยู่ระหว่าง 120-230 ซม.");
   assert.equal(errorDetail({}, "เกิดข้อผิดพลาด (500)"), "เกิดข้อผิดพลาด (500)");
   assert.equal(errorDetail(null, "fb"), "fb");
+});
+
+for (const browserMessage of ["Failed to fetch", "NetworkError when attempting to fetch resource.", "Load failed"]) {
+  test(`REST and streaming fetch failure is readable in Thai: ${browserMessage}`, async () => {
+    const previous = globalThis.fetch;
+    globalThis.fetch = async () => { throw new TypeError(browserMessage); };
+    try {
+      await assert.rejects(api.getProfile(), /เชื่อมต่อระบบไม่สำเร็จ/);
+      const message = await new Promise<string>((resolve) => {
+        streamChat("c1", "คำถาม", { onError: resolve });
+      });
+      assert.match(message, /ตรวจสอบอินเทอร์เน็ต/);
+      assert.notEqual(message, browserMessage);
+    } finally {
+      globalThis.fetch = previous;
+    }
+  });
+}
+
+test("cancellation retries a not-yet-committed turn and then succeeds", async () => {
+  const previous = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = async (url, init) => {
+    assert.match(String(url), /\/conversations\/c1\/turns\/t1\/cancel$/);
+    assert.equal(init?.method, "POST");
+    calls++;
+    return calls === 1
+      ? new Response(JSON.stringify({ detail: "ไม่พบคำถาม" }), { status: 404 })
+      : new Response(null, { status: 204 });
+  };
+  try {
+    await api.cancelTurn("c1", "t1");
+    assert.equal(calls, 2);
+  } finally { globalThis.fetch = previous; }
+});
+
+test("stream carries the user turn id for cancellation", async () => {
+  const previous = globalThis.fetch;
+  let body: Record<string, unknown> = {};
+  globalThis.fetch = async (_url, init) => {
+    body = JSON.parse(String(init?.body));
+    return new Response(frame("done", { text: "ตอบแล้ว", citations: [] }));
+  };
+  try {
+    await new Promise<void>((resolve) => {
+      streamChat("c1", "คำถาม", { onDone: () => resolve() }, "request-123");
+    });
+    assert.deepEqual(body, { message: "คำถาม", request_id: "request-123" });
+  } finally { globalThis.fetch = previous; }
 });

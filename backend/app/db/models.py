@@ -12,6 +12,7 @@ from datetime import UTC, date, datetime
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
@@ -134,6 +135,12 @@ class Message(Base):
     )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    cancelled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    reply_to_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     citations: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     tool_calls: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     usage: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
@@ -207,6 +214,7 @@ class Food(Base):
     carb_g: Mapped[float] = mapped_column(Float, nullable=False)
     fat_g: Mapped[float] = mapped_column(Float, nullable=False)
     fiber_g: Mapped[float | None] = mapped_column(Float, nullable=True)
+    nutrition_meta: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     source: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
 

@@ -53,7 +53,7 @@ const FOOD_ROWS = [
   { name: "อกไก่ไม่มีหนัง, ย่าง", serving: "100 กรัม", kcal: "151", protein: "30.5", source: "USDA-FDC-SR:171534" },
   { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
   { name: "เต้าหู้ขาวแข็ง", serving: "100 กรัม", kcal: "126", protein: "12.9", source: "ThaiFCD-Online-v3:C48" },
-  { name: "เทมเป้", serving: "100 กรัม", kcal: "239", protein: "22.0", source: "FINELI-THL:31249" },
+  { name: "เทมเป้สุก", serving: "100 กรัม", kcal: "195", protein: "19.9", source: "USDA-FDC-SR:172467" },
 ] as const;
 
 const FOOD_SOURCES = [
@@ -64,44 +64,31 @@ const FOOD_SOURCES = [
   "Fineli · Finnish Institute for Health and Welfare (THL) · CC BY 4.0",
 ] as const;
 
-/** The 8 members of Flag in backend/app/services/guardrails.py, split by
- *  WHERE each one is actually enforced - because that differs, and the
- *  page must not claim otherwise:
- *
- *   code  - decided in the program; the model cannot overrule it.
- *           01/02 are in guardrails.HARD_REFUSAL_FLAGS, so chat.py returns
- *           canned text and never calls the API. 06 refuses pre-model when
- *           the keyword rule and an empty retrieval agree
- *           (chat.is_clearly_out_of_scope). 04 is rejected by
- *           nutrition._validate, 07 forces cut -> maintain, and 08's
- *           warning is emitted by the calculator.
- *   prompt- only appends a line to the system prompt
- *           (guardrails.FLAG_INSTRUCTIONS), so the wording is the model's.
- *
- *  Row 08 says the target is NOT raised: nutrition.py appends a warning and
- *  leaves kcal_target as computed - backend/tests/test_nutrition.py asserts
- *  `energy_target_kcal < 1200` outright. */
+/** Reflect guardrails.safety_reply, chat's scope gate, and the calculator.
+ *  Low energy targets receive a warning; the calculator does not raise them. */
 const SAFETY_GROUPS = [
   {
     kind: "code",
-    heading: "ตัดสินในโปรแกรม",
-    note: "6 ใน 8 · โมเดลเปลี่ยนไม่ได้",
+    heading: "คัดกรองคำถาม",
+    note: "ตัดสินด้วยกฎก่อนสร้างคำตอบ",
     rules: [
-      { n: "01", title: "โรคและอาการป่วย", body: "ตอบด้วยข้อความปฏิเสธสำเร็จรูป ไม่เรียกโมเดล" },
-      { n: "02", title: "สารเร่งกล้ามเนื้อ", body: "ตอบด้วยข้อความปฏิเสธสำเร็จรูป ไม่เรียกโมเดล" },
-      { n: "04", title: "อายุต่ำกว่า 18 ปี", body: "โปรไฟล์ไม่ผ่านการตรวจ ระบบไม่คำนวณเป้าหมายให้" },
-      { n: "06", title: "นอกเรื่องโภชนาการ", body: "ปฏิเสธก่อนเรียกโมเดล เมื่อคำสำคัญและผลค้นคืนตรงกัน" },
-      { n: "07", title: "น้ำหนักต่ำกว่าเกณฑ์", body: "เปลี่ยนเป้าหมายจากลดไขมันเป็นรักษาน้ำหนักให้เอง" },
-      { n: "08", title: "พลังงานต่ำกว่า 1,200 kcal", body: "แนบคำเตือนว่าต่ำเกินกว่าจะดูแลเอง ไม่ได้ปรับตัวเลขขึ้นให้" },
+      { n: "01", title: "อาการฉุกเฉิน", body: "แนะนำให้ติดต่อความช่วยเหลือฉุกเฉิน ไม่เรียกโมเดล" },
+      { n: "02", title: "การทำร้ายตัวเอง", body: "ตอบอย่างสนับสนุนและส่งต่อความช่วยเหลือ ไม่เรียกโมเดล" },
+      { n: "03", title: "โรคและอาการป่วย", body: "ส่งต่อแพทย์หรือนักกำหนดอาหาร ไม่เรียกโมเดล" },
+      { n: "04", title: "สารเร่งกล้ามเนื้อ", body: "ปฏิเสธคำแนะนำเรื่องการใช้สาร ไม่เรียกโมเดล" },
+      { n: "05", title: "พฤติกรรมการกินผิดปกติ", body: "ตอบอย่างสนับสนุน ส่งต่อผู้เชี่ยวชาญ และไม่ให้แผนลดน้ำหนัก ไม่เรียกโมเดล" },
+      { n: "06", title: "ตั้งครรภ์และให้นมบุตร", body: "ส่งต่อผู้ดูแล ไม่คำนวณเป้าหมายเฉพาะบุคคลหรือขนาดอาหารเสริม ไม่เรียกโมเดล" },
+      { n: "07", title: "อายุต่ำกว่า 18 ปี", body: "ไม่ให้เป้าหมายลดน้ำหนักหรือขนาดอาหารเสริม และไม่รับโปรไฟล์เด็ก" },
+      { n: "08", title: "นอกเรื่องโภชนาการ", body: "ปฏิเสธก่อนเรียกโมเดล เมื่อคำสำคัญและผลค้นคืนตรงกัน" },
     ],
   },
   {
-    kind: "prompt",
-    heading: "เติมคำสั่งให้โมเดล",
-    note: "2 ใน 8 · ถ้อยคำมาจากโมเดล",
+    kind: "calculator",
+    heading: "ตรวจเป้าหมายจากโปรไฟล์",
+    note: "คำนวณและเตือนด้วยโปรแกรม",
     rules: [
-      { n: "03", title: "พฤติกรรมการกินผิดปกติ", body: "สั่งไม่ให้เร่งลดน้ำหนัก และให้ส่งต่อผู้เชี่ยวชาญ" },
-      { n: "05", title: "ตั้งครรภ์และให้นมบุตร", body: "สั่งให้เตือนและแนะนำให้ปรึกษาผู้เชี่ยวชาญ" },
+      { n: "09", title: "น้ำหนักต่ำกว่าเกณฑ์", body: "เปลี่ยนเป้าหมายจากลดไขมันเป็นรักษาน้ำหนักให้เอง" },
+      { n: "10", title: "พลังงานต่ำกว่า 1,200 kcal", body: "แนบคำเตือนว่าต่ำเกินกว่าจะดูแลเอง ไม่ได้ปรับตัวเลขขึ้นให้" },
     ],
   },
 ] as const;
@@ -474,20 +461,12 @@ export default function LandingPage() {
                 <br />
                 บอกที่มาได้
               </h2>
-              {/* Not "ตามรอยกลับได้": 1 of the 383 rows is a TOVERIFY-LABEL
-                  estimate that traces to no published table, so a headline
-                  promising traceability would be contradicted by the very
-                  paragraph under it. Every row can state its origin - that is
-                  the claim this section can actually keep.
-                  The last sentence stays on the two things the code does by
-                  itself: foods.py always sets `estimated` on the row, and
-                  meal_plan.py drops TOVERIFY rows from generated plans. How
-                  the model words it is a prompt instruction, which is exactly
-                  the distinction section 04 draws. */}
+              {/* Unverified foods are excluded from generated menus.
+                  Unknown fibre remains unknown. */}
               <p className="mt-5 text-[15px] leading-[1.8] text-body">
-                ตารางอาหารมี 383 แถว ในนั้น 382 แถวมาจากฐานข้อมูลองค์ประกอบอาหารที่เผยแพร่จริง
-                มีรหัสให้เปิดตรวจย้อนได้ทีละรายการ เหลือ 1 แถวที่ยังเป็นค่าประมาณจากฉลาก
-                ระบบติดธงไว้ในข้อมูลว่าเป็นค่าประมาณ และไม่หยิบไปใช้ในแผนมื้ออาหาร
+                ตารางอาหารมี 387 รายการ พร้อมแหล่งที่มาและข้อจำกัดของข้อมูล
+                มี 1 รายการที่ยังยืนยันค่าตรงกับอาหารไม่ได้ ระบบแสดงคำเตือนและไม่ใช้จัดเมนู
+                ค่าใยอาหารที่ไม่ทราบจะระบุว่ายังไม่มีข้อมูล ไม่ใช้แทนค่าศูนย์
               </p>
             </div>
 
@@ -565,9 +544,9 @@ export default function LandingPage() {
               ระบบไม่ตอบ
             </h2>
             <p className="mt-5 text-[15px] leading-[1.8] text-body">
-              คำถามทุกข้อผ่านกฎคัดกรองก่อนเรียกโมเดล 6 ใน 8 กรณีตัดสินจบในโปรแกรม
-              โมเดลเปลี่ยนไม่ได้ อีก 2 กรณีเป็นการเติมคำสั่งเข้าไปในพรอมต์ ถ้อยคำจึงมาจากโมเดล
-              หน้านี้จึงแยกสองกลุ่มนี้ออกจากกัน ทั้งแปดกรณีมีเทสต์ครอบไว้
+              ระบบตรวจคำถามและโปรไฟล์ก่อนสร้างคำตอบ เมื่อพบความเสี่ยงที่เข้ากฎ
+              เช่น อาการฉุกเฉิน โรค การตั้งครรภ์ หรือพฤติกรรมการกินผิดปกติ
+              จะตอบด้วยข้อความส่งต่อที่กำหนดไว้ ส่วนเป้าหมายพลังงานมีการตรวจและเตือนด้วยโปรแกรม
             </p>
           </div>
 

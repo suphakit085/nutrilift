@@ -8,7 +8,7 @@ import uuid
 from collections.abc import Callable, Iterator
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
@@ -17,6 +17,7 @@ from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut
 from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
 from app.db.session import SessionLocal
+from app.services import guardrails
 from app.services.chat import stream_chat
 from app.services.nutrition import ProfileInput
 
@@ -48,9 +49,7 @@ def list_conversations(
     )
 
 
-@router.post(
-    "/conversations", response_model=ConversationOut, status_code=status.HTTP_201_CREATED
-)
+@router.post("/conversations", response_model=ConversationOut, status_code=status.HTTP_201_CREATED)
 def create_conversation(
     user: User = Depends(get_consented_user), db: Session = DB_SESSION
 ) -> Conversation:
@@ -87,10 +86,46 @@ def _owned_conversation(db: Session, user: User, conversation_id: uuid.UUID) -> 
     return conversation
 
 
+@router.post(
+    "/conversations/{conversation_id}/turns/{request_id}/cancel",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def cancel_turn(
+    conversation_id: uuid.UUID,
+    request_id: uuid.UUID,
+    user: User = Depends(get_consented_user),
+    db: Session = DB_SESSION,
+) -> None:
+    _owned_conversation(db, user, conversation_id)
+    turn = db.get(Message, request_id)
+    if turn is None or turn.conversation_id != conversation_id or turn.role != "user":
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบคำถามที่ต้องการยกเลิก")
+    db.execute(
+        update(Message)
+        .where(
+            Message.conversation_id == conversation_id,
+            or_(Message.id == request_id, Message.reply_to_id == request_id),
+        )
+        .values(cancelled=True)
+    )
+    db.commit()
+
+
+def _active_history(messages: list[Message]) -> list[Message]:
+    """Exclude cancelled turns from model context, retaining rows for safety audit."""
+    cancelled = {message.id for message in messages if getattr(message, "cancelled", False)}
+    return [
+        message
+        for message in messages
+        if not getattr(message, "cancelled", False)
+        and getattr(message, "reply_to_id", None) not in cancelled
+    ]
+
+
 def _pending_food_confirmations(messages: list[Message]) -> list[str]:
     """Replay food-lookup outcomes to find candidates the user has not named yet."""
     pending: dict[str, None] = {}
-    for message in messages:
+    for message in _active_history(messages):
         if message.role != "assistant":
             continue
         for call in message.tool_calls or []:
@@ -103,6 +138,24 @@ def _pending_food_confirmations(messages: list[Message]) -> list[str]:
                 for candidate in outcome.get("candidates") or []:
                     pending[candidate] = None
     return list(pending)
+
+
+def _conversation_safety_flags(messages: list[Message]) -> list[str]:
+    """Risk from user disclosures, independently of the model history window.
+
+    Recheck legacy content with current rules; never infer risk from assistant
+    refusals. Stored flags provide per-message provenance without new columns.
+    """
+    flags: set[str] = set()
+    for message in messages:
+        if message.role != "user":
+            continue
+        disclosed = guardrails.combine(
+            guardrails.check(message.content or ""),
+            guardrails.from_stored_flags(message.safety_flags),
+        )
+        flags.update(str(f) for f in disclosed.flags if f in guardrails.PERSISTENT_FLAGS)
+    return sorted(flags)
 
 
 # --- chat ---------------------------------------------------------------
@@ -121,7 +174,9 @@ def turn_events(
     history: list[dict],
     use_rag: bool,
     is_first_message: bool,
+    request_id: uuid.UUID | None = None,
     pending_food_confirmations: list[str] | None = None,
+    persistent_safety_flags: list[str] | None = None,
     stream: Callable[..., Iterator[dict]] = stream_chat,
 ) -> Iterator[dict]:
     """Persist the user turn, stream the assistant turn, persist the result.
@@ -147,10 +202,19 @@ def turn_events(
             yield _sse("error", {"message": "ไม่พบห้องแชต"})
             return
 
-        session.add(Message(conversation_id=conversation_id, role="user", content=user_message))
+        user_turn = Message(
+            id=request_id or uuid.uuid4(),
+            conversation_id=conversation_id,
+            role="user",
+            content=user_message,
+            safety_flags=guardrails.check(user_message).as_json(),
+        )
+        session.add(user_turn)
         if is_first_message:
             conv.title = user_message[:60]
         session.commit()
+        if request_id is not None:
+            yield _sse("turn", {"request_id": str(request_id)})
 
         for event in stream(
             session,
@@ -159,19 +223,27 @@ def turn_events(
             history=history,
             use_rag=use_rag,
             pending_food_confirmations=pending_food_confirmations or [],
+            persistent_safety_flags=persistent_safety_flags or [],
         ):
             event_type = event.pop("type")
             if event_type == "done":
                 text = event.get("text") or ""
                 if text.strip():
+                    if request_id is not None:
+                        session.refresh(user_turn)
                     session.add(
                         Message(
                             conversation_id=conversation_id,
                             role="assistant",
                             content=text,
+                            reply_to_id=user_turn.id,
+                            cancelled=bool(user_turn.cancelled),
                             citations=event.get("citations"),
                             tool_calls=event.get("tool_calls"),
-                            usage=event.get("usage"),
+                            usage={
+                                **(event.get("usage") or {}),
+                                "finish_reasons": event.get("finish_reasons", []),
+                            },
                             safety_flags=event.get("safety_flags"),
                         )
                     )
@@ -212,7 +284,7 @@ def chat(
 
     history = [
         {"role": m.role, "content": m.content}
-        for m in conversation.messages[-(settings.history_turns * 2) :]
+        for m in _active_history(conversation.messages)[-(settings.history_turns * 2) :]
     ]
     is_first_message = not conversation.messages
 
@@ -230,6 +302,8 @@ def chat(
             # eval/run_eval.py, which calls collect_answer() directly.
             use_rag=True,
             is_first_message=is_first_message,
+            request_id=payload.request_id,
             pending_food_confirmations=_pending_food_confirmations(conversation.messages),
+            persistent_safety_flags=_conversation_safety_flags(conversation.messages),
         )
     )

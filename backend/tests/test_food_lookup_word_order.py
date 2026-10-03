@@ -34,6 +34,7 @@ NAMES = [
     ("กระชาย", "Fingerroot"),
     ("นมข้น, แปลงไขมัน, สูตรน้ำมันปาล์มผสมมันเนย, หวาน", "Sweetened condensed milk, filled"),
     ("ข้าวขาหมู", "Stewed pork leg on rice"),
+    ("โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ", "Soya mince, white or dark, boiled without salt"),
 ]
 
 
@@ -71,6 +72,14 @@ def test_quantities_in_the_query_are_ignored(db):
     assert names(_search_rows(db, "อกไก่ย่าง 100 กรัม", 5)) == ["อกไก่ไม่มีหนัง, ย่าง"]
     assert "100" not in query_terms("อกไก่ย่าง 100 กรัม")
     assert "กรัม" not in query_terms("อกไก่ย่าง 100 กรัม")
+
+
+def test_exact_database_name_with_trailing_serving_amount_stays_exact(db):
+    query = "โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ 100 กรัม"
+    assert search_with_level(db, query, 5)[1] == "exact"
+    result = lookup_food(db, query)
+    assert result["found"] is True and result["match"] == "exact"
+    assert result["results"][0]["name_th"] == "โปรตีนเกษตรถั่วเหลืองต้ม ไม่ใส่เกลือ"
 
 
 def test_an_extra_word_degrades_to_best_partial_match(db):

@@ -146,6 +146,13 @@ export function errorDetail(body: unknown, fallback: string): string {
   }
 }
 
+function clientErrorMessage(error: unknown): string {
+  if (error instanceof TypeError && /failed to fetch|fetch failed|networkerror|load failed/i.test(error.message)) {
+    return "เชื่อมต่อระบบไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง";
+  }
+  return error instanceof Error ? error.message : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   const response = await fetch(`${API_BASE}${path}`, {
@@ -155,6 +162,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init.headers ?? {}),
     },
+  }).catch((error: unknown) => {
+    const message = clientErrorMessage(error);
+    if (error instanceof Error && message !== error.message) throw new Error(message);
+    throw error;
   });
 
   if (!response.ok) {
@@ -238,6 +249,7 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  cancelled?: boolean;
   citations: Citation[] | null;
   tool_calls: { name: string }[] | null;
   created_at: string;
@@ -263,6 +275,9 @@ export type FoodSearchResult = {
   carb_g: number;
   fat_g: number;
   fiber_g: number | null;
+  nutrition_meta?: Record<string, unknown> | null;
+  estimated?: boolean;
+  warnings?: string[];
   /** "partial": no name contains the query as typed - these only share some
    *  syllables with it and may be a different food. */
   match?: "exact" | "partial";
@@ -309,6 +324,18 @@ export type DailySummary = {
 // --- endpoints -----------------------------------------------------------
 
 export const api = {
+  cancelTurn: async (conversationId: string, requestId: string) => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await request<void>(`/conversations/${conversationId}/turns/${requestId}/cancel`, { method: "POST" });
+        return;
+      } catch (error) {
+        if (!(error instanceof ApiError) || error.status !== 404 || attempt >= 3) throw error;
+        // The SSE generator may still be committing the user message when Stop is pressed.
+        await new Promise((resolve) => setTimeout(resolve, 100 * 2 ** attempt));
+      }
+    }
+  },
   /** `consent` is not optional and has no default, mirroring RegisterRequest:
    *  the server rejects a registration that does not carry both assertions, so
    *  making them easy to forget here would only move the failure later. */
@@ -461,6 +488,7 @@ export function streamChat(
   conversationId: string,
   message: string,
   handlers: ChatStreamHandlers,
+  requestId?: string,
 ): () => void {
   const controller = new AbortController();
   const path = `/conversations/${conversationId}/chat`;
@@ -477,7 +505,7 @@ export function streamChat(
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ message, ...(requestId ? { request_id: requestId } : {}) }),
         },
       );
 
@@ -553,7 +581,7 @@ export function streamChat(
       }
     } catch (error) {
       if ((error as Error).name !== "AbortError") {
-        handlers.onError?.((error as Error).message);
+        handlers.onError?.(clientErrorMessage(error));
       }
     }
   })();

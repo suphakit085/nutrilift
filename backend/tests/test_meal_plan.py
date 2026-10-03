@@ -28,12 +28,32 @@ from app.services.nutrition import ProfileInput, calc_nutrition_targets
 FOODS_CSV = Path(__file__).resolve().parents[2] / "knowledge" / "foods.csv"
 
 
-def food(name, category, kcal, p, c, f, *, serving_g=100.0, serving="100 กรัม",
-         fiber=1.0, source="TEST", name_en=""):
+def food(
+    name,
+    category,
+    kcal,
+    p,
+    c,
+    f,
+    *,
+    serving_g=100.0,
+    serving="100 กรัม",
+    fiber=1.0,
+    source="TEST",
+    name_en="",
+):
     return {
-        "name_th": name, "name_en": name_en, "category": category,
-        "serving_desc": serving, "serving_g": serving_g, "kcal": kcal,
-        "protein_g": p, "carb_g": c, "fat_g": f, "fiber_g": fiber, "source": source,
+        "name_th": name,
+        "name_en": name_en,
+        "category": category,
+        "serving_desc": serving,
+        "serving_g": serving_g,
+        "kcal": kcal,
+        "protein_g": p,
+        "carb_g": c,
+        "fat_g": f,
+        "fiber_g": fiber,
+        "source": source,
     }
 
 
@@ -231,14 +251,21 @@ def test_missing_target_is_reported_not_hidden():
 @pytest.mark.parametrize("goal", ["cut", "bulk", "maintain"])
 def test_real_table_hits_target_for_unrestricted_profiles(real_foods, sex, goal):
     profile = ProfileInput(
-        sex=sex, birth_year=1996, height_cm=172, weight_kg=68,
-        activity_level="moderate", goal=goal, training_days=4,
+        sex=sex,
+        birth_year=1996,
+        height_cm=172,
+        weight_kg=68,
+        activity_level="moderate",
+        goal=goal,
+        training_days=4,
     )
     targets = calc_nutrition_targets(profile)
     plan = build_day_plan(
         real_foods,
-        {"kcal": targets["energy_target_kcal"],
-         **{k: targets["macros"][k] for k in ("protein_g", "carb_g", "fat_g")}},
+        {
+            "kcal": targets["energy_target_kcal"],
+            **{k: targets["macros"][k] for k in ("protein_g", "carb_g", "fat_g")},
+        },
     )
     assert plan["within_tolerance"], plan["deviation_pct"]
     for key, tol in TOLERANCE.items():
@@ -255,13 +282,22 @@ def test_real_table_respects_a_seafood_allergy(real_foods):
 
 
 def test_sourced_plant_proteins_and_cooking_oil_obey_restrictions(real_foods):
-    sourced = {r["name_th"]: r for r in real_foods if r["source"].startswith("FINELI-THL:")}
+    import json
+
+    sourced = {
+        r["name_th"]: r
+        for r in real_foods
+        if r["source"].startswith("FINELI-THL:")
+        or json.loads(r.get("nutrition_meta") or "{}")
+        .get("replaces_source", "")
+        .startswith("FINELI-THL:")
+    }
     assert len(sourced) == 4
     for name, row in sourced.items():
         assert excluded_by(row, ["วีแกน"]) is None, name
-        if name != "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)":
+        if name != "น้ำมันมะกอก":
             assert excluded_by(row, ["แพ้ถั่ว"]) == "แพ้ถั่ว", name
-    assert excluded_by(sourced["น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)"], ["แพ้ถั่ว"]) is None
+    assert excluded_by(sourced["น้ำมันมะกอก"], ["แพ้ถั่ว"]) is None
 
 
 @pytest.mark.parametrize("restrictions", [["วีแกน"], ["แพ้ถั่ว"], ["มังสวิรัติ", "แพ้ถั่ว"]])
@@ -271,7 +307,7 @@ def test_restricted_menu_uses_measured_sources_and_hits_target(real_foods, restr
     items = [i for meal in plan["meals"] for i in meal["items"]]
     by_name = {r["name_th"]: r for r in real_foods}
     assert all(excluded_by(by_name[i["name_th"]], restrictions) is None for i in items)
-    assert all(i["grams"] <= 20 for i in items if i["name_th"].startswith("น้ำมันปรุงอาหาร"))
+    assert all(i["grams"] <= 20 for i in items if i["name_th"] == "น้ำมันมะกอก")
     assert all(i["grams"] <= 70 for i in items if i["name_th"].startswith("ผงโปรตีนถั่วเหลือง"))
 
 
@@ -293,8 +329,15 @@ def test_every_everyday_food_is_a_real_row(real_foods):
 
 def _plan_for(real_foods, sex="male", goal="cut", restrictions=(), variant=0):
     male = sex == "male"
-    p = ProfileInput(sex=sex, birth_year=1998, birth_month=1, height_cm=175 if male else 160,
-                     weight_kg=75 if male else 55, activity_level="moderate", goal=goal)
+    p = ProfileInput(
+        sex=sex,
+        birth_year=1998,
+        birth_month=1,
+        height_cm=175 if male else 160,
+        weight_kg=75 if male else 55,
+        activity_level="moderate",
+        goal=goal,
+    )
     t = calc_nutrition_targets(p)
     macros = {k: t["macros"][k] for k in ("protein_g", "carb_g", "fat_g")}
     targets = {"kcal": t["energy_target_kcal"], **macros}
@@ -340,3 +383,9 @@ def test_portion_text_uses_grams_or_whole_units():
     rice = {"serving_desc": "1 หน่วยบริโภค (120 ก.)", "serving_g": 120}
     assert portion_text(1.5, rice) == "1.5 หน่วยบริโภค (รวม 180 กรัม)"
     assert chr(0xD7) not in portion_text(0.25, per_100g)  # the multiplication sign
+
+
+@pytest.mark.parametrize("serving_desc", ["10 กรัม", "1 หน่วยบริโภค (10 กรัม)"])
+def test_portion_text_preserves_fractional_grams(serving_desc):
+    food = {"serving_desc": serving_desc, "serving_g": 10}
+    assert "2.5 กรัม" in portion_text(0.25, food)

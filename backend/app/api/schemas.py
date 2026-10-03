@@ -112,7 +112,6 @@ class ProfileIn(BaseModel):
     goal: Literal["cut", "bulk", "maintain"]
     restrictions: list[str] = Field(default_factory=list)
 
-
     @field_validator("birth_year", mode="before")
     @classmethod
     def _birth_year_ce(cls, value: object) -> object:
@@ -157,6 +156,7 @@ class MessageOut(BaseModel):
     id: uuid.UUID
     role: str
     content: str
+    cancelled: bool = False
     citations: list | None = None
     tool_calls: list | None = None
     created_at: datetime
@@ -175,6 +175,7 @@ class ChatRequest(BaseModel):
     still sends it is ignored (pydantic's default is extra="ignore")."""
 
     message: str = Field(min_length=1, max_length=4000)
+    request_id: uuid.UUID | None = None
 
 
 # --- food log -------------------------------------------------------------
@@ -194,6 +195,9 @@ class FoodSearchResult(BaseModel):
     carb_g: float
     fat_g: float
     fiber_g: float | None
+    nutrition_meta: dict | None = None
+    estimated: bool = False
+    warnings: list[str] = Field(default_factory=list)
     #: "partial" = no name contains the query as typed; these rows only share
     #: some syllables with it and may be a different food (see foods.py).
     match: Literal["exact", "partial"] = "exact"
