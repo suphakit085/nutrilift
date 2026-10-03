@@ -288,9 +288,15 @@ _DAIRY_TOKENS = (
 #: collapsed to plain "ไข่" for the restrictions that permit eggs. "ไข่ปลา"
 #: (roe) is deliberately absent: it really is fish.
 _EGG_COMPOUNDS = ("ไข่ไก่", "ไข่เป็ด", "ไข่นกกระทา", "ไข่ห่าน")
-_RESTRICTIONS_EXCLUDING_EGGS = frozenset({"วีแกน"})
+_RESTRICTIONS_EXCLUDING_EGGS = frozenset({"วีแกน", "ไม่กินไข่"})
 
 _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
+    "ไม่กินไก่": (("ไก่", "chicken"), frozenset()),
+    "ไม่กินไข่": (("ไข่", "egg"), frozenset({"ไข่", "ไข่-นม"})),
+    "แพ้ถั่วเหลือง": (
+        ("ถั่วเหลือง", "เต้าหู้", "เต้าเจี้ยว", "เทมเป้", "โปรตีนเกษตร", "soy"),
+        frozenset(),
+    ),
     "ฮาลาล": (
         # blood and amphibians are haram alongside pork and alcohol; the ASEAN
         # table has boiled chicken/duck blood and frog as plain "เนื้อสัตว์" rows

@@ -29,7 +29,9 @@ from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
+from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, build_day_plan
+from app.services.menu_context import conversation_profile
 from app.services.nutrition import (
     GOAL_LABELS_TH,
     NutritionInputError,
@@ -298,6 +300,15 @@ def _run_menu_tool(
                 "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
             ),
         }
+    if any(r.startswith("ข้อจำกัดที่ยังไม่รองรับ:") for r in profile.restrictions):
+        return {
+            "error": "unsupported_menu_constraint",
+            "message": (
+                "ยังจัดเมนูตามข้อจำกัดอาหารทั้งหมดที่คุณแจ้งไม่ได้ครับ "
+                "ระบบจึงไม่เสนอเมนูที่อาจมีอาหารที่คุณงดหรือแพ้ "
+                "กรุณาระบุข้อจำกัดให้ชัดเจน หรือให้นักกำหนดอาหารช่วยจัดเมนูครับ"
+            ),
+        }
     try:
         targets = calc_nutrition_targets(profile)
     except NutritionInputError as exc:
@@ -388,6 +399,7 @@ def _run_food_lookup(
     user_message: str,
     pending_confirmations: list[str],
     partial_candidates_this_turn: list[str],
+    previous_user_message: str = "",
 ) -> dict:
     """Only return macros after the user names a suggested row in a later turn.
 
@@ -420,6 +432,10 @@ def _run_food_lookup(
         # the actual user message too, or the model has effectively confirmed
         # its own guess without ever returning a partial result.
         normalized_user = normalize_thai(user_message)
+        # Reuse only an explicit name in the immediately preceding USER turn
+        # when this turn refers back. Assistant guesses never confirm a food.
+        if re.search(r"เดิม|เมื่อกี้|อันนั้น|same|previous", normalized_user, re.I):
+            normalized_user += " " + normalize_thai(previous_user_message)
         unseen = [
             row["name_th"]
             for row in result.get("results", [])
@@ -455,6 +471,13 @@ def clean_answer(text: str) -> str:
     cited study is the latest as of today. Keep the study/date/citation intact.
     """
     cleaned = _INTERNAL_REFERENCE_RE.sub("", text)
+    def keep_citation_or_link(match: re.Match) -> str:
+        if cleaned[match.end():].startswith("("):
+            return match.group(0)  # Ordinary Markdown links remain readable.
+        tokens = re.split(r"[\s,]+", match.group(1).strip())
+        return match.group(0) if all(_LABEL_TOKEN_RE.fullmatch(t) for t in tokens) else ""
+
+    cleaned = _BRACKET_RE.sub(keep_citation_or_link, cleaned)
     return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
 
 
@@ -512,6 +535,8 @@ def _menu_reply(plan: dict) -> str:
         "| มื้ออาหาร | รายการอาหารและปริมาณ | พลังงาน (kcal) | โปรตีน (g) | คาร์บ (g) | ไขมัน (g) |",
         "| --- | --- | ---: | ---: | ---: | ---: |",
     ]
+    if plan.get("conversation_note"):
+        lines.insert(1, plan["conversation_note"])
     for meal in plan["meals"]:
         foods = "<br>".join(
             (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
@@ -700,6 +725,7 @@ def stream_chat(
     model: str | None = None,
     pending_food_confirmations: list[str] | None = None,
     persistent_safety_flags: list[str] | None = None,
+    menu_history: list[dict] | None = None,
 ) -> Iterator[dict]:
     """Run one turn. Yields event dicts:
 
@@ -798,6 +824,19 @@ def stream_chat(
         }
         return
 
+    profile, menu_context_note = conversation_profile(
+        profile, menu_history if menu_history is not None else (history or []), user_message
+    )
+    macro_reply = explicit_macro_energy_reply(user_message)
+    if macro_reply:
+        yield {"type": "delta", "text": macro_reply}
+        yield {
+            "type": "done", "text": macro_reply, "citations": [], "retrieved": citations,
+            "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(), "model": "rule:macro_energy",
+            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+        }
+        return
     targets: dict | None = None
     targets_summary = None
     if profile is not None and guardrails.personalization_allowed(guard):
@@ -834,6 +873,8 @@ def stream_chat(
         age=profile.age() if profile else None,
     )
 
+    if menu_context_note:
+        system_prompt += "\n\n" + menu_context_note + " ต้องแจ้งข้อนี้เมื่อรายงานเป้าหมายหรือเมนู"
     contents = _history_to_contents(history or [])
     contents.append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
 
@@ -857,6 +898,7 @@ def stream_chat(
     tool_chain_active = False
     verified_food_results: list[dict] = []
     verified_menu_results: list[dict] = []
+    menu_errors: list[str] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     finish_reasons: list[str] = []
 
@@ -969,13 +1011,23 @@ def stream_chat(
                         user_message=user_message,
                         pending_confirmations=pending_food_confirmations or [],
                         partial_candidates_this_turn=partial_candidates_this_turn,
+                        previous_user_message=next(
+                            (
+                                t.get("content", "")
+                                for t in reversed(history or []) if t.get("role") == "user"
+                            ), ""
+                        ),
                     )
                 else:
                     result = _execute_tool(db, profile, call.name, args, guard)
                 if call.name == "lookup_food" and result.get("found"):
                     verified_food_results.append(result)
                 if call.name == "suggest_day_menu" and result.get("meals"):
+                    if menu_context_note:
+                        result["conversation_note"] = menu_context_note
                     verified_menu_results.append(result)
+                elif call.name == "suggest_day_menu" and result.get("error"):
+                    menu_errors.append(result.get("message") or "ยังจัดเมนูตามข้อจำกัดนี้ไม่ได้ครับ")
                 if call.name == "lookup_food" and result.get("match") in {
                     "partial",
                     "confirmation_required",
@@ -1011,7 +1063,7 @@ def stream_chat(
             contents.append(types.Content(role="user", parts=response_parts))
             # The planner supplies a complete displayable answer. Another model
             # turn can alter portion numbers while keeping the original totals.
-            if verified_menu_results and not food_lookup_unverified:
+            if (verified_menu_results or menu_errors) and not food_lookup_unverified:
                 break
             # This response is already deterministic. A further model call
             # cannot confirm the user's choice and only adds timeout risk.
@@ -1040,6 +1092,8 @@ def stream_chat(
         answer_text = (
             _unverified_food_reply(food_lookup_candidates)
             if food_lookup_unverified
+            else "\n\n".join(dict.fromkeys(menu_errors))
+            if menu_errors
             else "\n\n".join(_menu_reply(plan) for plan in verified_menu_results)
             if verified_menu_results
             else clean_answer("".join(text_parts))

@@ -177,6 +177,7 @@ def turn_events(
     request_id: uuid.UUID | None = None,
     pending_food_confirmations: list[str] | None = None,
     persistent_safety_flags: list[str] | None = None,
+    menu_history: list[dict] | None = None,
     stream: Callable[..., Iterator[dict]] = stream_chat,
 ) -> Iterator[dict]:
     """Persist the user turn, stream the assistant turn, persist the result.
@@ -224,6 +225,7 @@ def turn_events(
             use_rag=use_rag,
             pending_food_confirmations=pending_food_confirmations or [],
             persistent_safety_flags=persistent_safety_flags or [],
+            menu_history=menu_history,
         ):
             event_type = event.pop("type")
             if event_type == "done":
@@ -305,5 +307,9 @@ def chat(
             request_id=payload.request_id,
             pending_food_confirmations=_pending_food_confirmations(conversation.messages),
             persistent_safety_flags=_conversation_safety_flags(conversation.messages),
+            menu_history=[
+                {"role": "user", "content": m.content}
+                for m in _active_history(conversation.messages) if m.role == "user"
+            ],
         )
     )
