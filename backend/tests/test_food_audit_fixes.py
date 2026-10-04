@@ -26,6 +26,8 @@ def rows(path):
 
 
 ACTIVE = rows(ROOT / "knowledge/foods.csv")
+PRE_REMOVAL = rows(ROOT / "knowledge/evidence/food-fixes-v6/foods.csv")
+ACTIVE_BY_NAME = {row["name_th"]: row for row in ACTIVE}
 AUDIT = [
     json.loads(s)
     for s in (ROOT / "knowledge/evidence/food-audit-v1/rows.jsonl")
@@ -37,6 +39,19 @@ AUDIT = [
 @lru_cache
 def source_hash(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def active_audit_row(index):
+    # Frozen audit positions identify the prior row, not the current CSV's
+    # position: removing a food must not shift checks onto another food.
+    return ACTIVE_BY_NAME[PRE_REMOVAL[index]["name_th"]]
+
+
+def test_bubble_tea_removal_preserves_every_other_source_and_nutrient():
+    assert len(ACTIVE) == 386
+    remaining = [r for r in PRE_REMOVAL if r["name_th"] != "ชานมไข่มุก"]
+    assert remaining == ACTIVE
+    assert all(r["source"] != "TOVERIFY-LABEL" for r in ACTIVE)
 
 
 @pytest.mark.parametrize("row", ACTIVE, ids=[r["source"] for r in ACTIVE])
@@ -60,7 +75,7 @@ def test_every_food_has_valid_values_and_bound_primary_source_or_quarantine(row)
     "index", [i for i, a in enumerate(AUDIT) if "source_per_100ml_used_as_per_100g" in a["flags"]]
 )
 def test_all_19_volume_sources_are_converted_once_using_density(index):
-    row, audit = ACTIVE[index], AUDIT[index]
+    row, audit = active_audit_row(index), AUDIT[index]
     assert row["serving_desc"] == "100 กรัม" and row["serving_g"] == "100"
     comp = audit["source_comparison"]
     for field, value in comp["raw_per_100ml"].items():
@@ -81,8 +96,9 @@ def test_all_19_volume_sources_are_converted_once_using_density(index):
     ],
 )
 def test_all_27_missing_or_crude_fibres_are_unknown(index):
-    assert ACTIVE[index]["fiber_g"] == ""
-    assert json.loads(ACTIVE[index]["nutrition_meta"])["fiber_definition"] == "unknown"
+    row = active_audit_row(index)
+    assert row["fiber_g"] == ""
+    assert json.loads(row["nutrition_meta"])["fiber_definition"] == "unknown"
 
 
 def test_canonical_ids_match_all_26_primary_proposals():
@@ -124,7 +140,7 @@ def test_rebuilding_volume_row_does_not_undo_conversion_or_quality(tmp_path, mon
 
     audit = next(a for a in AUDIT if "source_per_100ml_used_as_per_100g" in a["flags"])
     raw = audit["source_comparison"]
-    active = ACTIVE[audit["csv_line"] - 2]
+    active = active_audit_row(audit["csv_line"] - 2)
     extracted = {
         "food_id": active["source"].split(":")[1],
         "name_th": active["name_th"],
@@ -173,8 +189,7 @@ def test_unverified_foods_are_labeled_and_excluded_from_generated_menu():
         for r in foods
         if r["nutrition_meta"]["verification_status"] in {"unverified", "proxy_unverified"}
     }
-    assert len(excluded) == 1
-    assert excluded == {"ชานมไข่มุก"}
+    assert excluded == set()
     for restrictions in ([], ["วีแกน"], ["แพ้ถั่ว"], ["มังสวิรัติ", "แพ้ถั่ว"]):
         plan = build_day_plan(
             foods, {"kcal": 2100, "protein_g": 130, "carb_g": 260, "fat_g": 60}, restrictions

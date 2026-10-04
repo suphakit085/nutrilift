@@ -11,7 +11,7 @@ import { getToken } from "@/lib/api";
  *   - citation markers: distinct [Sn] per answer across the 150 RAG answers of
  *     baseline-v10; 1 of 335 (Q124 wrote [S8] with 6 passages) pointed at a
  *     passage that was not retrieved
- *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (387 rows)
+ *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (386 rows)
  *   - a real POST /conversations/{id}/chat response for "ช่วง cut ควรกินโปรตีนวันละเท่าไหร่"
  *   - a real GET /profile/targets response for a male/24y/175cm/72kg/bulk profile
  *   - the Flag enum in backend/app/services/guardrails.py (8 members)
@@ -464,8 +464,8 @@ export default function LandingPage() {
               {/* Unverified foods are excluded from generated menus.
                   Unknown fibre remains unknown. */}
               <p className="mt-5 text-[15px] leading-[1.8] text-body">
-                ตารางอาหารมี 387 รายการ พร้อมแหล่งที่มาและข้อจำกัดของข้อมูล
-                มี 1 รายการที่ยังยืนยันค่าตรงกับอาหารไม่ได้ ระบบแสดงคำเตือนและไม่ใช้จัดเมนู
+                ตารางอาหารมี 386 รายการ พร้อมแหล่งที่มาและข้อจำกัดของข้อมูล
+                ทุกรายการผ่านการตรวจเทียบแหล่งข้อมูลแล้ว และยังรอผู้ตรวจทานอิสระ
                 ค่าใยอาหารที่ไม่ทราบจะระบุว่ายังไม่มีข้อมูล ไม่ใช้แทนค่าศูนย์
               </p>
             </div>
