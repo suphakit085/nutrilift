@@ -41,6 +41,7 @@ from app.services.nutrition import (
     summarize_targets_th,
 )
 from app.services.protein_facts import explicit_single_meal_absorption_reply
+from app.services.protein_split import equal_protein_split_reply
 from app.services.thai_text import normalize_thai
 
 logger = logging.getLogger(__name__)
@@ -869,6 +870,22 @@ def stream_chat(
         # so it is merged here, after targets exist, and lands in the same
         # guard_instructions / safety_flags as the text rules.
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
+
+    if guardrails.personalization_allowed(guard) and not guard.flags:
+        split_reply = equal_protein_split_reply(
+            user_message, daily_protein_g=(targets or {}).get("macros", {}).get("protein_g"),
+            history=history,
+        )
+        if split_reply:
+            yield {"type": "delta", "text": split_reply}
+            yield {
+                "type": "done", "text": split_reply, "citations": [], "retrieved": citations,
+                "tool_calls": [],
+                "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+                "safety_flags": guard.as_json(), "model": "rule:protein_split",
+                "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+            }
+            return
 
     effective_goal = (
         ((targets or {}).get("effective_goal") or (profile.goal if profile else None))
