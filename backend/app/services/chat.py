@@ -30,7 +30,6 @@ from app.services import guardrails, prompts, retrieval
 from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
-from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.meal_plan import MealPlanError, build_day_plan
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import (
@@ -40,6 +39,7 @@ from app.services.nutrition import (
     calc_nutrition_targets,
     summarize_targets_th,
 )
+from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.thai_text import normalize_thai
 
 logger = logging.getLogger(__name__)
