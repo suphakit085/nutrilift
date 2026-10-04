@@ -30,6 +30,7 @@ from app.services import guardrails, prompts, retrieval
 from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
+from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.meal_plan import MealPlanError, build_day_plan
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import (
@@ -821,6 +822,17 @@ def stream_chat(
             "model": "rule:medical_scope",
             "prompt_version": prompts.PROMPT_VERSION,
             "use_rag": use_rag,
+        }
+        return
+
+    absorption_reply = explicit_single_meal_absorption_reply(user_message)
+    if absorption_reply:
+        yield {"type": "delta", "text": absorption_reply}
+        yield {
+            "type": "done", "text": absorption_reply, "citations": [], "retrieved": citations,
+            "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(), "model": "rule:protein_absorption",
+            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
         }
         return
 
