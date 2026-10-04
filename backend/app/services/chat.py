@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.food_portions import verified_food_portion_reply
 from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
@@ -909,6 +910,7 @@ def stream_chat(
     food_lookup_candidates: list[str] = []
     tool_chain_active = False
     verified_food_results: list[dict] = []
+    food_portion_reply: str | None = None
     verified_menu_results: list[dict] = []
     menu_errors: list[str] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
@@ -1073,6 +1075,16 @@ def stream_chat(
                     )
                 )
             contents.append(types.Content(role="user", parts=response_parts))
+            if (
+                verified_food_results
+                and not food_lookup_unverified
+                and all(call["name"] == "lookup_food" for call in tool_calls_log)
+            ):
+                food_portion_reply = verified_food_portion_reply(
+                    verified_food_results, user_message
+                )
+                if food_portion_reply:
+                    break
             # The planner supplies a complete displayable answer. Another model
             # turn can alter portion numbers while keeping the original totals.
             if (verified_menu_results or menu_errors) and not food_lookup_unverified:
@@ -1108,6 +1120,8 @@ def stream_chat(
             if menu_errors
             else "\n\n".join(_menu_reply(plan) for plan in verified_menu_results)
             if verified_menu_results
+            else food_portion_reply
+            if food_portion_reply
             else clean_answer("".join(text_parts))
         )
         if not food_lookup_unverified:
