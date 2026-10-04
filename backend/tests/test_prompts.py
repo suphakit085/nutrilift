@@ -81,7 +81,7 @@ from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VER
 
 
 def test_prompt_version_bumped_with_the_bracket_rule():
-    assert PROMPT_VERSION == "v1.15.0"
+    assert PROMPT_VERSION == "v1.15.1"
 
 
 def test_base_prompt_reserves_square_brackets_for_citations():
@@ -100,6 +100,11 @@ def test_no_context_note_forbids_any_marker():
 
 def test_food_tool_attribution_is_prose_not_a_bracket_label():
     assert "ไม่ใช่ป้ายในวงเล็บเหลี่ยม" in BASE_SYSTEM_PROMPT
+
+
+def test_prompt_avoids_unsupported_fixed_protein_meal_spacing():
+    assert "ห้ามกำหนดช่วงห่างตายตัวระหว่างมื้อ" in BASE_SYSTEM_PROMPT
+    assert "กระจายโปรตีนตามความสะดวก" in BASE_SYSTEM_PROMPT
 
 
 # --- the chat cannot see or write the diary (production_review_2026-09-24, B5)
