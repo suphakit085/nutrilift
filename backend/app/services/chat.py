@@ -474,6 +474,11 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     cited study is the latest as of today. Keep the study/date/citation intact.
     """
     cleaned = _INTERNAL_REFERENCE_RE.sub("", text)
+    # Oxidation is not excretion. Correct the observed mistranslation without
+    # changing the study's dose, endpoint, or citation.
+    cleaned = cleaned.replace(
+        "การเผาผลาญกรดอะมิโนเพื่อเป็นพลังงานหรือขับออก", "การออกซิไดซ์กรดอะมิโน"
+    )
     allowed = None if citations is None else {c["label"].upper() for c in citations}
 
     def keep_citation_or_link(match: re.Match) -> str:

@@ -110,3 +110,14 @@ def test_generic_study_dose_question_does_not_receive_personal_targets():
     )
     assert chat._personal_context_requested("ผมควรกินโปรตีนกี่กรัมต่อวัน")
     assert chat._personal_context_requested("ขอเป้าพลังงานตามโปรไฟล์เดิม")
+
+
+def test_amino_acid_oxidation_translation_is_not_excretion():
+    answer = "20 กรัมเพิ่มการออกซิไดซ์ (การเผาผลาญกรดอะมิโนเพื่อเป็นพลังงานหรือขับออก) [S1]"
+    cleaned = chat.clean_answer(answer, [{"label": "S1"}])
+    assert "ขับออก" not in cleaned and "20 กรัม" in cleaned and "[S1]" in cleaned
+
+
+def test_unrelated_excretion_text_and_links_are_preserved():
+    text = "ข้อความอื่นเกี่ยวกับการขับออก [อ่านเพิ่มเติม](https://example.com)"
+    assert chat.clean_answer(text, []) == text
