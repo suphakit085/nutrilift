@@ -34,6 +34,7 @@ from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, build_day_plan
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import (
+    ACTIVITY_LABELS_TH,
     GOAL_LABELS_TH,
     NutritionInputError,
     ProfileInput,
@@ -748,6 +749,7 @@ def _profile_summary_th(profile: ProfileInput | None) -> str | None:
     return (
         f"เพศ {'ชาย' if profile.sex == 'male' else 'หญิง'}, อายุ {profile.age()} ปี, "
         f"สูง {profile.height_cm} ซม., หนัก {profile.weight_kg} กก.{bf}, "
+        f"ระดับกิจกรรม: {ACTIVITY_LABELS_TH.get(profile.activity_level, profile.activity_level)}, "
         f"เล่นเวท {profile.training_days} วัน/สัปดาห์, "
         f"เป้าหมายที่ตั้งไว้: {GOAL_LABELS_TH.get(profile.goal, profile.goal)}"
         + (f", ข้อจำกัดอาหาร: {', '.join(profile.restrictions)}" if profile.restrictions else "")

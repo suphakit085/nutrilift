@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiError, api, getToken, type Profile, type Targets } from "@/lib/api";
+import { ageFrom, createProfileDraft, profileFromDraft, toCE, type ProfileDraft } from "@/lib/profile-form";
 
 const ACTIVITY_OPTIONS = [
   { value: "sedentary", label: "แทบไม่ออกกำลังกาย (นั่งทำงานเป็นหลัก)" },
@@ -27,96 +28,93 @@ const RESTRICTION_OPTIONS = [
   "แพ้ถั่ว",
   "แพ้อาหารทะเล",
   "ไม่กินเนื้อวัว",
+  "ไม่กินไก่",
+  "ไม่กินไข่",
 ];
 
-/** Mirrors ProfileIn._birth_year_ce in backend/app/api/schemas.py. The server
- *  already accepts พ.ศ. and converts it, but the form used to cap the input at
- *  `ปีนี้ - 18` in ค.ศ., so 2547 was rejected before it could ever reach that
- *  conversion - the support existed and was unreachable. The raw value is still
- *  what gets sent; this only decides what to show the user and whether to
- *  pre-check the age gate. The two constants must stay in step with the server:
- *  if they disagree, the form and the API disagree about which era a year is. */
-const BE_THRESHOLD = 2400;
 const BE_OFFSET = 543;
-
-function toCE(year: number) {
-  return year >= BE_THRESHOLD ? year - BE_OFFSET : year;
-}
-
-/** Mirrors ProfileInput.age() in backend/app/services/nutrition.py, including
- *  its month rule, so the hint under the field cannot claim an age the server
- *  would then reject. */
-function ageFrom(yearCE: number, month: number | null) {
-  const now = new Date();
-  let years = now.getFullYear() - yearCE;
-  if (month !== null && now.getMonth() + 1 <= month) years -= 1;
-  return years;
-}
 
 const MONTHS_TH = [
   "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
   "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
 ];
 
-const EMPTY: Profile = {
-  sex: "male",
-  birth_year: new Date().getFullYear() - 25,
-  birth_month: null,
-  height_cm: 170,
-  weight_kg: 65,
-  body_fat_pct: null,
-  activity_level: "moderate",
-  training_days: 3,
-  goal: "maintain",
-  restrictions: [],
-};
-
 export default function ProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<Profile>(EMPTY);
+  const [profile, setProfile] = useState<ProfileDraft>(createProfileDraft);
+  const [savedDraft, setSavedDraft] = useState<string | null>(null);
   const [targets, setTargets] = useState<Targets | null>(null);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!getToken()) {
       router.replace("/login");
       return;
     }
+    let cancelled = false;
     (async () => {
       try {
-        setProfile(await api.getProfile());
-        setTargets(await api.getTargets());
+        const draft = createProfileDraft(await api.getProfile());
+        if (cancelled) return;
+        setProfile(draft);
+        setSavedDraft(JSON.stringify(draft));
       } catch (err) {
+        if (cancelled) return;
         if (!(err instanceof ApiError && err.status === 404)) {
           setError((err as Error).message);
+          setLoadFailed(true);
+          setLoading(false);
+          return;
         }
-      } finally {
+        setProfile(createProfileDraft());
+        setSavedDraft(null);
+        setTargets(null);
         setLoading(false);
+        return;
       }
+      try {
+        const result = await api.getTargets();
+        if (!cancelled) setTargets(result);
+      } catch (err) {
+        if (!cancelled) {
+          setTargets(null);
+          setError(`โหลดเป้าหมายไม่สำเร็จ: ${(err as Error).message}`);
+        }
+      } finally { if (!cancelled) setLoading(false); }
     })();
-  }, [router]);
+    return () => { cancelled = true; };
+  }, [router, retry]);
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
-    if (birthYearCE < 1900 || birthYearCE > 2100) {
-      setError("ปีเกิดต้องอยู่ระหว่าง ค.ศ. 1900-2100 (หรือ พ.ศ. 2443-2643)");
-      return;
-    }
-    if (birthAge < 18) {
-      setError(`บริการนี้สำหรับผู้ที่มีอายุ 18 ปีขึ้นไป (ปีเกิดที่กรอกได้อายุ ${birthAge} ปี)`);
-      return;
-    }
+    if (savingRef.current || loadFailed) return;
+    let payload: Profile;
+    try { payload = profileFromDraft(profile); }
+    catch (err) { setError((err as Error).message); setStatus(""); return; }
+    savingRef.current = true;
+    setSaving(true);
     setError("");
     setStatus("กำลังบันทึก…");
     try {
-      await api.saveProfile(profile);
-      setTargets(await api.getTargets());
+      const saved = createProfileDraft(await api.saveProfile(payload));
+      setProfile(saved);
+      setSavedDraft(JSON.stringify(saved));
+      setTargets(null);
       setStatus("บันทึกแล้ว");
+      try { setTargets(await api.getTargets()); }
+      catch (err) { setError(`บันทึกข้อมูลแล้ว แต่โหลดเป้าหมายไม่สำเร็จ: ${(err as Error).message}`); }
     } catch (err) {
       setStatus("");
       setError((err as Error).message);
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
     }
   }
 
@@ -143,22 +141,23 @@ export default function ProfilePage() {
   const lowActivity = profile.activity_level === "sedentary" || profile.activity_level === "light";
   const highActivity = profile.activity_level === "active" || profile.activity_level === "very_active";
   const activityMismatch =
-    profile.training_days >= 5 && lowActivity
+    Number(profile.training_days) >= 5 && lowActivity
       ? `คุณเล่นเวท ${profile.training_days} วัน/สัปดาห์ แต่เลือกระดับกิจกรรมต่ำ ระบบคำนวณพลังงานจากระดับกิจกรรม` +
-        " ไม่ใช่จำนวนวัน ถ้าฝึกจริงตามนี้ควรเลือก “ปานกลาง” ขึ้นไป ไม่งั้นพลังงานที่คำนวณได้จะต่ำกว่าที่ใช้จริง"
-      : profile.training_days <= 1 && highActivity
-        ? "คุณเล่นเวทไม่เกิน 1 วัน/สัปดาห์ แต่เลือกระดับกิจกรรมสูง ถ้างานประจำไม่ได้ใช้แรงมาก" +
-          " ควรลดระดับลง ไม่งั้นพลังงานที่คำนวณได้จะสูงกว่าที่ใช้จริง"
+        " ไม่ใช่จำนวนวัน กรุณาทบทวนระดับที่เลือกโดยพิจารณาความหนัก ระยะเวลาฝึก และกิจกรรมระหว่างวันด้วย"
+      : profile.training_days !== "" && Number(profile.training_days) <= 1 && highActivity
+        ? "คุณเล่นเวทไม่เกิน 1 วัน/สัปดาห์ แต่เลือกระดับกิจกรรมสูง กรุณาทบทวนว่า" +
+          "งานประจำหรือการออกกำลังอื่นสอดคล้องกับระดับที่เลือกหรือไม่"
         : "";
 
-  const birthYearCE = toCE(profile.birth_year);
-  const birthAge = ageFrom(birthYearCE, profile.birth_month);
+  const dirty = savedDraft !== JSON.stringify(profile);
+  const birthYearCE = toCE(Number(profile.birth_year));
+  const birthAge = ageFrom(birthYearCE, profile.birth_month ? Number(profile.birth_month) : null);
   const birthYearHint =
     !profile.birth_year || birthYearCE < 1900 || birthYearCE > 2100
       ? "กรอกได้ทั้ง ค.ศ. (เช่น 2004) และ พ.ศ. (เช่น 2547)"
-      : profile.birth_year >= BE_THRESHOLD
-        ? `พ.ศ. ${profile.birth_year} = ค.ศ. ${birthYearCE} · อายุ ${birthAge} ปี`
-        : `ค.ศ. ${birthYearCE} · อายุ ${birthAge} ปี`;
+      : Number(profile.birth_year) >= 2400
+        ? `พ.ศ. ${profile.birth_year} = ค.ศ. ${birthYearCE}${profile.birth_month ? ` · อายุประมาณ ${birthAge} ปี` : ""}`
+        : `ค.ศ. ${birthYearCE}${profile.birth_month ? ` · อายุประมาณ ${birthAge} ปี` : ""}`;
 
   return (
     <main className="mx-auto max-w-3xl p-6 pb-16">
@@ -189,16 +188,29 @@ export default function ProfilePage() {
         onSubmit={save}
         className="space-y-6 rounded-lg border border-border bg-surface p-7"
       >
+        {loadFailed && <div role="alert" className="rounded-sm border border-red-500/20 p-4 text-sm">
+          โหลดโปรไฟล์ไม่สำเร็จ กรุณาลองใหม่ก่อนแก้ไขข้อมูล
+          <button type="button" onClick={() => {
+            setLoading(true);
+            setError("");
+            setLoadFailed(false);
+            setRetry((value) => value + 1);
+          }} className="ml-3 underline">ลองโหลดอีกครั้ง</button>
+        </div>}
+        <fieldset disabled={saving || loadFailed} className="space-y-6 disabled:opacity-60">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="field-label text-xs text-muted">เพศ</span>
             <select
+              required
+              aria-label="เพศ"
               value={profile.sex}
               onChange={(e) =>
-                setProfile({ ...profile, sex: e.target.value as Profile["sex"] })
+                setProfile({ ...profile, sex: e.target.value as ProfileDraft["sex"] })
               }
               className={inputClass}
             >
+              <option value="" disabled>เลือกเพศที่ใช้ในสูตรคำนวณ</option>
               <option value="male">ชาย</option>
               <option value="female">หญิง</option>
             </select>
@@ -220,7 +232,7 @@ export default function ProfilePage() {
               aria-describedby="birth-year-hint"
               value={profile.birth_year}
               onChange={(e) =>
-                setProfile({ ...profile, birth_year: Number(e.target.value) })
+                setProfile({ ...profile, birth_year: e.target.value })
               }
               className={inputClass}
             />
@@ -239,11 +251,12 @@ export default function ProfilePage() {
                 1 January; the month lets the server round the age down. */}
             <select
               required
-              value={profile.birth_month ?? ""}
+              aria-label="เดือนเกิด"
+              value={profile.birth_month}
               onChange={(e) =>
                 setProfile({
                   ...profile,
-                  birth_month: e.target.value ? Number(e.target.value) : null,
+                  birth_month: e.target.value,
                 })
               }
               className={inputClass}
@@ -257,6 +270,7 @@ export default function ProfilePage() {
                 </option>
               ))}
             </select>
+            <span className="mt-1.5 block text-xs text-muted">ใช้เดือนและปีเกิดประมาณอายุ โดยนับอายุลงตลอดเดือนเกิดเพราะไม่ได้เก็บวันเกิด</span>
           </label>
 
           <label className="block">
@@ -271,7 +285,7 @@ export default function ProfilePage() {
               max={230}
               value={profile.height_cm}
               onChange={(e) =>
-                setProfile({ ...profile, height_cm: Number(e.target.value) })
+                setProfile({ ...profile, height_cm: e.target.value })
               }
               className={inputClass}
             />
@@ -287,7 +301,7 @@ export default function ProfilePage() {
               max={300}
               value={profile.weight_kg}
               onChange={(e) =>
-                setProfile({ ...profile, weight_kg: Number(e.target.value) })
+                setProfile({ ...profile, weight_kg: e.target.value })
               }
               className={inputClass}
             />
@@ -296,18 +310,18 @@ export default function ProfilePage() {
           <label className="block">
             <span className="field-label text-xs text-muted">
               เปอร์เซ็นต์ไขมัน (ถ้าทราบ){" "}
-              <span className="normal-case tracking-normal text-muted/80">— ทำให้คำนวณแม่นขึ้น</span>
+              <span className="normal-case tracking-normal text-muted/80">— เว้นว่างได้ ไม่ต้องคาดเดา</span>
             </span>
             <input
               type="number"
               step="0.1"
               min={3}
               max={60}
-              value={profile.body_fat_pct ?? ""}
+              value={profile.body_fat_pct}
               onChange={(e) =>
                 setProfile({
                   ...profile,
-                  body_fat_pct: e.target.value ? Number(e.target.value) : null,
+                  body_fat_pct: e.target.value,
                 })
               }
               className={inputClass}
@@ -320,9 +334,10 @@ export default function ProfilePage() {
               type="number"
               min={0}
               max={7}
+              required
               value={profile.training_days}
               onChange={(e) =>
-                setProfile({ ...profile, training_days: Number(e.target.value) })
+                setProfile({ ...profile, training_days: e.target.value })
               }
               className={inputClass}
             />
@@ -332,21 +347,25 @@ export default function ProfilePage() {
         <label className="block">
           <span className="field-label text-xs text-muted">ระดับกิจกรรมโดยรวม</span>
           <select
+            required
+            aria-label="ระดับกิจกรรมโดยรวม"
             value={profile.activity_level}
             onChange={(e) =>
               setProfile({
                 ...profile,
-                activity_level: e.target.value as Profile["activity_level"],
+                activity_level: e.target.value as ProfileDraft["activity_level"],
               })
             }
             className={inputClass}
           >
+            <option value="" disabled>เลือกระดับกิจกรรม</option>
             {ACTIVITY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
             ))}
           </select>
+          <p className="mt-1.5 text-xs text-muted">พิจารณาทั้งงานประจำ การเดิน และการออกกำลัง ระดับนี้ใช้คำนวณพลังงาน ส่วนจำนวนวันเล่นเวทใช้เป็นบริบทคำตอบ</p>
           {/* The energy formula uses this level only; training days do not
               enter it. "เล่นเวท 6 วัน" with "แทบไม่ออกกำลังกาย" used to save
               silently and give a TDEE far too low
@@ -361,12 +380,15 @@ export default function ProfilePage() {
         <label className="block">
           <span className="field-label text-xs text-muted">เป้าหมาย</span>
           <select
+            required
+            aria-label="เป้าหมาย"
             value={profile.goal}
             onChange={(e) =>
-              setProfile({ ...profile, goal: e.target.value as Profile["goal"] })
+              setProfile({ ...profile, goal: e.target.value as ProfileDraft["goal"] })
             }
             className={inputClass}
           >
+            <option value="" disabled>เลือกเป้าหมาย</option>
             {GOAL_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -379,7 +401,7 @@ export default function ProfilePage() {
           <span className="field-label text-xs text-muted">ข้อจำกัดด้านอาหาร</span>
           <p className="mt-0.5 text-xs text-muted">เลือกได้มากกว่า 1 ข้อ</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {RESTRICTION_OPTIONS.map((item) => {
+            {Array.from(new Set([...RESTRICTION_OPTIONS, ...profile.restrictions])).map((item) => {
               const selected = profile.restrictions.includes(item);
               return (
                 <button
@@ -401,7 +423,7 @@ export default function ProfilePage() {
         </div>
 
         {error && (
-          <p className="rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+          <p role="alert" className="rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}
@@ -409,15 +431,19 @@ export default function ProfilePage() {
         <div className="flex items-center gap-3 border-t border-border pt-6">
           <button
             type="submit"
+            disabled={saving || loadFailed}
             className="rounded-md bg-cta px-7 py-3 font-medium text-cta-foreground transition hover:opacity-85 active:scale-[0.98]"
           >
-            บันทึกและคำนวณ
+            {saving ? "กำลังบันทึก…" : "บันทึกและคำนวณ"}
           </button>
-          {status && <span className="text-sm text-muted">{status}</span>}
+          {status && (!dirty || saving) && <span role="status" className="text-sm text-muted">{status}</span>}
         </div>
+        </fieldset>
       </form>
 
-      {targets && <TargetsCard targets={targets} />}
+      {dirty && savedDraft !== null && <p role="status" className="mt-6 text-sm text-muted">ข้อมูลที่แก้ยังไม่ได้บันทึก กรุณาบันทึกและคำนวณเพื่ออัปเดตเป้าหมาย</p>}
+      {targets && !dirty && !loadFailed && <TargetsCard targets={targets} />}
+      <p className="mt-6 text-xs text-muted">สำหรับการจัดมื้อให้เข้ากับชีวิตประจำวัน แจ้งจำนวนมื้อ เวลาออกกำลัง งบประมาณ และอาหารที่ไม่ต้องการเพิ่มเติมในแชทได้</p>
     </main>
   );
 }

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, date, datetime, timedelta
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
 
@@ -104,24 +104,46 @@ class ProfileIn(BaseModel):
     sex: Literal["male", "female"]
     birth_year: int
     birth_month: int = Field(ge=1, le=12)
-    height_cm: float = Field(gt=0, le=250)
-    weight_kg: float = Field(gt=0, le=400)
+    height_cm: float = Field(ge=120, le=230)
+    weight_kg: float = Field(ge=30, le=300)
     body_fat_pct: float | None = Field(default=None, ge=3, le=60)
     activity_level: Literal["sedentary", "light", "moderate", "active", "very_active"]
     training_days: int = Field(default=3, ge=0, le=7)
     goal: Literal["cut", "bulk", "maintain"]
-    restrictions: list[str] = Field(default_factory=list)
+    restrictions: list[Annotated[str, Field(min_length=1, max_length=80)]] = Field(
+        default_factory=list, max_length=20
+    )
 
-    @field_validator("birth_year", mode="before")
+    @field_validator(
+        "birth_year", "birth_month", "height_cm", "weight_kg", "body_fat_pct",
+        "training_days", mode="before",
+    )
     @classmethod
-    def _birth_year_ce(cls, value: object) -> object:
-        if isinstance(value, bool) or not isinstance(value, int):
-            return value
+    def _not_boolean(cls, value: object) -> object:
+        if isinstance(value, bool):
+            raise ValueError("กรุณากรอกข้อมูลเป็นตัวเลข ไม่ใช่ค่า true/false")
+        return value
+
+    @field_validator("birth_year")
+    @classmethod
+    def _birth_year_ce(cls, value: int) -> int:
         if value >= _BE_THRESHOLD:
             value -= _BE_OFFSET
         if not 1900 <= value <= 2100:
             raise ValueError("ปีเกิดต้องอยู่ระหว่าง ค.ศ. 1900-2100 (หรือ พ.ศ. 2443-2643)")
         return value
+
+    @field_validator("restrictions")
+    @classmethod
+    def _clean_restrictions(cls, values: list[str]) -> list[str]:
+        cleaned = []
+        for value in values:
+            value = value.strip()
+            if not value or any(ord(char) < 32 or ord(char) == 127 for char in value):
+                raise ValueError("ข้อจำกัดอาหารต้องมีข้อความและไม่มีอักขระควบคุม")
+            if value not in cleaned:
+                cleaned.append(value)
+        return cleaned
 
 
 class ProfileOut(ProfileIn):
