@@ -44,7 +44,7 @@ def test_new_card_manifest_and_primary_paragraph_are_reproducible():
     for card in manifest["cards"]:
         assert (
             hashlib.sha256(
-                (ROOT / "knowledge/cards" / (card["card"] + ".md")).read_bytes()
+                (ROOT / "knowledge/evidence/content-fixes-v6" / (card["card"] + ".md")).read_bytes()
             ).hexdigest()
             == card["candidate_sha256"]
         )

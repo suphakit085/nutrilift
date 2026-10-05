@@ -215,7 +215,8 @@ def test_scoped_recency_text_is_identical_in_delta_and_saved_done(monkeypatch):
     monkeypatch.setattr(chat, "get_client", lambda: fake)
     events = list(chat.stream_chat(DB(), user_message="ครีเอทีนกับเส้นผม", use_rag=False))
     assert events[-1]["type"] == "done"
-    assert events[-1]["text"] == "งานวิจัยในชุดข้อมูลนี้ปี 2025 ไม่พบผลต่าง [S1]"
+    assert events[-1]["text"] == "งานวิจัยในชุดข้อมูลนี้ปี 2025 ไม่พบผลต่าง "
+    assert events[-1]["citations"] == []
     assert "".join(e["text"] for e in events if e["type"] == "delta") == events[-1]["text"]
 
 

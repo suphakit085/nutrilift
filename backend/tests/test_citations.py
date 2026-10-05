@@ -5,7 +5,7 @@ Attaching every retrieved passage would display misleading sources and inflate
 the groundedness score in the evaluation.
 """
 
-from app.services.chat import cited_only
+from app.services.chat import cited_only, clean_answer
 
 PASSAGES = [
     {"label": "S1", "title": "โปรตีน", "document_slug": "protein-requirement"},
@@ -80,3 +80,27 @@ def test_multiple_markers_in_one_bracket_no_space():
 def test_multiple_markers_in_one_bracket_space_separated():
     answer = "ตามข้อมูล [S1 S3]"
     assert labels(cited_only(answer, PASSAGES)) == ["S1", "S3"]
+
+
+def test_markdown_link_is_not_a_retrieved_citation():
+    assert cited_only("[S1](https://example.com)", PASSAGES) == []
+
+
+def test_mixed_note_is_not_a_citation():
+    assert cited_only("[S1 ข้อมูลจากระบบ]", PASSAGES) == []
+
+
+def test_cleanup_removes_unknown_markers_from_displayed_answer():
+    assert clean_answer("ข้อความ [S9] [S1, S8; s3]", PASSAGES) == "ข้อความ  [S1, S3]"
+
+
+def test_cleanup_without_retrieval_cannot_claim_a_source():
+    assert clean_answer("ข้อความ [S1]", []) == "ข้อความ "
+
+
+def test_cleanup_keeps_ordinary_markdown_links():
+    assert clean_answer("[ข้อมูล](https://example.com) [S1]", []) == "[ข้อมูล](https://example.com) "
+
+
+def test_cleanup_supports_semicolon_citations_and_deduplicates():
+    assert clean_answer("ข้อความ [s2; S1; S2]", PASSAGES) == "ข้อความ [S2, S1]"

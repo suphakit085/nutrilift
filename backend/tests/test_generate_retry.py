@@ -191,7 +191,8 @@ def test_a_stall_mid_buffered_answer_is_retried(harness):
 def test_internal_heading_split_across_chunks_never_reaches_client(harness):
     events, _, _ = harness([[_chunk("ปรึกษาแพทย์ [ข้อจำกัดด้าน"),
                             _chunk("ความปลอดภัย] [S1]")]])
-    assert events[-1]["text"] == "ปรึกษาแพทย์  [S1]"
+    assert events[-1]["text"] == "ปรึกษาแพทย์  "
+    assert events[-1]["citations"] == []
     assert "".join(e["text"] for e in events if e["type"] == "delta") == events[-1]["text"]
 
 

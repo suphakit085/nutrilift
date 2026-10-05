@@ -4,11 +4,11 @@ title: การตีความเปอร์เซ็นต์ไขมั�
 topic: energy
 lang: th
 review_status: ai_reviewed_pending_independent_review
-content_fix_version: v3
+content_fix_version: v7
 baseline_id: '2026-10-01'
 sources:
   - "Jagim AR, Tinsley GM, Oppliger RA, et al. Collegiate women's wrestling body fat percentage and minimum wrestling weight values: time for revisiting minimal body fat percent? J Int Soc Sports Nutr. 2024;21(1):2304561. doi:10.1080/15502783.2024.2304561."
-  - "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [เอกสารปี 2016; การตรวจ erratum 2017 ยังไม่เสร็จ]"
+  - "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]"
   - "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20."
   - "Mero AA, Huovinen H, Matintupa O, et al. Moderate energy restriction with high protein diet results in healthier outcome in women. J Int Soc Sports Nutr. 2010;7:4. doi:10.1186/1550-2783-7-4."
   - "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
@@ -50,4 +50,4 @@ BMI ไม่เหมาะใช้แทนองค์ประกอบร�
 
 การกดดันให้ถึงน้ำหนักหรือไขมันที่ต่ำมากในเวลาสั้นอาจนำไปสู่การควบคุมน้ำหนักแบบสุดโต่งและพฤติกรรมการกินผิดปกติ หากมีประจำเดือนผิดปกติหรือบาดเจ็บซ้ำระหว่างลดน้ำหนัก ควรให้แพทย์ประเมินและทบทวนแผนอาหารกับนักกำหนดอาหาร ไม่ตัดสินว่ามีหรือไม่มีโรคจากเปอร์เซ็นต์ไขมันอย่างเดียว (Thomas et al., 2016, หน้า 547; Mountjoy et al., 2023, Box 2)
 
-สถานะหลักฐาน: ข้อมูลจาก Thomas และคณะปี 2016 ในชุดนี้ยังรอทวนผลกระทบจาก erratum ปี 2017 จึงไม่ถือว่าได้ตรวจฉบับแก้ไขแล้ว และไม่ใช้ข้อมูลนี้ออกคำรับรองความพร้อมฝึกเฉพาะบุคคล
+สถานะหลักฐาน: ฉบับทางการของผู้จัดพิมพ์ร่วม Dietitians of Canada ระบุ Revised December 2016 และแก้ข้อความรับรองหลักสูตร IOC/Sports Oracle ที่หน้า 45 โครงการตรวจแล้วว่าการ์ดนี้ไม่คัดลอกข้อความนั้น แต่ยังเข้าไม่ถึงเนื้อหา MSSE erratum ปี 2017 โดยตรง จึงไม่รับรองว่าฉบับแก้ไขทั้งสองมีข้อความเหมือนกันทั้งหมด และไม่ใช้ข้อมูลนี้ออกคำรับรองความพร้อมฝึกเฉพาะบุคคล

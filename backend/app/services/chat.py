@@ -467,18 +467,25 @@ _INTERNAL_REFERENCE_RE = re.compile(
 )
 
 
-def clean_answer(text: str) -> str:
+def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     """Remove internal labels and scope recency claims to the supplied corpus.
 
     Retrieval has no live literature search, so it cannot establish that a
     cited study is the latest as of today. Keep the study/date/citation intact.
     """
     cleaned = _INTERNAL_REFERENCE_RE.sub("", text)
+    allowed = None if citations is None else {c["label"].upper() for c in citations}
+
     def keep_citation_or_link(match: re.Match) -> str:
         if cleaned[match.end():].startswith("("):
             return match.group(0)  # Ordinary Markdown links remain readable.
-        tokens = re.split(r"[\s,]+", match.group(1).strip())
-        return match.group(0) if all(_LABEL_TOKEN_RE.fullmatch(t) for t in tokens) else ""
+        tokens = re.split(r"[\s,;]+", match.group(1).strip().upper())
+        if not all(_LABEL_TOKEN_RE.fullmatch(t) for t in tokens):
+            return ""
+        if allowed is None:
+            return match.group(0)
+        supported = list(dict.fromkeys(t for t in tokens if t in allowed))
+        return "[" + ", ".join(supported) + "]" if supported else ""
 
     cleaned = _BRACKET_RE.sub(keep_citation_or_link, cleaned)
     return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
@@ -612,10 +619,12 @@ def cited_only(answer_text: str, citations: list[dict]) -> list[dict]:
     follows the original retrieval ranking, not the order of first mention.
     """
     used: set[str] = set()
-    for bracket in _BRACKET_RE.findall(answer_text.upper()):
-        for token in re.split(r"[,\s;]+", bracket.strip()):
-            if _LABEL_TOKEN_RE.match(token):
-                used.add(token)
+    for match in _BRACKET_RE.finditer(answer_text.upper()):
+        if answer_text[match.end():].startswith("("):
+            continue
+        tokens = re.split(r"[,\s;]+", match.group(1).strip())
+        if all(_LABEL_TOKEN_RE.fullmatch(token) for token in tokens):
+            used.update(tokens)
     return [c for c in citations if c["label"].upper() in used]
 
 
@@ -975,7 +984,7 @@ def stream_chat(
                             and not any(part.function_call is not None for part in turn_parts)
                             and not tool_chain_active
                         ):
-                            partial = clean_answer("".join(turn_text_parts))
+                            partial = clean_answer("".join(turn_text_parts), citations)
                             text_parts.append(partial)
                             yield {"type": "delta", "text": partial}
                             turn_text_parts.clear()
@@ -1021,7 +1030,7 @@ def stream_chat(
                 return
             if not function_calls:
                 if not tool_chain_active:
-                    answer = clean_answer("".join(turn_text_parts))
+                    answer = clean_answer("".join(turn_text_parts), citations)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
                 elif not food_lookup_unverified:
@@ -1139,7 +1148,7 @@ def stream_chat(
             if verified_menu_results
             else food_portion_reply
             if food_portion_reply
-            else clean_answer("".join(text_parts))
+            else clean_answer("".join(text_parts), citations)
         )
         if not food_lookup_unverified:
             answer_text = _append_food_data_notes(answer_text, verified_food_results)

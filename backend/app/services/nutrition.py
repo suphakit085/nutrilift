@@ -75,7 +75,8 @@ PROTEIN_G_PER_KG: dict[str, tuple[float, float]] = {
 #: Fat g per kg bodyweight, as (low, high).
 FAT_G_PER_KG: tuple[float, float] = (0.8, 1.0)
 
-#: Fat must supply at least this share of total energy (Helms 2014).
+#: Project calculator floor; Helms 2014 also discusses 15-20% in some
+#: contest-preparation contexts. This is not a universal literature minimum.
 MIN_FAT_ENERGY_SHARE = 0.20
 
 #: The service is for adults: below this age the calculator refuses to produce

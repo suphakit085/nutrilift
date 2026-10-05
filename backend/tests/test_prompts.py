@@ -38,6 +38,12 @@ def test_goal_guidance_is_grounded_in_the_energy_balance_card():
     assert "TDEE" in GOAL_GUIDANCE_TH["maintain"]
 
 
+def test_project_macro_floor_is_not_presented_as_universal_evidence():
+    assert "ข้อกำหนดของเครื่องคำนวณโครงการ" in GOAL_GUIDANCE_TH["cut"]
+    assert "ไม่รับประกัน" in GOAL_GUIDANCE_TH["cut"]
+    assert "ไม่รับประกัน" in GOAL_GUIDANCE_TH["bulk"]
+
+
 def test_female_reproductive_age_gets_iron_and_menstrual_framing():
     note = sex_guidance_th("female", 30)
     assert note and "20 มก." in note and "ประจำเดือน" in note
@@ -81,7 +87,7 @@ from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VER
 
 
 def test_prompt_version_bumped_with_the_bracket_rule():
-    assert PROMPT_VERSION == "v1.15.1"
+    assert PROMPT_VERSION == "v1.16.0"
 
 
 def test_base_prompt_reserves_square_brackets_for_citations():

@@ -1,0 +1,583 @@
+{
+  "source_url": "https://fineli.fi/fineli/content/file/49",
+  "package_release": "20.0",
+  "package_sha256": "e7e6bd8d4b9261d751229e763dad436b297d36d48fe853faf49e1fd2a116d262",
+  "name_rows": [
+    {
+      "FOODID": "33026",
+      "FOODNAME": "SOYA MINCE, WHITE OR DARK, BOILED WITHOUT SALT",
+      "LANG": "EN"
+    }
+  ],
+  "component_rows": [
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "ENERC",
+      "BESTLOC": "533,47",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAT",
+      "BESTLOC": "0,911",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CHOAVL",
+      "BESTLOC": "7,960",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CHOCDF",
+      "BESTLOC": "13,676",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "PROT",
+      "BESTLOC": "18,75",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "ALC",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "ASH",
+      "BESTLOC": "2,165",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "WATER",
+      "BESTLOC": "56,25",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "OA",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "SUGOH",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "SUGAR",
+      "BESTLOC": "3,048",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FRUS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "GALS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "GLUS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "LACS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "MALS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "SUCS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "STARCH",
+      "BESTLOC": "4,91",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FIBC",
+      "BESTLOC": "5,716",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FIBT",
+      "BESTLOC": "5,373",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FIBINS",
+      "BESTLOC": "2,97",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "PSACNCS",
+      "BESTLOC": "2,40",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FOL",
+      "BESTLOC": "80,82",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "NIAEQ",
+      "BESTLOC": "4,113",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "NIA",
+      "BESTLOC": "0,986",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITPYRID",
+      "BESTLOC": "0,26",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "RIBF",
+      "BESTLOC": "0,077",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "THIA",
+      "BESTLOC": "0,1975",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITA",
+      "BESTLOC": "0,682",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "RETOL",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CAROTENS",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CARTB",
+      "BESTLOC": "8,23",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITB12",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITC",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITD",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITE",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "VITK",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CA",
+      "BESTLOC": "95,30",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CU",
+      "BESTLOC": "0,7621",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FD",
+      "BESTLOC": "0,007",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FE",
+      "BESTLOC": "5,221",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "K",
+      "BESTLOC": "948,85",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "MG",
+      "BESTLOC": "116,605",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "MN",
+      "BESTLOC": "1,4485",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "NA",
+      "BESTLOC": "1,92",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "NACL",
+      "BESTLOC": "4,88",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "NT",
+      "BESTLOC": "3,000",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "P",
+      "BESTLOC": "267,1",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "SE",
+      "BESTLOC": "1,296",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "ZN",
+      "BESTLOC": "1,928",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAFRE",
+      "BESTLOC": "0,656",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FACIDCTG",
+      "BESTLOC": "0,686",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAPU",
+      "BESTLOC": "0,398",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAMCIS",
+      "BESTLOC": "0,1559",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FASAT",
+      "BESTLOC": "0,1021",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FATRN",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAPUN3",
+      "BESTLOC": "0,0088",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAPUN6",
+      "BESTLOC": "0,389",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "FAS18",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F16D0T",
+      "BESTLOC": "74,688",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F18D1T",
+      "BESTLOC": "153,949",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F18D2CN6",
+      "BESTLOC": "350,958",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F18D3N3",
+      "BESTLOC": "8,764",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F20D4N6",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F20D5N3",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "F22D6N3",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "CHOLE",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "STERT",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "TRP",
+      "BESTLOC": "248,8",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "MYRIC",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    },
+    {
+      "FOODID": "33026",
+      "EUFDNAME": "QUERCE",
+      "BESTLOC": "0",
+      "ACQTYPE": "S",
+      "METHTYPE": "R",
+      "METHIND": "MI0002"
+    }
+  ],
+  "description": "Ravintoarvopaketti. Näringsdata paket. Nutrient data package.\r\nFineli. Elintarvikkeiden koostumustietokanta. Livsmedelsdatabas. Finnish food composition database. \r\nVersio. Version. Release. 20.0\r\n \r\nCopyright 2015 Terveyden ja hyvinvoinnin laitos (THL). Käyttöehdot: Creative Commons Nimeä 4.0 (CC-BY 4.0).\r\nCopyright 2015 Institutet för hälsa och välfärd (THL). Licens: Creative Commons, Erkännande  4.0 (CC-BY 4.0). \r\nCopyright 2015 National Institute for Health and Welfare (THL). Licence: Creative Commons Attribution 4.0 (CC-BY 4.0). \r\n \r\nTHL ei vastaa tiedoissa mahdollisesti esiintyvistä virheistä. Tietojen tulkinta ja niistä tehtävät johtopäätökset ovat käyttäjän omalla vastuulla.  \r\nTHL ansvarar inte för eventuella fel i uppgifterna. Tolkningen av informationen och slutsatserna av dem är helt på användarens eget ansvar.\r\nTHL is not responsible for any errors or inaccuracies found on this web site. THL is not liable for any consequences due to misinterpretations of the data.\r\n \r\nKaikki tiedot ovat ASCII-tekstitiedostoja. Alla filerna är ASCII-textfiler. All files are ASCII-text files.\r\n \r\nTIEDOSTOT. FILER. FILES.\r\ncomponent_value.csv Ravintoarvo. Näringsvärde. Component value.\r\nfood.csv Elintarvike. Livsmedel. Food.\r\ncomponent.csv Ravintotekijä. Näringsämne. Component. \r\npublication.csv Julkaisu. Publikation. Publication.\r\nfoodaddunit.csv Elintarvikkeen ruokamitat. Livsmedels enheter. Food additional units. \r\ncontribfood.csv Elintarvikkeen reseptirivit. Recepts livsmedel. Recipe foods. \r\nfoodname_FI.csv Elintarvikkeen nimet. (FI)\r\nfoodname_SV.csv Livsmedels namn. (SV)\r\nfoodname_EN.csv Food names. (EN)\r\nfoodname_TX.csv Tieteelliset nimet, vetenskapliga namn, scientific names (TX)\r\nacqtype_FI.csv Luokitus:Tietolähde. \r\nacqtype_SV.csv Klassificering: Data källa. \r\nacqtype_EN.csv Classification: Acquisition type. \r\nmethtype_FI.csv Luokitus:Menetelmätyyppi. \r\nmethtype_SV.csv Klassificering: Metod typ. \r\nmethtype_EN.csv Classification: Method type. \r\nmethind_FI.csv Luokitus:Analyysimenetelmä. \r\nmethind_SV.csv Klassificering: Analysmetod. \r\nmethind_EN.csv Classification: Method of analysis (method headline). \r\ncmpclass_FI.csv Luokitus:Ravintotekijäluokka. \r\ncmpclass_SV.csv Klassificering: Näringsämnegrupp. \r\ncmpclass_EN.csv Classification: Component group. \r\ncompunit_FI.csv Luokitus:Ravintotekijän yksikkö. \r\ncompunit_SV.csv Klassificering: Enhet(näringsämne). \r\ncompunit_EN.csv Classification: Unit (component). \r\nfoodtype_FI.csv Luokitus:Elintarviketyyppi. \r\nfoodtype_SV.csv Klassificering: Livsmedel typ. \r\nfoodtype_EN.csv Classification: Food type. \r\nfoodunit_FI.csv Luokitus:Elintarvikkeen yksikkö. \r\nfoodunit_SV.csv Klassificering: Enhet(livsmedel). \r\nfoodunit_EN.csv Classification: Unit (food). \r\nprocess_FI.csv Luokitus:Valmistustapa. \r\nprocess_SV.csv Klassificering: Livsmedelshantering. \r\nprocess_EN.csv Classification: Processing method. \r\nigclass_FI.csv Luokitus:Raaka-aineluokka. \r\nigclass_SV.csv Klassificering: Råvara klass. \r\nigclass_EN.csv Classification: Ingredient class. \r\nfuclass_FI.csv Luokitus:Ruoankäyttöluokka. \r\nfuclass_SV.csv Klassificering: Livsmedel bruk klass. \r\nfuclass_EN.csv Classification: Food use class. \r\nspecdiet_FI.csv Luokitus:Erityisruokavelio. \r\nspecdiet_SV.csv Klassificering: Specialkost. \r\nspecdiet_EN.csv Classification: Special diet. \r\neufdname_FI.csv Luokitus:Ravintotekijöiden nimet. \r\neufdname_SV.csv Klassificering:Näringsämnes namn. \r\neufdname_EN.csv Classification:Component names. \r\ndescript.txt Tietojen kuvaus (tämä tiedosto). Beskrivningen av data (denna fil). Data description (this file).\r\n\r\nKENTTÄEROTIN. KOLUMN FRÅNSKILJARE. OUTPUT SEPARATOR.  \";\"\r\n\r\nTIETOTYYPIT. DATATYPER. DATATYPES.\r\nPuuttuvan tiedon koodit. Koderna för bristande data. Codes for missing data. \r\n   Numero, yleinen. Nummer, allmänt. Number, general. \r\n   Numero, ravintoarvo.  Nummer, näringsvärde. Number, component value. \r\n   Teksti, yleinen. Text, allmän. Text, general. \r\n   Teksti, koodi. Text, kod. Text, code. \r\n\r\nYHTEYDET. RELATIONER. RELATIONS.\r\n Elintarvike, pääavain. Livsmedel, primärnyckel. Food, primary key. FOODID\r\n \r\n    Valinnaisten luokitusten viiteavain. LUOKAN KOODI <<-- LUOKITUKSEN THSCODE\r\n    Esimerkki: Raaka-aineluokka IGCLASS <<-- Raaka-aineluokka THSCODE\r\n    Valinnaiset luokan ylempi taso tai luokan ylin taso liitetään samalla tavalla\r\n\r\n    Valfria klassificeringarnas referensnyckel. KLASS KOD <<-- KLASSIFICERINGARNAS THSCODE\r\n    Exempel: Ingrediens klass IGCLASS <<-- Ingrediens klass THSCODE\r\n    Övre nivå av valfri klass eller översta nivån av klass kombineras på samma sätt\r\n\r\n    Reference key of optional classifications CODE OF CLASS<<-- THSCODE OF CLASSIFICATION\r\n    Example: Ingredient class IGCLASS <<-- Ingredient class THSCODE\r\n    Higher level of optional class or highest level of class are joined in the same way\r\n\r\n    Valinnainen. Valfri. Optional.  PUBLID <<-- Julkaisu. Publikation. Publication. PUBLID\r\n\r\n Ravintoarvo. Näringsvärde. Component value \r\n    Viiteavain. Referensnyckel. Reference key. FOODID <<-- food.FOODID\r\n    Viiteavain. Referensnyckel. Reference key. EUFDNAME <<-- Component.EUFDNAME\r\n    Valinnaisten luokitusten viiteavain LUOKAN KOODI <<-- LUOKITUKSEN THSCODE\r\n    Esimerkki: Ravintoarvotyyppi VALTYPE <<-- valtype.THSCODE\r\n    Valfria klassificeringarnas referensnyckel. KLASS KOD <<-- KLASSIFICERINGARNAS THSCODE\r\n    Exempel: Näringsvärdes typ VALTYPE <<-- valtype.THSCODE\r\n    Reference key of optional classifications CODE OF CLASS<<-- THSCODE OF CLASSIFICATION\r\n    Example: Component value type VALTYPE <<-- valtype.THSCODE\r\n    Valinnainen viiteavain. Valfri referensnyckel. Optional reference key. PUBLID <<-- publication.PUBLID\r\n\r\n Ravintotekijä, pääavain. Näringsämne, primarnyckel. Component, primary key. EUFDNAME\r\n    Valinnaisten luokitusten viiteavain LUOKAN KOODI <<-- LUOKITUKSEN THSCODE\r\n    Esimerkki: Ravintotekijäluokka CMPCLASS <<-- cmpclass.THSCODE\r\n    Valinnaiset luokan ylempi taso tai luokan ylin taso liitetään samalla tavalla\r\n    Valfria klassificeringarnas referensnyckel. KLASS KOD <<-- KLASSIFICERINGARNAS THSCODE\r\n    Exempel: näringsämnegrupp CMPCLASS <<-- cmpclass.THSCODE\r\n    Övre nivå av valfri klass eller översta nivån av klass kombineras på samma sätt\r\n    Reference key of optional classifications CODE OF CLASS<<-- THSCODE OF CLASSIFICATION\r\n    Example: Component group CMPCLASS <<-- cmpclass.THSCODE\r\n    Higher level of optional class or highest level of class are joined in the same way\r\n\r\n Julkaisu, pääavain. Publikation, primärnyckel. Publication, primary key. PUBLID\r\n    Valinnaisten luokitusten viiteavain LUOKAN KOODI <<-- LUOKITUKSEN THSCODE\r\n    Esimerkki: Julkaisutyyppi REFTYPE <<-- reftype.THSCODE\r\n    Valfria klassificeringarnas referensnyckel. KLASS KOD <<-- KLASSIFICERINGARNAS THSCODE\r\n    Exempel: Publikations typ REFTYPE <<-- reftype.THSCODE\r\n    Reference key of optional classifications CODE OF CLASS<<-- THSCODE OF CLASSIFICATION\r\n    Example: Publication type REFTYPE <<-- reftype.THSCODE\r\n\r\n Elintarvikkeen ruokamitat. Livsmedels enheter. Food additional units. (FOOD ADDITIONAL UNIT)\r\n    Viiteavain. Referensnyckel. Reference key. FOODID <<-- food.FOODID\r\n    Viiteavain, yksikön koodi. Referensnyckel, enhet kod.  Reference key, unit code. FOODUNIT <<--  foodunit.THSCODE\r\n\r\n Elintarvikkeen erityisruokavaliot. Livsmedels specialkoster. Special diets of a food item. (SPECDIET)\r\n    Viiteavain. Referensnyckel. Reference key. FOODID <<-- FOODID <<-- food.FOODID\r\n    Viiteavain, erityisruokavalion koodi. Referensnyckel,  specialkost, kod.  Reference key, Special diet code. SPECDIET <<-- specdiet.THSCODE\r\n\r\n Elintarvikkeen resepti (rivit). Recepts livsmedel (rader). Recipe foods (rows). (CONTRIB FOOD)\r\n    Elintarvike, jonka reseptiin rivit kuuluvat, viiteavain. Receptets huvudlivsmedel. Mainfood of recipe, reference key.. FOODID <<-- food.FOODID\r\n    Reseptirivin elintarvike; viiteavain. Receptrads livsmedel, referensnyckel. Recipe row food, reference key. CONFDID <<--  food.FOODID\r\n    Viiteavain Yksikön koodi. Referensnyckel, enhet. Unit, reference key. FOODUNIT <<-- foodunit.THSCODE\r\n\r\n Elintarvikkeen nimet (foodname_FI). Livsmedels namn (foodname_SV). Food names (foodname_EN)\r\n Elintarvikkeen tieteelliset nimet (foodname_TX). Livsmedels vetenskapliga namn (foodname_TX). Food names, scientific (foodname_TX)\r\n    Viiteavain. Referensnyckel. Reference key. FOODID <<-- food.FOODID\r\n \r\n \r\ncomponent_value.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nEUFDNAME (Ravintotekijän koodi, teksti. Näringsvärdenummer, nummer. Component id, number.)\r\nBESTLOC (Ravintoarvo, numero. Näringsvärde, number. Component value, number.)\r\nACQTYPE (Tietolähteen koodi, teksti. Data källas kod, text. Acquisition type code, text.\r\nMETHTYPE (Menetelmätyypin koodi, teksti. Metod typs kod,text. Method type code, text)\r\nMETHIND (Analyysimenetelmän koodi, teksti. Analysmetods kod, text. Method headline, text)\r\n \r\ncomponent.csv\r\nEUFDNAME (Ravintotekijän koodi, teksti. Näringsämneskod, text. Component code, text.)\r\nCOMPUNIT (Yksikön koodi, teksti. Enhets kod, text. Unit code, text)\r\nCMPCLASS (Ravintotekijäluokan koodi, teksti. Näringsämnes typkod, text. Component group code, text.)\r\nCMPCLASSP (Ravintotekijäluokan koodi, luokan ylempi taso, teksti. Näringsämnes typkod, övre nivå,text. Component group code, higher level,text.)\r\n \r\nfood.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nFOODNAME (Elintarvikkeen nimi, teksti. Livsmedels namn, text. Foodname, text.)\r\nFOODTYPE (Elintarvikkeen tyypin koodi, teksti. Livsmedels typ, text. Food type code, text.)\r\nPROCESS (Valmistustavan koodi, teksti. Livsmedelshanterings kod, text. Process type code, text.)\r\nEDPORT (Syötävä osuus, prosentti. Ätlig del, procent. Edible portion, percentage.)\r\nIGCLASS (Raaka-aineluokan koodi, teksti. Råvara klass kod, text. Ingredient class, text.)\r\nIGCLASSP (Raaka-aineluokan koodi, luokan ylempi taso, teksti. Råvara klass kod, övre nivå, text. Ingredient class, upper level, text.)\r\nFUCLASS (Ruoankäyttöluokan koodi, teksti. Livsmedel bruk class, text. Food use class, text.)\r\nFUCLASSP (Ruoankäyttöluokan koodi, luokan ylempi taso, teksti. Livsmedel bruk class, övre nivå, text. Food use class, higher level, text)\r\n \r\ncontribfood.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nCONFDID (Reseptirivin elintarvikkeen tunnus, numero. Livsmedelsnummer (receptrad), nummer. Food id (recipe row), number)\r\nAMOUNT (Määrä, numero. Mängd, number. Amount, number)\r\nFOODUNIT (Yksikön koodi, teksti. Enhets kod, text. Unit code, text)\r\nMASS (Massa (g), numero. Massa (g), nummer. Mass (g), number)\r\nEVREMAIN (Haihtumisjäännös (%), numero. Avdunstningsrest (%), nummer. Remained after evaporation (%), number)\r\nRECYEAR (Reseptin vuosi, teksti. Receptets år, text. Recipe year, text)\r\n \r\nfoodaddunit.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nFOODUNIT (Yksikön koodi, teksti. Enhets kod, text. Unit code, text)\r\nMASS (Massa (g), numero. Massa (g), nummer. Mass (g), number)\r\n \r\nspecdiet.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nSPECDIET (Erityisruokavalion koodi, teksti., Specialkost,text. Special diet, text)\r\n \r\nfoodname_FI.csv\r\nfoodname_SV.csv\r\nfoodname_EN.csv\r\nfoodname_TX.csv\r\nFOODID (Elintarvikkeen tunnus, numero. Livsmedelsnummer, nummer. Food id, number)\r\nFOODNAME (Elintarvikkeen nimi), teksti\r\nLANG (Kielen koodi, ISO639), teksti\r\n \r\npublication.csv\r\nPUBLID (Julkaisun tunnus, numero. Publikationsnummer, nummer. Publication id, number)\r\nCITATION (Viite, teksti . Referens, text. Reference, text.)\r\nREFTYPE (Julkaisutyyppi, teksti. Publikations typkod, text. Publication type code, text.\r\nACQTYPE (Tietolähteen koodi, teksti. Data källas kod, text. Acquisition type code, text.\r\nDOI (Document object identifier (DOI), text. Document object identifier (DOI), text. Document object identifier (DOI), text.)\r\n \r\nLUOKITUKSET. KLASSIFICERINGAR. CLASSIFICATIONS\r\nSamassa tiedostossa on luokituksen kaikki eri kieliversiot. Ota huomioon kielikoodi (LANG) tiedostojen yhdistelyssä\r\nAlla språkversioner av en klassificering i en fil. Ta språkkod (LANG) till hänsyn när filer kopplas ihop.\r\nAll language versions of classifications in a single file. Take language code (LANG) into account when combining files.\r\nTHSCODE (Koodi, teksti. Kod, text. Code, text)\r\nDESCRIPT (Kuvaus, teksti. Beskrivning,text. Description, text.)\r\nLANG (Kielikoodi ISO639, teksti. Språkkod ISO639, text. Language code ISO639, text.)\r\n"
+}

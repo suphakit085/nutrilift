@@ -4,14 +4,14 @@ title: สมดุลพลังงาน การลดไขมัน (cut)
 topic: energy
 lang: th
 review_status: ai_reviewed_pending_independent_review
-content_fix_version: v3
+content_fix_version: v7
 baseline_id: '2026-10-01'
 sources:
   - "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154."
   - "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20."
   - "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16."
   - "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]"
-  - "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [เอกสารปี 2016; การตรวจ erratum 2017 ยังไม่เสร็จ]"
+  - "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]"
   - "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
 ---
 
@@ -61,4 +61,4 @@ REDs เกี่ยวข้องกับการได้รับพลั
 
 ข้อมูลสรุปนี้ไม่กำหนด 1,200 kcal/วันเป็นเส้นแบ่งปลอดภัยสำหรับทุกคน และไม่ใช้แทนแผนรักษารายบุคคล สำหรับนักกีฬาที่มีพฤติกรรมการกินผิดปกติหรือความกังวลเรื่องรูปร่างจนกระทบชีวิต ควรเข้ารับการประเมินจากบุคลากรที่เหมาะสม (Helms et al., 2014, Psychosocial issues; ขอบเขตการใช้งานที่โครงการกำหนด)
 
-สถานะหลักฐาน: ข้อมูลจาก Thomas และคณะปี 2016 ในชุดนี้ยังรอทวนผลกระทบจาก erratum ปี 2017 จึงไม่ถือว่าได้ตรวจฉบับแก้ไขแล้ว และไม่ใช้ข้อมูลนี้ออกคำรับรองความพร้อมฝึกเฉพาะบุคคล
+สถานะหลักฐาน: ฉบับทางการของผู้จัดพิมพ์ร่วม Dietitians of Canada ระบุ Revised December 2016 และแก้ข้อความรับรองหลักสูตร IOC/Sports Oracle ที่หน้า 45 โครงการตรวจแล้วว่าการ์ดนี้ไม่คัดลอกข้อความนั้น แต่ยังเข้าไม่ถึงเนื้อหา MSSE erratum ปี 2017 โดยตรง จึงไม่รับรองว่าฉบับแก้ไขทั้งสองมีข้อความเหมือนกันทั้งหมด และไม่ใช้ข้อมูลนี้ออกคำรับรองความพร้อมฝึกเฉพาะบุคคล

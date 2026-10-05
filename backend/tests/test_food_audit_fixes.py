@@ -50,7 +50,12 @@ def active_audit_row(index):
 def test_bubble_tea_removal_preserves_every_other_source_and_nutrient():
     assert len(ACTIVE) == 386
     remaining = [r for r in PRE_REMOVAL if r["name_th"] != "ชานมไข่มุก"]
-    assert remaining == ACTIVE
+    for previous, active in zip(remaining, ACTIVE, strict=True):
+        if active["source"] == "FINELI-THL:33026":
+            previous, active = dict(previous), dict(active)
+            previous.pop("nutrition_meta")
+            active.pop("nutrition_meta")
+        assert previous == active
     assert all(r["source"] != "TOVERIFY-LABEL" for r in ACTIVE)
 
 
@@ -198,7 +203,8 @@ def test_unverified_foods_are_labeled_and_excluded_from_generated_menu():
 
 
 def test_fineli_tvp_row_matches_archived_primary_render_with_explicit_provenance():
-    row = next(r for r in ACTIVE if r["source"] == "FINELI-THL:33026")
+    # Retain the historical cached-capture receipt; current provenance is direct.
+    row = next(r for r in PRE_REMOVAL if r["source"] == "FINELI-THL:33026")
     meta = json.loads(row["nutrition_meta"])
     source = ROOT / meta["source_path"]
     assert source_hash(source) == meta["source_sha256"]
@@ -223,6 +229,37 @@ def test_fineli_tvp_row_matches_archived_primary_render_with_explicit_provenance
     quality = _row_to_dict(SimpleNamespace(**dict(row, nutrition_meta=meta)))
     assert not quality["estimated"]
     assert any("cached rendering" in warning for warning in quality["warnings"])
+
+
+def test_active_fineli_has_direct_api_and_csv_with_correct_fibre_component():
+    row = next(r for r in ACTIVE if r["source"] == "FINELI-THL:33026")
+    meta = json.loads(row["nutrition_meta"])
+    assert meta["source_comparison"] == "official_json_and_csv_compared"
+    food = json.loads((ROOT / meta["source_path"]).read_text(encoding="utf8"))
+    components = json.loads((ROOT / meta["components_path"]).read_text(encoding="utf8"))
+    extract = json.loads((ROOT / meta["csv_extract_path"]).read_text(encoding="utf8"))
+    for path_key, hash_key in [("source_path", "source_sha256"),
+                               ("components_path", "components_sha256"),
+                               ("csv_extract_path", "csv_extract_sha256")]:
+        assert source_hash(ROOT / meta[path_key]) == meta[hash_key]
+    assert food["id"] == 33026 and food["amount"] == 100
+    index = next(i for i, c in enumerate(components) if c["code"] == "FIBT")
+    assert components[index]["name"]["en"] == "fibre, total"
+    assert food["fiber"] == 0 and food["data"][index] == 5.7
+    csv_values = {
+        r["EUFDNAME"]: Decimal(r["BESTLOC"].replace(",", ".")) for r in extract["component_rows"]
+    }
+    assert csv_values["FIBC"] == Decimal("5.716")
+    for key, code in [
+        ("protein_g", "PROT"), ("carb_g", "CHOAVL"), ("fat_g", "FAT"), ("fiber_g", "FIBC")
+    ]:
+        expected = csv_values[code].quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+        assert Decimal(row[key]) == expected
+    assert row["kcal"] == "127" and meta["human_review_status"] == "pending"
+    assert extract["package_release"] == "20.0"
+    quality = _row_to_dict(SimpleNamespace(**dict(row, nutrition_meta=meta)))
+    assert not quality["estimated"]
+    assert not any("cached rendering" in w for w in quality["warnings"])
 
 
 def test_cooked_egg_white_matches_official_fndds_nutrients_and_portion():
