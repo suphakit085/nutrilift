@@ -42,6 +42,7 @@ from app.services.nutrition import (
     summarize_targets_th,
 )
 from app.services.personal_context import missing_personal_context_reply
+from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
 from app.services.thai_text import normalize_thai
@@ -961,6 +962,20 @@ def stream_chat(
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
     if guardrails.personalization_allowed(guard) and not guard.flags:
+        profile_reply = (
+            explicit_profile_summary_reply(user_message, profile, targets, menu_context_note)
+            if profile is not None and targets is not None else None
+        )
+        if profile_reply:
+            yield {"type": "delta", "text": profile_reply}
+            yield {
+                "type": "done", "text": profile_reply, "citations": [], "retrieved": citations,
+                "tool_calls": [],
+                "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+                "safety_flags": guard.as_json(), "model": "rule:profile_summary",
+                "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+            }
+            return
         split_reply = equal_protein_split_reply(
             user_message, daily_protein_g=(targets or {}).get("macros", {}).get("protein_g"),
             history=history,
