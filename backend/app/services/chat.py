@@ -492,6 +492,7 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     # Only remove pure markers in these operational paragraphs; links survive.
     operational = re.compile(
         r"กติกาของ(?:เครื่องคำนวณ)?(?:ระบบ|โครงการ)|โครงการมีกติกา|"
+        r"กติกา.{0,35}(?:ระบบ|โครงการ)|"
         r"ข้อกำหนดของเครื่องคำนวณ|พลังงานเป้าหมาย|"
         r"ติดตาม.{0,35}2[-\u2013]4\s*สัปดาห์|"
         r"(?:ไม่ได้|ไม่มีการ|ไม่)เปลี่ยน(?:แปลง)?(?:ข้อมูลใน)?โปรไฟล์|"
@@ -727,6 +728,14 @@ def _database_food_request(message: str) -> bool:
     )
 
 
+def _personal_context_requested(message: str) -> bool:
+    """Only expose personal targets when the current question needs them."""
+    return bool(re.search(normalize_thai(
+        r"ผม|ฉัน|ดิฉัน|ตัวเอง|โปรไฟล์|เป้า(?:หมาย)?|เมนู|ตารางอาหาร|"
+        r"(?:ควร|ต้อง|ให้)(?:กิน|ทาน)|กี่(?:แคล|กรัม)|my\b"
+    ), normalize_thai(message), re.I))
+
+
 def _profile_summary_th(profile: ProfileInput | None) -> str | None:
     if profile is None:
         return None
@@ -953,7 +962,9 @@ def stream_chat(
         goal=effective_goal,
         sex=profile.sex if profile else None,
         age=profile.age() if profile else None,
-        reference_only=_reference_question(user_message),
+        reference_only=(
+            _reference_question(user_message) or not _personal_context_requested(user_message)
+        ),
     )
 
     if menu_context_note:

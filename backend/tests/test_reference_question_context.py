@@ -1,7 +1,7 @@
 """Research questions cannot silently become personal dietary constraints."""
 import pytest
 
-from app.services import chat, prompts
+from app.services import chat, guardrails, prompts
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import ProfileInput, calc_nutrition_targets
 from app.services.protein_split import equal_protein_split_reply
@@ -61,6 +61,7 @@ def test_explicit_database_portion_uses_tool_but_not_research_question():
     "ไม่มีการเปลี่ยนแปลงข้อมูลในโปรไฟล์จริง [S1]",
     "ฐานข้อมูลอาหารของระบบยังไม่มีข้อมูลชานม [S1]",
     "ไขมัน 20% เป็นกติกาของเครื่องคำนวณโครงการนี้ [S1]",
+    "ไขมัน 20% เป็นกติกาและการกำหนดค่าของระบบเอง [S1]",
     "โครงการมีกติกาว่าไม่มีข้อมูลไม่ใช่ศูนย์ [S1]",
     "แนะนำติดตามน้ำหนักตัวจริงในช่วง 2-4 สัปดาห์ [S1]",
     "**พลังงานเป้าหมาย:** 2858 kcal [S1]",
@@ -85,3 +86,27 @@ def test_calculator_warning_and_bibliography_distinguish_policy_from_helms():
     assert any("กติกาเครื่องคำนวณ" in w for w in targets["warnings"])
     helms = next(r for r in targets["references"] if r.startswith("Helms"))
     assert "15-20%" in helms and "ไม่ใช่ข้อกำหนดขั้นต่ำ" in helms
+
+
+@pytest.mark.parametrize("question", [
+    "ค่า LDL ในใบตรวจผม 156 ช่วยกำหนดแคลกับโปรตีนสำหรับผมครับ",
+    "ค่า HDL ในผลแล็บของผมระบุไว้ 40 ขอจัดเมนู",
+    "ใบแลบค่า TSH ของฉันอยู่ 7 ขอคิดโปรตีน",
+])
+def test_nonadjacent_lab_value_is_refused_before_retrieval_or_provider(question, monkeypatch):
+    from types import SimpleNamespace
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Safety must run before this call")
+    monkeypatch.setattr(chat, "get_client", forbidden)
+    monkeypatch.setattr(chat.retrieval, "search", forbidden)
+    assert guardrails.Flag.MEDICAL in guardrails.check(question).flags
+    answer = chat.collect_answer(SimpleNamespace(commit=lambda: None), user_message=question)
+    assert answer["model"] == "rule:medical_scope" and not answer["tool_calls"]
+
+
+def test_generic_study_dose_question_does_not_receive_personal_targets():
+    assert not chat._personal_context_requested(
+        "ข้อมูลคาเฟอีน 3-6 มิลลิกรัมต่อกิโล เป็นปริมาณที่ศึกษาเพื่อการฝึกหรือเพดานรวมทั้งวัน"
+    )
+    assert chat._personal_context_requested("ผมควรกินโปรตีนกี่กรัมต่อวัน")
+    assert chat._personal_context_requested("ขอเป้าพลังงานตามโปรไฟล์เดิม")
