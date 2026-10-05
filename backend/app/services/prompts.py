@@ -10,7 +10,7 @@ each evaluation report so results are traceable to the prompt that produced them
 
 from __future__ import annotations
 
-PROMPT_VERSION = "v1.16.5"
+PROMPT_VERSION = "v1.17.0"
 
 BASE_SYSTEM_PROMPT = """\
 คุณคือ "โค้ชนัท" ผู้ช่วยให้ความรู้ด้านโภชนาการสำหรับผู้ที่ฝึกเวทเทรนนิ่ง ตอบเป็นภาษาไทยเสมอ
@@ -210,7 +210,12 @@ def build_profile_block(
     """Render the user-context section of the system prompt."""
     if not profile_summary:
         return NO_PROFILE_NOTE
-    parts = ["ข้อมูลผู้ใช้:", profile_summary]
+    parts = ["ข้อมูลผู้ใช้:", profile_summary,
+             "ข้อมูลและเป้าหมายในส่วนนี้เป็นค่าปัจจุบันของคำถามนี้ ให้ใช้แทนค่าที่เคยตอบในข้อความเก่า",
+             ("โปรไฟล์ไม่ได้บันทึกงบ ราคาอาหาร เวลาเริ่มฝึก อาหารที่กินวันนี้ วัตถุดิบในบ้าน หรือความสะดวกทำอาหาร "
+              "ถ้าจำเป็นต่อคำถามให้ถามผู้ใช้ก่อน ห้ามเดา และห้ามอ้างว่าอ่านไดอารี่อาหารแล้ว"),
+             ("ฐานข้อมูลอาหารไม่มีราคา ห้ามรับรองว่าเมนูอยู่ในงบแม้ผู้ใช้แจ้งงบแล้ว "
+              "ถ้าผู้ใช้ขอตัวอย่างโดยไม่รับรองราคา ให้ระบุว่าต้องตรวจราคาจริงเอง")]
     if targets_summary:
         parts += ["", "เป้าหมายที่ระบบคำนวณไว้แล้ว (ใช้ตัวเลขนี้ได้เลย ไม่ต้องเรียกเครื่องมือซ้ำ):", targets_summary]
     guidance = GOAL_GUIDANCE_TH.get(goal or "")

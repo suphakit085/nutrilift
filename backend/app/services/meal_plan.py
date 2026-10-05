@@ -771,6 +771,7 @@ def build_day_plan(
     targets: dict[str, float],
     restrictions: list[str] | tuple[str, ...] = (),
     variant: int = 0,
+    meal_count: int = 4,
 ) -> dict:
     """Assemble one day's menu for ``targets`` out of ``foods``.
 
@@ -778,6 +779,8 @@ def build_day_plan(
     rather than queried here so this stays a pure function the unit tests can
     drive without a database.
     """
+    if type(meal_count) is not int or meal_count not in (3, 4):
+        raise MealPlanError("ระบบรองรับตัวอย่างเมนู 3 หรือ 4 มื้อต่อวัน กรุณาเลือกจำนวนมื้อที่รองรับ")
     for key in ("kcal", "protein_g", "carb_g", "fat_g"):
         if float(targets.get(key, 0) or 0) <= 0:
             raise MealPlanError(f"เป้าหมาย {key} ต้องมากกว่า 0")
@@ -851,8 +854,17 @@ def build_day_plan(
         if abs(pct) > tol:
             within_tolerance = False
 
+    output_template = MEAL_TEMPLATE
+    if meal_count == 3:
+        # Keep every verified portion and the daily totals. Move the snack
+        # components into the three requested meals without model estimates.
+        destinations = {"protein": 0, "carb": 1, "fruit": 2}
+        for item in items:
+            if item.meal.key == "snack":
+                item.meal = MEAL_TEMPLATE[destinations[item.slot.role]]
+        output_template = MEAL_TEMPLATE[:3]
     meals_out = []
-    for meal in MEAL_TEMPLATE:
+    for meal in output_template:
         meal_items = [i for i in items if i.meal.key == meal.key]
         if not meal_items:
             continue
@@ -907,6 +919,7 @@ def build_day_plan(
 
     return {
         "variant": variant,
+        "meal_count": meal_count,
         "restrictions_applied": restrictions,
         "restrictions_unknown": unknown,
         "excluded_counts": excluded_counts,

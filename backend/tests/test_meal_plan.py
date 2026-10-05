@@ -78,6 +78,29 @@ TINY_TABLE = [
 TARGETS = {"kcal": 2000.0, "protein_g": 140.0, "carb_g": 220.0, "fat_g": 60.0}
 
 
+@pytest.mark.parametrize("restrictions", [[], ["วีแกน"], ["ไม่กินไข่", "ไม่กินไก่"]])
+def test_three_meals_keep_all_foods_portions_and_totals(real_foods, restrictions):
+    four = build_day_plan(real_foods, TARGETS, restrictions, meal_count=4)
+    three = build_day_plan(real_foods, TARGETS, restrictions, meal_count=3)
+    assert len(three["meals"]) == 3
+    assert [m["key"] for m in three["meals"]] == ["breakfast", "lunch", "dinner"]
+    assert three["totals"] == four["totals"]
+    assert three["deviation_pct"] == four["deviation_pct"]
+    assert three["within_tolerance"] == four["within_tolerance"]
+    original = sorted((i["name_th"], i["portion"]) for m in four["meals"] for i in m["items"])
+    regrouped = sorted((i["name_th"], i["portion"]) for m in three["meals"] for i in m["items"])
+    assert original == regrouped
+    for key in ("kcal", "protein_g", "carb_g", "fat_g"):
+        assert sum(m[key] for m in three["meals"]) == pytest.approx(three["totals"][key], abs=0.2)
+    assert all(not excluded_by(i, restrictions) for m in three["meals"] for i in m["items"])
+
+
+@pytest.mark.parametrize("count", [0, 1, 2, 5, 6, True, "3", 3.5])
+def test_unsupported_meal_count_is_not_silently_changed(count):
+    with pytest.raises(MealPlanError, match="3 หรือ 4"):
+        build_day_plan(TINY_TABLE, TARGETS, meal_count=count)
+
+
 @pytest.fixture(scope="module")
 def real_foods():
     rows = list(csv.DictReader(FOODS_CSV.open(encoding="utf-8-sig")))

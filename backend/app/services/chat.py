@@ -32,7 +32,7 @@ from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, build_day_plan
-from app.services.menu_context import conversation_profile
+from app.services.menu_context import conversation_profile, requested_meal_count
 from app.services.nutrition import (
     ACTIVITY_LABELS_TH,
     GOAL_LABELS_TH,
@@ -41,6 +41,7 @@ from app.services.nutrition import (
     calc_nutrition_targets,
     summarize_targets_th,
 )
+from app.services.personal_context import missing_personal_context_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
 from app.services.thai_text import normalize_thai
@@ -151,7 +152,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "suggest_day_menu",
         "description": (
-            "จัดเมนูอาหาร 1 วัน (เช้า/กลางวัน/เย็น/ว่าง) พร้อมปริมาณที่รวมแล้วเข้าใกล้เป้าหมายพลังงานและ"
+            "จัดเมนูอาหาร 1 วัน รองรับ 3 หรือ 4 มื้อ พร้อมปริมาณที่รวมแล้วเข้าใกล้เป้าหมายพลังงานและ"
             "มาโครของผู้ใช้ ใช้เครื่องมือนี้ทุกครั้งที่ผู้ใช้ขอตัวอย่างเมนู ตารางอาหาร หรือ 'ควรกินอะไรบ้าง' "
             "ห้ามแต่งเมนูหรือกะปริมาณเอง เพราะเมนูคือผลรวม ถ้าเดาปริมาณเองตัวเลขรวมจะไม่ตรงกับเป้าหมายที่บอกผู้ใช้ไป "
             "ระบบจะดึงเป้าหมายและข้อจำกัดอาหารจากโปรไฟล์ให้เอง ไม่ต้องส่งมา "
@@ -164,7 +165,11 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "type": "integer",
                     "description": "0 = เมนูชุดแรก เพิ่มทีละ 1 เมื่อผู้ใช้ขอเมนูอื่น",
                     "minimum": 0,
-                }
+                },
+                "meal_count": {
+                    "type": "integer", "enum": [3, 4],
+                    "description": "จำนวนมื้อที่ผู้ใช้แจ้ง ถ้าไม่ได้แจ้งใช้ 4 มื้อ",
+                },
             },
             "required": [],
             "additionalProperties": False,
@@ -332,6 +337,7 @@ def _run_menu_tool(
             },
             profile.restrictions,
             variant=max(variant, 0),
+            meal_count=args.get("meal_count", 4),
         )
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
@@ -568,6 +574,8 @@ def _menu_reply(plan: dict) -> str:
     ]
     if plan.get("conversation_note"):
         lines.insert(1, plan["conversation_note"])
+    if plan.get("budget_note"):
+        lines.insert(1, plan["budget_note"])
     for meal in plan["meals"]:
         foods = "<br>".join(
             (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
@@ -895,6 +903,19 @@ def stream_chat(
         }
         return
 
+    clarification = missing_personal_context_reply(
+        user_message, menu_history or history or [], has_profile=profile is not None,
+    )
+    if clarification:
+        yield {"type": "delta", "text": clarification}
+        yield {
+            "type": "done", "text": clarification, "citations": [], "retrieved": citations,
+            "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(), "model": "rule:missing_personal_context",
+            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+        }
+        return
+
     absorption_reply = explicit_single_meal_absorption_reply(user_message)
     if absorption_reply:
         yield {"type": "delta", "text": absorption_reply}
@@ -1109,6 +1130,13 @@ def stream_chat(
             response_parts = []
             for call in function_calls:
                 args = call.args or {}
+                if call.name == "suggest_day_menu":
+                    args = {
+                        **args,
+                        "meal_count": requested_meal_count(
+                            menu_history or history or [], user_message,
+                        ),
+                    }
                 if call.name == "lookup_food":
                     result = _run_food_lookup(
                         db,
@@ -1130,6 +1158,15 @@ def stream_chat(
                 if call.name == "suggest_day_menu" and result.get("meals"):
                     if menu_context_note:
                         result["conversation_note"] = menu_context_note
+                    budget_turns = [
+                        t.get("content", "") for t in (menu_history or history or [])
+                        if t.get("role") == "user"
+                    ]
+                    if re.search("งบ|ราคา|บาท", "\n".join([*budget_turns, user_message])):
+                        result["budget_note"] = (
+                            "เมนูนี้คำนวณเฉพาะพลังงานและสารอาหาร ยังไม่ได้คำนวณราคา"
+                            "หรือยืนยันว่าอยู่ในงบที่แจ้ง กรุณาตรวจราคาจริงก่อนเลือกซื้อ"
+                        )
                     verified_menu_results.append(result)
                 elif call.name == "suggest_day_menu" and result.get("error"):
                     menu_errors.append(result.get("message") or "ยังจัดเมนูตามข้อจำกัดนี้ไม่ได้ครับ")

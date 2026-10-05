@@ -58,6 +58,40 @@ _WANT_GOAL = re.compile(
 )
 
 
+def _saved_profile_reset(text: str) -> tuple[bool, bool]:
+    """Only explicit user instructions withdraw conversation overrides."""
+    saved = re.search(
+        normalize_thai(r"(?:โปรไฟล์|ข้อมูลในโปรไฟล์).{0,35}(?:บันทึก|ล่าสุด)|saved profile"),
+        text, re.I,
+    )
+    action = re.search(
+        normalize_thai(
+            r"กลับ(?:ไป)?(?:มา)?(?:ใช้|ไปใช้)|ยกเลิก|เลิกใช้|อัปเดต|"
+            r"บันทึก.{0,15}ใหม่|reset|return to|use my saved"
+        ),
+        text, re.I,
+    )
+    if not saved or not action:
+        return False, False
+    if re.search(r"(?:ไม่|ไม่ต้อง|อย่า)\s*$", text[:action.start()]):
+        return False, False
+    diet = bool(re.search(normalize_thai("ข้อจำกัดอาหาร|ข้อจำกัดชั่วคราว|ความชอบอาหาร"), text))
+    goal = bool(re.search("เป้าหมายชั่วคราว|เป้าชั่วคราว", text))
+    return not diet or goal, not goal or diet
+
+
+def requested_meal_count(history: list[dict], user_message: str) -> int:
+    """Carry only counts explicitly supplied by the user, never model guesses."""
+    count = 4
+    words = {"สาม": 3, "สี่": 4}
+    turns = [t.get("content", "") for t in history if t.get("role") == "user"]
+    for turn in [*turns, user_message]:
+        for match in re.finditer(r"(\d+|สาม|สี่)\s*มื้อ", normalize_thai(turn)):
+            raw = match.group(1)
+            count = words[raw] if raw in words else int(raw)
+    return count
+
+
 def conversation_profile(
     profile: ProfileInput | None, history: list[dict], user_message: str
 ) -> tuple[ProfileInput | None, str | None]:
@@ -66,12 +100,27 @@ def conversation_profile(
     restrictions = list(profile.restrictions)
     goal = profile.goal
     explicit_exclusions: set[str] = set()
+    allergies: list[str] = []
+    current_reset = (False, False)
     turns = [t.get("content", "") for t in history if t.get("role") == "user"]
     turns.append(user_message)
-    for turn in turns:
+    for index, turn in enumerate(turns):
         text = normalize_thai(turn)
+        reset_goal, reset_diet = _saved_profile_reset(text)
+        if index == len(turns) - 1:
+            current_reset = reset_goal, reset_diet
+        if reset_goal:
+            goal = profile.goal
+        if reset_diet:
+            restrictions = list(dict.fromkeys([*profile.restrictions, *allergies]))
+            explicit_exclusions = set(allergies)
         # A reference to a rejected old goal is not a new goal request.
         positive = re.split(r"ไม่ใช่|ไม่เอาเป้า|ไม่ต้องการ", text)[0]
+        if reset_goal:
+            # A withdrawn goal named in the reset instruction is not a new goal.
+            positive = re.split(r"แต่|\bbut\b", positive, maxsplit=1)[-1] if re.search(
+                r"แต่|\bbut\b", positive,
+            ) else ""
         change = _CHANGE_GOAL.search(positive)
         wants = list(_WANT_GOAL.finditer(positive))
         if change:
@@ -83,6 +132,10 @@ def conversation_profile(
                 ("ไม่", "ไม่ได้", "ไม่เคย")
             ):
                 continue
+            if reset_diet and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I):
+                new_choices = re.search(r"แต่|\bbut\b", text)
+                if new_choices is None or match.start() < new_choices.end():
+                    continue  # A withdrawn preference is not a new exclusion.
             phrase = match.group(1).strip().lower()
             if (phrase in {"สองอย่างเมื่อกี้", "สองรายการเมื่อกี้", "ทั้งสองอย่างเมื่อกี้"}
                     and len(explicit_exclusions) == 2):
@@ -106,6 +159,10 @@ def conversation_profile(
                     explicit_exclusions.add(key)
                 if key not in restrictions:
                     restrictions.append(key)
+                # Withdrawing a preference must never erase an allergy disclosure.
+                if (re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
+                        and key not in allergies):
+                    allergies.append(key)
         for name in ("วีแกน", "มังสวิรัติ", "ฮาลาล"):
             if (
                 re.search(
@@ -117,6 +174,14 @@ def conversation_profile(
             ):
                 restrictions.append(name)
     effective = replace(profile, goal=goal, restrictions=restrictions)
+    if any(current_reset):
+        scope = "เป้าหมายและข้อจำกัดอาหาร" if all(current_reset) else (
+            "เป้าหมาย" if current_reset[0] else "ข้อจำกัดอาหาร"
+        )
+        note = f"กลับไปใช้{scope}จากโปรไฟล์ที่บันทึกล่าสุดตามที่ขอ โดยไม่ได้แก้ไขโปรไฟล์"
+        if allergies:
+            note += " และยังคงหลีกเลี่ยงอาหารที่คุณเคยแจ้งว่าแพ้ในห้องนี้"
+        return effective, note
     if effective == profile:
         return profile, None
     return effective, ("ใช้เป้าหมายหรือข้อจำกัดอาหารที่คุณแจ้งในห้องแชตนี้เป็นการชั่วคราว ไม่ได้เปลี่ยนโปรไฟล์ที่บันทึกไว้")
