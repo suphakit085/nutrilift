@@ -108,7 +108,11 @@ def conversation_profile(
                     restrictions.append(key)
         for name in ("วีแกน", "มังสวิรัติ", "ฮาลาล"):
             if (
-                re.search(r"(?:เป็น|กิน|อาหาร|เมนู|แบบ)\s*" + name, positive)
+                re.search(
+                    r"(?:^(?:เป็น|กิน)|(?:ผม|ฉัน|ดิฉัน|เรา)\s*(?:เป็น|กิน)|"
+                    r"(?:ขอ|จัด|แนะนำ|ต้องการ|อยาก).{0,25}?(?:อาหาร|เมนู)(?:แบบ)?)\s*" + name,
+                    positive,
+                )
                 and name not in restrictions
             ):
                 restrictions.append(name)

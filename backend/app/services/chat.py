@@ -488,6 +488,18 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
         return "[" + ", ".join(supported) + "]" if supported else ""
 
     cleaned = _BRACKET_RE.sub(keep_citation_or_link, cleaned)
+    # Publication labels cannot establish application state or calculator policy.
+    # Only remove pure markers in these operational paragraphs; links survive.
+    operational = re.compile(
+        r"กติกาของ(?:ระบบ|โครงการ)|ข้อกำหนดของเครื่องคำนวณ|"
+        r"(?:ไม่ได้|ไม่มีการ|ไม่)เปลี่ยน(?:แปลง)?(?:ข้อมูลใน)?โปรไฟล์|"
+        r"ฐานข้อมูล.{0,45}(?:ยังไม่มี|ไม่มีข้อมูล|ไม่พบ)"
+    )
+    cleaned = "\n\n".join(
+        re.sub(r"\[S\d{1,2}(?:, S\d{1,2})*\](?!\()", "", paragraph).rstrip()
+        if operational.search(paragraph) else paragraph
+        for paragraph in cleaned.split("\n\n")
+    )
     return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
 
 
@@ -682,6 +694,34 @@ def _best_score(passages: list) -> float | None:
         if value is not None:
             scores.append(float(value))
     return max(scores) if scores else None
+
+
+def _reference_question(message: str) -> bool:
+    """Keep study interpretation separate from a requested personal plan."""
+    text = normalize_thai(message)
+    reference = re.search(
+        r"งานวิจัย|งานศึกษา|งานทดลอง|งานทบทวน|บททบทวน|หลักฐาน|พิสูจน์|"
+        r"meta.analysis|helms|issn|dri|ธงโภชนาการ|crude\s*fib", text, re.I,
+    )
+    personal = re.search(
+        normalize_thai(
+            r"(?:ของ|สำหรับ)(?:ผม|ฉัน|ดิฉัน|ตัวเอง)|(?:จาก|ตาม)โปรไฟล์|"
+            r"(?:จัด|ขอ|ช่วย).{0,12}เมนู|คำนวณ(?:เป้า|แคล|พลังงาน|รักษาน้ำหนัก)"
+        ), text,
+    )
+    return bool(reference and not personal)
+
+
+def _database_food_request(message: str) -> bool:
+    """An explicit portion lookup must consult foods before reporting absence."""
+    text = normalize_thai(message)
+    return bool(
+        "ฐานข้อมูล" in text
+        and re.search(r"\d+(?:\.\d+)?\s*(?:กรัม|มล\.?|ml\b|g\b)", text, re.I)
+        and re.search(r"แคล|พลังงาน|โปรตีน|สารอาหาร", text)
+        and not _reference_question(message)
+        and not re.search(r"เมนู.{0,12}(?:วัน|ชุด)|ตารางอาหาร", text)
+    )
 
 
 def _profile_summary_th(profile: ProfileInput | None) -> str | None:
@@ -910,6 +950,7 @@ def stream_chat(
         goal=effective_goal,
         sex=profile.sex if profile else None,
         age=profile.age() if profile else None,
+        reference_only=_reference_question(user_message),
     )
 
     if menu_context_note:
@@ -927,6 +968,9 @@ def stream_chat(
         # keeps tool execution in this project's own code, as it did for the
         # previous OpenAI integration.
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        tool_config=(types.ToolConfig(function_calling_config=types.FunctionCallingConfig(
+            mode="ANY", allowed_function_names=["lookup_food"],
+        )) if _database_food_request(user_message) else None),
     )
 
     text_parts: list[str] = []
@@ -1101,6 +1145,9 @@ def stream_chat(
                     )
                 )
             contents.append(types.Content(role="user", parts=response_parts))
+            # Only the first provider turn is forced to consult foods. Any
+            # subsequent explanation uses the normal automatic tool policy.
+            config.tool_config = None
             if (
                 verified_food_results
                 and not food_lookup_unverified

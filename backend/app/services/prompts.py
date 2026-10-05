@@ -10,7 +10,7 @@ each evaluation report so results are traceable to the prompt that produced them
 
 from __future__ import annotations
 
-PROMPT_VERSION = "v1.16.1"
+PROMPT_VERSION = "v1.16.2"
 
 BASE_SYSTEM_PROMPT = """\
 คุณคือ "โค้ชนัท" ผู้ช่วยให้ความรู้ด้านโภชนาการสำหรับผู้ที่ฝึกเวทเทรนนิ่ง ตอบเป็นภาษาไทยเสมอ
@@ -249,6 +249,7 @@ def build_system_prompt(
     goal: str | None = None,
     sex: str | None = None,
     age: int | None = None,
+    reference_only: bool = False,
 ) -> str:
     """Assemble the full system prompt.
 
@@ -257,7 +258,10 @@ def build_system_prompt(
     """
     blocks = [
         BASE_SYSTEM_PROMPT,
-        build_profile_block(profile_summary, targets_summary, goal, sex, age),
+        ("คำถามนี้ถามการตีความหลักฐานทั่วไป ให้ตอบเฉพาะหลักฐานและข้อจำกัดของงาน "
+         "ไม่อนุมานอาหารที่ผู้ใช้กิน ไม่เพิ่มเป้าหมายส่วนตัว และไม่สรุปว่าไม่มีงานวิจัยอื่น "
+         "ให้ระบุว่าเอกสารที่ให้มายังไม่พิสูจน์ข้อสรุปนั้น"
+         if reference_only else build_profile_block(profile_summary, targets_summary, goal, sex, age)),
     ]
 
     if use_rag:
