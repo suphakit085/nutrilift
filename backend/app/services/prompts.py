@@ -10,7 +10,7 @@ each evaluation report so results are traceable to the prompt that produced them
 
 from __future__ import annotations
 
-PROMPT_VERSION = "v1.16.2"
+PROMPT_VERSION = "v1.16.3"
 
 BASE_SYSTEM_PROMPT = """\
 คุณคือ "โค้ชนัท" ผู้ช่วยให้ความรู้ด้านโภชนาการสำหรับผู้ที่ฝึกเวทเทรนนิ่ง ตอบเป็นภาษาไทยเสมอ

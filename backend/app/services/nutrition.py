@@ -254,7 +254,8 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     warnings: list[str] = []
     if fat_floor_applied:
         warnings.append(
-            "ปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เพื่อรักษาระดับฮอร์โมนและการดูดซึมวิตามินที่ละลายในไขมัน"
+            "ปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาเครื่องคำนวณของโครงการ "
+            "ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน"
         )
     if carb_floor_applied:
         warnings.append(
@@ -337,7 +338,8 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
                 "Morton RW, et al. Br J Sports Med. 2018;52(6):376-384 "
                 "(จุดอิ่มตัวของโปรตีนราว 1.6 g/kg/วัน)"
             ),
-            "Helms ER, et al. JISSN. 2014;11:20 (ช่วง cut: โปรตีนสูงขึ้น, ไขมันไม่ต่ำกว่า 20% ของพลังงาน)",
+            ("Helms ER, et al. JISSN. 2014;11:20 (การเตรียมแข่งขัน: โปรตีนสูงขึ้น; "
+             "อภิปรายไขมัน 15-20% ในบางบริบท ไม่ใช่ข้อกำหนดขั้นต่ำ 20% ของทุกคน)"),
             (
                 "Thomas DT, et al. ACSM/AND/DC Joint Position Statement. "
                 "Med Sci Sports Exerc. 2016;48(3):543-568"

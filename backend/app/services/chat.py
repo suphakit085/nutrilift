@@ -491,13 +491,15 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     # Publication labels cannot establish application state or calculator policy.
     # Only remove pure markers in these operational paragraphs; links survive.
     operational = re.compile(
-        r"กติกาของ(?:ระบบ|โครงการ)|ข้อกำหนดของเครื่องคำนวณ|"
+        r"กติกาของ(?:เครื่องคำนวณ)?(?:ระบบ|โครงการ)|โครงการมีกติกา|"
+        r"ข้อกำหนดของเครื่องคำนวณ|พลังงานเป้าหมาย|"
+        r"ติดตาม.{0,35}2[-\u2013]4\s*สัปดาห์|"
         r"(?:ไม่ได้|ไม่มีการ|ไม่)เปลี่ยน(?:แปลง)?(?:ข้อมูลใน)?โปรไฟล์|"
         r"ฐานข้อมูล.{0,45}(?:ยังไม่มี|ไม่มีข้อมูล|ไม่พบ)"
     )
     cleaned = "\n\n".join(
         re.sub(r"\[S\d{1,2}(?:, S\d{1,2})*\](?!\()", "", paragraph).rstrip()
-        if operational.search(paragraph) else paragraph
+        if operational.search(paragraph.replace("*", "")) else paragraph
         for paragraph in cleaned.split("\n\n")
     )
     return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
@@ -701,7 +703,8 @@ def _reference_question(message: str) -> bool:
     text = normalize_thai(message)
     reference = re.search(
         r"งานวิจัย|งานศึกษา|งานทดลอง|งานทบทวน|บททบทวน|หลักฐาน|พิสูจน์|"
-        r"meta.analysis|helms|issn|dri|ธงโภชนาการ|crude\s*fib", text, re.I,
+        r"meta.analysis|helms|issn|dri|ธงโภชนาการ|crude\s*fib|"
+        r"ทุกแบบ|ทุกกรณี|ข้อสรุป|พอสรุป|\beaa\b", text, re.I,
     )
     personal = re.search(
         normalize_thai(
