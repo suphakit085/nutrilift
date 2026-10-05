@@ -408,7 +408,7 @@ _ABNORMAL_LAB_RE = re.compile(
 )
 _PREGNANCY_MONTH_RE = re.compile(r"(?:กำลัง)?ท้อง\s*\d+\s*(?:เดือน|สัปดาห์)")
 _BREASTFEEDING_RE = re.compile(
-    normalize_thai(r"(?:ลูก|ทารก).{0,25}(?:ดูดนม|นมจากเต้า)|ปั๊มนมให้(?:ลูก|ทารก)")
+    normalize_thai(r"(?:ลูก|ทารก).{0,25}(?:ดูดนม|นมจากเต้า)|ปั๊มนมให้(?:ลูก|ทารก)|ให้นม\s*อยู่")
 )
 _OVERDOSE_RE = re.compile(
     r"(?:กิน|กลืน|ทาน).{0,35}(?:ยา|พาราเซตามอล|พารา).{0,25}(?:ยี่สิบ|สิบ|หลาย|[1-9]\d)\s*เม็ด"
@@ -468,7 +468,7 @@ def _current_hits(text: str, patterns: tuple[str, ...]) -> list[str]:
 #: A bare "N ปี" is *not* an age - "เล่นเวทมา 8 ปี" is training tenure, and the
 #: old pattern turned that into MINOR for the next eight turns.
 _AGE_RES = (
-    re.compile(r"อายุ\s*(\d{1,2})"),
+    re.compile(r"อายุ\s*(\d{1,2})(?!\d)"),
     re.compile(r"(?:ผม|หนู|ฉัน|ดิฉัน|เรา|น้อง|ลูก|เด็ก)\s*(\d{1,2})\s*(?:ปี|ขวบ)"),
     re.compile(r"(\d{1,2})\s*(?:ขวบ|years?\s*old|yo\b|y/o)"),
     re.compile(r"i(?:'m| am)\s*(\d{1,2})\b"),
@@ -654,6 +654,27 @@ _FOLDED_FALSE_FRIENDS = tuple(normalize_thai(w) for w in _FALSE_FRIENDS)
 _ASCII_LETTER_RE = re.compile(r"[a-z]")
 _FOLDED_DIAGNOSIS = _fold_patterns(_DIAGNOSIS_REQUEST_PATTERNS)
 
+_REFERENCE_AGE_RANGE_RE = re.compile(r"(?:ช่วง|กลุ่ม)อายุ\s*\d{1,2}\s*[-\u2013]\s*\d{1,3}(?:\s*ปี)?")
+_PERSONAL_AGE_RE = re.compile(r"(?:ผม|ฉัน|ดิฉัน|หนู|ลูก|เด็ก|น้อง).{0,18}(?:ช่วง|กลุ่ม)?อายุ")
+_FASTED_RESEARCH_RE = re.compile(
+    normalize_thai(r"(?:ฝึก|ออกกำลัง(?:กาย)?).{0,8}(?:หลัง|ขณะ|ตอน).{0,3}อดอาหาร")
+)
+_FASTING_PLAN_RE = re.compile(
+    normalize_thai(
+        r"(?:ผม|ฉัน|หนู|ดิฉัน|อยาก|ตั้งใจ|จะ|(?<!ออก)กำลัง|ขอวิธี|วางแผน).{0,35}อดอาหาร"
+        r"|อดอาหาร.{0,15}(?:วัน|สัปดาห์|อาทิตย์)"
+    )
+)
+
+
+def _is_fasted_research_question(text: str) -> bool:
+    """Allow study discussion while preserving personal fasting/risk checks."""
+    return bool(
+        _FASTED_RESEARCH_RE.search(text)
+        and re.search(r"งานวิจัย|งานทดลอง|งานศึกษา|งานแอโรบิก|งานเวท|บททบทวน|หลักฐาน", text)
+        and not _FASTING_PLAN_RE.search(text)
+    )
+
 
 def check(message: str) -> GuardResult:
     """Classify one user message. Never raises."""
@@ -685,6 +706,8 @@ def check(message: str) -> GuardResult:
             acute = {p for p in hits if p in _EMERGENCY_PATTERNS}
             current_acute = set(_current_hits(text, tuple(acute)))
             hits = [p for p in hits if p not in acute or p in current_acute]
+        if flag == Flag.DISORDERED_EATING and _is_fasted_research_question(text):
+            hits = [p for p in hits if p != "อดอาหาร"]
         if hits:
             flags.append(flag)
             matched[str(flag)] = hits
@@ -715,8 +738,11 @@ def check(message: str) -> GuardResult:
             flags.append(Flag.MEDICAL)
         matched.setdefault(str(Flag.MEDICAL), []).extend(diagnosis_hits)
 
-    ages = [int(m) for rx in _AGE_RES for m in rx.findall(text)]
-    ages.extend(_THAI_AGE_WORDS[m] for m in _THAI_WORD_AGE_RE.findall(text))
+    age_text = text
+    if re.search(r"ตาราง|งานวิจัย|งานศึกษา|dri|reference", text) and not _PERSONAL_AGE_RE.search(text):
+        age_text = _REFERENCE_AGE_RANGE_RE.sub(" ", text)
+    ages = [int(m) for rx in _AGE_RES for m in rx.findall(age_text)]
+    ages.extend(_THAI_AGE_WORDS[m] for m in _THAI_WORD_AGE_RE.findall(age_text))
     minor_ages = [a for a in ages if 0 <= a < 18]
     if minor_ages:
         flags.append(Flag.MINOR)

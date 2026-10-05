@@ -1,4 +1,5 @@
 """Incrementally update reference cards and verify food/card alignment safely."""
+import argparse
 import csv
 import hashlib
 import json
@@ -11,7 +12,11 @@ from dotenv import dotenv_values
 from sqlalchemy import create_engine, text
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "output/source-audit/claim-release-20261005"
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", default="output/source-audit/claim-release-20261005")
+args = parser.parse_args()
+OUT = (ROOT / args.output).resolve()
+assert OUT.is_relative_to(ROOT / "output"), "Only workspace output is allowed"
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ROOT / "backend"))
 url = dotenv_values(r"C:\project_1\chat-bot-nutrition\backend\supabase.env")["DATABASE_URL"]

@@ -1,0 +1,164 @@
+{
+  "version": "v9",
+  "previous": "knowledge/evidence/content-fixes-v7/manifest.json",
+  "cards": [
+    {
+      "card": "beta-alanine",
+      "previous_sha256": "76727b874daede89d2bf4e497aad232a8b12773cad09aa3e345811e37467a0a9",
+      "candidate_sha256": "76727b874daede89d2bf4e497aad232a8b12773cad09aa3e345811e37467a0a9",
+      "changed": false
+    },
+    {
+      "card": "body-fat-by-sex",
+      "previous_sha256": "05207e5d09532d6e85f44d50302c5484906242ab137843a3262b213dbb284984",
+      "candidate_sha256": "05207e5d09532d6e85f44d50302c5484906242ab137843a3262b213dbb284984",
+      "changed": false
+    },
+    {
+      "card": "caffeine",
+      "previous_sha256": "5112347ee830c6ea95e36d5e6090c1807af1034b9208d13fa25b127d2d3eae45",
+      "candidate_sha256": "5112347ee830c6ea95e36d5e6090c1807af1034b9208d13fa25b127d2d3eae45",
+      "changed": false
+    },
+    {
+      "card": "calcium-iron-vitd",
+      "previous_sha256": "feb841f23ac0a8cad9586272f0b69fabc21a1f964154bbd6fade664010d0f68a",
+      "candidate_sha256": "feb841f23ac0a8cad9586272f0b69fabc21a1f964154bbd6fade664010d0f68a",
+      "changed": false
+    },
+    {
+      "card": "creatine-myths",
+      "previous_sha256": "525904b2905da84a32387264c8be0f3bdc9438d7e8b6f17b863fbbf294209953",
+      "candidate_sha256": "525904b2905da84a32387264c8be0f3bdc9438d7e8b6f17b863fbbf294209953",
+      "changed": false
+    },
+    {
+      "card": "creatine",
+      "previous_sha256": "31d9dcef1c3514ff96a192266aa8612faa990efc7eed0953e6c00f7245438206",
+      "candidate_sha256": "31d9dcef1c3514ff96a192266aa8612faa990efc7eed0953e6c00f7245438206",
+      "changed": false
+    },
+    {
+      "card": "eaa",
+      "previous_sha256": "b1f7ce9138fc61652898263fc4e5a6068d73775f2b1ab0ac668a1d7f9800e057",
+      "candidate_sha256": "b1f7ce9138fc61652898263fc4e5a6068d73775f2b1ab0ac668a1d7f9800e057",
+      "changed": false
+    },
+    {
+      "card": "energy-balance-cut-bulk",
+      "previous_sha256": "dfebc0da97f208e32635e589f2c2d8250737f0ae9a75a87f2c698476eec7aa88",
+      "candidate_sha256": "2de6e0d66a3e8f32a245a73704e716896bb147bd2ea81558da6a5d5c02f2870d",
+      "changed": true
+    },
+    {
+      "card": "fasted-training",
+      "previous_sha256": "ee3abd57e4956409473070bc11ac171dbbcf5131adbb02c1a0cff2b5dd084f87",
+      "candidate_sha256": "ee3abd57e4956409473070bc11ac171dbbcf5131adbb02c1a0cff2b5dd084f87",
+      "changed": false
+    },
+    {
+      "card": "fat-loss-myths",
+      "previous_sha256": "4d61ce6babcb4f57b53644a269a87276a0740bdf18c933753994a013a12a55f6",
+      "candidate_sha256": "4d61ce6babcb4f57b53644a269a87276a0740bdf18c933753994a013a12a55f6",
+      "changed": false
+    },
+    {
+      "card": "fiber",
+      "previous_sha256": "b1272f82f89cdbd90d93c9e456be88609cfecb8e8ba75b9f9932fb5a5ded8696",
+      "candidate_sha256": "5966e45f82126ed5e3e5e9de2f2380d2c9fd199b92b0cb6c335891e0756cf29d",
+      "changed": true
+    },
+    {
+      "card": "hmb",
+      "previous_sha256": "ef4395f7a277732dca2bea88c57e6bd57e23345d7fcaf3faa1512890ef12fc3f",
+      "candidate_sha256": "ef4395f7a277732dca2bea88c57e6bd57e23345d7fcaf3faa1512890ef12fc3f",
+      "changed": false
+    },
+    {
+      "card": "intermittent-fasting",
+      "previous_sha256": "39fd95412aeeae833c08d4203c7abd57b2e9e3e922ecc5c4d6a28d9a845fde50",
+      "candidate_sha256": "39fd95412aeeae833c08d4203c7abd57b2e9e3e922ecc5c4d6a28d9a845fde50",
+      "changed": false
+    },
+    {
+      "card": "metabolic-adaptation",
+      "previous_sha256": "3e7fc58ef3bb951ac75b1b0ad9ed18d0581b042e94ed98bc3bcb29183b9e68e6",
+      "candidate_sha256": "3e7fc58ef3bb951ac75b1b0ad9ed18d0581b042e94ed98bc3bcb29183b9e68e6",
+      "changed": false
+    },
+    {
+      "card": "nutrient-timing",
+      "previous_sha256": "85dcef29400a160a5f9be721e09c97544f7a69661045631a446b4155640387e5",
+      "candidate_sha256": "85dcef29400a160a5f9be721e09c97544f7a69661045631a446b4155640387e5",
+      "changed": false
+    },
+    {
+      "card": "omega-3",
+      "previous_sha256": "ce617e68380a9eece6f48d86d43780c9620a56b0d2333b6b329a0542f45f45b0",
+      "candidate_sha256": "ce617e68380a9eece6f48d86d43780c9620a56b0d2333b6b329a0542f45f45b0",
+      "changed": false
+    },
+    {
+      "card": "plant-protein",
+      "previous_sha256": "f2d9c80c56033a0ab9abcd16817642433ddba020dce887ae60daaf7a8c29df4f",
+      "candidate_sha256": "f2d9c80c56033a0ab9abcd16817642433ddba020dce887ae60daaf7a8c29df4f",
+      "changed": false
+    },
+    {
+      "card": "protein-per-meal-myth",
+      "previous_sha256": "af77d45ed1e9a6855e958819f9e90f0e1865c5877aabcced0676696942dc06f0",
+      "candidate_sha256": "af77d45ed1e9a6855e958819f9e90f0e1865c5877aabcced0676696942dc06f0",
+      "changed": false
+    },
+    {
+      "card": "protein-requirement",
+      "previous_sha256": "7993567d81946aae1cf20fd27899e027df9fe7c081133beeec24e7660792cd3a",
+      "candidate_sha256": "7993567d81946aae1cf20fd27899e027df9fe7c081133beeec24e7660792cd3a",
+      "changed": false
+    },
+    {
+      "card": "sodium-water",
+      "previous_sha256": "5b51d7c0b3d2973ad6938cba803b3158d6bcf5f727dd97c1b1d164fe6051d71c",
+      "candidate_sha256": "c88a668cafb51cddc17da1741be73270d0a17dd5596bab0d2136bee9440d40a7",
+      "changed": true
+    },
+    {
+      "card": "soy-protein",
+      "previous_sha256": "d1895d2573d06a96b5436e7032ed1280c9cd9070da75f5247baf62e6f31662c6",
+      "candidate_sha256": "d1895d2573d06a96b5436e7032ed1280c9cd9070da75f5247baf62e6f31662c6",
+      "changed": false
+    },
+    {
+      "card": "thai-drinks-sugar",
+      "previous_sha256": "272076e075e2ba3e8a861ceda54a12a279b9c9c2f42e8b32ded61cb6b14c0700",
+      "candidate_sha256": "272076e075e2ba3e8a861ceda54a12a279b9c9c2f42e8b32ded61cb6b14c0700",
+      "changed": false
+    },
+    {
+      "card": "thai-food-eating-out",
+      "previous_sha256": "878a72eaae7361a2d7deb8ec85aa27b0f8df2d2c276ac813e646873fa5002412",
+      "candidate_sha256": "878a72eaae7361a2d7deb8ec85aa27b0f8df2d2c276ac813e646873fa5002412",
+      "changed": false
+    },
+    {
+      "card": "thai-food-guide",
+      "previous_sha256": "5cbf0ce0c7f1f357f5f6c47adf23243dabc4191d0ca28ccb9c81bc3f4a3e4a91",
+      "candidate_sha256": "5cbf0ce0c7f1f357f5f6c47adf23243dabc4191d0ca28ccb9c81bc3f4a3e4a91",
+      "changed": false
+    },
+    {
+      "card": "unproven-muscle-supplements",
+      "previous_sha256": "a8b59bf60eed3cee0d6848b0c27dcfe0050184760db063c390feef6fc1d91f6c",
+      "candidate_sha256": "a8b59bf60eed3cee0d6848b0c27dcfe0050184760db063c390feef6fc1d91f6c",
+      "changed": false
+    },
+    {
+      "card": "vitamin-d-athletes",
+      "previous_sha256": "91d9d1230bd3dbdf806fec15eb4a2a8ead32de3e4c98831714303452b1332bbe",
+      "candidate_sha256": "91d9d1230bd3dbdf806fec15eb4a2a8ead32de3e4c98831714303452b1332bbe",
+      "changed": false
+    }
+  ],
+  "independent_review": "pending",
+  "reason": "Fixes discovered in frozen release-v7 fresh evaluation; that evaluation is now development evidence."
+}

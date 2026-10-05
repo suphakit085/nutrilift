@@ -8,12 +8,12 @@ from app.services.prompts import BASE_SYSTEM_PROMPT, GOAL_GUIDANCE_TH
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_active_card_hashes_match_v7_manifest():
-    path = ROOT / "knowledge/evidence/content-fixes-v7/manifest.json"
+def test_active_card_hashes_match_v9_manifest():
+    path = ROOT / "knowledge/evidence/content-fixes-v9/manifest.json"
     manifest = json.loads(path.read_text(encoding="utf8"))
     assert len(manifest["cards"]) == 26
     assert {r["card"] for r in manifest["cards"] if r["changed"]} == {
-        "body-fat-by-sex", "creatine-myths", "energy-balance-cut-bulk"
+        "energy-balance-cut-bulk", "fiber", "sodium-water"
     }
     for row in manifest["cards"]:
         path = ROOT / "knowledge/cards" / (row["card"] + ".md")

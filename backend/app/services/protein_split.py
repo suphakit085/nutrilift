@@ -14,6 +14,7 @@ _WORDS = (
     "ข้างบน", "ข้างต้น", "ที่คำนวณ", "ที่ตั้งไว้", "รวม", "ทั้งหมด", "วันละ", "ต่อวัน",
     "ต่อ", "แต่ละมื้อ", "มื้อละ", "มื้อ", "กี่", "เท่าไร", "เท่าไหร่", "กรัม",
     "ครับผม", "ครับ", "ค่ะ", "คะ", "ช่วย", "คำนวณ", "ให้หน่อย", "จะได้", "ได้",
+    "คิดเฉพาะเลข", "คิดเฉพาะตัวเลข",
     "protein", "split", "divide", "into", "across", "daily", "equally", "equal",
     "permeal", "howmuch", "grams", "gram", "g", "please", "of", "in", "is", "it",
     "the", "total", "target", "above", "each", "meal", "meals",
@@ -97,6 +98,16 @@ def _prior_total(history: list[dict]) -> Decimal | None:
 def equal_protein_split_reply(
     question: str, *, daily_protein_g: float | None = None, history: list[dict] | None = None,
 ) -> str | None:
+    follow_up = re.fullmatch(
+        r"\s*(?:เปลี่ยนเป็น|ขอเป็น|แบ่งเป็น)\s*(\d+)\s*มื้อ\s*(?:แทน)?\s*"
+        r"(?:ครับ|ค่ะ|คะ)?[\s.,]*(?:ยอดรวมเดิม|ยอดเดิม|รวมเท่าเดิม)\s*(?:ครับ|ค่ะ|คะ)?\s*",
+        question,
+    )
+    if follow_up:
+        prior = _prior_total(history or [])
+        if prior is None or not prior.is_finite():
+            return None
+        question = f"แบ่งโปรตีนรวม {prior} กรัม เป็น {follow_up.group(1)} มื้อ"
     parsed = _amounts(question)
     if parsed is None:
         return None

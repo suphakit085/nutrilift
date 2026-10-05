@@ -35,7 +35,8 @@ _FOODS = {normalize_thai(k): v for k, v in _FOODS.items()}
 _EXCLUSION = re.compile(
     r"(?:ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่)|งด(?:กิน)?|แพ้|ไม่มี|"
     r"allergic to |allergy to |avoid |without |don't eat |no )\s*"
-    r"(.+?)(?=และ|แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่กิน|\s+and\s+|\s*[,.!?\n]|$)",
+    r"(.+?)(?=แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่(?:กิน|เอา|ใส่)|"
+    r"\s+(?:no|without|avoid|allergic to|don't eat)\s+|\s*[.!?\n]|$)",
     re.I,
 )
 _GOALS = {
@@ -50,7 +51,10 @@ _GOALS = {normalize_thai(k): v for k, v in _GOALS.items()}
 _GOAL_NAMES = "|".join(_GOALS)
 _CHANGE_GOAL = re.compile(r"เปลี่ยน.{0,60}?เป็น\s*(" + _GOAL_NAMES + r")", re.I)
 _WANT_GOAL = re.compile(
-    r"(?:เป้า(?:หมาย)?|เมนู(?:หนึ่งวัน|อาหาร|สำหรับ)?|อยาก|ต้องการ|ขอ)\s*(" + _GOAL_NAMES + r")", re.I
+    normalize_thai(
+        r"(?:คำนวณ|เป้า(?:หมาย)?|เมนู(?:หนึ่งวัน|อาหาร|สำหรับ)?|อยาก|ต้องการ|ขอ)\s*("
+        + _GOAL_NAMES + r")"
+    ), re.I,
 )
 
 
@@ -61,6 +65,7 @@ def conversation_profile(
         return None, None
     restrictions = list(profile.restrictions)
     goal = profile.goal
+    explicit_exclusions: set[str] = set()
     turns = [t.get("content", "") for t in history if t.get("role") == "user"]
     turns.append(user_message)
     for turn in turns:
@@ -78,22 +83,29 @@ def conversation_profile(
                 ("ไม่", "ไม่ได้", "ไม่เคย")
             ):
                 continue
-            food = match.group(1).strip().lower()
-            # Longest prefix matters: soy allergy must not turn into a nut rule.
-            key = next(
-                (
-                    v
-                    for k, v in sorted(_FOODS.items(), key=lambda p: -len(p[0]))
-                    if food.startswith(k)
-                ),
-                None,
-            )
-            if key is None and match.group(0).startswith("ไม่มี"):
-                continue  # "ไม่มีข้อมูล" is not an exclusion of a food.
-            if key is None:
-                key = "ข้อจำกัดที่ยังไม่รองรับ: " + food[:80]
-            if key not in restrictions:
-                restrictions.append(key)
+            phrase = match.group(1).strip().lower()
+            if (phrase in {"สองอย่างเมื่อกี้", "สองรายการเมื่อกี้", "ทั้งสองอย่างเมื่อกี้"}
+                    and len(explicit_exclusions) == 2):
+                continue  # Exactly two explicit exclusions are already carried.
+            for food in re.split(r"\s*(?:และ|กับ|,|/|\band\b|&)\s*", phrase):
+                food = food.strip()
+                if not food:
+                    continue
+                # Longest prefix matters: soy allergy must not turn into a nut rule.
+                key = next(
+                    (v for k, v in sorted(_FOODS.items(), key=lambda p: -len(p[0]))
+                     if food.startswith(k)),
+                    None,
+                )
+                if key is None and (match.group(0).startswith("ไม่มี") or
+                                    re.match(normalize_thai(r"จัดเมนู|ขอ|คำนวณ|ช่วย"), food)):
+                    continue  # A separate request/data gap is not a food exclusion.
+                if key is None:
+                    key = "ข้อจำกัดที่ยังไม่รองรับ: " + food[:80]
+                else:
+                    explicit_exclusions.add(key)
+                if key not in restrictions:
+                    restrictions.append(key)
         for name in ("วีแกน", "มังสวิรัติ", "ฮาลาล"):
             if (
                 re.search(r"(?:เป็น|กิน|อาหาร|เมนู|แบบ)\s*" + name, positive)

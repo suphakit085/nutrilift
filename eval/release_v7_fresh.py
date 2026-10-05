@@ -100,7 +100,10 @@ def main():
         if case.get("expected_tool"):
             checks["tool"] = case["expected_tool"] in {t["name"] for t in answer.get("tool_calls", [])}
         if case.get("must_include"):
-            checks["expected_values"] = all(v in text_answer for v in case["must_include"])
+            numeric_text = re.sub(r"(?<=\d),(?=\d)", "", text_answer)
+            checks["expected_values"] = all(re.sub(r"(?<=\d),(?=\d)", "", v) in numeric_text for v in case["must_include"])
+        if case.get("must_not_include"):
+            checks["forbidden_text_absent"] = all(v not in text_answer for v in case["must_not_include"])
         used = set()
         for bracket in re.findall(r"\[([^\]]+)\]", text_answer):
             used.update(re.findall(r"\bS\d+\b", bracket))
