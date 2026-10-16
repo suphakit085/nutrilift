@@ -1,0 +1,10 @@
+{
+  "name": "@nutrilift/next-eslint-glob",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Only the directory glob API used by Next ESLint, without the unpatched braces dependency",
+  "main": "index.cjs",
+  "dependencies": {
+    "tinyglobby": "0.2.17"
+  }
+}
