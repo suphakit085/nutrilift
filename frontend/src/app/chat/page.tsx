@@ -619,7 +619,7 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
 
   return (
     <div className="flex justify-start">
-      <div className="min-w-0 max-w-[85%] rounded-lg rounded-bl-sm border border-border bg-surface px-5 py-4 wrap-anywhere">
+      <div className="min-w-0 w-full max-w-full rounded-lg rounded-bl-sm border border-border bg-surface px-4 py-4 wrap-anywhere sm:w-auto sm:max-w-[85%] sm:px-5">
         {bubble.tools?.map((tool, index) => {
           const presentation = toolPresentation(tool, Boolean(bubble.pending));
           return (
