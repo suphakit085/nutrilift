@@ -41,6 +41,8 @@ def high_plans(foods):
     ("จัดอาหารว่างได้", None, True, True),
     ("ไม่เอา 4 มื้อ ขอสามมื้อ", 3, False, True),
     ("ขอ 7 มื้อ", 7, False, True),
+    ("ขอ 7 มื้อ ไม่เพิ่มมื้อเสริม", 7, False, False),
+    ("ขอ 5 มื้อ ไม่เพิ่มมื้อเสริม", 5, False, False),
     ("ไม่เอามื้อเสริม แต่ตอนนี้เพิ่มมื้อเสริมได้", 3, True, True),
     ("เพิ่มมื้อเสริมได้ แต่ตอนนี้ไม่เอามื้อเสริม", 3, False, False),
     ("มื้อเสริม 1 มื้อ เปลี่ยนใจขอมื้อเสริม 2 มื้อ", 5, False, True),
@@ -67,6 +69,15 @@ def test_meal_preference_does_not_become_a_food_allergy(message):
     profile = saved()
     effective, _ = conversation_profile(profile, [], message)
     assert effective.restrictions == profile.restrictions
+
+
+@pytest.mark.parametrize("message", [
+    "ฉันแพ้นมวัวและแพ้ถั่ว ช่วยจัดเมนู", "แพ้นมวัว กับแพ้ถั่วด้วย",
+])
+def test_repeated_allergy_verbs_keep_both_recognized_allergies(message):
+    effective, _ = conversation_profile(saved(), [], message)
+    assert {"แพ้นมวัว", "แพ้ถั่ว"}.issubset(effective.restrictions)
+    assert not any(r.startswith("ข้อจำกัดที่ยังไม่รองรับ:") for r in effective.restrictions)
 
 
 def test_real_high_energy_plan_needs_extras_instead_of_larger_main_portions(foods, high_plans):

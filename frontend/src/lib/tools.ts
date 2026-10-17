@@ -15,6 +15,14 @@
  */
 
 export type ToolLabel = { running: string; done: string };
+export type ToolStatus = "success" | "partial" | "error" | "not_found" | "confirmation_required";
+export type ToolCall = { name: string; status?: ToolStatus };
+
+export function readToolStatus(value: unknown): ToolStatus | undefined {
+  return typeof value === "string"
+    && ["success", "partial", "error", "not_found", "confirmation_required"].includes(value)
+    ? value as ToolStatus : undefined;
+}
 
 export const TOOL_LABELS: Record<string, ToolLabel> = {
   calc_nutrition_targets: {
@@ -39,7 +47,29 @@ export const UNKNOWN_TOOL: ToolLabel = {
   done: "ใช้เครื่องมือของระบบแล้ว",
 };
 
-export function toolLabel(tool: string, running: boolean): string {
+export function toolLabel(tool: string, running: boolean, status?: ToolStatus): string {
   const labels = TOOL_LABELS[tool] ?? UNKNOWN_TOOL;
-  return running ? labels.running : labels.done;
+  if (status === "success") return labels.done;
+  if (status === "partial") return tool === "suggest_day_menu"
+    ? "จัดตัวอย่างเมนูแล้ว ยังเข้าเป้าไม่ครบ" : "ได้ผลลัพธ์บางส่วน";
+  if (status === "error") return tool === "suggest_day_menu"
+    ? "ยังจัดเมนูตามคำขอไม่ได้" : "ยังดำเนินการตามคำขอไม่ได้";
+  if (status === "confirmation_required") return "รอคุณยืนยันชื่ออาหาร";
+  if (status === "not_found") return "ไม่พบรายการอาหารในฐานข้อมูล";
+  if (running) return labels.running;
+  // Old history has only a tool name: completion is not evidence of success.
+  return "ประมวลผลคำขอแล้ว";
+}
+
+export function toolPresentation(tool: ToolCall, pending = false) {
+  const status = readToolStatus(tool.status);
+  const running = pending && !status;
+  return {
+    label: toolLabel(tool.name, running, status), running,
+    icon: running ? "⚙" : status === "success" ? "✓"
+      : status === "error" || status === "partial" ? "!"
+      : status === "confirmation_required" ? "?" : "•",
+    tone: status === "error" ? "error" : status === "partial" ? "warning"
+      : status === "success" ? "success" : "neutral",
+  };
 }

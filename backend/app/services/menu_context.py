@@ -36,6 +36,7 @@ _EXCLUSION = re.compile(
     r"(?:ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่)|งด(?:กิน)?|แพ้|ไม่มี|"
     r"allergic to |allergy to |avoid |without |don't eat |no )\s*"
     r"(.+?)(?=แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่(?:กิน|เอา|ใส่)|"
+    r"(?:และ|กับ)?\s*แพ้|"
     r"\s+(?:no|without|avoid|allergic to|don't eat)\s+|\s*[.!?\n]|$)",
     re.I,
 )
@@ -96,6 +97,7 @@ def menu_planning_options(history: list[dict], user_message: str) -> dict:
     clauses = [part for turn in [*turns, user_message]
                for part in re.split(r"แต่|เปลี่ยนใจ", turn)]
     for turn in clauses:
+        explicit_count = False
         text = normalize_thai(turn).translate(str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789"))
         text = re.sub(r"ของว่าง|อาหารว่าง|มื้อย่อย", "มื้อเสริม", text)
         if re.search("อัตโนมัติ|ไม่จำกัดจำนวนมื้อ|จัดตามความเหมาะสม", text):
@@ -105,6 +107,7 @@ def menu_planning_options(history: list[dict], user_message: str) -> dict:
             if re.search(r"(?:ไม่เอา|ไม่ต้องการ|ไม่ต้อง)\s*$", prefix):
                 continue
             raw = match.group(1)
+            explicit_count = True
             number = words[raw] if raw in words else int(raw)
             if match.group(2) in {"เสริม", "ว่าง"}:
                 count, allow = 3 + number, False
@@ -115,6 +118,7 @@ def menu_planning_options(history: list[dict], user_message: str) -> dict:
             suggest = True
         # Also recognise "มื้อเสริม 2 มื้อ" without counting it as two total meals.
         for extra in re.finditer(r"มื้อ(?:เสริม|ว่าง)\s*(" + numbers + r")\s*มื้อ", text):
+            explicit_count = True
             raw = extra.group(1)
             count, allow = 3 + (words[raw] if raw in words else int(raw)), False
         denied = re.search(
@@ -125,7 +129,7 @@ def menu_planning_options(history: list[dict], user_message: str) -> dict:
         )
         if denied or strict:
             allow, suggest = False, False
-            if denied or count is None:
+            if (denied and not explicit_count) or count is None:
                 count = 3
         elif re.search(r"(?:เพิ่ม|มี|จัด|เอา|ขอ).{0,15}มื้อ(?:เสริม|ว่าง).{0,8}(?:ได้|ตามเหมาะสม)", text):
             allow, suggest = True, True

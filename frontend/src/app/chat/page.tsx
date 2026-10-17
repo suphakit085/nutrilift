@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AnswerText } from "@/components/AnswerText";
-import { toolLabel } from "@/lib/tools";
+import { toolPresentation, type ToolCall } from "@/lib/tools";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -20,7 +20,7 @@ type Bubble = {
   role: "user" | "assistant";
   content: string;
   citations?: Citation[];
-  tools?: string[];
+  tools?: ToolCall[];
   pending?: boolean;
   /** Transient status while pending (e.g. the backend is retrying a 429). */
   notice?: string;
@@ -122,7 +122,7 @@ export default function ChatPage() {
             citations: message.citations ?? undefined,
             // Stored with the row; without this a reopened room lost the
             // "ดึงข้อมูลอาหาร" / "จัดเมนู" badges the live answer had shown.
-            tools: message.tool_calls?.map((call) => call.name) ?? undefined,
+            tools: message.tool_calls?.map((call) => ({ name: call.name, status: call.status })) ?? undefined,
           })),
         );
         const last = [...detail.messages].reverse().find((m) => !m.cancelled && m.citations?.length);
@@ -249,11 +249,11 @@ export default function ChatPage() {
         if (!isCurrent()) return;
         updateLast((bubble) => ({ ...bubble, notice: message }));
       },
-      onTool: (name) => {
+      onTool: (name, status) => {
         if (!isCurrent()) return;
         updateLast((bubble) => ({
           ...bubble,
-          tools: [...(bubble.tools ?? []), name],
+          tools: [...(bubble.tools ?? []), { name, status }],
         }));
       },
       onDone: ({ text: full, citations }) => {
@@ -620,17 +620,25 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
   return (
     <div className="flex justify-start">
       <div className="min-w-0 max-w-[85%] rounded-lg rounded-bl-sm border border-border bg-surface px-5 py-4 wrap-anywhere">
-        {bubble.tools?.map((tool, index) => (
+        {bubble.tools?.map((tool, index) => {
+          const presentation = toolPresentation(tool, Boolean(bubble.pending));
+          return (
           <div
             key={index}
-            className="mb-2.5 inline-flex items-center gap-1.5 rounded-sm bg-accent-soft px-3 py-1 text-xs text-accent"
+            className={`mb-2.5 inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-xs ${
+              presentation.tone === "error" ? "bg-red-500/10 text-red-700"
+                : presentation.tone === "warning" ? "bg-amber-500/10 text-amber-700"
+                : presentation.tone === "success" ? "bg-accent-soft text-accent"
+                : "bg-border/30 text-muted"
+            }`}
           >
-            <span className={bubble.pending ? "animate-pulse" : undefined}>
-              {bubble.pending ? "⚙" : "✓"}
+            <span aria-hidden="true" className={presentation.running ? "animate-pulse" : undefined}>
+              {presentation.icon}
             </span>
-            {toolLabel(tool, Boolean(bubble.pending))}
+            {presentation.label}
           </div>
-        ))}
+          );
+        })}
 
         {bubble.pending && bubble.notice && (
           <div className="mb-2 text-xs text-muted animate-pulse">{bubble.notice}</div>

@@ -50,6 +50,27 @@ def test_multiple_foods_are_not_scaled_as_one_food():
     assert verified_food_portion_reply([RICE, RICE], "ข้าวสวย 180 กรัม") is None
 
 
+def test_source_identifier_is_kept_without_inventing_urls_or_changing_nutrients():
+    result = deepcopy(RICE)
+    result["results"][0]["source"] = "USDA-FDC-SR:171478"
+    result["results"][0]["nutrition_meta"]["source_path"] = "C:/private/evidence.csv"
+    result["results"][0]["nutrition_meta"]["human_review_status"] = "pending"
+    answer = verified_food_portion_reply([result], "ข้าวสวย 180 กรัม ขอที่มาด้วย")
+    assert "USDA FoodData Central" in answer and "USDA-FDC-SR:171478" in answer
+    assert "232.5 kcal" in answer and "52.95 กรัม" in answer
+    assert "C:/private" not in answer and "https://" not in answer
+    assert "ยังรอผู้ตรวจทาน" in answer
+
+
+def test_missing_source_is_explicit_and_estimates_remain_estimates():
+    result = deepcopy(RICE)
+    result["results"][0]["estimated"] = True
+    answer = verified_food_portion_reply([result], "ข้าวสวย 180 กรัม ขอที่มา")
+    assert "ยังไม่มีรหัสแหล่งข้อมูลต้นทาง" in answer
+    assert "ค่าประมาณที่ยังไม่ได้ยืนยัน" in answer
+    assert "USDA" not in answer
+
+
 def test_verified_portion_bypasses_model_rewriting_and_keeps_data_notes(monkeypatch):
     calls = []
 

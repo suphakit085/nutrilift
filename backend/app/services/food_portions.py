@@ -5,6 +5,25 @@ from decimal import Decimal, InvalidOperation
 
 _GRAMS = re.compile(r"(?<![\d.])(-?\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:กรัม|grams?|g)(?![a-z])", re.I)
 
+_SOURCE_NAMES = {
+    "USDA-FDC-SR": "USDA FoodData Central — SR Legacy",
+    "ASEAN-FCD-2014-INMU": "ASEAN Food Composition Database 2014 — INMU",
+    "Fineli": "Fineli — Finnish Food Composition Database",
+    "FINELI": "Fineli — Finnish Food Composition Database",
+    "FINELI-THL": "Fineli — Finnish Food Composition Database (THL)",
+}
+
+
+def _source_note(row: dict) -> str:
+    source = str(row.get("source") or "").strip()
+    if not source:
+        return "ที่มา: รายการนี้ยังไม่มีรหัสแหล่งข้อมูลต้นทางในฐานข้อมูล จึงยังระบุแหล่งอ้างอิงให้ไม่ได้"
+    prefix = source.split(":", 1)[0]
+    name = _SOURCE_NAMES.get(prefix)
+    # Preserve the stored identifier. Local evidence paths are not public
+    # citations, and a database identifier alone does not verify a URL.
+    return f"ที่มา: {name} — รหัส {source}" if name else f"ที่มาในฐานข้อมูล: {source}"
+
 
 def verified_food_portion_reply(results: list[dict], user_message: str) -> str | None:
     quantities = _GRAMS.findall(user_message)
@@ -57,4 +76,7 @@ def verified_food_portion_reply(results: list[dict], user_message: str) -> str |
     )
     if row.get("estimated"):
         lines.append("ตัวเลขนี้เป็นค่าประมาณที่ยังไม่ได้ยืนยัน ไม่ควรใช้เป็นค่าที่แน่นอน")
+    lines.append(_source_note(row))
+    if (row.get("nutrition_meta") or {}).get("human_review_status") == "pending":
+        lines.append("สถานะข้อมูลรายการนี้: ยังรอผู้ตรวจทาน ไม่ใช่ข้อมูลที่ผ่านการทบทวนโดยผู้เชี่ยวชาญแล้ว")
     return "\n".join(lines)

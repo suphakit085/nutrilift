@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.food_portions import verified_food_portion_reply
-from app.services.foods import all_foods, lookup_food
+from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, plan_day_menu
@@ -301,13 +301,14 @@ def _run_menu_tool(
     if guard is not None and not guardrails.personalization_allowed(guard):
         return {
             "error": "safety_boundary",
-            "message": "ไม่อนุญาตให้จัดเมนูเฉพาะบุคคลในบริบทสุขภาพนี้ ให้ส่งต่อผู้ดูแล",
+            "message": "ยังจัดเมนูเฉพาะบุคคลในบริบทสุขภาพนี้ไม่ได้ครับ กรุณาปรึกษาแพทย์หรือนักกำหนดอาหารผู้ดูแล",
         }
     if profile is None:
         return {
             "error": "no_profile",
             "message": (
-                "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
+                "ยังไม่มีโปรไฟล์ จึงยังจัดเมนูตามเป้าหมายให้ไม่ได้ครับ "
+                "กรุณากรอกโปรไฟล์ก่อนเพื่อคำนวณพลังงานและสารอาหาร"
             ),
         }
     if any(r.startswith("ข้อจำกัดที่ยังไม่รองรับ:") for r in profile.restrictions):
@@ -405,6 +406,25 @@ def _unverified_food_reply(candidates: list[str]) -> str:
     return "ยังไม่พบรายการนี้ในฐานข้อมูลอาหาร จึงยืนยันค่าแคลอรี่หรือสารอาหารให้ไม่ได้ครับ"
 
 
+def _tool_status(name: str, result: dict) -> str | None:
+    """Outcome belongs to the application, never to the model or stream state."""
+    if result.get("error"):
+        return "error"
+    if name == "suggest_day_menu":
+        if not result.get("meals"):
+            return "error"
+        return "success" if result.get("within_tolerance") else "partial"
+    if name == "lookup_food":
+        if result.get("found"):
+            return "success"
+        if result.get("match") in {"partial", "confirmation_required"}:
+            return "confirmation_required"
+        return "not_found"
+    if name == "calc_nutrition_targets":
+        return "success"
+    return None
+
+
 def _run_food_lookup(
     db: Session,
     query: str,
@@ -439,6 +459,17 @@ def _run_food_lookup(
                 result["confirmation_for"] = candidate
             return result
     result = lookup_food(db, query)
+    if result.get("match") == "partial" and any(
+        normalize_thai(name) in normalized_user for name in result.get("candidates", [])
+    ):
+        # The user may already have supplied the full table name while the
+        # model removed its comma. Only one explicit, non-negated food may
+        # resolve this; names proposed by the assistant cannot do so.
+        explicit = explicit_food_names(db, user_message)
+        if len(explicit) == 1 and explicit[0] in result.get("candidates", []):
+            confirmed = lookup_food(db, explicit[0])
+            if confirmed.get("found") and len(confirmed.get("results", [])) == 1:
+                result = confirmed
     if result.get("found"):
         # The model can normalize a user's reordered phrase into a canonical
         # database name before its first lookup. Require that canonical name in
@@ -1222,7 +1253,8 @@ def stream_chat(
                         if candidate not in food_lookup_candidates:
                             food_lookup_candidates.append(candidate)
                 _release_connection(db)
-                call_log = {"name": call.name, "arguments": args}
+                status = _tool_status(call.name, result)
+                call_log = {"name": call.name, "arguments": args, "status": status}
                 if call.name == "lookup_food":
                     call_log["lookup_result"] = {
                         "found": bool(result.get("found")),
@@ -1233,7 +1265,7 @@ def stream_chat(
                     }
                     result.pop("confirmation_for", None)
                 tool_calls_log.append(call_log)
-                yield {"type": "tool", "name": call.name, "args": args}
+                yield {"type": "tool", "name": call.name, "args": args, "status": status}
                 response_parts.append(
                     types.Part(
                         function_response=types.FunctionResponse(
