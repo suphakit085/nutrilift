@@ -18,31 +18,30 @@ same menu:
    is summed into a total compared against a target;
 2. rank each role's candidates by how cleanly they serve that role, then rotate
    by ``variant`` so "ขออีกแบบ" gives a different menu without any randomness;
-3. fill a fixed meal template, refusing to reuse a food and preferring an unused
+3. fill the requested three/four-meal template, refusing to reuse a food and preferring an unused
    food *category* per role, so the day is not four servings of the same fish;
-4. solve the portion multipliers by bounded coordinate descent on the weighted
-   relative error against the protein/carb/fat/kcal targets.
+4. solve bounded portions, prioritising daily feasibility before meal balance
+   and preferred portions; independently validate the final reported numbers.
 
-Portions are expressed as multiples of each row's own ``serving_desc`` and
-snapped to ``PORTION_STEP``, so the output is something a person can actually
-measure ("ข้าวสวย 3 ทัพพี"), not 1.37 servings.
+Food composition references stay unchanged. Planning uses a gram grid per food
+kind, or whole units for countable foods, rather than treating a per-100-g
+nutrient reference as a customary serving.
 """
 
 from __future__ import annotations
 
 import json
+import math
 import re
+from copy import copy
 from dataclasses import dataclass, field
 
+from app.services.meal_portions import PORTION_POLICY_VERSION, PortionPolicy, portion_policy
 from app.services.thai_text import normalize_thai
 
 KCAL_PER_G_PROTEIN = 4.0
 KCAL_PER_G_CARB = 4.0
 KCAL_PER_G_FAT = 9.0
-
-#: Portions are rounded to this fraction of a serving. A quarter of a serving is
-#: about as fine as "half a ladle of rice" can be followed in a real kitchen.
-PORTION_STEP = 0.25
 
 #: How far the finished plan may sit from each target before it is reported as
 #: not meeting it. Protein is the tightest because it is the target the training
@@ -388,6 +387,7 @@ class Slot:
     #: Cap in grams of the food itself, so "3 servings" of a 100 g row cannot
     #: turn into 600 g of chicken breast.
     max_grams: float = 400.0
+    optional: bool = False
 
 
 @dataclass(frozen=True)
@@ -440,12 +440,31 @@ MEAL_TEMPLATE: tuple[Meal, ...] = (
         "snack",
         "มื้อว่าง / หลังฝึก",
         (
-            Slot("protein", 0.5, 2.5, 250),
+            Slot("protein", 0.5, 2.5, 250, optional=True),
             Slot("carb", 0.5, 4.0, 300),
             Slot("fruit", 0.5, 2.0, 300),
         ),
     ),
 )
+
+# Three meals are solved directly. Fruit can accompany dinner; there is no
+# post-solve movement of a fourth meal's protein into breakfast.
+THREE_MEAL_TEMPLATE: tuple[Meal, ...] = (
+    Meal("breakfast", "มื้อเช้า", (
+        MEAL_TEMPLATE[0].slots[0], Slot("carb", 0.5, 8.0, 400),
+        *MEAL_TEMPLATE[0].slots[2:],
+    )),
+    MEAL_TEMPLATE[1],
+    Meal(
+        "dinner", "มื้อเย็น",
+        (*MEAL_TEMPLATE[2].slots, Slot("fruit", 0.5, 3.0, 300)),
+    ),
+)
+
+_MEAL_SHARES = {
+    3: {"breakfast": 0.30, "lunch": 0.35, "dinner": 0.35},
+    4: {"breakfast": 0.25, "lunch": 0.30, "dinner": 0.30, "snack": 0.15},
+}
 
 
 # ---------------------------------------------------------------------------
@@ -462,29 +481,34 @@ class _Item:
     lo: float = field(init=False)
     hi: float = field(init=False)
     choices: list[float] = field(init=False, default_factory=list)
+    policy: PortionPolicy = field(init=False)
 
     def __post_init__(self) -> None:
-        serving_g = float(self.food.get("serving_g") or 0) or 100.0
-        # A composition table reports powder per 100 g, but a shake should not
-        # quietly become 200 g of dry powder to make the macros look good.
-        max_grams = self.slot.max_grams
-        if self.food.get("category") == "อาหารเสริม" and "ผง" in self.food.get("name_th", ""):
-            max_grams = min(max_grams, 70.0)
-        if self.food.get("name_th") in {"น้ำมันมะกอก", "น้ำมันปรุงอาหาร (คาโนลา/ทานตะวัน/มะกอก)"}:
-            max_grams = min(max_grams, 20.0)
-        gram_cap = max_grams / serving_g
-        self.lo = self.slot.min_mult
-        self.hi = max(self.lo, min(self.slot.max_mult, gram_cap))
-        # Snap onto the allowed grid straight away. Clamping alone could leave a
-        # multiplier the optimizer never proposes (a 60 g cap on a 100 g serving
-        # clamps 1.0 to 0.6, which is not a multiple of PORTION_STEP), and that
-        # value then survives to the answer as "0.6 x 100 กรัม".
-        self.choices = _grid(self.lo, self.hi)
+        serving_g = float(self.food.get("serving_g") or 0)
+        if not math.isfinite(serving_g) or serving_g <= 0:
+            raise MealPlanError("น้ำหนักอ้างอิงของอาหารไม่ถูกต้อง")
+        self.policy = portion_policy(self.food, self.slot.role)
+        self.lo = self.policy.min_g / serving_g
+        if self.policy.key == "role-fallback":
+            self.lo = max(self.lo, self.slot.min_mult)
+        self.hi = min(self.slot.max_grams, self.policy.max_g) / serving_g
         if _is_countable(self.food):
-            # whole eggs and whole scoops, at least one
-            whole = [float(n) for n in range(1, int(self.hi + 1e-9) + 1)]
-            self.choices = whole or [1.0]
+            self.hi = min(self.hi, self.slot.max_mult)
+        if self.lo > self.hi:
+            raise MealPlanError("ขอบเขตปริมาณอาหารไม่มีช่วงที่ใช้ได้")
+        self.choices = [g / serving_g for g in _grid(
+            self.lo * serving_g, self.hi * serving_g, self.policy.step_g
+        )]
+        if _is_countable(self.food):
+            whole = [float(n) for n in range(max(1, math.ceil(self.lo - 1e-9)),
+                                             math.floor(self.hi + 1e-9) + 1)]
+            if not whole:
+                raise MealPlanError("ไม่มีจำนวนเต็มของอาหารที่อยู่ในขอบเขตปริมาณ")
+            self.choices = whole
             self.lo, self.hi = self.choices[0], self.choices[-1]
+        if self.slot.optional:
+            self.choices.insert(0, 0.0)
+            self.lo = 0.0
         self.mult = min(self.choices, key=lambda c: abs(c - self.mult))
 
     def macros(self) -> dict[str, float]:
@@ -510,61 +534,183 @@ def _totals(items: list[_Item]) -> dict[str, float]:
     return out
 
 
-def _error(items: list[_Item], targets: dict[str, float]) -> float:
-    totals = _totals(items)
+def _quality(items: list[_Item], totals: dict[str, float], meal_count: int) -> float:
+    """Soft application preferences, not medical limits or equal-meal mandates."""
     score = 0.0
-    for key, weight in _ERROR_WEIGHTS.items():
-        target = targets.get(key, 0.0)
-        if target <= 0:
+    by_meal = {meal: {"kcal": 0.0, "protein_g": 0.0} for meal in _MEAL_SHARES[meal_count]}
+    for item in items:
+        for key in ("kcal", "protein_g"):
+            by_meal[item.meal.key][key] += float(item.food[key]) * item.mult
+    for meal, share in _MEAL_SHARES[meal_count].items():
+        for key in ("kcal", "protein_g"):
+            if totals[key] <= 0:
+                continue
+            fraction = by_meal[meal][key] / totals[key]
+            # A 25% band around each desired share allows different meal sizes.
+            distance = max(0.0, abs(fraction - share) - share * 0.25)
+            score += 0.20 * (distance / share) ** 2
+    for item in items:
+        if item.mult == 0:
             continue
-        score += weight * ((totals[key] - target) / target) ** 2
+        grams = item.mult * float(item.food["serving_g"])
+        low, high = item.policy.preferred_min_g, item.policy.preferred_max_g
+        distance = max(0.0, low - grams) / max(low, 1) + max(0.0, grams - high) / high
+        score += 0.15 * distance ** 2 / len(items)
     return score
 
 
-def _snap(value: float) -> float:
-    return round(value / PORTION_STEP) * PORTION_STEP
+def _score(items: list[_Item], targets: dict[str, float], meal_count: int) -> tuple[float, float]:
+    totals = _totals(items)
+    excess = sum(
+        max(0.0, abs(totals[k] - targets[k]) / targets[k] - tolerance - 1e-9) ** 2
+        for k, tolerance in TOLERANCE.items()
+    )
+    # A daily-feasible solution always outranks a daily-infeasible solution.
+    # Once feasible, trade small daily deviations against usable meal portions.
+    nutrition_error = sum(_ERROR_WEIGHTS[k] * ((totals[k] - t) / t) ** 2
+                          for k, t in targets.items())
+    return excess, nutrition_error + _quality(items, totals, meal_count)
 
 
-def _grid(lo: float, hi: float) -> list[float]:
-    """Allowed multipliers in [lo, hi] at PORTION_STEP resolution.
+def _improve_pair(items: list[_Item], targets: dict[str, float], meal_count: int) -> bool:
+    """Escape a one-variable local minimum with a bounded two-food exchange.
+
+    Adjacent choices refine daily-feasible plans; an infeasible plan can try
+    all choices for a pair. Both use a fixed order and bounded pass count.
+    This remains a heuristic, not a claim of global optimality.
+    """
+    best = _score(items, targets, meal_count)
+    move = None
+    for index, first in enumerate(items):
+        original_first = first.mult
+        first_at = first.choices.index(original_first)
+        for second in items[index + 1:]:
+            original_second = second.mult
+            second_at = second.choices.index(original_second)
+            first_moves = (range(len(first.choices)) if best[0] > 0
+                           else (first_at - 1, first_at + 1))
+            second_moves = (range(len(second.choices)) if best[0] > 0
+                            else (second_at - 1, second_at + 1))
+            for a in first_moves:
+                if not 0 <= a < len(first.choices):
+                    continue
+                first.mult = first.choices[a]
+                for b in second_moves:
+                    if not 0 <= b < len(second.choices):
+                        continue
+                    second.mult = second.choices[b]
+                    score = _score(items, targets, meal_count)
+                    if score < best:
+                        best = score
+                        move = first, first.mult, second, second.mult
+                second.mult = original_second
+            first.mult = original_first
+    if move is None:
+        return False
+    first, first.mult, second, second.mult = move
+    return True
+
+
+def _grid(lo: float, hi: float, step: float) -> list[float]:
+    """Allowed quantities in [lo, hi] at the requested resolution.
 
     ``hi`` is often a gram cap rather than a grid point; when the range holds no
     grid point at all (a cap tighter than one step above ``lo``) the cap itself
     is the only choice, so the plan stays inside the gram limit.
     """
     values: list[float] = []
-    value = _snap(lo)
+    value = round(lo / step) * step
     if value < lo - 1e-9:
-        value += PORTION_STEP
+        value += step
     while value <= hi + 1e-9:
         values.append(round(value, 4))
-        value += PORTION_STEP
+        value += step
     return values or [round(hi, 4)]
 
 
-def _optimize(items: list[_Item], targets: dict[str, float]) -> None:
+def _optimize(items: list[_Item], targets: dict[str, float], meal_count: int = 4) -> None:
     """Bounded coordinate descent over the snapped portion grid.
 
-    Every variable has at most (max_mult - min_mult) / PORTION_STEP + 1 values -
-    a dozen or so - and there are at most a dozen variables, so an exhaustive
-    sweep per pass is cheap and needs no gradient, no solver dependency, and no
-    randomness. It stops as soon as a full pass improves nothing.
+    Enumerates the finite gram/unit choices without a solver dependency or
+    randomness. If a single-variable sweep stalls, try a two-food exchange.
     """
     for _ in range(_OPTIMIZER_PASSES):
         improved = False
         for item in items:
             best_mult = item.mult
-            best_error = _error(items, targets)
+            best_error = _score(items, targets, meal_count)
             for candidate in item.choices:
                 if candidate == best_mult:
                     continue
                 item.mult = candidate
-                error = _error(items, targets)
-                if error < best_error - 1e-9:
+                error = _score(items, targets, meal_count)
+                if error < best_error:
                     best_error, best_mult, improved = error, candidate, True
             item.mult = best_mult
-        if not improved:
+        if not improved and not _improve_pair(items, targets, meal_count):
             return
+
+
+def _repair_food_choices(
+    items: list[_Item], pool: list[dict], targets: dict[str, float], meal_count: int, variant: int
+) -> list[_Item]:
+    """At most eight deterministic alternatives when the first food set misses.
+
+    Restrictions have already filtered pool. Bounds are never relaxed to make
+    a plan pass. Search remains deliberately bounded; failure is reported.
+    """
+    remaining = 8
+    for _ in range(2):
+        best_score = _score(items, targets, meal_count)
+        if best_score[0] <= 1e-18:
+            return items
+        totals = _totals(items)
+        roles = sorted(("carb", "fat", "protein"), key=lambda role: (
+            -abs(totals[f"{role}_g"] / targets[f"{role}_g"] - 1)
+        ))
+        best_items = items
+        for role in roles:
+            nutrient = f"{role}_g"
+            indices = sorted(
+                (n for n, i in enumerate(items) if i.slot.role == role),
+                key=lambda n: float(items[n].food[nutrient]) / float(items[n].food["serving_g"]),
+                reverse=totals[nutrient] > targets[nutrient],
+            )
+            for index in indices:
+                item = items[index]
+                candidates = [f for f in pool if f["name_th"] != item.food["name_th"]]
+                others = items[:index] + items[index + 1:]
+                for _candidate in range(2):
+                    food = _pick(candidates, role, {i.food["name_th"] for i in others},
+                                 {i.food.get("category") or "" for i in others
+                                  if i.slot.role == role}, variant, item.meal.key)
+                    if remaining == 0:
+                        return best_items
+                    if food is None:
+                        break
+                    candidates = [f for f in candidates if f is not food]
+                    try:
+                        replacement = _Item(food, item.meal, item.slot, 1.0)
+                    except MealPlanError:
+                        continue
+                    remaining -= 1
+                    trial = [copy(i) for i in items]
+                    trial[index] = replacement
+                    _optimize(trial, targets, meal_count)
+                    score = _score(trial, targets, meal_count)
+                    if score < best_score:
+                        best_score, best_items = score, trial
+                        if score[0] <= 1e-18:
+                            return trial
+                        break
+                if best_items is not items:
+                    break
+            if best_items is not items:
+                break
+        if best_items is items:
+            break
+        items = best_items
+    return items
 
 
 # ---------------------------------------------------------------------------
@@ -782,8 +928,11 @@ def build_day_plan(
     if type(meal_count) is not int or meal_count not in (3, 4):
         raise MealPlanError("ระบบรองรับตัวอย่างเมนู 3 หรือ 4 มื้อต่อวัน กรุณาเลือกจำนวนมื้อที่รองรับ")
     for key in ("kcal", "protein_g", "carb_g", "fat_g"):
-        if float(targets.get(key, 0) or 0) <= 0:
+        value = float(targets.get(key, 0) or 0)
+        if not math.isfinite(value) or value <= 0:
             raise MealPlanError(f"เป้าหมาย {key} ต้องมากกว่า 0")
+    targets = {key: float(targets[key]) for key in TOLERANCE}
+    output_template = THREE_MEAL_TEMPLATE if meal_count == 3 else MEAL_TEMPLATE
 
     restrictions = [r for r in restrictions if r and r.strip()]
     unknown = [r for r in restrictions if r.strip() not in _RESTRICTION_RULES]
@@ -825,16 +974,28 @@ def build_day_plan(
     used_names: set[str] = set()
     used_categories: dict[str, set[str]] = {}
     missing_roles: list[str] = []
-    for meal in MEAL_TEMPLATE:
+    for meal in output_template:
         for slot in meal.slots:
             seen = used_categories.setdefault(slot.role, set())
-            food = _pick(pool, slot.role, used_names, seen, variant, meal.key)
-            if food is None:
+            # An impossible whole unit or empty portion range must not be
+            # forced past its cap. Try another eligible food in the same slot.
+            candidates = list(pool)
+            item = None
+            while candidates:
+                food = _pick(candidates, slot.role, used_names, seen, variant, meal.key)
+                if food is None:
+                    break
+                try:
+                    item = _Item(food=food, meal=meal, slot=slot, mult=1.0)
+                    break
+                except MealPlanError:
+                    candidates = [f for f in candidates if f is not food]
+            if item is None:
                 missing_roles.append(f"{meal.label_th}:{slot.role}")
                 continue
-            used_names.add(food["name_th"])
-            seen.add(food.get("category") or "")
-            items.append(_Item(food=food, meal=meal, slot=slot, mult=1.0))
+            used_names.add(item.food["name_th"])
+            seen.add(item.food.get("category") or "")
+            items.append(item)
 
     if not any(item.slot.role == "protein" for item in items):
         raise MealPlanError(
@@ -842,7 +1003,9 @@ def build_day_plan(
             "ให้บอกผู้ใช้ตรง ๆ และแนะนำให้ปรึกษานักกำหนดอาหาร"
         )
 
-    _optimize(items, targets)
+    _optimize(items, targets, meal_count)
+    items = _repair_food_choices(items, pool, targets, meal_count, variant)
+    items = [item for item in items if item.mult > 0]
     totals = _totals(items)
 
     deviations: dict[str, float] = {}
@@ -851,18 +1014,9 @@ def build_day_plan(
         target = float(targets[key])
         pct = (totals[key] - target) / target
         deviations[key] = round(pct * 100, 1)
-        if abs(pct) > tol:
+        if abs(pct) > tol + 1e-9:
             within_tolerance = False
 
-    output_template = MEAL_TEMPLATE
-    if meal_count == 3:
-        # Keep every verified portion and the daily totals. Move the snack
-        # components into the three requested meals without model estimates.
-        destinations = {"protein": 0, "carb": 1, "fruit": 2}
-        for item in items:
-            if item.meal.key == "snack":
-                item.meal = MEAL_TEMPLATE[destinations[item.slot.role]]
-        output_template = MEAL_TEMPLATE[:3]
     meals_out = []
     for meal in output_template:
         meal_items = [i for i in items if i.meal.key == meal.key]
@@ -876,13 +1030,18 @@ def build_day_plan(
                     {
                         "name_th": i.food["name_th"],
                         "role": i.slot.role,
-                        "portion": round(i.mult, 2),
+                        "portion": i.mult,
                         "portion_desc_th": portion_text(i.mult, i.food),
                         "grams": round(i.mult * float(i.food.get("serving_g") or 0), 1),
                         **{k: round(v, 1) for k, v in i.macros().items()},
                         "source": i.food.get("source"),
                         "nutrition_meta": i.food.get("nutrition_meta"),
                         "warnings": i.food.get("warnings", []),
+                        "portion_policy": {
+                            "key": i.policy.key,
+                            "min_grams": i.policy.min_g,
+                            "max_grams": min(i.policy.max_g, i.slot.max_grams),
+                        },
                     }
                     for i in meal_items
                 ],
@@ -902,7 +1061,7 @@ def build_day_plan(
         off = [
             f"{k} {deviations[k]:+.1f}%"
             for k, tol in TOLERANCE.items()
-            if abs(deviations[k]) > tol * 100
+            if abs(totals[k] / targets[k] - 1) > tol + 1e-9
         ]
         warnings.append(
             "เมนูนี้ยังเข้าเป้าไม่ครบทุกตัว (" + ", ".join(off) + ") "
@@ -917,7 +1076,16 @@ def build_day_plan(
             + " ต้องเตือนผู้ใช้ให้ตรวจเมนูเองด้วย"
         )
 
-    return {
+    meal_balance = all(
+        abs(sum(i.macros()[key] for i in items if i.meal.key == meal) / totals[key] - share)
+        <= share * 0.25 + 1e-9
+        for meal, share in _MEAL_SHARES[meal_count].items()
+        for key in ("kcal", "protein_g")
+        if totals[key] > 0
+    )
+    if not meal_balance:
+        warnings.append("พลังงานหรือโปรตีนยังกระจายระหว่างมื้อไม่สม่ำเสมอตามเกณฑ์ตัวอย่างของระบบ")
+    plan = {
         "variant": variant,
         "meal_count": meal_count,
         "restrictions_applied": restrictions,
@@ -926,14 +1094,21 @@ def build_day_plan(
         "estimated_rows_dropped": estimated_dropped,
         "pool_size": len(pool),
         "targets": {
-            k: round(float(targets[k]), 1) for k in ("kcal", "protein_g", "carb_g", "fat_g")
+            k: float(targets[k]) for k in ("kcal", "protein_g", "carb_g", "fat_g")
         },
         "totals": {k: round(v, 1) for k, v in totals.items()},
         "deviation_pct": deviations,
+        "out_of_tolerance": [k for k, tol in TOLERANCE.items()
+                             if abs(totals[k] / targets[k] - 1) > tol + 1e-9],
         "within_tolerance": within_tolerance,
         "tolerance_pct": {k: round(v * 100) for k, v in TOLERANCE.items()},
         "meals": meals_out,
         "warnings": warnings,
+        "practicality": {
+            "policy_version": PORTION_POLICY_VERSION,
+            "review_status": "pending_dietitian_review",
+            "meal_balance_within_preference": meal_balance,
+        },
         "note": (
             "เมนูนี้คำนวณด้วยโปรแกรม ไม่ใช่การประมาณของโมเดล และไม่ใช่การสุ่ม "
             "ตัวเลขทุกตัวมาจากฐานข้อมูลอาหารของระบบ "
@@ -946,6 +1121,81 @@ def build_day_plan(
         ),
         "disclaimer": "เป็นตัวอย่างการจัดมื้อเพื่อการศึกษา ไม่ใช่การกำหนดอาหารเฉพาะบุคคลโดยนักกำหนดอาหาร",
     }
+    validate_day_plan(plan, pool)
+    return plan
+
+
+def validate_day_plan(plan: dict, foods: list[dict]) -> None:
+    """Recompute from source rows, independent of optimizer totals and flags.
+
+    Fail closed: a malformed result must never become a verified chat table.
+    Reference portions remain untouched; no cooked/raw conversion is inferred.
+    """
+    def close(reported: float, expected: float) -> bool:
+        return math.isfinite(reported) and abs(reported - expected) <= 0.051
+
+    if type(plan["meal_count"]) is not int or plan["meal_count"] not in (3, 4):
+        raise MealPlanError("ตรวจสอบจำนวนมื้ออาหารไม่ผ่าน")
+    by_food = {(f["name_th"], f.get("source")): f for f in foods}
+    template = THREE_MEAL_TEMPLATE if plan["meal_count"] == 3 else MEAL_TEMPLATE
+    slots = {(m.key, s.role): s for m in template for s in m.slots}
+    totals = dict.fromkeys(TOLERANCE, 0.0)
+    seen_slots: set[tuple[str, str]] = set()
+    seen_meals: set[str] = set()
+    for meal in plan["meals"]:
+        if meal["key"] in seen_meals or not meal["items"]:
+            raise MealPlanError("ตรวจสอบโครงสร้างมื้ออาหารไม่ผ่าน")
+        seen_meals.add(meal["key"])
+        meal_totals = dict.fromkeys(TOLERANCE, 0.0)
+        for item in meal["items"]:
+            slot_key = (meal["key"], item["role"])
+            food = by_food.get((item["name_th"], item.get("source")))
+            if food is None or slot_key not in slots or slot_key in seen_slots:
+                raise MealPlanError("ตรวจสอบรายการอาหารในเมนูไม่ผ่าน")
+            seen_slots.add(slot_key)
+            meta = food.get("nutrition_meta") or {}
+            if isinstance(meta, str):
+                meta = json.loads(meta)
+            if (excluded_by(food, plan["restrictions_applied"]) or _never_suggest(food)
+                    or food.get("estimated") or str(food.get("source") or "").startswith("TOVERIFY")
+                    or meta.get("verification_status") in {"unverified", "proxy_unverified"}
+                    or item["role"] not in roles_of(food)):
+                raise MealPlanError("ตรวจสอบข้อจำกัดอาหารในเมนูไม่ผ่าน")
+            multiplier = item["portion"]
+            grams = multiplier * float(food["serving_g"])
+            policy = portion_policy(food, item["role"])
+            slot = slots[slot_key]
+            if (not math.isfinite(grams) or grams < policy.min_g - 1e-4
+                    or grams > min(policy.max_g, slot.max_grams) + 1e-4
+                    or (_is_countable(food) and multiplier > slot.max_mult + 1e-6)
+                    or not close(item["grams"], grams)):
+                raise MealPlanError("ตรวจสอบขอบเขตปริมาณอาหารในเมนูไม่ผ่าน")
+            if _is_countable(food) and (multiplier < 1 or not float(multiplier).is_integer()):
+                raise MealPlanError("ตรวจสอบจำนวนเต็มของอาหารในเมนูไม่ผ่าน")
+            for key in TOLERANCE:
+                value = float(food[key]) * multiplier
+                if not math.isfinite(value) or value < 0 or not close(item[key], value):
+                    raise MealPlanError("ตรวจสอบสารอาหารของรายการอาหารไม่ผ่าน")
+                meal_totals[key] += value
+        for key, value in meal_totals.items():
+            if not close(meal[key], value):
+                raise MealPlanError("ตรวจสอบผลรวมสารอาหารรายมื้อไม่ผ่าน")
+            totals[key] += value
+    for key, value in totals.items():
+        if not close(plan["totals"][key], value):
+            raise MealPlanError("ตรวจสอบผลรวมสารอาหารรายวันไม่ผ่าน")
+        target = plan["targets"][key]
+        if not math.isfinite(target) or target <= 0:
+            raise MealPlanError("ตรวจสอบเป้าหมายสารอาหารไม่ผ่าน")
+        deviation = (value - target) / target * 100
+        if not close(plan["deviation_pct"][key], deviation):
+            raise MealPlanError("ตรวจสอบส่วนต่างจากเป้าหมายสารอาหารไม่ผ่าน")
+    if seen_meals != {meal.key for meal in template}:
+        raise MealPlanError("ตรวจสอบจำนวนมื้อที่จัดได้ไม่ผ่าน")
+    within = all(abs(totals[k] / plan["targets"][k] - 1) <= tol + 1e-9
+                 for k, tol in TOLERANCE.items())
+    if plan["within_tolerance"] != within:
+        raise MealPlanError("ตรวจสอบสถานะเข้าเป้าหมายสารอาหารไม่ผ่าน")
 
 
 def _format_portion(mult: float) -> str:
@@ -972,6 +1222,8 @@ def portion_text(mult: float, food: dict) -> str:
         return f"{grams_txt} กรัม"
     unit = _UNIT_SERVING_RE.match(serving)
     if unit and grams > 0:
+        if not _is_countable(food) and abs(mult * 4 - round(mult * 4)) > 1e-6:
+            return f"{grams_txt} กรัม"
         return f"{_format_portion(mult)} {unit.group(1)} (รวม {grams_txt} กรัม)"
     return f"{_format_portion(mult)} × {serving}"
 

@@ -617,11 +617,19 @@ def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
             }
             for key, delta in (plan.get("deviation_pct") or {}).items():
                 tolerance = (plan.get("tolerance_pct") or {}).get(key, 0)
-                if key in labels and abs(delta) > tolerance:
+                if key in labels and (key in plan.get("out_of_tolerance", [])
+                                      or abs(delta) > tolerance):
                     direction = "เกิน" if delta > 0 else "ขาด"
                     warnings.append(
                         f"เมนูนี้ยังเข้าเป้าไม่ครบ: {labels[key]}{direction} {abs(delta):.1f}%"
                     )
+        practicality = plan.get("practicality") or {}
+        if practicality and plan.get("meal_count") == 3 and not plan.get("within_tolerance", True):
+            warnings.append("แผน 3 มื้อนี้ยังเข้าเป้าไม่ครบ ลองเลือก 4 มื้อหรือขอเมนูอีกแบบ")
+        if practicality.get("meal_balance_within_preference") is False:
+            warnings.append("พลังงานหรือโปรตีนยังกระจายระหว่างมื้อไม่สม่ำเสมอตามเกณฑ์ตัวอย่างของระบบ")
+        if practicality.get("review_status") == "pending_dietitian_review":
+            warnings.append("ช่วงปริมาณอาหารเป็นเกณฑ์ตัวอย่างของระบบ ยังไม่ได้รับการทบทวนโดยนักกำหนดอาหาร")
         if plan.get("restrictions_unknown"):
             warnings.append(
                 "ระบบยังไม่รองรับข้อจำกัดอาหาร: "
