@@ -3,9 +3,9 @@ name: Frontend security
 on:
   push:
     branches: [main, security/frontend-dependencies-20261017]
-    paths: ['frontend/**', 'eval/uat_browser/diary_requests.cjs', 'eval/uat_browser/run_diary_requests.mjs', '.github/workflows/frontend-security.yml']
+    paths: ['frontend/**', 'eval/uat_browser/diary_requests.cjs', 'eval/uat_browser/run_diary_requests.mjs', 'eval/uat_browser/meal_cards.cjs', 'eval/uat_browser/run_meal_cards.mjs', 'eval/uat_browser/fixtures/meal-answers.json', '.github/workflows/frontend-security.yml']
   pull_request:
-    paths: ['frontend/**', 'eval/uat_browser/diary_requests.cjs', 'eval/uat_browser/run_diary_requests.mjs', '.github/workflows/frontend-security.yml']
+    paths: ['frontend/**', 'eval/uat_browser/diary_requests.cjs', 'eval/uat_browser/run_diary_requests.mjs', 'eval/uat_browser/meal_cards.cjs', 'eval/uat_browser/run_meal_cards.mjs', 'eval/uat_browser/fixtures/meal-answers.json', '.github/workflows/frontend-security.yml']
   workflow_dispatch:
 
 permissions:
@@ -42,10 +42,14 @@ jobs:
       - run: npm run build
       - name: Verify diary requests and recovery in Chrome
         run: npm run test:diary-ui
+      - name: Verify responsive meal cards and warning access in Chrome
+        run: npm run test:meal-ui
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: diary-browser-checks
-          path: output/playwright/diary-regressions/
+          name: frontend-browser-checks
+          path: |
+            output/playwright/diary-regressions/
+            output/playwright/meal-card-regressions/
           if-no-files-found: ignore
           retention-days: 14

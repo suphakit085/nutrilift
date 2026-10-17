@@ -19,6 +19,7 @@
  */
 
 import { toBlocks } from "@/lib/markdown";
+import { foodWarningParts, isMealTable, withWarningSections, type TableBlock } from "@/lib/answer-layout";
 
 /** `**bold**` and `` `code` ``. An unclosed marker is left as literal text so a
  *  half-streamed token does not eat the rest of the line. */
@@ -51,11 +52,38 @@ function inline(text: string, keyPrefix: string) {
   return parts;
 }
 
+function MealCards({ table }: { table: TableBlock }) {
+  return (
+    <section aria-label="เมนูอาหารแบบรายมื้อ" className="my-3 space-y-3 md:hidden print:hidden">
+      {table.rows.map((row, r) => (
+        <article key={r} aria-label={row[0] || "มื้ออาหาร"} className="min-w-0 rounded-md border border-border bg-surface-sunken/40 p-3">
+          <h4 className="font-display font-semibold">{inline(row[0], `meal-${r}`)}</h4>
+          {row[1] && (
+            <ul aria-label={`รายการอาหาร ${row[0]}`} className="mt-2 space-y-1.5 text-sm">
+              {row[1].split("\n").filter((item) => item.trim()).map((item, j) => (
+                <li key={j}>{inline(item, `food-${r}-${j}`)}</li>
+              ))}
+            </ul>
+          )}
+          <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-border pt-2 text-sm">
+            {table.header.slice(2).map((label, c) => (
+              <div key={c} className="min-w-0">
+                <dt className="text-xs text-muted">{inline(label, `metric-${r}-${c}`)}</dt>
+                <dd className="stat-figure font-medium">{inline(row[c + 2] || "—", `value-${r}-${c}`)}</dd>
+              </div>
+            ))}
+          </dl>
+        </article>
+      ))}
+    </section>
+  );
+}
+
 export function AnswerText({ content }: { content: string }) {
-  const blocks = toBlocks(content);
+  const blocks = withWarningSections(toBlocks(content));
   return (
     <div className="min-w-0 leading-relaxed wrap-anywhere">
-      {blocks.map((block, i) => {
+      {blocks.map(({ block, warning }, i) => {
         if (block.kind === "rule") {
           return <hr key={i} className="my-3 border-border" />;
         }
@@ -69,23 +97,33 @@ export function AnswerText({ content }: { content: string }) {
         if (block.kind === "list") {
           return (
             <ul key={i} className="my-2 list-disc space-y-1 pl-5">
-              {block.items.map((item, j) => (
-                <li key={j}>{inline(item, `l${i}-${j}`)}</li>
-              ))}
+              {block.items.map((item, j) => {
+                const parts = warning === "food" ? foodWarningParts(item) : null;
+                return (
+                  <li key={j}>
+                    {inline(parts?.message ?? item, `l${i}-${j}`)}
+                    {parts && (
+                      <details className="mt-1 text-sm">
+                        <summary className="cursor-pointer text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                          ดูรายชื่ออาหารที่เกี่ยวข้อง
+                        </summary>
+                        <p className="mt-1 text-muted">{inline(parts.foods, `names${i}-${j}`)}</p>
+                      </details>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           );
         }
         if (block.kind === "table") {
-          // The day-menu answer is a four-row table of food names and grams; on
-          // a phone it is wider than the bubble, so the table scrolls inside its
-          // own box rather than pushing the whole message pane sideways.
-          // `w-max` rather than `w-full`: a full-width table cannot overflow, so
-          // the scroll box never scrolls and the columns squeeze instead - which
-          // is what put "27.4" on two lines and split the หัวตาราง mid-word. The
-          // wrap reset is the other half of it: the bubble sets wrap-anywhere so
-          // long Thai prose breaks, and inside a cell that lands mid-number.
+          const cards = isMealTable(block);
+          // Meal cards fit a phone. Other tables retain a scrollable grid;
+          // desktop grids avoid breaking a nutrient value across lines.
           return (
-            <div key={i} className="my-3 -mx-1 overflow-x-auto">
+            <div key={i}>
+              {cards && <MealCards table={block} />}
+              <div className={`my-3 -mx-1 overflow-x-auto ${cards ? "hidden md:block print:block" : ""}`}>
               <table className="w-max min-w-full border-collapse text-left text-[0.95em] [overflow-wrap:normal] [word-break:normal]">
                 <thead>
                   <tr className="border-b border-border">
@@ -117,6 +155,7 @@ export function AnswerText({ content }: { content: string }) {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           );
         }
