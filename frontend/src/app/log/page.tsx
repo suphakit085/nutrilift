@@ -216,6 +216,9 @@ export default function LogPage() {
 }
 
 function SummaryHero({ summary }: { summary: DailySummary }) {
+  if (!summary.target && summary.target_basis === "unavailable_for_date") {
+    return <div role="status" className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">ยังไม่มีข้อมูลเป้าหมายของวันที่เลือก ยอดอาหารยังแสดงตามที่บันทึกไว้ ประวัติเป้าหมายเริ่มจากวันที่บันทึกโปรไฟล์หรือเปิดดูเป้าหมายหลังอัปเดตระบบ</div>;
+  }
   if (!summary.target) {
     return (
       <div className="rounded-lg border border-border bg-surface p-5">
@@ -234,6 +237,7 @@ function SummaryHero({ summary }: { summary: DailySummary }) {
 
   return (
     <div className="space-y-3">
+      {summary.target_effective_date && <p className="text-xs text-muted">ใช้เป้าหมายจากโปรไฟล์ที่บันทึกวันที่ {summary.target_effective_date.split("-").reverse().join("/")} ตามเวลาไทย</p>}
       <div className="rounded-lg bg-cta p-5 text-cta-foreground">
         <div className="field-label text-[11px] opacity-60">
           {remainingKcal >= 0 ? "พลังงานคงเหลือของวันที่เลือก" : "พลังงานเกินเป้าของวันที่เลือก"}

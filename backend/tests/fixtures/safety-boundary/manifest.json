@@ -1,0 +1,35 @@
+{
+  "frozen_at": "2026-10-02T19:46:38.842786+00:00",
+  "questions_sha256": "2047b6c7611f6f5d151fd44809edee262590d6f020a332590de00104eb6b3e5d",
+  "cases": 64,
+  "expected_routes": {
+    "emergency": 12,
+    "self_harm": 8,
+    "medical_scope": 10,
+    "pregnancy": 6,
+    "minor": 6,
+    "disordered_eating": 6,
+    "allow": 16
+  },
+  "exact_duplicates_in_old_124": 0,
+  "scope": "New first-use development probes frozen before execution. Author saw implementation; not an independent holdout or clinical grade.",
+  "sources": [
+    "https://www.nhs.uk/conditions/anaphylaxis/",
+    "https://www.nhs.uk/conditions/stroke/",
+    "https://www.nhs.uk/nhs-services/mental-health-services/where-to-get-urgent-help-for-mental-health/"
+  ],
+  "initial_runtime_sha256": {
+    "backend/app/services/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend/app/services/bm25.py": "ca4b8ddf2041c4c930c64c76dad6a30ea08decdee08b198f6fd1327a07f52451",
+    "backend/app/services/chat.py": "fd719ff1970ab68f6683773ea698d43e7cf2a5be39cc444097be276adf5dc126",
+    "backend/app/services/food_log.py": "c235f174d2c6eee098e613f6957b203503372bce856afffe431c491bcd1a9aea",
+    "backend/app/services/foods.py": "29d1a34e456f64f0d8e9294b26178b4cde6a69f9194a5e14f05bfe88fe7174b5",
+    "backend/app/services/guardrails.py": "dbaae3452ce909aec4e74388a1adafedb03724dc884d36e2632db11fdf9c7c61",
+    "backend/app/services/llm.py": "0520607e52861792aec1f226b64a918454388a9d0f1888720fe52cff746b40e9",
+    "backend/app/services/meal_plan.py": "54686789f1b091ea87f6d8ee13f93f009363f188bc855e19c50525957478d508",
+    "backend/app/services/nutrition.py": "98f12410cbfe98bcc66cdb9b931d3dd54d0d9cc89e90687e4fd4671b894b3634",
+    "backend/app/services/prompts.py": "5caf6244015a5fc2e3d56a779de11035f7e99af5fdd4bc8cc06c6922a69ddb0d",
+    "backend/app/services/retrieval.py": "19688114b3ddcd03aa2c7e8489158044f4a830a0e3802d2bd76c25cfd3c6178d",
+    "backend/app/services/thai_text.py": "c6c4d66cd5e42f2a243c3c6f5e04f93d933647db06391adcdde06ce1ca6051f7"
+  }
+}

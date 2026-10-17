@@ -17,6 +17,7 @@ async (page) => {
   let dateFailure = null;
   let searchFailure = null;
   let abortSearch = null;
+  let targetMode = null;
   const macros = { kcal: 100, protein_g: 10, carb_g: 10, fat_g: 2 };
   const empty = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0 };
   const food = query => ({
@@ -50,7 +51,10 @@ async (page) => {
       }
       if (dateFailure === date) return json(route, 503, { detail: 'UAT_DAY_FAILURE' });
       if (url.pathname === '/food-log') return json(route, 200, [entry(date)]);
-      return json(route, 200, { date, entries_count: 1, consumed: macros, target: null, remaining: null,
+      const target = targetMode === 'saved_profile' ? { kcal: 1800, protein_g: 120, carb_g: 200, fat_g: 50 } : null;
+      const remaining = target ? { kcal: 1700, protein_g: 110, carb_g: 190, fat_g: 48 } : null;
+      return json(route, 200, { date, entries_count: 1, consumed: macros, target, remaining,
+        ...(targetMode ? { target_basis: targetMode, target_effective_date: target ? date : null } : {}),
         by_meal: { breakfast: macros, lunch: empty, dinner: empty, snack: empty } });
     }
     if (url.pathname === '/foods/search' && request.method() === 'GET') {
@@ -90,6 +94,7 @@ async (page) => {
   const reset = async () => {
     releaseAll(); dateGate = searchGate = writeGate = null;
     dateFailure = searchFailure = abortSearch = null;
+    targetMode = null;
     await page.goto(origin + '/log');
     await page.getByRole('heading', { name: 'บันทึกอาหารประจำวัน', exact: true }).waitFor();
     await page.getByText('UAT_DAY_', { exact: false }).waitFor();
@@ -204,6 +209,32 @@ async (page) => {
       const search = await openSearch(); await search.fill('UAT_EMPTY');
       await page.getByText('ไม่พบเมนูนี้ในฐานข้อมูลอาหาร', { exact: false }).waitFor();
       result('search-real-empty-response', !(await visible(page.getByRole('alert').filter({ hasText: 'ค้นหาไม่สำเร็จ' }))), { httpStatus: 200, results: 0 });
+    });
+    await run('historical-target-unavailable-keeps-food', async () => {
+      targetMode = 'unavailable_for_date';
+      await choose(a);
+      await page.getByText('UAT_DAY_' + a, { exact: true }).waitFor();
+      await page.getByRole('status').filter({ hasText: 'ยังไม่มีข้อมูลเป้าหมายของวันที่เลือก' }).waitFor();
+      result('historical-target-unavailable-keeps-food', !(await visible(page.getByText('ยังไม่ได้ตั้งเป้าหมาย', { exact: false }))), { foodVisible: true, noInventedTarget: true });
+      await page.screenshot({ path: artifactDir + '/history-unavailable.png', fullPage: true });
+    });
+    await run('historical-target-identifies-saved-date', async () => {
+      targetMode = 'saved_profile';
+      await choose(a);
+      await page.getByText('UAT_DAY_' + a, { exact: true }).waitFor();
+      await page.getByText('ใช้เป้าหมายจากโปรไฟล์ที่บันทึกวันที่ ' + a.split('-').reverse().join('/') + ' ตามเวลาไทย', { exact: true }).waitFor();
+      await page.getByText('พลังงานคงเหลือของวันที่เลือก', { exact: true }).waitFor();
+      result('historical-target-identifies-saved-date', await visible(page.getByText('1,700', { exact: true })), { selectedDate: a, remainingKcal: 1700 });
+      await page.screenshot({ path: artifactDir + '/history-saved.png', fullPage: true });
+    });
+    await run('current-day-no-profile-offers-setup', async () => {
+      targetMode = 'no_profile';
+      await choose(a);
+      await page.getByText('UAT_DAY_' + a, { exact: true }).waitFor();
+      await choose(today);
+      await page.getByText('UAT_DAY_' + today, { exact: true }).waitFor();
+      await page.getByRole('link', { name: 'กรอกโปรไฟล์เพื่อคำนวณเป้าหมาย', exact: true }).waitFor();
+      result('current-day-no-profile-offers-setup', !(await visible(page.getByText('ยังไม่มีข้อมูลเป้าหมายของวันที่เลือก', { exact: false }))), { setupLinkVisible: true });
     });
     await run('diary-layout', async () => {
       for (const width of [390, 768, 1280]) {

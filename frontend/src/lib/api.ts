@@ -313,6 +313,8 @@ export type MacroTotals = {
 };
 
 export type DailySummary = {
+  target_basis?: "saved_profile" | "no_profile" | "unavailable_for_date";
+  target_effective_date?: string | null;
   date: string;
   entries_count: number;
   consumed: MacroTotals;

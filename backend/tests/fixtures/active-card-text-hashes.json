@@ -1,0 +1,106 @@
+{
+  "beta-alanine": {
+    "recorded_sha256": "76727b874daede89d2bf4e497aad232a8b12773cad09aa3e345811e37467a0a9",
+    "utf8_lf_sha256": "7b0ea9fb38fca5df274cc455b4e0b7d0344997454619c1a937c95b34fba07768"
+  },
+  "body-fat-by-sex": {
+    "recorded_sha256": "05207e5d09532d6e85f44d50302c5484906242ab137843a3262b213dbb284984",
+    "utf8_lf_sha256": "9194acc5bb0c919873ab8f00de09a645b25a6c0489624dc460e7e798ec9eb731"
+  },
+  "caffeine": {
+    "recorded_sha256": "5112347ee830c6ea95e36d5e6090c1807af1034b9208d13fa25b127d2d3eae45",
+    "utf8_lf_sha256": "ed4908f775c99d67eb79d04c8066ca84a5e2c00276e3cd2fd35924ff3cc84fc5"
+  },
+  "calcium-iron-vitd": {
+    "recorded_sha256": "feb841f23ac0a8cad9586272f0b69fabc21a1f964154bbd6fade664010d0f68a",
+    "utf8_lf_sha256": "5dc7c6064e856bb2c23d05606d7461d43e196ba1dda830adc7aac6aac881de3e"
+  },
+  "creatine-myths": {
+    "recorded_sha256": "525904b2905da84a32387264c8be0f3bdc9438d7e8b6f17b863fbbf294209953",
+    "utf8_lf_sha256": "9adf4745b7d04e3c20ae38db32dba2dfb2ea953686732a88f47d04b4c323b0d1"
+  },
+  "creatine": {
+    "recorded_sha256": "31d9dcef1c3514ff96a192266aa8612faa990efc7eed0953e6c00f7245438206",
+    "utf8_lf_sha256": "ce992d1db6009d66f405a06bb2dfe35d081cfd1d584bc9868c3621b3109c7991"
+  },
+  "eaa": {
+    "recorded_sha256": "b1f7ce9138fc61652898263fc4e5a6068d73775f2b1ab0ac668a1d7f9800e057",
+    "utf8_lf_sha256": "e90c4e8fbf9451de24c6f1bb3c70ada85dc23439bc5c4e2ea655257cf3f28b2e"
+  },
+  "energy-balance-cut-bulk": {
+    "recorded_sha256": "2de6e0d66a3e8f32a245a73704e716896bb147bd2ea81558da6a5d5c02f2870d",
+    "utf8_lf_sha256": "b0510a0b8add94272806835fe587c26cb4baaaffa425abba6c8639ccb85f4541"
+  },
+  "fasted-training": {
+    "recorded_sha256": "ee3abd57e4956409473070bc11ac171dbbcf5131adbb02c1a0cff2b5dd084f87",
+    "utf8_lf_sha256": "629be709db0acbdb69cba2573b54439f417279e7ff9671d099d6c2a3609a6dfa"
+  },
+  "fat-loss-myths": {
+    "recorded_sha256": "4d61ce6babcb4f57b53644a269a87276a0740bdf18c933753994a013a12a55f6",
+    "utf8_lf_sha256": "1e5bc89538d23322b64a6b999e3e05da79ea501409674379eee96b087fa145b8"
+  },
+  "fiber": {
+    "recorded_sha256": "5966e45f82126ed5e3e5e9de2f2380d2c9fd199b92b0cb6c335891e0756cf29d",
+    "utf8_lf_sha256": "4c2c1f7f1c685817057fd0ae569d810276eb1e66b59cf004a672fc19c42a9471"
+  },
+  "hmb": {
+    "recorded_sha256": "ef4395f7a277732dca2bea88c57e6bd57e23345d7fcaf3faa1512890ef12fc3f",
+    "utf8_lf_sha256": "112af68f1de524a6bd8842b7a6eee66a9f7f8f2212e4e8881454dfd0439100bd"
+  },
+  "intermittent-fasting": {
+    "recorded_sha256": "39fd95412aeeae833c08d4203c7abd57b2e9e3e922ecc5c4d6a28d9a845fde50",
+    "utf8_lf_sha256": "b8bbad1f3cbbe73084337fc9c3df41eb12cf05bf8bf5394a837b486b0d3aece2"
+  },
+  "metabolic-adaptation": {
+    "recorded_sha256": "3e7fc58ef3bb951ac75b1b0ad9ed18d0581b042e94ed98bc3bcb29183b9e68e6",
+    "utf8_lf_sha256": "5966b21ca8c27bd1055b6487e387708a7475b6f1e1e231356bb2302b3aba8dd4"
+  },
+  "nutrient-timing": {
+    "recorded_sha256": "85dcef29400a160a5f9be721e09c97544f7a69661045631a446b4155640387e5",
+    "utf8_lf_sha256": "1bec2e3d6ef364fc2dddd79255d0c3544bf96b622116813504aa2f46e5f80321"
+  },
+  "omega-3": {
+    "recorded_sha256": "ce617e68380a9eece6f48d86d43780c9620a56b0d2333b6b329a0542f45f45b0",
+    "utf8_lf_sha256": "22ca076cd99703907612f02af53c651c8f280d35d86ac5053d4552eb5cc40b5d"
+  },
+  "plant-protein": {
+    "recorded_sha256": "f2d9c80c56033a0ab9abcd16817642433ddba020dce887ae60daaf7a8c29df4f",
+    "utf8_lf_sha256": "4c8d4efc2d0b47c9589abdf754624d317931c58211e6d35e2ad5aec7e2be13b4"
+  },
+  "protein-per-meal-myth": {
+    "recorded_sha256": "af77d45ed1e9a6855e958819f9e90f0e1865c5877aabcced0676696942dc06f0",
+    "utf8_lf_sha256": "cf99e9257f08cbb1daf506e9dd87a833df3dfbc662e6314fb25b78bea6c415c3"
+  },
+  "protein-requirement": {
+    "recorded_sha256": "7993567d81946aae1cf20fd27899e027df9fe7c081133beeec24e7660792cd3a",
+    "utf8_lf_sha256": "39c3ff32b5e9937149d853deb852d2b640716e1185c84abf9a7524c5fcbc967a"
+  },
+  "sodium-water": {
+    "recorded_sha256": "c88a668cafb51cddc17da1741be73270d0a17dd5596bab0d2136bee9440d40a7",
+    "utf8_lf_sha256": "7560cb574254d6dbdf80ebb211fecb8914379c9e096fbe517274f2a5b3a268e3"
+  },
+  "soy-protein": {
+    "recorded_sha256": "d1895d2573d06a96b5436e7032ed1280c9cd9070da75f5247baf62e6f31662c6",
+    "utf8_lf_sha256": "d244bbfee6bcc9d60ddae7d8983381155b1de56ec318daa7ab4f8bda00499685"
+  },
+  "thai-drinks-sugar": {
+    "recorded_sha256": "272076e075e2ba3e8a861ceda54a12a279b9c9c2f42e8b32ded61cb6b14c0700",
+    "utf8_lf_sha256": "804ed2e6bf1f575ad5a97f4802c69a149773a191302306de276a6cd3c2bcd6b5"
+  },
+  "thai-food-eating-out": {
+    "recorded_sha256": "878a72eaae7361a2d7deb8ec85aa27b0f8df2d2c276ac813e646873fa5002412",
+    "utf8_lf_sha256": "269f8192b6d22d067a7a110a67d333e67bec9699b6dd3471a1812efe21d1f4a1"
+  },
+  "thai-food-guide": {
+    "recorded_sha256": "5cbf0ce0c7f1f357f5f6c47adf23243dabc4191d0ca28ccb9c81bc3f4a3e4a91",
+    "utf8_lf_sha256": "e3a4f51a4e071b2b4a23388a959ab0b73d4bf92649e8a23f32789911ce1a7a36"
+  },
+  "unproven-muscle-supplements": {
+    "recorded_sha256": "a8b59bf60eed3cee0d6848b0c27dcfe0050184760db063c390feef6fc1d91f6c",
+    "utf8_lf_sha256": "be8e7b46f4d1c95ed8cd0dc0f699509ac8db7e523be866a8541f8a146084381d"
+  },
+  "vitamin-d-athletes": {
+    "recorded_sha256": "91d9d1230bd3dbdf806fec15eb4a2a8ead32de3e4c98831714303452b1332bbe",
+    "utf8_lf_sha256": "6135f286d67e6ee136fd5a69c0785e928896fe7b10e2a48244e8566af7b30bd5"
+  }
+}

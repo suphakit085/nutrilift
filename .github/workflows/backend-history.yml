@@ -1,0 +1,62 @@
+name: Backend history
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/**', '.github/workflows/backend-history.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/backend-history.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-history-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  history:
+    name: PostgreSQL history and backend regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: nutrilift_history_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ci -d nutrilift_history_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://ci:ci@127.0.0.1:5432/nutrilift_history_test
+      NUTRILIFT_PG_TEST_URL: postgresql+psycopg://ci:ci@127.0.0.1:5432/nutrilift_history_test
+      JWT_SECRET: history-ci-only-never-a-production-secret
+      GEMINI_API_KEY: ''
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: '0.12.7'
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - run: uv sync --locked --extra dev
+      - name: Lint history changes
+        run: uv run --locked --extra dev ruff check app/services/profile_history.py app/api/profile.py app/api/food_log.py app/db/models.py tests/test_profile_history.py tests/postgres_support.py tests/test_profile_audit.py
+      - name: PostgreSQL history, migrations and concurrency
+        run: uv run --locked --extra dev pytest tests/test_profile_history.py -q --junitxml=../test-results/history.xml
+      - name: Backend regression
+        run: uv run --locked --extra dev pytest tests -m "not postgres and not evidence" --ignore=tests/test_food_audit_fixes.py -q --junitxml=../test-results/backend.xml
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: backend-history-tests
+          path: test-results/*.xml
+          retention-days: 14

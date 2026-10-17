@@ -108,6 +108,24 @@ class Profile(Base):
     )
 
 
+class ProfileRevision(Base):
+    """Immutable profile and computed targets, effective on a Bangkok calendar date."""
+
+    __tablename__ = "profile_revisions"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    effective_date: Mapped[date] = mapped_column(Date, nullable=False)
+    profile_snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    targets: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (
+        Index("ix_profile_revisions_user_date", "user_id", "effective_date", "created_at"),
+    )
+
+
 class Conversation(Base):
     __tablename__ = "conversations"
 

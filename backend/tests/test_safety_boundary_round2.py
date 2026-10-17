@@ -10,7 +10,7 @@ import pytest
 from app.services import chat, guardrails
 
 ROOT = Path(__file__).resolve().parents[2]
-DIR = ROOT / "knowledge/evidence/safety-boundary-round2"
+DIR = Path(__file__).parent / "fixtures/safety-boundary"
 CASES = [json.loads(s) for s in (DIR / "questions.jsonl").read_text(encoding="utf8").splitlines()]
 
 
