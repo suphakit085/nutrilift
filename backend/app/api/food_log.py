@@ -8,11 +8,10 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import DB_SESSION, get_consented_user, profile_to_input
+from app.api.deps import DB_SESSION, get_consented_user
 from app.api.schemas import DailySummaryOut, FoodLogEntryIn, FoodLogEntryOut, FoodLogEntryUpdate
-from app.db.models import Profile, User
-from app.services import food_log
-from app.services.nutrition import NutritionInputError, calc_nutrition_targets
+from app.db.models import User
+from app.services import food_log, profile_history
 
 router = APIRouter(prefix="/food-log", tags=["food-log"])
 
@@ -55,19 +54,14 @@ def summary(
     agg = food_log.daily_totals(entries)
 
     target = None
-    profile = db.get(Profile, user.id)
-    if profile is not None:
-        try:
-            targets = calc_nutrition_targets(profile_to_input(profile))  # type: ignore[arg-type]
-        except NutritionInputError:
-            targets = None
-        if targets is not None:
-            target = {
-                "kcal": targets["energy_target_kcal"],
-                "protein_g": targets["macros"]["protein_g"],
-                "carb_g": targets["macros"]["carb_g"],
-                "fat_g": targets["macros"]["fat_g"],
-            }
+    targets, basis, effective_date = profile_history.targets_for_date(db, user.id, date_)
+    if targets is not None:
+        target = {
+            "kcal": targets["energy_target_kcal"],
+            "protein_g": targets["macros"]["protein_g"],
+            "carb_g": targets["macros"]["carb_g"],
+            "fat_g": targets["macros"]["fat_g"],
+        }
 
     remaining = (
         {k: round(target[k] - agg["totals"][k], 1) for k in target} if target else None
@@ -78,6 +72,8 @@ def summary(
         "entries_count": len(entries),
         "consumed": agg["totals"],
         "target": target,
+        "target_basis": basis,
+        "target_effective_date": effective_date.isoformat() if effective_date else None,
         "remaining": remaining,
         "by_meal": agg["by_meal"],
     }

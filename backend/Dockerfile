@@ -1,18 +1,20 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:0.12.7 /uv /uvx /bin/
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    UV_NO_CACHE=1 \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 COPY app ./app
 COPY ingest ./ingest
 COPY alembic ./alembic
 COPY alembic.ini ./
 
-RUN pip install --upgrade pip && pip install .
+RUN uv sync --locked --no-dev --no-editable
 
 # Run as an unprivileged user: a bug in the app or a dependency should not
 # hand out root inside the container.

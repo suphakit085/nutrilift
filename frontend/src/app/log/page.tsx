@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -59,19 +59,34 @@ export default function LogPage() {
   const [entries, setEntries] = useState<FoodLogEntry[]>([]);
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadedOnce, setLoadedOnce] = useState(false);
   const [error, setError] = useState("");
   const [openMeal, setOpenMeal] = useState<MealType | null>(null);
+  const dateRef = useRef(date);
+  const refreshSequence = useRef(0);
 
   const refresh = useCallback(async (forDate: string) => {
+    if (dateRef.current !== forDate) return;
+    const sequence = ++refreshSequence.current;
+    setLoading(true);
+    setError("");
     try {
       const [entriesRes, summaryRes] = await Promise.all([
         api.listFoodLog(forDate),
         api.getFoodLogSummary(forDate),
       ]);
-      setEntries(entriesRes);
-      setSummary(summaryRes);
+      if (sequence === refreshSequence.current && dateRef.current === forDate) {
+        setEntries(entriesRes);
+        setSummary(summaryRes);
+        setError("");
+      }
     } catch (err) {
-      setError((err as Error).message);
+      if (sequence === refreshSequence.current && dateRef.current === forDate) setError((err as Error).message);
+    } finally {
+      if (sequence === refreshSequence.current && dateRef.current === forDate) {
+        setLoading(false);
+        setLoadedOnce(true);
+      }
     }
   }, []);
 
@@ -80,20 +95,26 @@ export default function LogPage() {
       router.replace("/login");
       return;
     }
-    (async () => {
-      await refresh(date);
-      setLoading(false);
-    })();
+    let active = true;
+    void Promise.resolve().then(() => { if (active) return refresh(date); });
+    return () => { active = false; refreshSequence.current += 1; };
   }, [router, date, refresh]);
 
   /** Every date change goes through here so a stale error from the previous
    *  day does not linger over the new one. */
   function changeDate(next: string) {
+    if (next === dateRef.current) return;
+    dateRef.current = next;
+    refreshSequence.current += 1;
     setError("");
+    setEntries([]);
+    setSummary(null);
+    setOpenMeal(null);
+    setLoading(true);
     setDate(next);
   }
 
-  if (loading) {
+  if (loading && !loadedOnce) {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <p className="text-muted">กำลังโหลด…</p>
@@ -120,7 +141,7 @@ export default function LogPage() {
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <button
-          onClick={() => changeDate(shiftDate(date, -1))}
+          onClick={() => changeDate(shiftDate(dateRef.current, -1))}
           aria-label="วันก่อนหน้า"
           className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent"
         >
@@ -142,7 +163,7 @@ export default function LogPage() {
           className="rounded-sm border border-border bg-surface-sunken px-3.5 py-2 text-base outline-none focus:border-accent focus:bg-surface"
         />
         <button
-          onClick={() => changeDate(shiftDate(date, 1))}
+          onClick={() => changeDate(shiftDate(dateRef.current, 1))}
           disabled={date >= todayStr()}
           aria-label="วันถัดไป"
           className="rounded-md border border-border px-3.5 py-2 text-sm transition hover:border-accent hover:text-accent disabled:opacity-30 disabled:hover:border-border disabled:hover:text-foreground"
@@ -159,15 +180,19 @@ export default function LogPage() {
         )}
       </div>
 
+      {loading && <p role="status" className="mb-4 text-sm text-muted">กำลังโหลดข้อมูลวันที่เลือก…</p>}
       {error && (
-        <p className="mb-6 rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-          {error}
-        </p>
+        <div role="alert" className="mb-6 rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+          <p>{error}</p>
+          <button type="button" disabled={loading} onClick={() => void refresh(dateRef.current)} className="mt-2 underline disabled:opacity-50">
+            ลองโหลดอีกครั้ง
+          </button>
+        </div>
       )}
 
       {summary && <SummaryHero summary={summary} />}
 
-      <div className="mt-6 space-y-4">
+      <fieldset disabled={loading} aria-label="รายการอาหารของวันที่เลือก" className="mt-6 min-w-0 space-y-4 disabled:opacity-60">
         {MEAL_ORDER.map((meal) => (
           <MealSection
             key={meal}
@@ -175,18 +200,25 @@ export default function LogPage() {
             entries={entries.filter((e) => e.meal_type === meal)}
             subtotalKcal={summary?.by_meal[meal].kcal ?? 0}
             isOpen={openMeal === meal}
-            onToggleAdd={() => setOpenMeal((m) => (m === meal ? null : meal))}
+            onToggleAdd={() => {
+              if (dateRef.current === date) setOpenMeal((m) => (m === meal ? null : meal));
+            }}
             date={date}
             onChanged={() => refresh(date)}
-            onError={setError}
+            onError={(message) => {
+              if (dateRef.current === date) setError(message);
+            }}
           />
         ))}
-      </div>
+      </fieldset>
     </main>
   );
 }
 
 function SummaryHero({ summary }: { summary: DailySummary }) {
+  if (!summary.target && summary.target_basis === "unavailable_for_date") {
+    return <div role="status" className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">ยังไม่มีข้อมูลเป้าหมายของวันที่เลือก ยอดอาหารยังแสดงตามที่บันทึกไว้ ประวัติเป้าหมายเริ่มจากวันที่บันทึกโปรไฟล์หรือเปิดดูเป้าหมายหลังอัปเดตระบบ</div>;
+  }
   if (!summary.target) {
     return (
       <div className="rounded-lg border border-border bg-surface p-5">
@@ -205,9 +237,10 @@ function SummaryHero({ summary }: { summary: DailySummary }) {
 
   return (
     <div className="space-y-3">
+      {summary.target_effective_date && <p className="text-xs text-muted">ใช้เป้าหมายจากโปรไฟล์ที่บันทึกวันที่ {summary.target_effective_date.split("-").reverse().join("/")} ตามเวลาไทย</p>}
       <div className="rounded-lg bg-cta p-5 text-cta-foreground">
         <div className="field-label text-[11px] opacity-60">
-          {remainingKcal >= 0 ? "พลังงานคงเหลือวันนี้" : "พลังงานเกินเป้าวันนี้"}
+          {remainingKcal >= 0 ? "พลังงานคงเหลือของวันที่เลือก" : "พลังงานเกินเป้าของวันที่เลือก"}
         </div>
         <div className="mt-3 flex items-baseline gap-1.5">
           <span className="stat-figure text-3xl font-semibold">
@@ -484,6 +517,9 @@ function AddFoodSearch({
   // The query the current `results` answer. Lets the picker tell "still
   // searching" from "searched and found nothing" - before, both were silence.
   const [searchedFor, setSearchedFor] = useState("");
+  const [searchError, setSearchError] = useState("");
+  const [searchRetry, setSearchRetry] = useState(0);
+  const searchSequence = useRef(0);
   const [selected, setSelected] = useState<FoodSearchResult | null>(null);
   const [qty, setQty] = useState("1");
   const [qtyError, setQtyError] = useState("");
@@ -491,6 +527,7 @@ function AddFoodSearch({
 
   useEffect(() => {
     const q = query.trim();
+    const sequence = ++searchSequence.current;
     const timer = setTimeout(() => {
       if (q.length === 0) {
         setResults([]);
@@ -500,16 +537,20 @@ function AddFoodSearch({
       api
         .searchFoods(q)
         .then((rows) => {
+          if (sequence !== searchSequence.current) return;
           setResults(rows);
           setSearchedFor(q);
+          setSearchError("");
         })
-        .catch(() => {
+        .catch((error: Error) => {
+          if (sequence !== searchSequence.current) return;
           setResults([]);
           setSearchedFor(q);
+          setSearchError(`ค้นหาไม่สำเร็จ: ${error.message}`);
         });
     }, 300);
-    return () => clearTimeout(timer);
-  }, [query]);
+    return () => { clearTimeout(timer); searchSequence.current += 1; };
+  }, [query, searchRetry]);
 
   async function add() {
     if (!selected) return;
@@ -541,14 +582,23 @@ function AddFoodSearch({
         autoFocus
         value={query}
         onChange={(e) => {
+          searchSequence.current += 1;
           setQuery(e.target.value);
           setSelected(null);
+          setResults([]);
+          setSearchedFor("");
+          setSearchError("");
         }}
         placeholder="ค้นหาเมนู เช่น ข้าวมันไก่"
         className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-base outline-none focus:border-accent"
       />
 
-      {!selected && query.trim() && searchedFor === query.trim() && results.length === 0 && (
+      {query.trim() && searchedFor !== query.trim() && !searchError && <p role="status" className="mt-2 text-xs text-muted">กำลังค้นหา…</p>}
+      {searchError && <div role="alert" className="mt-2 rounded-sm border border-red-500/20 p-3 text-xs text-red-600">
+        <p>{searchError}</p>
+        <button type="button" onClick={() => { setSearchError(""); setSearchedFor(""); setSearchRetry((value) => value + 1); }} className="mt-2 underline">ลองค้นหาอีกครั้ง</button>
+      </div>}
+      {!selected && !searchError && query.trim() && searchedFor === query.trim() && results.length === 0 && (
         <p className="mt-2 rounded-sm px-2.5 py-2 text-xs text-muted">
           ไม่พบเมนูนี้ในฐานข้อมูลอาหาร ลองค้นด้วยชื่ออื่นหรือวัตถุดิบหลัก เช่น &ldquo;อกไก่&rdquo;
           &ldquo;ข้าวผัด&rdquo;

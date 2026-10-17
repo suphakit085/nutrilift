@@ -1,0 +1,3 @@
+# This frozen, project-authored evidence fixture has a recorded raw-byte hash.
+# Preserve its original bytes across Windows and Linux checkouts.
+backend/tests/fixtures/safety-boundary/questions.jsonl -text whitespace=cr-at-eol

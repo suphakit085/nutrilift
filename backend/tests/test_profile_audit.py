@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from app.api.profile import router
 from app.api.schemas import CONSENT_VERSION, ProfileIn
 from app.core.security import create_access_token
-from app.db.models import Profile, User
+from app.db.models import Profile, ProfileRevision, User
 from app.db.session import get_db
 from app.services.chat import _profile_summary_th
 from app.services.nutrition import ACTIVITY_LABELS_TH, ProfileInput, calc_nutrition_targets
@@ -91,10 +91,16 @@ class Store:
         self.saved = {}
         self.commits = 0
 
-    def get(self, model, uid):
+    def get(self, model, uid, **kwargs):
         return (self.users if model is User else self.rows).get(uid)
 
+    def execute(self, statement):
+        # Profile-only stand-in. Real history ordering is covered on PostgreSQL.
+        return SimpleNamespace(scalar_one_or_none=lambda: None)
+
     def add(self, row):
+        if isinstance(row, ProfileRevision):
+            return
         self.rows[row.user_id] = row
 
     def commit(self):

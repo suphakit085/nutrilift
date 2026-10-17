@@ -15,7 +15,7 @@ from app.services import chat, prompts
 ROOT = Path(__file__).resolve().parents[2]
 QUESTIONS = [
     json.loads(line)
-    for line in (ROOT / "knowledge/evidence/creatine-clarity-v1/questions.jsonl")
+    for line in (Path(__file__).parent / "fixtures/creatine-questions.jsonl")
     .read_text(encoding="utf8")
     .splitlines()
 ]
@@ -35,6 +35,7 @@ def test_prompt_requires_fixed_count_and_checked_daily_total():
     assert "International Society of Sports Nutrition" in prompts.BASE_SYSTEM_PROMPT
 
 
+@pytest.mark.evidence
 def test_new_card_manifest_and_primary_paragraph_are_reproducible():
     manifest = json.loads(
         (ROOT / "knowledge/evidence/content-fixes-v6/manifest.json").read_text(encoding="utf8")
