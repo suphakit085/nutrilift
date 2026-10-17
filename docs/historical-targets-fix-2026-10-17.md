@@ -53,6 +53,44 @@ checked separately in CI.
   affected claim-release tests passed after correction. The complete backend
   suite also runs in Linux CI before deployment.
 
+## Completed release checks
+
+- Linux CI passed **15 PostgreSQL history cases and 1,070 backend regressions**.
+  Backend image build/import/non-root checks also passed:
+  [backend CI](https://github.com/suphakit085/nutrilift/actions/runs/39041581415).
+- [Frontend CI](https://github.com/suphakit085/nutrilift/actions/runs/39041581314)
+  passed, including 78 unit tests, dependency audit, lint/types/build and 26
+  Chrome fixture checks.
+- [PR #3](https://github.com/suphakit085/nutrilift/pull/3) merged as
+  `798b7f55300c9173449bca9ee98d51156221b406`. CI also passed after the merge.
+- Vercel production deployment `dpl_D3e8Z9A359b5tYMhoXweFNQWGTGX` is READY
+  for that merge SHA. All 26 browser fixture checks passed against the live
+  frontend. Those checks intercept API requests and do not prove backend rollout.
+- The locked backend image built and booted locally, ran migrations from an
+  empty PostgreSQL database and returned HTTP 200 health plus the new endpoint.
+  A separate real-browser run against that image and PostgreSQL passed **15
+  history checks with zero intercepted requests**. The controlled past snapshot
+  belonged only to its disposable account; no application clock was changed.
+  Changing its target from 2,579 kcal to 3,215 kcal and then changing profile
+  again preserved past energy and all three macro targets, consumption and
+  remaining energy. Reloads and 390/768/1280 px layouts passed.
+
+At the last production API/database check, Railway still served the previous
+backend: `/profile/history` absent and Alembic revision `e43c6103b001`. The
+workspace has no Railway login/token, so the owner was asked to deploy the latest
+`main` commit through Railway. The history fix must not be described as fully
+live until that API/migration and real-account checks have completed.
+
+Before rollout, a disposable production account reproduced the bug: its diary
+date before any known historical target incorrectly reported 2,579 kcal while
+its actual saved food total was 232.5 kcal. The account is retained temporarily
+for migration/data-preservation verification and must be cleaned after that check.
+
+Additional evidence in the main workspace:
+`output/playwright/history-fix-20261017/before.json`, `merge.json`,
+`production-frontend/results.json`, `local-flow-results.json`, and
+`output/ci-cd/history-checks/ci-results.txt`.
+
 The browser-only fixture uses intercepted synthetic API responses. PostgreSQL
 tests use disposable local databases with a loopback-only URL and no external
 email or model calls. Production behavior is recorded separately after release.
