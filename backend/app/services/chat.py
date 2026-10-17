@@ -506,6 +506,47 @@ _LABEL_TOKEN_RE = re.compile(r"^S\d{1,2}$")
 _INTERNAL_REFERENCE_RE = re.compile(
     r"\[(?:ข้อควรระวังเพิ่มเติมสำหรับข้อความนี้|ข้อจำกัดด้านความปลอดภัย)[^\]]*\]"
 )
+_CITATION_MARKER_RE = re.compile(r"\[S\d{1,2}(?:[\s,;]+S\d{1,2})*\](?!\()", re.I)
+_APP_INSTRUCTION_RE = re.compile(
+    r"(?:ไป|เข้า|เปิด|กลับ).{0,25}(?:หน้า|เมนู).{0,15}โปรไฟล์|"
+    r"หน้า\s*[\s*\"“”]*โปรไฟล์ของฉัน|"
+    r"(?:กด|คลิก|แตะ|เลือก).{0,30}บันทึกและคำนวณ|"
+    r"(?:กรอก|บันทึก|แก้ไข|อัปเดต).{0,25}(?:ข้อมูลใน)?โปรไฟล์|"
+    r"กรอกข้อมูลส่วนตัว|"
+    r"(?:ยัง)?(?:ไม่ได้|ยังไม่|ไม่มี|ยังไม่มี).{0,30}(?:กรอก|บันทึก).{0,25}(?:ข้อมูล|โปรไฟล์)|"
+    r"(?:เมื่อ|หลังจาก).{0,30}(?:บันทึก|กรอก).{0,30}(?:ระบบ|แอป).{0,30}(?:คำนวณ|จัดเมนู)|"
+    r"กลับ.{0,20}(?:แชต|พิมพ์|ถามใหม่|ขอ(?:ตัวอย่าง)?เมนู)|"
+    r"(?:go to|open|visit).{0,25}(?:profile page|my profile)|"
+    r"(?:click|press|tap).{0,25}save and calculate",
+    re.I,
+)
+
+
+def _without_navigation_citations(text: str) -> str:
+    """Publications cannot substantiate UI instructions.
+
+    Inspect each cited claim rather than deleting every citation in a mixed
+    paragraph. Earlier cited nutrition claims and Markdown links stay intact.
+    """
+    previous_end = 0
+    navigation = False
+
+    def keep_claim(match: re.Match) -> str:
+        nonlocal previous_end, navigation
+        claim = text[previous_end:match.start()]
+        previous_end = match.end()
+        # A new sentence/line can return to a research claim after instructions.
+        if claim.strip():
+            claim = claim.split("\n\n")[-1]
+            # Numbered steps share their trailing citation. A step's "4. "
+            # is not a sentence boundary, and a final "return to chat" step
+            # does not turn the preceding UI list into a research claim.
+            if not re.search(r"(?m)^\s*\d+[.)]\s", claim):
+                claim = re.split(r"\n|(?<=[.!?])\s+", claim)[-1]
+            navigation = bool(_APP_INSTRUCTION_RE.search(claim))
+        return "" if navigation else match.group(0)
+
+    return _CITATION_MARKER_RE.sub(keep_claim, text)
 
 
 def clean_answer(text: str, citations: list[dict] | None = None) -> str:
@@ -534,6 +575,7 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
         return "[" + ", ".join(supported) + "]" if supported else ""
 
     cleaned = _BRACKET_RE.sub(keep_citation_or_link, cleaned)
+    cleaned = _without_navigation_citations(cleaned)
     # Publication labels cannot establish application state or calculator policy.
     # Only remove pure markers in these operational paragraphs; links survive.
     operational = re.compile(

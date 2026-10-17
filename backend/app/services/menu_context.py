@@ -32,10 +32,18 @@ _FOODS = {
     "egg": "ไม่กินไข่",
 }
 _FOODS = {normalize_thai(k): v for k, v in _FOODS.items()}
+_SUPPLEMENTS = tuple(normalize_thai(name) for name in (
+    "อาหารเสริม", "ผลิตภัณฑ์เสริมอาหาร", "โปรตีนผง", "ผงโปรตีน", "เวย์",
+    "supplement", "dietary supplement", "protein powder", "whey",
+))
+_SUPPLEMENT_DENIAL = (
+    r"ไม่(?:ใช้|ต้อง(?:การ)?)(?=\s*(?:"
+    + "|".join(re.escape(name) for name in _SUPPLEMENTS) + r"))"
+)
 _EXCLUSION = re.compile(
-    r"(?:ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่)|งด(?:กิน)?|แพ้|ไม่มี|"
+    r"(?:" + _SUPPLEMENT_DENIAL + r"|ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่)|งด(?:กิน)?|แพ้|ไม่มี|"
     r"allergic to |allergy to |avoid |without |don't eat |no )\s*"
-    r"(.+?)(?=แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่(?:กิน|เอา|ใส่)|"
+    r"(.+?)(?=แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่(?:กิน|เอา|ใส่|ใช้|ต้อง(?:การ)?)|"
     r"(?:และ|กับ)?\s*แพ้|"
     r"\s+(?:no|without|avoid|allergic to|don't eat)\s+|\s*[.!?\n]|$)",
     re.I,
@@ -197,8 +205,14 @@ def conversation_profile(
                     continue
                 if re.match(r"มื้อ(?:เสริม|ว่าง|ย่อย)|ของว่าง|อาหารว่าง", food):
                     continue  # Meal preferences are not unknown food allergies.
+                # A preference against supplements is actionable; a vague
+                # supplement allergy still requires clarification of ingredients.
+                supplement_preference = (
+                    food.startswith(_SUPPLEMENTS)
+                    and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
+                )
                 # Longest prefix matters: soy allergy must not turn into a nut rule.
-                key = next(
+                key = "ไม่ใช้อาหารเสริม" if supplement_preference else next(
                     (v for k, v in sorted(_FOODS.items(), key=lambda p: -len(p[0]))
                      if food.startswith(k)),
                     None,

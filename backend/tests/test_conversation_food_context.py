@@ -107,3 +107,85 @@ def test_zero_macro_percentages_do_not_divide_by_zero():
 def test_food_names_do_not_become_fake_citation_markers():
     assert chat.clean_answer("เต้าหู้ 126 kcal [เต้าหู้ขาวแข็ง] [S1, S2]") == "เต้าหู้ 126 kcal  [S1, S2]"
     assert chat.clean_answer("[ข้อมูลอาหาร](https://example.com)") == "[ข้อมูลอาหาร](https://example.com)"
+
+
+@pytest.mark.parametrize("message", [
+    "อยากเพิ่มกล้าม ช่วยจัดเมนู 3 มื้อจากโปรไฟล์ ไม่เอาอาหารเสริม",
+    "ไม่ต้องการอาหารเสริม", "ไม่ใช้อาหารเสริม", "งดผลิตภัณฑ์เสริมอาหาร",
+    "ไม่กินโปรตีนผง", "ไม่เอาเวย์", "no supplements", "without protein powder",
+])
+def test_supplement_preference_reaches_food_filter_and_persists(message):
+    saved = adult()
+    first, _ = conversation_profile(saved, [], message)
+    followup, _ = conversation_profile(saved, [{"role": "user", "content": message}],
+        "งั้นใช้แต่อาหารปกติก็ได้ ช่วยจัดเมนู 3 มื้อที่กินได้จริง")
+    for profile in (first, followup):
+        assert profile.restrictions == ["ไม่ใช้อาหารเสริม"]
+        for row in (
+            {"name_th": "เวย์โปรตีน (ผงชงดื่ม)"},
+            {"name_th": "ผงโปรตีนถั่วเหลืองไอโซเลท (ทั่วไป)"},
+            {"name_en": "Soy protein isolate"},
+            {"name_th": "ผลิตภัณฑ์ชงดื่ม", "category": "อาหารเสริม"},
+        ):
+            assert excluded_by(row, profile.restrictions)
+        for name in ("นมผง", "นมวัว", "ไข่ไก่ต้ม", "เต้าหู้ขาวแข็ง", "ถั่วลิสง"):
+            assert not excluded_by({"name_th": name}, profile.restrictions)
+    assert saved.restrictions == []
+
+
+def test_supplement_preference_preserves_allergies_and_extra_meal_permission():
+    from app.services.menu_context import menu_planning_options
+
+    history = [{"role": "user", "content": "แพ้ถั่วเหลืองและนมวัว"}]
+    message = "ไม่เอาอาหารเสริม แต่เพิ่มมื้อเสริมได้ตามเหมาะสม"
+    profile, _ = conversation_profile(adult(), history, message)
+    assert set(profile.restrictions) == {"แพ้ถั่วเหลือง", "แพ้นมวัว", "ไม่ใช้อาหารเสริม"}
+    assert menu_planning_options(history, message)["allow_extra_meals"]
+    assert excluded_by({"name_th": "เต้าหู้ขาวแข็ง"}, profile.restrictions)
+    assert excluded_by({"name_th": "นมวัว"}, profile.restrictions)
+
+
+@pytest.mark.parametrize("message", ["แพ้อาหารเสริม", "allergic to supplements"])
+def test_vague_supplement_allergy_requires_clarification_even_after_normal_food_followup(message):
+    p, _ = conversation_profile(adult(), [{"role": "user", "content": message}],
+        "ใช้อาหารปกติ ไม่เอาอาหารเสริม")
+    assert chat._run_menu_tool(None, p, {})["error"] == "unsupported_menu_constraint"
+
+
+def test_assistant_supplement_preference_does_not_override_user():
+    profile, _ = conversation_profile(adult(), [
+        {"role": "assistant", "content": "ไม่เอาอาหารเสริม"}], "จัดเมนู")
+    assert profile.restrictions == []
+
+
+def test_unrelated_no_use_instruction_is_not_a_food_restriction():
+    profile, _ = conversation_profile(adult(), [],
+        "ช่วยจัดเมนู ไม่ต้องคำนวณใหม่ ไม่ใช้ตัวเลขสมมติ")
+    assert profile.restrictions == []
+
+
+def test_supplement_preference_does_not_leak_to_new_room_and_can_be_reset():
+    saved = adult()
+    history = [{"role": "user", "content": "ไม่เอาอาหารเสริม"}]
+    reset, _ = conversation_profile(saved, history, "กลับไปใช้โปรไฟล์ที่บันทึกล่าสุด")
+    fresh, _ = conversation_profile(saved, [], "จัดเมนู")
+    assert reset.restrictions == fresh.restrictions == []
+
+
+@pytest.mark.parametrize("count", [3, 4, 6])
+def test_actual_menu_tool_plans_without_supplements(monkeypatch, count):
+    import csv
+
+    from app.services.meal_plan import validate_day_plan
+    from tests.test_meal_plan import FOODS_CSV
+
+    with FOODS_CSV.open(encoding="utf-8-sig", newline="") as handle:
+        foods = list(csv.DictReader(handle))
+    monkeypatch.setattr(chat, "all_foods", lambda *_: foods)
+    p, _ = conversation_profile(adult(), [], "ไม่เอาอาหารเสริม")
+    plan = chat._run_menu_tool(None, p, {"meal_count": count, "allow_extra_meals": False})
+    assert "error" not in plan, plan
+    assert len(plan["meals"]) == count
+    assert all(not excluded_by(item, ["ไม่ใช้อาหารเสริม"])
+               for meal in plan["meals"] for item in meal["items"])
+    validate_day_plan(plan, foods)
