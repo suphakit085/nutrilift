@@ -878,6 +878,31 @@ def personalization_allowed(result: GuardResult) -> bool:
     return not PERSONALIZATION_BLOCK_FLAGS.intersection(result.flags)
 
 
+def _eating_risk_reply(result: GuardResult) -> str:
+    """Choose copy from available evidence without inventing a behaviour.
+
+    Persisted flags can outlive their detailed match evidence. Use neutral
+    wording in that case; the same blocking flag and referral still apply.
+    """
+    hits = [hit.removeprefix("history:")
+            for hit in result.matched.get(str(Flag.DISORDERED_EATING), [])]
+    if any(re.fullmatch(r"วันละ \d+ แคล", hit) for hit in hits):
+        opening = (
+            "การจำกัดพลังงานต่ำตามที่ขอควรได้รับการประเมินและดูแลจากผู้เชี่ยวชาญครับ "
+            "ผมจึงไม่จัดเมนู แผนลดน้ำหนัก หรือตัวเลขจำกัดพลังงานในบริบทนี้ "
+        )
+    else:
+        opening = (
+            "ขอบคุณที่เล่าให้ฟังครับ ผมจะไม่แนะนำวิธีควบคุมน้ำหนักที่อาจเป็นอันตราย "
+            "หรือจัดแผนลดน้ำหนักและตัวเลขจำกัดพลังงานในบริบทนี้ "
+        )
+    return opening + (
+        "กรุณาปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อประเมินและวางแผนที่เหมาะกับคุณ "
+        "หากเรื่องการกินทำให้กังวลหรือทุกข์ใจ ติดต่อสายด่วนสุขภาพจิต 1323 ได้ครับ "
+        "หากกำลังมีอาการรุนแรงหรือไม่ปลอดภัย ให้โทร 1669 ทันที"
+    )
+
+
 def safety_reply(result: GuardResult) -> tuple[str, str] | None:
     """Deterministic, supportive responses with priority over scope/retrieval."""
     if Flag.EMERGENCY in result.flags:
@@ -903,16 +928,7 @@ def safety_reply(result: GuardResult) -> tuple[str, str] | None:
             ),
         )
     if Flag.DISORDERED_EATING in result.flags:
-        return (
-            "disordered_eating",
-            (
-                "ขอบคุณที่เล่าให้ฟังครับ คุณไม่จำเป็นต้องชดเชยการกินด้วยการอด"
-                "อาหารหรือทำให้อาเจียน ผมจะไม่ให้วิธีเอาอาหารออก แผนลดน้ำหนัก"
-                " หรือตัวเลขจำกัดพลังงานในสถานการณ์นี้ กรุณาปรึกษาแพทย์หรือนั"
-                "กกำหนดอาหารที่ดูแลเรื่องการกิน และติดต่อสายด่วนสุขภาพจิต 132"
-                "3 ได้ครับ หากมีอาการรุนแรงหรือไม่ปลอดภัย ให้โทร 1669 ทันที"
-            ),
-        )
+        return "disordered_eating", _eating_risk_reply(result)
     refusal = refusal_reply(result)
     if refusal:
         return ("medical_scope", refusal)
