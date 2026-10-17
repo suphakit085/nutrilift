@@ -5,6 +5,8 @@ Attaching every retrieved passage would display misleading sources and inflate
 the groundedness score in the evaluation.
 """
 
+import pytest
+
 from app.services.chat import cited_only, clean_answer
 
 PASSAGES = [
@@ -104,3 +106,64 @@ def test_cleanup_keeps_ordinary_markdown_links():
 
 def test_cleanup_supports_semicolon_citations_and_deduplicates():
     assert clean_answer("ข้อความ [s2; S1; S2]", PASSAGES) == "ข้อความ [S2, S1]"
+
+
+@pytest.mark.parametrize("instruction", [
+    ('ขอแนะนำให้ไปที่หน้า **"โปรไฟล์ของฉัน"** แล้วกรอกข้อมูลน้ำหนัก ส่วนสูง อายุ '
+     'และระดับกิจกรรม จากนั้นกดปุ่ม **"บันทึกและคำนวณ"** ให้เรียบร้อยก่อน'),
+    'เข้าเมนูโปรไฟล์เพื่อกรอกข้อมูล',
+    'กดปุ่ม “บันทึกและคำนวณ” ก่อนกลับมาถามใหม่',
+    'กรอกข้อมูลในโปรไฟล์ให้ครบ',
+    'Go to My Profile and press Save and Calculate',
+])
+def test_app_instructions_do_not_credit_research(instruction):
+    text = instruction + " [S1, S2]"
+    cleaned = clean_answer(text, PASSAGES)
+    assert instruction in cleaned
+    assert cited_only(cleaned, PASSAGES) == []
+
+
+@pytest.mark.parametrize("separator", [" ", "\n\n"])
+def test_nutrition_citations_survive_before_navigation_in_same_paragraph(separator):
+    study = "งานวิจัยพบว่าโปรตีนช่วยสนับสนุนการเพิ่มกล้ามเนื้อ [S1]"
+    ui = 'ไปที่หน้า "โปรไฟล์ของฉัน" แล้วกด "บันทึกและคำนวณ" [S2, S3]'
+    cleaned = clean_answer(study + separator + ui, PASSAGES)
+    assert study in cleaned and "บันทึกและคำนวณ" in cleaned
+    assert labels(cited_only(cleaned, PASSAGES)) == ["S1"]
+
+
+def test_nutrition_after_instruction_sentence_and_markdown_links_survive():
+    study = "งานวิจัยพบว่าโปรตีนช่วยสนับสนุนการเพิ่มกล้ามเนื้อ [S1]"
+    text = 'เปิดหน้า [โปรไฟล์ของฉัน](/profile). ' + study
+    assert clean_answer(text, PASSAGES) == text
+    assert labels(cited_only(clean_answer(text, PASSAGES), PASSAGES)) == ["S1"]
+
+
+def test_navigation_cleanup_is_idempotent_and_keeps_links():
+    text = 'ไปที่หน้า [โปรไฟล์ของฉัน](/profile) [s1; S2] [S3]'
+    once = clean_answer(text, PASSAGES)
+    assert "[โปรไฟล์ของฉัน](/profile)" in once
+    assert cited_only(once, PASSAGES) == []
+    assert clean_answer(once, PASSAGES) == once
+
+
+def test_numbered_onboarding_and_missing_profile_do_not_credit_research():
+    nutrition = "หลักฐานสนับสนุนโปรตีนรวมที่เพียงพอสำหรับผู้ฝึกเวท [S1]"
+    missing = "ตอนนี้คุณยังไม่ได้กรอกข้อมูลส่วนตัวในระบบ จึงไม่มีตัวเลขจัดเมนูครับ [S2]"
+    steps = ('**สิ่งที่แนะนำให้ทำก่อน:**\n'
+             '1. ไปที่หน้า **"โปรไฟล์ของฉัน"** ในระบบ\n'
+             '2. กรอกข้อมูลส่วนตัว เช่น น้ำหนัก ส่วนสูง และระดับกิจกรรม\n'
+             '3. กดปุ่ม **"บันทึกและคำนวณ"**\n'
+             '4. กลับมาที่แชตนี้แล้วขอตัวอย่างเมนูได้เลยครับ [S2]')
+    after = "เมื่อคุณบันทึกข้อมูลเรียบร้อยแล้ว ระบบจะสามารถคำนวณและจัดเมนูได้ครับ [S2]"
+    text = "\n\n".join((nutrition, missing, steps, after))
+    cleaned = clean_answer(text, PASSAGES)
+    assert nutrition in cleaned
+    assert "กลับมาที่แชตนี้" in cleaned
+    assert "[S2]" not in cleaned
+    assert labels(cited_only(cleaned, PASSAGES)) == ["S1"]
+
+
+def test_numbered_research_statements_keep_their_sources():
+    text = "1. โปรตีนรวมต่อวันเป็นปัจจัยสำคัญ [S1]\n2. พลังงานขึ้นอยู่กับเป้าหมาย [S2]"
+    assert clean_answer(text, PASSAGES) == text

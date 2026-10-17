@@ -290,6 +290,11 @@ _EGG_COMPOUNDS = ("ไข่ไก่", "ไข่เป็ด", "ไข่น�
 _RESTRICTIONS_EXCLUDING_EGGS = frozenset({"วีแกน", "ไม่กินไข่"})
 
 _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
+    "ไม่ใช้อาหารเสริม": (
+        ("เวย์", "whey", "ผงโปรตีน", "โปรตีนผง", "protein powder",
+         "protein isolate", "protein concentrate", "โปรตีนถั่วเหลืองไอโซเลท"),
+        frozenset({"อาหารเสริม"}),
+    ),
     "ไม่กินไก่": (("ไก่", "chicken"), frozenset()),
     "ไม่กินไข่": (("ไข่", "egg"), frozenset({"ไข่", "ไข่-นม"})),
     "แพ้ถั่วเหลือง": (
