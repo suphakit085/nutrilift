@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from app.services.thai_text import normalize_thai
 
-PORTION_POLICY_VERSION = "practicality-v1"
+PORTION_POLICY_VERSION = "practicality-v2"
 
 
 @dataclass(frozen=True)

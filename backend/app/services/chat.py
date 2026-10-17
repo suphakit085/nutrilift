@@ -31,8 +31,8 @@ from app.services.food_portions import verified_food_portion_reply
 from app.services.foods import all_foods, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
-from app.services.meal_plan import MealPlanError, build_day_plan
-from app.services.menu_context import conversation_profile, requested_meal_count
+from app.services.meal_plan import MealPlanError, plan_day_menu
+from app.services.menu_context import conversation_profile, menu_planning_options
 from app.services.nutrition import (
     ACTIVITY_LABELS_TH,
     GOAL_LABELS_TH,
@@ -153,7 +153,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "suggest_day_menu",
         "description": (
-            "จัดเมนูอาหาร 1 วัน รองรับ 3 หรือ 4 มื้อ พร้อมปริมาณที่รวมแล้วเข้าใกล้เป้าหมายพลังงานและ"
+            "จัดอาหาร 3 มื้อหลักและเสนอหรือเลือกมื้อเสริมตามสารอาหารที่ต้องการ พร้อมปริมาณและ"
             "มาโครของผู้ใช้ ใช้เครื่องมือนี้ทุกครั้งที่ผู้ใช้ขอตัวอย่างเมนู ตารางอาหาร หรือ 'ควรกินอะไรบ้าง' "
             "ห้ามแต่งเมนูหรือกะปริมาณเอง เพราะเมนูคือผลรวม ถ้าเดาปริมาณเองตัวเลขรวมจะไม่ตรงกับเป้าหมายที่บอกผู้ใช้ไป "
             "ระบบจะดึงเป้าหมายและข้อจำกัดอาหารจากโปรไฟล์ให้เอง ไม่ต้องส่งมา "
@@ -168,8 +168,8 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "minimum": 0,
                 },
                 "meal_count": {
-                    "type": "integer", "enum": [3, 4],
-                    "description": "จำนวนมื้อที่ผู้ใช้แจ้ง ถ้าไม่ได้แจ้งใช้ 4 มื้อ",
+                    "type": "integer", "minimum": 3, "maximum": 6,
+                    "description": "จำนวนรวมที่ผู้ใช้ระบุเท่านั้น ถ้าไม่ระบุให้ระบบเลือกมื้อเสริมเอง",
                 },
             },
             "required": [],
@@ -330,7 +330,7 @@ def _run_menu_tool(
         variant = 0
 
     try:
-        return build_day_plan(
+        return plan_day_menu(
             all_foods(db),
             {
                 "kcal": targets["energy_target_kcal"],
@@ -338,7 +338,9 @@ def _run_menu_tool(
             },
             profile.restrictions,
             variant=max(variant, 0),
-            meal_count=args.get("meal_count", 4),
+            meal_count=args.get("meal_count"),
+            allow_extra_meals=args.get("allow_extra_meals"),
+            suggest_extra_meals=args.get("suggest_extra_meals", True),
         )
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
@@ -577,6 +579,12 @@ def _menu_reply(plan: dict) -> str:
         lines.insert(1, plan["conversation_note"])
     if plan.get("budget_note"):
         lines.insert(1, plan["budget_note"])
+    if "main_meal_count" in plan:
+        extras = plan.get("supplemental_meal_count", 0)
+        structure = f"{plan['main_meal_count']} มื้อหลัก"
+        if extras:
+            structure += f" + {extras} มื้อเสริม"
+        lines.insert(1, structure)
     for meal in plan["meals"]:
         foods = "<br>".join(
             (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
@@ -597,6 +605,14 @@ def _menu_reply(plan: dict) -> str:
     lines.append(
         "รายการนี้เป็นวัตถุดิบและปริมาณ ปรับวิธีปรุงได้ แต่การเพิ่มน้ำมันหรือเครื่องปรุงจะเปลี่ยนตัวเลขจากที่คำนวณไว้"
     )
+    for option in plan.get("extra_meal_options") or []:
+        lines.extend([
+            "",
+            (f"ทางเลือกที่คำนวณแล้วเข้าเกณฑ์: 3 มื้อหลัก + {option['supplemental_meal_count']} มื้อเสริม "
+             f"รวมประมาณ {option['totals']['kcal']:.0f} kcal ต่อวัน"),
+            ("หากต้องการลองแผนนี้ พิมพ์ว่า เพิ่มมื้อเสริมได้ ระบบจะจัดปริมาณทั้งแผนใหม่ "
+             "ตัวเลือกนี้ยังไม่ได้รวมอยู่ในตารางและยอดรวมด้านบน"),
+        ])
     return "\n".join(lines)
 
 
@@ -624,8 +640,10 @@ def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
                         f"เมนูนี้ยังเข้าเป้าไม่ครบ: {labels[key]}{direction} {abs(delta):.1f}%"
                     )
         practicality = plan.get("practicality") or {}
-        if practicality and plan.get("meal_count") == 3 and not plan.get("within_tolerance", True):
-            warnings.append("แผน 3 มื้อนี้ยังเข้าเป้าไม่ครบ ลองเลือก 4 มื้อหรือขอเมนูอีกแบบ")
+        if practicality and not plan.get("within_tolerance", True):
+            warnings.append("ยังไม่พบแผนที่เข้าเป้าครบภายใต้รายการอาหารและปริมาณนี้ ลองขอเมนูอีกแบบได้")
+        if practicality.get("meal_weights_within_preference") is False:
+            warnings.append("บางมื้อมีน้ำหนักอาหารรวมมากกว่าช่วงตัวอย่างของระบบ ควรกระจายไปมื้ออื่น")
         if practicality.get("meal_balance_within_preference") is False:
             warnings.append("พลังงานหรือโปรตีนยังกระจายระหว่างมื้อไม่สม่ำเสมอตามเกณฑ์ตัวอย่างของระบบ")
         if practicality.get("review_status") == "pending_dietitian_review":
@@ -1156,9 +1174,7 @@ def stream_chat(
                 if call.name == "suggest_day_menu":
                     args = {
                         **args,
-                        "meal_count": requested_meal_count(
-                            menu_history or history or [], user_message,
-                        ),
+                        **menu_planning_options(menu_history or history or [], user_message),
                     }
                 if call.name == "lookup_food":
                     result = _run_food_lookup(

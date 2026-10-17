@@ -3,9 +3,9 @@ name: Backend history
 on:
   push:
     branches: [main]
-    paths: ['backend/**', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
+    paths: ['backend/**', 'eval/*meals.py', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
   pull_request:
-    paths: ['backend/**', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
+    paths: ['backend/**', 'eval/*meals.py', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
   workflow_dispatch:
 
 permissions:
@@ -62,8 +62,9 @@ jobs:
           uv run --locked --extra dev ruff check
           app/services/profile_history.py app/api/profile.py app/api/food_log.py app/db/models.py
           tests/test_profile_history.py tests/postgres_support.py tests/test_profile_audit.py
-          app/services/meal_plan.py app/services/meal_portions.py app/services/chat.py
-          tests/test_meal_plan.py tests/test_meal_practicality.py ../eval/meal_plan_practicality.py
+          app/services/meal_plan.py app/services/meal_portions.py app/services/chat.py app/services/menu_context.py
+          tests/test_meal_plan.py tests/test_meal_practicality.py tests/test_adaptive_meals.py
+          ../eval/meal_plan_practicality.py ../eval/adaptive_meals.py
       - name: PostgreSQL history, migrations and concurrency
         run: uv run --locked --extra dev pytest tests/test_profile_history.py -q --junitxml=../test-results/history.xml
       - name: Backend regression

@@ -142,6 +142,7 @@ def test_chat_shows_practicality_limit_and_unrounded_failure(verified_plan):
     plan["practicality"]["meal_balance_within_preference"] = False
     plan["within_tolerance"] = False
     plan["meal_count"] = 3
+    plan["supplemental_meal_count"] = 0
     plan["out_of_tolerance"] = ["carb_g"]
     plan["deviation_pct"]["carb_g"] = -15.0
     text = _append_menu_data_notes(_menu_reply(plan), [plan])
@@ -149,7 +150,7 @@ def test_chat_shows_practicality_limit_and_unrounded_failure(verified_plan):
     assert "คาร์โบไฮเดรตขาด 15.0%" in text
     assert "ยังกระจายระหว่างมื้อ" in text
     assert "ยังไม่ได้รับการทบทวนโดยนักกำหนดอาหาร" in text
-    assert "ลองเลือก 4 มื้อ" in text
+    assert "ลองขอเมนูอีกแบบได้" in text
 
 
 @pytest.mark.parametrize("count", [3, 4])
@@ -169,7 +170,9 @@ def test_tool_reports_no_eligible_foods_without_exposing_an_exception(
     assert "meals" not in result
 
 
-@pytest.mark.parametrize("count,restrictions", [(3, []), (4, []), (3, ["วีแกน"]), (4, ["แพ้ถั่ว"])])
+@pytest.mark.parametrize("count,restrictions", [
+    (3, []), (4, []), (3, ["วีแกน"]), (4, ["แพ้ถั่ว"]), (5, []), (6, []),
+])
 def test_chat_stream_uses_real_planner_and_requested_meals(
     real_foods, monkeypatch, count, restrictions
 ):
@@ -201,7 +204,8 @@ def test_chat_stream_uses_real_planner_and_requested_meals(
     final = events[-1]
     assert final["type"] == "done"
     assert "| มื้อเช้า |" in final["text"] and "| มื้อเย็น |" in final["text"]
-    assert ("| มื้อว่าง / หลังฝึก |" in final["text"]) == (count == 4)
+    assert ("| มื้อเสริมที่ 1 |" in final["text"]) == (count >= 4)
+    assert ("| มื้อเสริมที่ 3 |" in final["text"]) == (count == 6)
     assert f"| รวมทั้งวัน | | {expected['totals']['kcal']:.1f} |" in final["text"]
     assert "within_tolerance" not in final["text"]
     assert "".join(e["text"] for e in events if e["type"] == "delta") == final["text"]

@@ -101,9 +101,9 @@ def test_three_meals_are_solved_directly_and_keep_verified_totals(
     assert all(not excluded_by(i, restrictions) for m in three["meals"] for i in m["items"])
 
 
-@pytest.mark.parametrize("count", [0, 1, 2, 5, 6, True, "3", 3.5])
+@pytest.mark.parametrize("count", [0, 1, 2, 7, True, "3", 3.5])
 def test_unsupported_meal_count_is_not_silently_changed(count):
-    with pytest.raises(MealPlanError, match="3 หรือ 4"):
+    with pytest.raises(MealPlanError, match=r"จำนวนรวม 3.6 มื้อ"):
         build_day_plan(TINY_TABLE, TARGETS, meal_count=count)
 
 

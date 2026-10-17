@@ -80,16 +80,63 @@ def _saved_profile_reset(text: str) -> tuple[bool, bool]:
     return not diet or goal, not goal or diet
 
 
-def requested_meal_count(history: list[dict], user_message: str) -> int:
-    """Carry only counts explicitly supplied by the user, never model guesses."""
-    count = 4
-    words = {"สาม": 3, "สี่": 4}
+def menu_planning_options(history: list[dict], user_message: str) -> dict:
+    """Only user turns can fix a count, allow extras or withdraw permission.
+
+    No explicit count means automatic planning. Extra occasions are distinct
+    from the three main meals. Assistant suggestions never grant permission.
+    """
+    count = None
+    allow = None
+    suggest = True
+    words = {"หนึ่ง": 1, "สอง": 2, "สาม": 3, "สี่": 4, "ห้า": 5, "หก": 6}
+    numbers = r"\d+|หนึ่ง|สอง|สาม|สี่|ห้า|หก"
     turns = [t.get("content", "") for t in history if t.get("role") == "user"]
-    for turn in [*turns, user_message]:
-        for match in re.finditer(r"(\d+|สาม|สี่)\s*มื้อ", normalize_thai(turn)):
+    # A later clause can withdraw or restore an earlier choice in the same turn.
+    clauses = [part for turn in [*turns, user_message]
+               for part in re.split(r"แต่|เปลี่ยนใจ", turn)]
+    for turn in clauses:
+        text = normalize_thai(turn).translate(str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789"))
+        text = re.sub(r"ของว่าง|อาหารว่าง|มื้อย่อย", "มื้อเสริม", text)
+        if re.search("อัตโนมัติ|ไม่จำกัดจำนวนมื้อ|จัดตามความเหมาะสม", text):
+            count, allow, suggest = None, True, True
+        for match in re.finditer(r"(" + numbers + r")\s*มื้อ(หลัก|เสริม|ว่าง)?", text):
+            prefix = text[max(0, match.start() - 20):match.start()]
+            if re.search(r"(?:ไม่เอา|ไม่ต้องการ|ไม่ต้อง)\s*$", prefix):
+                continue
             raw = match.group(1)
-            count = words[raw] if raw in words else int(raw)
-    return count
+            number = words[raw] if raw in words else int(raw)
+            if match.group(2) in {"เสริม", "ว่าง"}:
+                count, allow = 3 + number, False
+            elif re.search(r"เพิ่ม(?:อีก)?\s*$", prefix):
+                count, allow = (count or 3) + number, False
+            else:
+                count, allow = number, False
+            suggest = True
+        # Also recognise "มื้อเสริม 2 มื้อ" without counting it as two total meals.
+        for extra in re.finditer(r"มื้อ(?:เสริม|ว่าง)\s*(" + numbers + r")\s*มื้อ", text):
+            raw = extra.group(1)
+            count, allow = 3 + (words[raw] if raw in words else int(raw)), False
+        denied = re.search(
+            r"(?:ไม่เอา|ไม่ต้อง(?:การ)?|ไม่เพิ่ม|ห้ามเพิ่ม|อย่าเพิ่ม|ไม่มี|งด).{0,12}มื้อ(?:เสริม|ว่าง)", text
+        )
+        strict = re.search(
+            r"(?:แค่|เพียง)\s*(?:" + numbers + r")\s*มื้อ|มื้อ(?:หลัก)?\s*เท่านั้น", text
+        )
+        if denied or strict:
+            allow, suggest = False, False
+            if denied or count is None:
+                count = 3
+        elif re.search(r"(?:เพิ่ม|มี|จัด|เอา|ขอ).{0,15}มื้อ(?:เสริม|ว่าง).{0,8}(?:ได้|ตามเหมาะสม)", text):
+            allow, suggest = True, True
+    return {"meal_count": count, "allow_extra_meals": allow,
+            "suggest_extra_meals": suggest}
+
+
+def requested_meal_count(history: list[dict], user_message: str) -> int:
+    """Compatibility for callers needing a number rather than automatic mode."""
+    count = menu_planning_options(history, user_message)["meal_count"]
+    return 4 if count is None else count
 
 
 def conversation_profile(
@@ -144,6 +191,8 @@ def conversation_profile(
                 food = food.strip()
                 if not food:
                     continue
+                if re.match(r"มื้อ(?:เสริม|ว่าง|ย่อย)|ของว่าง|อาหารว่าง", food):
+                    continue  # Meal preferences are not unknown food allergies.
                 # Longest prefix matters: soy allergy must not turn into a nut rule.
                 key = next(
                     (v for k, v in sorted(_FOODS.items(), key=lambda p: -len(p[0]))
