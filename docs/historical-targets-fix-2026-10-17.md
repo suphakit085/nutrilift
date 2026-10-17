@@ -31,6 +31,10 @@ existing Docker startup runs Alembic before starting the API. The migration is
 additive: existing users, profiles, food entries and authentication fields are
 preserved. There is no backfill of targets for dates without evidence.
 
+The runtime image installs `uv.lock` with `uv sync --locked`, matching the
+dependency set used in CI. Its build, runtime imports and non-root user are
+checked separately in CI.
+
 ## Verification before deployment
 
 - 15 PostgreSQL history integration cases passed, including actual fresh

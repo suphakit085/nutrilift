@@ -16,6 +16,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  container:
+    name: Backend runtime image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: docker build --tag nutrilift-history:ci backend
+      - name: Check runtime imports and non-root user
+        run: docker run --rm --entrypoint python nutrilift-history:ci -c "import os; from app.main import app; assert app; assert os.getuid() == 10001"
   history:
     name: PostgreSQL history and backend regression
     runs-on: ubuntu-latest
