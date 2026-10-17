@@ -75,21 +75,49 @@ checked separately in CI.
   again preserved past energy and all three macro targets, consumption and
   remaining energy. Reloads and 390/768/1280 px layouts passed.
 
-At the last production API/database check, Railway still served the previous
-backend: `/profile/history` absent and Alembic revision `e43c6103b001`. The
-workspace has no Railway login/token, so the owner was asked to deploy the latest
-`main` commit through Railway. The history fix must not be described as fully
-live until that API/migration and real-account checks have completed.
+## Verified production rollout
+
+The owner triggered Railway's Deploy Latest Commit after the initial automatic
+rollout did not happen. Railway deployment `7141400089` now records merge commit
+`798b7f55300c9173449bca9ee98d51156221b406`. The live API exposes
+`/profile/history`, the database is at `f16c6106a002`, and the history table is
+present. The new auth/session tables remain absent, as intended for this release.
+`/health` returned HTTP 200. A real UI chat question also received a completed
+reply with no intercepted requests after the runtime/dependency update.
 
 Before rollout, a disposable production account reproduced the bug: its diary
 date before any known historical target incorrectly reported 2,579 kcal while
-its actual saved food total was 232.5 kcal. The account is retained temporarily
-for migration/data-preservation verification and must be cleaned after that check.
+its actual saved food total was 232.5 kcal. After rollout, **7 real-account
+migration checks passed**: its old token still worked, its profile was identical,
+the 232.5 kcal food entry remained, today's target stayed correct and the past
+date correctly became unavailable without losing its food data. These checks
+ran before any synthetic historical snapshot was inserted.
+
+Then one controlled past snapshot was inserted for that exact disposable UUID
+and matching campaign email, copied from its real baseline. This enables testing
+past-date behavior without waiting days or changing the application clock. It
+does not represent verified historical data for a real user. Against that
+fixture, **15 more production UI/API checks passed with zero intercepted
+requests**, including two profile changes, unchanged historical energy and all
+macros, correct remaining energy, reload persistence, same-day latest-save
+ordering, missing-history messaging and responsive layouts. Total: **22/22
+production history/migration checks** plus the separate chat smoke check.
+
+After testing, the exact disposable user and matching email were checked before
+deletion. Cascade cleanup removed its 1 profile, 4 revisions, 1 food entry,
+1 conversation and 2 messages; all scoped counts were zero afterward. Its token
+returned 401, browser credentials were cleared and test browsers/containers were
+closed. No real user's history was edited or backfilled by the test.
 
 Additional evidence in the main workspace:
 `output/playwright/history-fix-20261017/before.json`, `merge.json`,
 `production-frontend/results.json`, `local-flow-results.json`, and
 `output/ci-cd/history-checks/ci-results.txt`.
+
+Final production evidence: `after-deploy.json`, `production-api/results.json`,
+`production-migration.json`, `railway-deployments.json`, `chat-smoke.json`,
+`cleanup.json` and `cleanup-browser.json` under
+`output/playwright/history-fix-20261017/`.
 
 The browser-only fixture uses intercepted synthetic API responses. PostgreSQL
 tests use disposable local databases with a loopback-only URL and no external
