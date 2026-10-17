@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { TOOL_LABELS, toolLabel } from "./tools.ts";
+import { TOOL_LABELS, toolLabel, toolPresentation, readToolStatus } from "./tools.ts";
 
 // The three tools chat.py declares. If the backend gains a fourth, the last
 // test here is the one that should start failing.
@@ -44,4 +44,28 @@ test("every tool the backend declares has its own label", () => {
   for (const tool of BACKEND_TOOLS) {
     assert.ok(tool in TOOL_LABELS, `${tool} has no label and would use the generic fallback`);
   }
+});
+
+test("only an explicit successful outcome earns a checkmark, including during streaming", () => {
+  for (const pending of [false, true]) {
+    assert.equal(toolPresentation({ name: "suggest_day_menu", status: "success" }, pending).icon, "✓");
+    for (const status of ["partial", "error", "not_found", "confirmation_required", undefined] as const) {
+      const shown = toolPresentation({ name: "suggest_day_menu", status }, pending);
+      assert.notEqual(shown.icon, "✓", String(status));
+      if (status) assert.equal(shown.running, false);
+    }
+  }
+});
+
+test("old history stays neutral and failures and partial menus explain the outcome", () => {
+  assert.equal(toolPresentation({ name: "suggest_day_menu" }).tone, "neutral");
+  assert.ok(!toolPresentation({ name: "suggest_day_menu" }).label.includes("จัดเมนู"));
+  assert.match(toolPresentation({ name: "suggest_day_menu", status: "partial" }).label, /ยังเข้าเป้าไม่ครบ/);
+  assert.match(toolPresentation({ name: "suggest_day_menu", status: "error" }).label, /ไม่ได้/);
+  assert.match(toolPresentation({ name: "lookup_food", status: "confirmation_required" }).label, /รอคุณยืนยัน/);
+});
+
+test("unrecognized or malformed outcomes never become success", () => {
+  for (const value of [null, "done", true, {}, ["success"], 1]) assert.equal(readToolStatus(value), undefined);
+  assert.equal(readToolStatus("success"), "success");
 });

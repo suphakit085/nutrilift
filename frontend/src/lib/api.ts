@@ -6,6 +6,8 @@
  * stream is read manually from the fetch body reader.
  */
 
+import { readToolStatus, type ToolStatus } from "./tools.ts";
+
 function resolveApiBase(): string {
   // Trailing slashes are stripped so `${API_BASE}/auth/login` never becomes
   // `http://host//auth/login`.
@@ -251,7 +253,7 @@ export type ChatMessage = {
   content: string;
   cancelled?: boolean;
   citations: Citation[] | null;
-  tool_calls: { name: string }[] | null;
+  tool_calls: { name: string; status?: ToolStatus }[] | null;
   created_at: string;
 };
 
@@ -424,7 +426,7 @@ export const api = {
 export type ChatStreamHandlers = {
   onSources?: (citations: Citation[]) => void;
   onDelta?: (text: string) => void;
-  onTool?: (name: string) => void;
+  onTool?: (name: string, status?: ToolStatus) => void;
   /** The backend hit the model's per-minute limit and is retrying by itself. */
   onRetry?: (message: string) => void;
   onDone?: (payload: { text: string; citations: Citation[] }) => void;
@@ -558,7 +560,7 @@ export function streamChat(
               handlers.onDelta?.(String(payload.text ?? ""));
               break;
             case "tool":
-              handlers.onTool?.(String(payload.name ?? ""));
+              handlers.onTool?.(String(payload.name ?? ""), readToolStatus(payload.status));
               break;
             case "retry":
               handlers.onRetry?.(String(payload.message ?? ""));

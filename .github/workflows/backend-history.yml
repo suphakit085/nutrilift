@@ -3,9 +3,9 @@ name: Backend history
 on:
   push:
     branches: [main]
-    paths: ['backend/**', '.github/workflows/backend-history.yml']
+    paths: ['backend/**', 'eval/*meals.py', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
   pull_request:
-    paths: ['backend/**', '.github/workflows/backend-history.yml']
+    paths: ['backend/**', 'eval/*meals.py', 'eval/meal_plan_practicality.py', 'knowledge/foods.csv', '.github/workflows/backend-history.yml']
   workflow_dispatch:
 
 permissions:
@@ -57,8 +57,11 @@ jobs:
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
       - run: uv sync --locked --extra dev
-      - name: Lint history changes
-        run: uv run --locked --extra dev ruff check app/services/profile_history.py app/api/profile.py app/api/food_log.py app/db/models.py tests/test_profile_history.py tests/postgres_support.py tests/test_profile_audit.py
+      - name: Lint backend and meal planner changes
+        run: >-
+          uv run --locked --extra dev ruff check
+          app tests ingest
+          ../eval/meal_plan_practicality.py ../eval/adaptive_meals.py
       - name: PostgreSQL history, migrations and concurrency
         run: uv run --locked --extra dev pytest tests/test_profile_history.py -q --junitxml=../test-results/history.xml
       - name: Backend regression

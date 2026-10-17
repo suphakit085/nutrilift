@@ -13,7 +13,7 @@ from sqlalchemy import and_, case, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.db.models import Food
-from app.services.thai_text import compose_sara_am
+from app.services.thai_text import compose_sara_am, normalize_thai
 
 MAX_RESULTS = 5
 
@@ -259,6 +259,23 @@ def lookup_food(db: Session, query: str, limit: int = MAX_RESULTS) -> dict:
     if any(r["warnings"] for r in results):
         note += " · ต้องรายงานข้อจำกัดที่อยู่ใน warnings ด้วย ห้ามเปลี่ยนค่าที่ไม่ทราบเป็นศูนย์"
     return {"query": q, "found": True, "match": level, "results": results, "note": note}
+
+
+def explicit_food_names(db: Session, message: str) -> list[str]:
+    """Canonical names actually present in USER text, keeping the most specific.
+
+    Used only to resolve a partial model query, never to broaden fuzzy matching.
+    Multiple foods and negated names must not silently confirm a single row.
+    """
+    text = normalize_thai(message)
+    names = [name for name in db.execute(select(Food.name_th)).scalars()
+             if normalize_thai(name) in text]
+    names = [name for name in names if not any(
+        name != other and normalize_thai(name) in normalize_thai(other) for other in names
+    )]
+    return [name for name in names if not re.search(
+        r"(?:ไม่ใช่|ไม่เอา|ไม่ต้องการ)\s*$", text[:text.index(normalize_thai(name))]
+    )]
 
 
 def all_foods(db: Session) -> list[dict]:

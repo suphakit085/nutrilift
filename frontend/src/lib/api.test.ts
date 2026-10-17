@@ -185,6 +185,23 @@ async function withMockFetch<T>(body: string, run: () => Promise<T>): Promise<T>
   }
 }
 
+test("tool outcomes survive SSE, with neutral compatibility for older and unknown outcomes", async () => {
+  const statuses = ["success", "partial", "error", "not_found", "confirmation_required", undefined, "done"];
+  const received: unknown[] = [];
+  const body = statuses.map(status => frame("tool", { name: "suggest_day_menu", status })).join("")
+    + frame("done", { text: "จบ", citations: [] });
+  await withMockFetch(body, () => new Promise<void>((resolve, reject) => {
+    streamChat("c1", "เมนู", {
+      onTool: (name, status) => received.push({ name, status }),
+      onDone: () => resolve(),
+      onError: message => reject(new Error(message)),
+    });
+  }));
+  assert.deepEqual(received, statuses.map(status => ({
+    name: "suggest_day_menu", status: status === "done" ? undefined : status,
+  })));
+});
+
 test("EOF without a done frame reports an error instead of hanging", async () => {
   const body = frame("delta", { text: "ครึ่ง" });
   const deltas: string[] = [];

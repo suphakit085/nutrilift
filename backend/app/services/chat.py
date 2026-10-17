@@ -28,11 +28,11 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.food_portions import verified_food_portion_reply
-from app.services.foods import all_foods, lookup_food
+from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
-from app.services.meal_plan import MealPlanError, build_day_plan
-from app.services.menu_context import conversation_profile, requested_meal_count
+from app.services.meal_plan import MealPlanError, plan_day_menu
+from app.services.menu_context import conversation_profile, menu_planning_options
 from app.services.nutrition import (
     ACTIVITY_LABELS_TH,
     GOAL_LABELS_TH,
@@ -153,7 +153,7 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "name": "suggest_day_menu",
         "description": (
-            "จัดเมนูอาหาร 1 วัน รองรับ 3 หรือ 4 มื้อ พร้อมปริมาณที่รวมแล้วเข้าใกล้เป้าหมายพลังงานและ"
+            "จัดอาหาร 3 มื้อหลักและเสนอหรือเลือกมื้อเสริมตามสารอาหารที่ต้องการ พร้อมปริมาณและ"
             "มาโครของผู้ใช้ ใช้เครื่องมือนี้ทุกครั้งที่ผู้ใช้ขอตัวอย่างเมนู ตารางอาหาร หรือ 'ควรกินอะไรบ้าง' "
             "ห้ามแต่งเมนูหรือกะปริมาณเอง เพราะเมนูคือผลรวม ถ้าเดาปริมาณเองตัวเลขรวมจะไม่ตรงกับเป้าหมายที่บอกผู้ใช้ไป "
             "ระบบจะดึงเป้าหมายและข้อจำกัดอาหารจากโปรไฟล์ให้เอง ไม่ต้องส่งมา "
@@ -168,8 +168,8 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
                     "minimum": 0,
                 },
                 "meal_count": {
-                    "type": "integer", "enum": [3, 4],
-                    "description": "จำนวนมื้อที่ผู้ใช้แจ้ง ถ้าไม่ได้แจ้งใช้ 4 มื้อ",
+                    "type": "integer", "minimum": 3, "maximum": 6,
+                    "description": "จำนวนรวมที่ผู้ใช้ระบุเท่านั้น ถ้าไม่ระบุให้ระบบเลือกมื้อเสริมเอง",
                 },
             },
             "required": [],
@@ -301,13 +301,14 @@ def _run_menu_tool(
     if guard is not None and not guardrails.personalization_allowed(guard):
         return {
             "error": "safety_boundary",
-            "message": "ไม่อนุญาตให้จัดเมนูเฉพาะบุคคลในบริบทสุขภาพนี้ ให้ส่งต่อผู้ดูแล",
+            "message": "ยังจัดเมนูเฉพาะบุคคลในบริบทสุขภาพนี้ไม่ได้ครับ กรุณาปรึกษาแพทย์หรือนักกำหนดอาหารผู้ดูแล",
         }
     if profile is None:
         return {
             "error": "no_profile",
             "message": (
-                "ยังไม่มีโปรไฟล์ จัดเมนูให้ไม่ได้เพราะไม่รู้เป้าหมายพลังงานและมาโคร ให้ชวนผู้ใช้ไปกรอกโปรไฟล์ก่อน"
+                "ยังไม่มีโปรไฟล์ จึงยังจัดเมนูตามเป้าหมายให้ไม่ได้ครับ "
+                "กรุณากรอกโปรไฟล์ก่อนเพื่อคำนวณพลังงานและสารอาหาร"
             ),
         }
     if any(r.startswith("ข้อจำกัดที่ยังไม่รองรับ:") for r in profile.restrictions):
@@ -330,7 +331,7 @@ def _run_menu_tool(
         variant = 0
 
     try:
-        return build_day_plan(
+        return plan_day_menu(
             all_foods(db),
             {
                 "kcal": targets["energy_target_kcal"],
@@ -338,7 +339,9 @@ def _run_menu_tool(
             },
             profile.restrictions,
             variant=max(variant, 0),
-            meal_count=args.get("meal_count", 4),
+            meal_count=args.get("meal_count"),
+            allow_extra_meals=args.get("allow_extra_meals"),
+            suggest_extra_meals=args.get("suggest_extra_meals", True),
         )
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
@@ -403,6 +406,25 @@ def _unverified_food_reply(candidates: list[str]) -> str:
     return "ยังไม่พบรายการนี้ในฐานข้อมูลอาหาร จึงยืนยันค่าแคลอรี่หรือสารอาหารให้ไม่ได้ครับ"
 
 
+def _tool_status(name: str, result: dict) -> str | None:
+    """Outcome belongs to the application, never to the model or stream state."""
+    if result.get("error"):
+        return "error"
+    if name == "suggest_day_menu":
+        if not result.get("meals"):
+            return "error"
+        return "success" if result.get("within_tolerance") else "partial"
+    if name == "lookup_food":
+        if result.get("found"):
+            return "success"
+        if result.get("match") in {"partial", "confirmation_required"}:
+            return "confirmation_required"
+        return "not_found"
+    if name == "calc_nutrition_targets":
+        return "success"
+    return None
+
+
 def _run_food_lookup(
     db: Session,
     query: str,
@@ -437,6 +459,17 @@ def _run_food_lookup(
                 result["confirmation_for"] = candidate
             return result
     result = lookup_food(db, query)
+    if result.get("match") == "partial" and any(
+        normalize_thai(name) in normalized_user for name in result.get("candidates", [])
+    ):
+        # The user may already have supplied the full table name while the
+        # model removed its comma. Only one explicit, non-negated food may
+        # resolve this; names proposed by the assistant cannot do so.
+        explicit = explicit_food_names(db, user_message)
+        if len(explicit) == 1 and explicit[0] in result.get("candidates", []):
+            confirmed = lookup_food(db, explicit[0])
+            if confirmed.get("found") and len(confirmed.get("results", [])) == 1:
+                result = confirmed
     if result.get("found"):
         # The model can normalize a user's reordered phrase into a canonical
         # database name before its first lookup. Require that canonical name in
@@ -577,6 +610,12 @@ def _menu_reply(plan: dict) -> str:
         lines.insert(1, plan["conversation_note"])
     if plan.get("budget_note"):
         lines.insert(1, plan["budget_note"])
+    if "main_meal_count" in plan:
+        extras = plan.get("supplemental_meal_count", 0)
+        structure = f"{plan['main_meal_count']} มื้อหลัก"
+        if extras:
+            structure += f" + {extras} มื้อเสริม"
+        lines.insert(1, structure)
     for meal in plan["meals"]:
         foods = "<br>".join(
             (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
@@ -597,6 +636,14 @@ def _menu_reply(plan: dict) -> str:
     lines.append(
         "รายการนี้เป็นวัตถุดิบและปริมาณ ปรับวิธีปรุงได้ แต่การเพิ่มน้ำมันหรือเครื่องปรุงจะเปลี่ยนตัวเลขจากที่คำนวณไว้"
     )
+    for option in plan.get("extra_meal_options") or []:
+        lines.extend([
+            "",
+            (f"ทางเลือกที่คำนวณแล้วเข้าเกณฑ์: 3 มื้อหลัก + {option['supplemental_meal_count']} มื้อเสริม "
+             f"รวมประมาณ {option['totals']['kcal']:.0f} kcal ต่อวัน"),
+            ("หากต้องการลองแผนนี้ พิมพ์ว่า เพิ่มมื้อเสริมได้ ระบบจะจัดปริมาณทั้งแผนใหม่ "
+             "ตัวเลือกนี้ยังไม่ได้รวมอยู่ในตารางและยอดรวมด้านบน"),
+        ])
     return "\n".join(lines)
 
 
@@ -617,11 +664,21 @@ def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
             }
             for key, delta in (plan.get("deviation_pct") or {}).items():
                 tolerance = (plan.get("tolerance_pct") or {}).get(key, 0)
-                if key in labels and abs(delta) > tolerance:
+                if key in labels and (key in plan.get("out_of_tolerance", [])
+                                      or abs(delta) > tolerance):
                     direction = "เกิน" if delta > 0 else "ขาด"
                     warnings.append(
                         f"เมนูนี้ยังเข้าเป้าไม่ครบ: {labels[key]}{direction} {abs(delta):.1f}%"
                     )
+        practicality = plan.get("practicality") or {}
+        if practicality and not plan.get("within_tolerance", True):
+            warnings.append("ยังไม่พบแผนที่เข้าเป้าครบภายใต้รายการอาหารและปริมาณนี้ ลองขอเมนูอีกแบบได้")
+        if practicality.get("meal_weights_within_preference") is False:
+            warnings.append("บางมื้อมีน้ำหนักอาหารรวมมากกว่าช่วงตัวอย่างของระบบ ควรกระจายไปมื้ออื่น")
+        if practicality.get("meal_balance_within_preference") is False:
+            warnings.append("พลังงานหรือโปรตีนยังกระจายระหว่างมื้อไม่สม่ำเสมอตามเกณฑ์ตัวอย่างของระบบ")
+        if practicality.get("review_status") == "pending_dietitian_review":
+            warnings.append("ช่วงปริมาณอาหารเป็นเกณฑ์ตัวอย่างของระบบ ยังไม่ได้รับการทบทวนโดยนักกำหนดอาหาร")
         if plan.get("restrictions_unknown"):
             warnings.append(
                 "ระบบยังไม่รองรับข้อจำกัดอาหาร: "
@@ -1148,9 +1205,7 @@ def stream_chat(
                 if call.name == "suggest_day_menu":
                     args = {
                         **args,
-                        "meal_count": requested_meal_count(
-                            menu_history or history or [], user_message,
-                        ),
+                        **menu_planning_options(menu_history or history or [], user_message),
                     }
                 if call.name == "lookup_food":
                     result = _run_food_lookup(
@@ -1198,7 +1253,8 @@ def stream_chat(
                         if candidate not in food_lookup_candidates:
                             food_lookup_candidates.append(candidate)
                 _release_connection(db)
-                call_log = {"name": call.name, "arguments": args}
+                status = _tool_status(call.name, result)
+                call_log = {"name": call.name, "arguments": args, "status": status}
                 if call.name == "lookup_food":
                     call_log["lookup_result"] = {
                         "found": bool(result.get("found")),
@@ -1209,7 +1265,7 @@ def stream_chat(
                     }
                     result.pop("confirmation_for", None)
                 tool_calls_log.append(call_log)
-                yield {"type": "tool", "name": call.name, "args": args}
+                yield {"type": "tool", "name": call.name, "args": args, "status": status}
                 response_parts.append(
                     types.Part(
                         function_response=types.FunctionResponse(

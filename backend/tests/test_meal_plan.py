@@ -14,7 +14,6 @@ import pytest
 
 from app.services.meal_plan import (
     MEAL_TEMPLATE,
-    PORTION_STEP,
     TOLERANCE,
     MealPlanError,
     build_day_plan,
@@ -79,25 +78,32 @@ TARGETS = {"kcal": 2000.0, "protein_g": 140.0, "carb_g": 220.0, "fat_g": 60.0}
 
 
 @pytest.mark.parametrize("restrictions", [[], ["วีแกน"], ["ไม่กินไข่", "ไม่กินไก่"]])
-def test_three_meals_keep_all_foods_portions_and_totals(real_foods, restrictions):
-    four = build_day_plan(real_foods, TARGETS, restrictions, meal_count=4)
+def test_three_meals_are_solved_directly_and_keep_verified_totals(
+    real_foods, restrictions, monkeypatch
+):
+    from app.services import meal_plan
+
+    original_optimize = meal_plan._optimize
+    calls = []
+
+    def check_template(items, targets, meal_count=4):
+        calls.append(meal_count)
+        assert {i.meal.key for i in items} == {"breakfast", "lunch", "dinner"}
+        return original_optimize(items, targets, meal_count)
+
+    monkeypatch.setattr(meal_plan, "_optimize", check_template)
     three = build_day_plan(real_foods, TARGETS, restrictions, meal_count=3)
+    assert calls and set(calls) == {3}
     assert len(three["meals"]) == 3
     assert [m["key"] for m in three["meals"]] == ["breakfast", "lunch", "dinner"]
-    assert three["totals"] == four["totals"]
-    assert three["deviation_pct"] == four["deviation_pct"]
-    assert three["within_tolerance"] == four["within_tolerance"]
-    original = sorted((i["name_th"], i["portion"]) for m in four["meals"] for i in m["items"])
-    regrouped = sorted((i["name_th"], i["portion"]) for m in three["meals"] for i in m["items"])
-    assert original == regrouped
     for key in ("kcal", "protein_g", "carb_g", "fat_g"):
         assert sum(m[key] for m in three["meals"]) == pytest.approx(three["totals"][key], abs=0.2)
     assert all(not excluded_by(i, restrictions) for m in three["meals"] for i in m["items"])
 
 
-@pytest.mark.parametrize("count", [0, 1, 2, 5, 6, True, "3", 3.5])
+@pytest.mark.parametrize("count", [0, 1, 2, 7, True, "3", 3.5])
 def test_unsupported_meal_count_is_not_silently_changed(count):
-    with pytest.raises(MealPlanError, match="3 หรือ 4"):
+    with pytest.raises(MealPlanError, match=r"จำนวนรวม 3.6 มื้อ"):
         build_day_plan(TINY_TABLE, TARGETS, meal_count=count)
 
 
@@ -201,12 +207,13 @@ def test_totals_are_the_sum_of_the_items():
         assert plan["totals"][key] == pytest.approx(summed, abs=0.5)
 
 
-def test_every_portion_sits_on_the_quarter_serving_grid():
+def test_food_portions_use_measurable_grams_without_fractional_countable_foods():
     plan = build_day_plan(TINY_TABLE, TARGETS)
     for meal in plan["meals"]:
         for item in meal["items"]:
-            steps = item["portion"] / PORTION_STEP
-            assert steps == pytest.approx(round(steps)), item
+            assert item["grams"] > 0
+            assert item["grams"] * 2 == pytest.approx(round(item["grams"] * 2))
+            assert "2.08333" not in item["portion_desc_th"]
 
 
 def test_no_food_is_served_twice_when_the_table_is_big_enough(real_foods):
