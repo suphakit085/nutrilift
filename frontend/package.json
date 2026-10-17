@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --experimental-strip-types src/lib/*.test.ts tests/*.test.mjs"
+    "test": "node --test --experimental-strip-types src/lib/*.test.ts tests/*.test.mjs",
+    "test:diary-ui": "node ../eval/uat_browser/run_diary_requests.mjs"
   },
   "dependencies": {
     "next": "16.3.8",
