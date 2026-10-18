@@ -197,6 +197,7 @@ def turn_events(
       released; the next read simply starts a fresh one.
     """
     session = session_factory()
+    retrieval_status = "not_required"
     try:
         conv = session.get(Conversation, conversation_id)
         if conv is None:
@@ -228,7 +229,10 @@ def turn_events(
             menu_history=menu_history,
         ):
             event_type = event.pop("type")
+            if event_type == "sources":
+                retrieval_status = event.get("retrieval_status", "not_required")
             if event_type == "done":
+                event["retrieval_status"] = retrieval_status
                 text = event.get("text") or ""
                 if text.strip():
                     if request_id is not None:
@@ -245,6 +249,7 @@ def turn_events(
                             usage={
                                 **(event.get("usage") or {}),
                                 "finish_reasons": event.get("finish_reasons", []),
+                                "retrieval_status": retrieval_status,
                             },
                             safety_flags=event.get("safety_flags"),
                         )

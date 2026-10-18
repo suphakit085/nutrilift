@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api, setToken } from "@/lib/api";
 import ConsentNotice from "@/components/ConsentNotice";
 
@@ -73,15 +74,17 @@ export default function LoginPage() {
           })
         : await api.login(email, password);
       setToken(result.access_token);
-      if (registering) {
-        router.push("/profile");
+      if (result.email_verification_required) {
+        router.push("/verify-email");
         return;
       }
       // An account created before consent was recorded, or one that predates a
       // reworded notice, has to agree before it can reach any data route -
       // asking here is friendlier than letting /chat bounce off a 403.
       const me = await api.me();
-      router.push(me.needs_consent ? "/consent" : "/chat");
+      // Vercel can deploy before Railway. Only an explicit new-API flag gates
+      // verification; the old API has no such field and keeps its old flow.
+      router.push(me.email_verified === false ? "/verify-email" : me.needs_consent ? "/consent" : "/chat");
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -185,8 +188,7 @@ export default function LoginPage() {
               <div>
                 <label className="block">
                   <span className="field-label text-xs text-muted">ยืนยันรหัสผ่าน</span>
-                  {/* There is no password-reset flow, so a typo here is an
-                      account nobody can ever get back into. */}
+                  {/* Confirm before creating an account to catch typing errors. */}
                   <input
                     type={showPassword ? "text" : "password"}
                     name="confirm-password"
@@ -248,6 +250,8 @@ export default function LoginPage() {
               {busy ? "กำลังดำเนินการ…" : registering ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}
             </button>
           </form>
+          {!registering && <Link href="/forgot-password" className="mt-4 block text-center text-sm text-muted underline underline-offset-4">ลืมรหัสผ่าน</Link>}
+          {registering && <p className="mt-4 text-xs leading-relaxed text-muted">เราจะส่งลิงก์ไปยังอีเมลของคุณ ต้องยืนยันอีเมลก่อนใช้โปรไฟล์ แชต และบันทึกอาหาร</p>}
         </div>
 
         <p className="mt-6 text-center text-xs text-muted">

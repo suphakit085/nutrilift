@@ -4,7 +4,11 @@ Uses the real ``app`` object but never opens a database connection - the engine
 is lazy, ``/health`` touches nothing, and the startup check is stubbed.
 """
 
+from unittest.mock import MagicMock
+
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 import app.main as main_module
 from app.core.config import settings
@@ -30,6 +34,53 @@ def test_startup_runs_the_production_secret_check(monkeypatch):
     with TestClient(app):
         pass
     assert calls == [settings]
+
+
+def test_database_outage_is_a_retryable_503_with_cors(monkeypatch):
+    def unavailable():
+        raise OperationalError("SELECT private", {}, Exception("private-host password-secret"))
+
+    app.dependency_overrides[get_db] = unavailable
+    try:
+        origin = settings.cors_origin_list[0]
+        response = TestClient(app).get("/auth/me", headers={"Origin": origin})
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+    assert response.status_code == 503
+    assert response.headers["access-control-allow-origin"] == origin
+    assert response.headers["retry-after"] == "10"
+    assert "password-secret" not in response.text and "private-host" not in response.text
+
+
+def test_readiness_requires_all_dependencies_while_health_is_liveness(monkeypatch):
+    client = TestClient(app)
+    for available in (False, True):
+        monkeypatch.setattr(
+            main_module,
+            "readiness_checks",
+            lambda available=available: {
+                "database": available,
+                "knowledge": available,
+                "email_configured": True,
+            },
+        )
+        assert client.get("/ready").status_code == (200 if available else 503)
+        assert client.get("/health").status_code == 200
+
+
+@pytest.mark.parametrize("error", [OperationalError, ProgrammingError])
+def test_readiness_handles_connection_failure_and_unmigrated_schema(monkeypatch, error):
+    engine = MagicMock()
+    engine.dialect.name = "sqlite"
+    failure = error("private sql", {}, Exception("private details"))
+    if error is OperationalError:
+        engine.connect.side_effect = failure
+    else:
+        engine.connect.return_value.__enter__.return_value.scalar.side_effect = failure
+    monkeypatch.setattr(main_module, "engine", engine)
+    checks = main_module.readiness_checks()
+    assert checks["database"] is (error is ProgrammingError)
+    assert checks["knowledge"] is False
 
 
 def _walk(dependant):

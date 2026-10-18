@@ -17,6 +17,7 @@ import {
 } from "@/lib/api";
 
 type Bubble = {
+  retrievalStatus?: string;
   role: "user" | "assistant";
   content: string;
   citations?: Citation[];
@@ -117,6 +118,7 @@ export default function ChatPage() {
         if (openSeqRef.current !== seq) return;
         setBubbles(
           detail.messages.map((message: ChatMessage) => ({
+            retrievalStatus: message.retrieval_status,
             role: message.role,
             content: message.cancelled && message.role === "assistant" ? "(หยุดการตอบแล้ว)" : message.content,
             citations: message.citations ?? undefined,
@@ -234,6 +236,9 @@ export default function ChatPage() {
     const requestId = crypto.randomUUID();
     currentTurnRef.current = {conversationId, requestId};
     abortRef.current = streamChat(conversationId, message, {
+      onRetrievalStatus: (status) => {
+        if (isCurrent()) updateLast((bubble) => ({ ...bubble, retrievalStatus: status }));
+      },
       onSources: (citations) => {
         if (isCurrent()) setSources(citations);
       },
@@ -301,9 +306,13 @@ export default function ChatPage() {
     }
   }
 
-  function logout() {
-    setToken(null);
-    router.replace("/login");
+  async function logout() {
+    try {
+      await api.logout();
+      stopStream();
+      setToken(null);
+      router.replace("/login");
+    } catch (err) { setError(`ออกจากระบบไม่สำเร็จ: ${(err as Error).message}`); }
   }
 
   const sidebarProps = {
@@ -598,6 +607,7 @@ function Sidebar({
         <Link href="/profile" className={navLink} onClick={onNavigate}>
           โปรไฟล์และเป้าหมาย
         </Link>
+        <Link href="/account" className={navLink} onClick={onNavigate}>บัญชีและความปลอดภัย</Link>
         <button onClick={onLogout} className={`${navLink} w-full text-left`}>
           ออกจากระบบ
         </button>
@@ -640,6 +650,7 @@ function MessageBubble({ bubble }: { bubble: Bubble }) {
           );
         })}
 
+        {bubble.retrievalStatus === "unavailable" && <p role="status" className="mb-3 rounded-sm border border-amber-500/30 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-700">รอบนี้ค้นฐานความรู้ไม่สำเร็จ คำตอบจากโมเดลอาจอาศัยความรู้ทั่วไป ลองถามใหม่ภายหลังเพื่อค้นแหล่งอ้างอิง</p>}
         {bubble.pending && bubble.notice && (
           <div className="mb-2 text-xs text-muted animate-pulse">{bubble.notice}</div>
         )}

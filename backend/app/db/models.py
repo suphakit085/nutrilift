@@ -49,6 +49,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     #: PDPA: this service stores health-adjacent personal data (sex, birth date,
     #: height, weight, body-fat percentage), so the consent that allows it has to
@@ -59,6 +62,9 @@ class User(Base):
     #: record, and back-filling a consent nobody gave would be worse than the gap.
     consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     consent_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    consent_withdrawn_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     profile: Mapped[Profile | None] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"
@@ -68,6 +74,43 @@ class User(Base):
     )
     food_log_entries: Mapped[list[FoodLogEntry]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class AuthSession(Base):
+    """A signed bearer token is usable only while this session remains active."""
+
+    __tablename__ = "auth_sessions"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class AuthActionToken(Base):
+    """Only the SHA-256 digest of a one-use email link is stored."""
+
+    __tablename__ = "auth_action_tokens"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    purpose: Mapped[str] = mapped_column(String(32), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "purpose IN ('verify_email','reset_password','change_email')",
+            name="ck_auth_action_purpose",
+        ),
+        Index("ix_auth_action_user_purpose", "user_id", "purpose"),
     )
 
 

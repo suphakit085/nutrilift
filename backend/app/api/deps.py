@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -11,9 +12,10 @@ from sqlalchemy.orm import Session
 from app.api.schemas import CONSENT_VERSION
 from app.core.config import settings
 from app.core.ratelimit import Limit, RateLimiter, RateLimitExceeded, enforce
-from app.core.security import decode_access_token
-from app.db.models import Profile, User
+from app.core.security import decode_token_claims
+from app.db.models import AuthSession, Profile, User
 from app.db.session import get_db
+from app.services.accounts import utc
 from app.services.nutrition import ProfileInput
 
 #: The one way routes should ask for a database session: ``db: Session = DB_SESSION``.
@@ -46,21 +48,45 @@ _CREDENTIALS_ERROR = HTTPException(
 
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = DB_SESSION,
 ) -> User:
     if credentials is None:
         raise _CREDENTIALS_ERROR
-    subject = decode_access_token(credentials.credentials)
-    if subject is None:
+    claims = decode_token_claims(credentials.credentials)
+    if claims is None:
         raise _CREDENTIALS_ERROR
     try:
-        user_id = uuid.UUID(subject)
-    except ValueError as exc:
+        user_id = uuid.UUID(claims["sub"])
+        session_id = uuid.UUID(claims["sid"])
+    except (ValueError, KeyError, TypeError) as exc:
         raise _CREDENTIALS_ERROR from exc
+    session = db.get(AuthSession, session_id)
+    if (
+        session is None
+        or session.user_id != user_id
+        or session.revoked_at is not None
+        or utc(session.expires_at) <= datetime.now(UTC)
+    ):
+        raise _CREDENTIALS_ERROR
     user = db.get(User, user_id)
     if user is None:
         raise _CREDENTIALS_ERROR
+    request.state.auth_session_id = session_id
+    return user
+
+
+EMAIL_VERIFICATION_REQUIRED_HEADER = "X-Email-Verification-Required"
+
+
+def get_verified_user(user: User = Depends(get_current_user)) -> User:
+    if user.email_verified_at is None:
+        raise HTTPException(
+            status_code=403,
+            detail="กรุณายืนยันอีเมลก่อนใช้งาน",
+            headers={EMAIL_VERIFICATION_REQUIRED_HEADER: "1"},
+        )
     return user
 
 
@@ -77,10 +103,13 @@ def consent_is_current(user: User) -> bool:
     file for the current text. Accounts created before consent was recorded
     fall in here, which is the point - they were never asked.
     """
-    return user.consent_version == CONSENT_VERSION
+    return (
+        user.consent_version == CONSENT_VERSION
+        and getattr(user, "consent_withdrawn_at", None) is None
+    )
 
 
-def get_consented_user(user: User = Depends(get_current_user)) -> User:
+def get_consented_user(user: User = Depends(get_verified_user)) -> User:
     """Authentication *and* current consent - what data routes should ask for.
 
     Enforced here rather than in the frontend so that consent is a property
@@ -163,12 +192,9 @@ def rate_limit_login(request: Request, email: str) -> None:
     """
     ip_limit = auth_ip_limit()
     email_limit = login_email_limit()
-    ip_message = (
-        f"พยายามเข้าสู่ระบบบ่อยเกินไป (จำกัด {ip_limit.describe_th()}) กรุณารอสักครู่แล้วลองใหม่"
-    )
+    ip_message = f"พยายามเข้าสู่ระบบบ่อยเกินไป (จำกัด {ip_limit.describe_th()}) กรุณารอสักครู่แล้วลองใหม่"
     email_message = (
-        f"พยายามเข้าสู่ระบบด้วยอีเมลนี้บ่อยเกินไป (จำกัด {email_limit.describe_th()}) "
-        "กรุณารอสักครู่แล้วลองใหม่"
+        f"พยายามเข้าสู่ระบบด้วยอีเมลนี้บ่อยเกินไป (จำกัด {email_limit.describe_th()}) กรุณารอสักครู่แล้วลองใหม่"
     )
     checks = [
         (auth_ip_key(request), ip_limit, ip_message),
@@ -208,10 +234,7 @@ def rate_limit_chat(user: User = Depends(get_consented_user)) -> User:
     if limiter.retry_after(GLOBAL_CHAT_KEY, global_chat_limit()) is not None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "ระบบใช้งานครบโควตาประจำวันแล้ว (เป็นการจำกัดค่าใช้จ่ายของโปรเจก) "
-                "กรุณาลองใหม่ในวันถัดไป"
-            ),
+            detail=("ระบบใช้งานครบโควตาประจำวันแล้ว (เป็นการจำกัดค่าใช้จ่ายของโปรเจก) กรุณาลองใหม่ในวันถัดไป"),
         )
 
     pairs = chat_limits(user.id)

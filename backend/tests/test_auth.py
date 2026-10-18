@@ -30,6 +30,14 @@ from app.api.schemas import (
     UserOut,
 )
 from app.db.models import User
+from app.services import account_email
+
+
+@pytest.fixture(autouse=True)
+def no_external_mail(monkeypatch):
+    monkeypatch.setattr(account_email, "require_email_delivery", lambda: None)
+    monkeypatch.setattr(account_email, "deliver_action_email", lambda *_: None)
+
 
 THAI_24 = "รหัสผ่านภาษาไทยยาวมากๆนะ"  # 24 chars = 72 bytes
 assert len(THAI_24) == 24 and len(THAI_24.encode()) == 72
@@ -100,6 +108,11 @@ class FakeSession:
     def add(self, obj):
         self.added.append(obj)
 
+    def flush(self):
+        for row in self.added:
+            if isinstance(row, User) and row.id is None:
+                row.id = uuid.uuid4()
+
     def commit(self):
         if self.commit_raises is not None:
             raise self.commit_raises
@@ -115,11 +128,12 @@ class FakeSession:
 def test_register_stores_the_lowercased_email():
     db = FakeSession()
     token = register_user(db, valid(email="New.User@Example.com"))
-    (user,) = db.added
+    user = next(row for row in db.added if isinstance(row, User))
     assert isinstance(user, User)
     assert user.email == "new.user@example.com"
     assert user.password_hash != "hunter22"
     assert token.access_token
+    assert token.email_verification_required is True
 
 
 def test_duplicate_email_is_409_before_hashing():
@@ -172,7 +186,7 @@ def test_registering_stamps_the_consent_on_the_row():
     """The account and the evidence for it are created together or not at all."""
     db = FakeSession()
     register_user(db, valid(email="consent@example.com"))
-    saved = db.added[0]
+    saved = next(row for row in db.added if isinstance(row, User))
     assert saved.consent_version == CONSENT_VERSION
     assert saved.consented_at is not None
     assert saved.consented_at.tzinfo is not None

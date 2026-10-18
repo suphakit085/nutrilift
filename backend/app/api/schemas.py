@@ -20,7 +20,7 @@ PASSWORD_TOO_LONG = "รหัสผ่านยาวเกินไป (ไม
 
 #: Bumped whenever the wording of the consent notice changes, so a stored
 #: consent can be traced back to the exact text that was agreed to.
-CONSENT_VERSION = "2026-09-11"
+CONSENT_VERSION = "2026-10-17"
 
 CONSENT_REQUIRED = "ต้องยอมรับการเก็บและใช้ข้อมูลก่อนจึงจะสมัครได้"
 ADULT_REQUIRED = "บริการนี้สำหรับผู้ที่มีอายุ 18 ปีขึ้นไป"
@@ -62,12 +62,58 @@ class RegisterRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=1, max_length=128)
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    email_verification_required: bool = False
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailActionRequest(BaseModel):
+    token: str = Field(min_length=32, max_length=256)
+
+
+class PasswordResetRequest(EmailActionRequest):
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def _fits_in_bcrypt(cls, value: str) -> str:
+        return RegisterRequest._fits_in_bcrypt(value)
+
+
+class PasswordRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
+
+
+class PasswordChangeRequest(PasswordRequest):
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def _fits_in_bcrypt(cls, value: str) -> str:
+        return RegisterRequest._fits_in_bcrypt(value)
+
+
+class EmailChangeRequest(PasswordRequest):
+    email: EmailStr
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class SessionOut(BaseModel):
+    id: uuid.UUID
+    created_at: datetime
+    expires_at: datetime
+    is_current: bool
 
 
 class UserOut(BaseModel):
@@ -77,6 +123,13 @@ class UserOut(BaseModel):
     email: EmailStr
     created_at: datetime
     consent_version: str | None = None
+    email_verified_at: datetime | None = None
+    consent_withdrawn_at: datetime | None = None
+
+    @computed_field
+    @property
+    def email_verified(self) -> bool:
+        return self.email_verified_at is not None
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -88,7 +141,7 @@ class UserOut(BaseModel):
         on file for the text currently in force, so it has to be asked for
         again. Collapsing both into one flag keeps that decision in one
         place instead of in every client that reads this."""
-        return self.consent_version != CONSENT_VERSION
+        return self.consent_version != CONSENT_VERSION or self.consent_withdrawn_at is not None
 
 
 # --- profile ------------------------------------------------------------
@@ -115,8 +168,13 @@ class ProfileIn(BaseModel):
     )
 
     @field_validator(
-        "birth_year", "birth_month", "height_cm", "weight_kg", "body_fat_pct",
-        "training_days", mode="before",
+        "birth_year",
+        "birth_month",
+        "height_cm",
+        "weight_kg",
+        "body_fat_pct",
+        "training_days",
+        mode="before",
     )
     @classmethod
     def _not_boolean(cls, value: object) -> object:
@@ -174,6 +232,12 @@ class ConversationOut(BaseModel):
 
 class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    usage: dict | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def retrieval_status(self) -> str:
+        return str((self.usage or {}).get("retrieval_status", "not_required"))
 
     id: uuid.UUID
     role: str
