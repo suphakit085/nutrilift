@@ -51,6 +51,7 @@ _DETAIL_REQUEST = re.compile(normalize_thai(
     r"(?:ชื่อ(?:อาหาร|เมนู)|ปริมาณ|ยอด|พลังงาน|แคลอรี่?|แคลอรี|โปรตีน|สารอาหาร|"
     r"คาร์บ|ไขมัน|ตาราง|เมนู|รายละเอียด|แหล่งอ้างอิง|ส่วนที่(?:ยัง)?ขาด)"
 ), re.I)
+_ALLERGY = re.compile(r"แพ้|\b(?:allergic|allergy) to\b", re.I)
 _EXCLUSION = re.compile(
     r"(?:" + _SUPPLEMENT_DENIAL + r"|ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่|ใช้)|"
     r"งด(?:กิน)?|แพ้|ไม่มี|"
@@ -225,7 +226,7 @@ def conversation_profile(
                 ("ไม่", "ไม่ได้", "ไม่เคย")
             ):
                 continue
-            if reset_diet and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I):
+            if reset_diet and not _ALLERGY.match(match.group(0)):
                 new_choices = re.search(r"แต่|\bbut\b", text)
                 if new_choices is None or match.start() < new_choices.end():
                     continue  # A withdrawn preference is not a new exclusion.
@@ -243,7 +244,7 @@ def conversation_profile(
                 # supplement allergy still requires clarification of ingredients.
                 supplement_preference = (
                     food.startswith(_SUPPLEMENTS)
-                    and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
+                    and not _ALLERGY.match(match.group(0))
                 )
                 # Longest prefix matters: soy allergy must not turn into a nut rule.
                 key = "ไม่ใช้อาหารเสริม" if supplement_preference else next(
@@ -251,7 +252,7 @@ def conversation_profile(
                      if food.startswith(k)),
                     None,
                 )
-                is_allergy = bool(re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I))
+                is_allergy = bool(_ALLERGY.match(match.group(0)))
                 if key is None and (match.group(0).startswith("ไม่มี") or
                                     (not is_allergy and _DETAIL_REQUEST.match(food))):
                     continue  # A separate request/data gap is not a food exclusion.
@@ -262,8 +263,7 @@ def conversation_profile(
                 if key not in restrictions:
                     restrictions.append(key)
                 # Withdrawing a preference must never erase an allergy disclosure.
-                if (re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
-                        and key not in allergies):
+                if is_allergy and key not in allergies:
                     allergies.append(key)
         for name in ("วีแกน", "มังสวิรัติ", "ฮาลาล"):
             if (

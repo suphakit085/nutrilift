@@ -115,6 +115,15 @@ def test_known_plus_unknown_allergies_are_not_dropped_by_food_list_or_request():
     assert chat._run_menu_tool(None, p, {})["error"] == "unsupported_menu_constraint"
 
 
+@pytest.mark.parametrize("gap", [" ", "\t", "\n", "  "])
+@pytest.mark.parametrize("marker", ["allergic to", "allergy to"])
+def test_unknown_supplement_allergy_with_whitespace_stays_blocking(marker, gap):
+    history = [{"role": "user", "content": marker + gap + "supplements"}]
+    p, _ = conversation_profile(saved(), history,
+        "กลับไปใช้โปรไฟล์ที่บันทึกล่าสุดทั้งหมด")
+    assert chat._run_menu_tool(None, p, {})["error"] == "unsupported_menu_constraint"
+
+
 def test_details_do_not_clear_saved_or_user_allergies_and_assistant_cannot_add_them():
     profile = saved(restrictions=["วีแกน"])
     history = [{"role": "user", "content": "แพ้นมวัว ขอปริมาณอาหารและยอดรวม"},
