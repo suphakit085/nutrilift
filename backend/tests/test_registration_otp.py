@@ -255,6 +255,9 @@ def test_otp_message_contains_code_and_no_password_or_action_link(otp_app, monke
 
 
 def test_otp_failure_logs_no_code_or_recipient(otp_app, monkeypatch, caplog):
+    # Alembic's fileConfig disables pre-existing application loggers in this
+    # isolated migration process. Re-enable this logger for log capture only.
+    monkeypatch.setattr(account_email.logger, "disabled", False)
     def fail(*args):
         raise RuntimeError(EMAIL + " secret-code-012345")
 
