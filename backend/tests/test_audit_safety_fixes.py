@@ -372,9 +372,12 @@ def test_menu_stream_uses_calculated_portions_without_model_rewriting(monkeypatc
         lambda: SimpleNamespace(models=SimpleNamespace(generate_content_stream=generate)),
     )
     monkeypatch.setattr(chat, "_execute_tool", lambda *args: plan)
-    events = list(chat.stream_chat(DB(), user_message="จัดเมนูอาหาร 1 วัน", use_rag=False))
+    # Explicit requests now take the server route. Keep exercising the legacy
+    # model-selected tool path using an implicit request.
+    events = list(chat.stream_chat(DB(), user_message="ลองเสนออาหารประจำวันให้หน่อย", use_rag=False))
     final = events[-1]
     assert final["type"] == "done" and "150 กรัม" in final["text"]
+    assert len(calls) == 1
     assert "125 กรัม" not in final["text"]
     assert "| รวมทั้งวัน | | 155.0 | 3.0 | 35.0 | 0.5 |" in final["text"]
     assert "".join(e["text"] for e in events if e["type"] == "delta") == final["text"]
