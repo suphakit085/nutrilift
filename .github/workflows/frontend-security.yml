@@ -57,6 +57,8 @@ jobs:
         run: npm run test:dietary-ui
       - name: Verify calculator provenance links and persisted answers in Chrome
         run: npm run test:target-ui
+      - name: Verify health notices, recorded food states and budget limits in Chrome
+        run: npm run test:quality-ui
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -67,5 +69,6 @@ jobs:
             output/playwright/account-regressions/
             output/playwright/dietary-regressions/
             output/playwright/target-citations/
+            output/playwright/chat-quality/
           if-no-files-found: ignore
           retention-days: 14

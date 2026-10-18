@@ -36,6 +36,7 @@ import re
 from copy import copy
 from dataclasses import dataclass, field
 
+from app.services.food_preparation import food_preparation, ready_supplemental_carb
 from app.services.meal_portions import PORTION_POLICY_VERSION, PortionPolicy, portion_policy
 from app.services.thai_text import normalize_thai
 
@@ -1002,6 +1003,8 @@ def _pick(
         if role in roles_of(f) and (meal == "snack" or f["name_th"] not in _SNACK_ONLY_PROTEINS)
         and not (meal == "snack" and role == "fat"
                  and f.get("category") == "น้ำมันและไขมัน")
+        and not (practical and meal == "snack" and role == "carb"
+                 and not ready_supplemental_carb(f))
     ]
     if not ranked:
         return None
@@ -1245,6 +1248,7 @@ def build_day_plan(
                         "role": i.slot.role,
                         "portion": i.mult,
                         "portion_desc_th": portion_text(i.mult, i.food),
+                        "preparation": food_preparation(i.food),
                         "grams": round(i.mult * float(i.food.get("serving_g") or 0), 1),
                         **{k: round(v, 1) for k, v in i.macros().items()},
                         "source": i.food.get("source"),
@@ -1390,6 +1394,11 @@ def validate_day_plan(plan: dict, foods: list[dict]) -> None:
                     or meta.get("verification_status") in {"unverified", "proxy_unverified"}
                     or item["role"] not in roles_of(food)):
                 raise MealPlanError("ตรวจสอบข้อจำกัดอาหารในเมนูไม่ผ่าน")
+            if (practical and supplemental and item["role"] == "carb"
+                    and not ready_supplemental_carb(food)):
+                raise MealPlanError("มื้อเสริมต้องไม่ใช้แป้งดิบหรือรายการที่ยังไม่ระบุการปรุงเป็นอาหารพร้อมกิน")
+            if "preparation" in item and item["preparation"] != food_preparation(food):
+                raise MealPlanError("ตรวจสอบสถานะอาหารจากข้อมูลต้นทางไม่ผ่าน")
             multiplier = item["portion"]
             grams = multiplier * float(food["serving_g"])
             weight += grams

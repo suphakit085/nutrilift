@@ -19,7 +19,7 @@
  */
 
 import { toBlocks } from "@/lib/markdown";
-import { foodWarningParts, isMealTable, withWarningSections, type TableBlock } from "@/lib/answer-layout";
+import { foodWarningParts, isMealTable, prioritizeMenuWarnings, withWarningSections, type TableBlock } from "@/lib/answer-layout";
 import { tokenizeInline } from "@/lib/answer-inline";
 
 /** Render the safe Markdown subset; incomplete or unsupported tokens stay text. */
@@ -81,7 +81,7 @@ function MealCards({ table }: { table: TableBlock }) {
 }
 
 export function AnswerText({ content }: { content: string }) {
-  const blocks = withWarningSections(toBlocks(content));
+  const blocks = withWarningSections(prioritizeMenuWarnings(toBlocks(content)));
   return (
     <div className="min-w-0 leading-relaxed wrap-anywhere">
       {blocks.map(({ block, warning }, i) => {
@@ -96,6 +96,16 @@ export function AnswerText({ content }: { content: string }) {
           );
         }
         if (block.kind === "list") {
+          if (warning === "health") {
+            return (
+              <aside key={i} role="note" aria-label="ข้อควรทราบก่อนใช้เมนู"
+                className="my-3 rounded-md border border-accent/40 bg-accent-soft p-4">
+                <ul className="list-disc space-y-2 pl-5">
+                  {block.items.map((item, j) => <li key={j}>{inline(item, `health${i}-${j}`)}</li>)}
+                </ul>
+              </aside>
+            );
+          }
           return (
             <ul key={i} className="my-2 list-disc space-y-1 pl-5">
               {block.items.map((item, j) => {
@@ -124,7 +134,9 @@ export function AnswerText({ content }: { content: string }) {
           return (
             <div key={i}>
               {cards && <MealCards table={block} />}
-              <div className={`my-3 -mx-1 overflow-x-auto ${cards ? "hidden md:block print:block" : ""}`}>
+              {cards && <p className="hidden text-xs text-muted md:block print:hidden">หากเห็นคอลัมน์ไม่ครบ เลื่อนตารางซ้าย–ขวาเพื่อดูสารอาหารทั้งหมด</p>}
+              <div tabIndex={0} role="region" aria-label={cards ? "ตารางเมนูอาหาร เลื่อนแนวนอนได้" : "ตารางข้อมูล เลื่อนแนวนอนได้"}
+                className={`my-3 -mx-1 overflow-x-auto focus-visible:outline-2 focus-visible:outline-accent ${cards ? "hidden md:block print:block" : ""}`}>
               <table className="w-max min-w-full border-collapse text-left text-[0.95em] [overflow-wrap:normal] [word-break:normal]">
                 <thead>
                   <tr className="border-b border-border">

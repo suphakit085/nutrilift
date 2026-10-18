@@ -138,7 +138,7 @@ def test_safety_precedes_operations_even_with_provider_unavailable(
 
 @pytest.mark.parametrize("message,profile,expected", [
     ("ขอเมนู 3 มื้อ", None, "กรุณากรอกโปรไฟล์"),
-    ("แพ้เห็ด ช่วยจัดเมนู 3 มื้อ", adult(), "ข้อจำกัดอาหารทั้งหมด"),
+    ("แพ้เห็ด ช่วยจัดเมนู 3 มื้อ", adult(), "ยังไม่มีตัวกรอง"),
     ("ขอเมนู 2 มื้อ", adult(), "กรุณาระบุจำนวนรวม"),
     ("จัดเมนู 7 มื้อ", adult(), "กรุณาระบุจำนวนรวม"),
     ("ช่วยจัดเมนูทั้งสัปดาห์", adult(), "ครั้งละ 1 วัน"),

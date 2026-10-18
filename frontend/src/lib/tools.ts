@@ -53,7 +53,7 @@ export function toolLabel(tool: string, running: boolean, status?: ToolStatus): 
   const labels = TOOL_LABELS[tool] ?? UNKNOWN_TOOL;
   if (status === "success") return labels.done;
   if (status === "partial") return tool === "suggest_day_menu"
-    ? "จัดตัวอย่างเมนูแล้ว ยังเข้าเป้าไม่ครบ" : "ได้ผลลัพธ์บางส่วน";
+    ? "จัดตัวอย่างเมนูแล้ว ยังไม่ครบเงื่อนไขที่ขอ" : "ได้ผลลัพธ์บางส่วน";
   if (status === "error") return tool === "suggest_day_menu"
     ? "ยังจัดเมนูตามคำขอไม่ได้" : "ยังดำเนินการตามคำขอไม่ได้";
   if (status === "confirmation_required") return tool === "clarify_dietary_restrictions" || tool === "suggest_day_menu"

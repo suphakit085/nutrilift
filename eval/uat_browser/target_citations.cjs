@@ -59,7 +59,7 @@ async(page)=>{
       add(scenario.id+'-protein-operands',text.includes(scenario.profile.weight_kg+' × '+(scenario.profile.goal==='cut'?'2':'1.8')));
       add(scenario.id+'-source-link',(await page.getByRole('link',{name:'ISSN: Jäger และคณะ (2017)',exact:true}).getAttribute('href'))==='https://link.springer.com/article/10.1186/s12970-017-0177-8');
       if(scenario.id==='body-fat'){
-        add('body-fat-honest-source-gap',text.includes('ยังไม่มีลิงก์เอกสารต้นฉบับ')&&await page.getByRole('link',{name:'Mifflin และคณะ (1990)',exact:true}).count()===0);
+        add('body-fat-scoped-equation-source',text.includes('ไม่ได้เป็นต้นกำเนิดสมการ')&&await page.getByRole('link',{name:'Mifflin และคณะ (1990)',exact:true}).count()===0&&(await page.getByRole('link',{name:'Katch-McArdle: Tang และคณะ (2025)',exact:true}).getAttribute('href'))==='https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1543263/full');
       }else{
         add(scenario.id+'-formula-source',(await page.getByRole('link',{name:'Mifflin และคณะ (1990)',exact:true}).getAttribute('href'))==='https://pubmed.ncbi.nlm.nih.gov/2305711/');
       }

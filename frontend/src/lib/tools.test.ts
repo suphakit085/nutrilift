@@ -60,7 +60,7 @@ test("only an explicit successful outcome earns a checkmark, including during st
 test("old history stays neutral and failures and partial menus explain the outcome", () => {
   assert.equal(toolPresentation({ name: "suggest_day_menu" }).tone, "neutral");
   assert.ok(!toolPresentation({ name: "suggest_day_menu" }).label.includes("จัดเมนู"));
-  assert.match(toolPresentation({ name: "suggest_day_menu", status: "partial" }).label, /ยังเข้าเป้าไม่ครบ/);
+  assert.match(toolPresentation({ name: "suggest_day_menu", status: "partial" }).label, /ยังไม่ครบเงื่อนไขที่ขอ/);
   assert.match(toolPresentation({ name: "suggest_day_menu", status: "error" }).label, /ไม่ได้/);
   assert.match(toolPresentation({ name: "lookup_food", status: "confirmation_required" }).label, /รอคุณยืนยัน/);
 });

@@ -204,7 +204,10 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     if profile.body_fat_pct is not None:
         bmr = bmr_katch_mcardle(profile.weight_kg, profile.body_fat_pct)
         bmr_formula = "Katch-McArdle"
-        bmr_reference = "Katch & McArdle - ใช้เมื่อทราบเปอร์เซ็นต์ไขมัน ผลขึ้นกับข้อมูลที่กรอก"
+        bmr_reference = (
+            "Katch-McArdle; รูปสมการใน Tang et al. Front Nutr. 2025;12:1543263 "
+            "doi:10.3389/fnut.2025.1543263 (ไม่ใช่ต้นกำเนิดสมการหรือการรับรองความแม่นยำรายบุคคล)"
+        )
     else:
         bmr = bmr_mifflin_st_jeor(profile.sex, profile.weight_kg, profile.height_cm, age)
         bmr_formula = "Mifflin-St Jeor"
