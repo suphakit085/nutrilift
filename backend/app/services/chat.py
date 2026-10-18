@@ -33,6 +33,13 @@ from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, plan_day_menu
 from app.services.menu_context import conversation_profile, menu_planning_options
+from app.services.menu_request import (
+    next_menu_variant,
+    requests_menu,
+    requests_multiple_days,
+    requests_single_meal,
+    unverified_menu_table,
+)
 from app.services.nutrition import (
     ACTIVITY_LABELS_TH,
     GOAL_LABELS_TH,
@@ -331,7 +338,7 @@ def _run_menu_tool(
         variant = 0
 
     try:
-        return plan_day_menu(
+        plan = plan_day_menu(
             all_foods(db),
             {
                 "kcal": targets["energy_target_kcal"],
@@ -343,6 +350,8 @@ def _run_menu_tool(
             allow_extra_meals=args.get("allow_extra_meals"),
             suggest_extra_meals=args.get("suggest_extra_meals", True),
         )
+        plan["target_warnings"] = targets.get("warnings") or []
+        return plan
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
 
@@ -693,6 +702,7 @@ def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
     """Report menu limitations independently of the model's wording."""
     warnings: list[str] = []
     for plan in plans:
+        warnings.extend(plan.get("target_warnings") or [])
         rows = [item for meal in plan.get("meals") or [] for item in meal["items"]]
         answer = _append_food_data_notes(answer, [{"results": rows}])
         if any("ใยอาหาร" in warning for warning in plan.get("warnings") or []):
@@ -894,6 +904,75 @@ def _incomplete_answer(text: str) -> bool:
     return len(visible) < 2 or visible in {"ขอ", "ขออภัย", "ครับ", "ค่ะ", "ขอโทษ", "สำหรับ", "ดังนี้"}
 
 
+def _verified_menu_events(
+    db: Session, message: str, profile: ProfileInput | None,
+    history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
+) -> Iterator[dict]:
+    """Execute a requested operation on the server; no model transcription."""
+    yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    clarification = missing_personal_context_reply(
+        message, history, has_profile=profile is not None,
+    )
+    calls = []
+    try:
+        if clarification:
+            answer = clarification
+        else:
+            effective, note = conversation_profile(profile, history, message)
+            if effective is not None:
+                try:
+                    targets = calc_nutrition_targets(effective)
+                except NutritionInputError:
+                    targets = None  # The menu tool returns the validation message.
+                guard = guardrails.combine(guard, guardrails.check_profile(effective, targets))
+            args = {"variant": next_menu_variant(message, history),
+                    **menu_planning_options(history, message)}
+            if requests_multiple_days(message):
+                result = {"error": "unsupported_period", "message": (
+                    "ตอนนี้ระบบจัดเมนูได้ครั้งละ 1 วันครับ ยังไม่จัดแผนหลายวันให้ครบ "
+                    "กรุณาขอเมนูสำหรับหนึ่งวันก่อน แล้วขออีกชุดสำหรับวันถัดไปได้ครับ"
+                )}
+            elif requests_single_meal(message):
+                result = {"error": "unsupported_single_meal", "message": (
+                    "ตอนนี้ระบบคำนวณเป็นแผนอาหารหนึ่งวัน ยังไม่จัดเฉพาะมื้อเดี่ยวครับ "
+                    "กรุณาขอแผนหนึ่งวัน 3 ถึง 6 มื้อ เพื่อดูปริมาณและสารอาหารแยกรายมื้อ"
+                )}
+            else:
+                result = _run_menu_tool(db, effective, args, guard)
+            status = _tool_status("suggest_day_menu", result)
+            calls = [{"name": "suggest_day_menu", "arguments": args, "status": status}]
+            _release_connection(db)
+            yield {"type": "tool", "name": "suggest_day_menu", "args": args, "status": status}
+            if result.get("meals"):
+                if note:
+                    result["conversation_note"] = note
+                if re.search("งบ|ราคา|บาท", "\n".join([
+                    *(t.get("content", "") for t in history if t.get("role") == "user"),
+                    message,
+                ])):
+                    result["budget_note"] = (
+                        "เมนูนี้คำนวณเฉพาะพลังงานและสารอาหาร ยังไม่ได้คำนวณราคา"
+                        "หรือยืนยันว่าอยู่ในงบที่แจ้ง กรุณาตรวจราคาจริงก่อนเลือกซื้อ"
+                    )
+                answer = _append_menu_data_notes(_menu_reply(result), [result])
+            else:
+                answer = result.get("message") or "ยังจัดเมนูตามข้อจำกัดนี้ไม่ได้ครับ"
+    except Exception as exc:
+        logger.exception("verified menu execution failed")
+        _release_connection(db)
+        yield {"type": "error", "message": user_facing_error(exc)}
+        return
+    _release_connection(db)
+    yield {"type": "delta", "text": answer}
+    yield {
+        "type": "done", "text": answer, "citations": [], "retrieved": [],
+        "tool_calls": calls, "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+        "safety_flags": guard.as_json(),
+        "model": "rule:missing_personal_context" if clarification else "rule:verified_menu",
+        "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+    }
+
+
 def stream_chat(
     db: Session,
     *,
@@ -945,6 +1024,13 @@ def stream_chat(
             "prompt_version": prompts.PROMPT_VERSION,
             "use_rag": use_rag,
         }
+        return
+
+    operation_history = menu_history if menu_history is not None else (history or [])
+    if requests_menu(user_message, operation_history):
+        yield from _verified_menu_events(
+            db, user_message, profile, operation_history, guard, use_rag,
+        )
         return
 
     # Retrieval failure (embedding API down, DB unreachable) must not kill the
@@ -1188,8 +1274,9 @@ def stream_chat(
                             and not tool_chain_active
                         ):
                             partial = clean_answer("".join(turn_text_parts), citations)
-                            text_parts.append(partial)
-                            yield {"type": "delta", "text": partial}
+                            if not unverified_menu_table(partial):
+                                text_parts.append(partial)
+                                yield {"type": "delta", "text": partial}
                             turn_text_parts.clear()
                         raise
                     turn_parts.clear()
@@ -1234,6 +1321,12 @@ def stream_chat(
             if not function_calls:
                 if not tool_chain_active:
                     answer = clean_answer("".join(turn_text_parts), citations)
+                    if unverified_menu_table(answer):
+                        yield {"type": "error", "code": "unverified_menu", "message": (
+                            "ยังยืนยันเมนูนี้กับฐานข้อมูลอาหารไม่ได้ครับ "
+                            "กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
+                        )}
+                        return
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
                 elif not food_lookup_unverified:
@@ -1374,6 +1467,11 @@ def stream_chat(
         if not food_lookup_unverified:
             answer_text = _append_food_data_notes(answer_text, verified_food_results)
             answer_text = _append_menu_data_notes(answer_text, verified_menu_results)
+        if not verified_menu_results and unverified_menu_table(answer_text):
+            yield {"type": "error", "code": "unverified_menu", "message": (
+                "ยังยืนยันเมนูนี้กับฐานข้อมูลอาหารไม่ได้ครับ กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
+            )}
+            return
         if answer_text:
             yield {"type": "delta", "text": answer_text}
     else:

@@ -313,8 +313,8 @@ def chat(
             pending_food_confirmations=_pending_food_confirmations(conversation.messages),
             persistent_safety_flags=_conversation_safety_flags(conversation.messages),
             menu_history=[
-                {"role": "user", "content": m.content}
-                for m in _active_history(conversation.messages) if m.role == "user"
+                {"role": m.role, "content": m.content, "tool_calls": m.tool_calls or []}
+                for m in _active_history(conversation.messages)
             ],
         )
     )
