@@ -51,17 +51,21 @@ def send_action_email(email: str, purpose: str, token: str) -> None:
         "หากคุณไม่ได้ร้องขอรายการนี้ ไม่ต้องเปิดลิงก์และไม่ต้องดำเนินการใด ๆ\n"
         "NutriLift จะไม่ขอให้คุณส่งรหัสผ่านกลับทางอีเมล"
     )
+    digest = hashlib.sha256(f"{purpose}:{email}:{token}".encode()).hexdigest()
+    _send_message(sender, recipient, subject, body, f"account-{digest}")
+
+
+def _send_message(sender: str, recipient: str, subject: str, body: str, idempotency: str):
     if settings.email_provider == "resend":
         # Same action retried twice gets one provider message, without exposing
         # the raw link token or recipient in the header. No silent SMTP fallback.
-        digest = hashlib.sha256(f"{purpose}:{email}:{token}".encode()).hexdigest()
         with httpx.Client(timeout=10, follow_redirects=False) as client:
             response = client.post(
                 "https://api.resend.com/emails",
                 headers={
                     "User-Agent": "NutriLift/0.1",
                     "Authorization": f"Bearer {settings.resend_api_key.get_secret_value().strip()}",
-                    "Idempotency-Key": f"account-{digest}",
+                    "Idempotency-Key": idempotency,
                 },
                 json={"from": sender, "to": [recipient], "subject": subject, "text": body},
             )
@@ -106,3 +110,30 @@ def deliver_action_email(email: str, purpose: str, token: str) -> None:
     except Exception:
         # Provider errors can include addresses; never log the message/link/token.
         logger.error("Account email delivery failed; check mail service configuration and retry")
+
+
+def send_registration_code(email: str, code: str, challenge_id: str) -> None:
+    require_email_delivery()
+    body = (
+        f"รหัสยืนยันอีเมล NutriLift ของคุณคือ: {code}\n\n"
+        "กลับไปกรอกรหัสนี้ในหน้าเว็บที่ขอรหัสไว้ รหัสใช้ได้ครั้งเดียวภายใน 10 นาที\n"
+        "เมื่อยืนยันแล้ว คุณจะตั้งรหัสผ่านเพียงครั้งเดียวเพื่อสมัครให้เสร็จ\n\n"
+        "หากคุณไม่ได้ขอรหัสนี้ ไม่ต้องดำเนินการใด ๆ และอย่าส่งรหัสให้ผู้อื่น\n"
+        "NutriLift จะไม่ขอรหัสผ่านหรือรหัสยืนยันทางแชต"
+    )
+    _send_message(
+        str(Address("NutriLift", addr_spec=settings.email_sender)),
+        str(Address(addr_spec=email)),
+        "รหัสยืนยันอีเมล NutriLift",
+        body,
+        "registration-" + hashlib.sha256(challenge_id.encode()).hexdigest(),
+    )
+
+
+def deliver_registration_code(email: str, code: str, challenge_id: str) -> None:
+    try:
+        send_registration_code(email, code, challenge_id)
+    except Exception:
+        logger.error(
+            "Registration email delivery failed; check mail service configuration and retry"
+        )
