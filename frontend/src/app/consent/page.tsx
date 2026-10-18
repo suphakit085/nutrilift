@@ -37,6 +37,7 @@ export default function ConsentPage() {
     (async () => {
       try {
         const me = await api.me();
+        if (me.email_verified === false) { router.replace("/verify-email"); return; }
         if (!me.needs_consent) {
           router.replace("/chat");
           return;
@@ -60,9 +61,10 @@ export default function ConsentPage() {
     }
   }
 
-  function decline() {
-    setToken(null);
-    router.replace("/login");
+  async function decline() {
+    setError(""); setBusy(true);
+    try { await api.logout(); setToken(null); router.replace("/login"); }
+    catch (err) { setError((err as Error).message); setBusy(false); }
   }
 
   if (checking) {

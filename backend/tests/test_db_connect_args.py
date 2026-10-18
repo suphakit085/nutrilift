@@ -16,14 +16,14 @@ LOCAL_DIRECT = "postgresql+psycopg://nutrition:nutrition@localhost:5432/nutritio
 
 
 def test_prepared_statements_disabled_on_the_pooled_endpoint() -> None:
-    assert connect_args_for(SUPABASE_POOLED) == {"prepare_threshold": None}
+    assert connect_args_for(SUPABASE_POOLED) == {"prepare_threshold": None, "connect_timeout": 5}
 
 
 def test_same_setting_on_a_direct_connection() -> None:
     """Deliberately not conditional on the port: the pooled host is what we
     deploy against, and a setting that only applies to one URL shape is a
     setting that silently stops applying when the URL changes."""
-    assert connect_args_for(LOCAL_DIRECT) == {"prepare_threshold": None}
+    assert connect_args_for(LOCAL_DIRECT) == {"prepare_threshold": None, "connect_timeout": 5}
 
 
 def test_no_psycopg_args_leak_to_other_drivers() -> None:

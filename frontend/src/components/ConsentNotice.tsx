@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 /** The PDPA notice, in one place.
  *
  *  Two screens ask for the same agreement - the register form and the consent
@@ -33,7 +35,8 @@ export default function ConsentNotice() {
         <strong className="font-semibold text-foreground">เก็บอะไร:</strong>{" "}
         อีเมล และรหัสผ่านที่เก็บแบบเข้ารหัสทางเดียว (กู้คืนเป็นข้อความเดิมไม่ได้) · เพศ
         ปีและเดือนเกิด ส่วนสูง น้ำหนัก เปอร์เซ็นต์ไขมัน ระดับกิจกรรม จำนวนวันเล่นเวท เป้าหมาย
-        และข้อจำกัดด้านอาหาร · ข้อความที่สนทนากับระบบ และรายการอาหารที่คุณบันทึก
+        และข้อจำกัดด้านอาหาร รวมถึงประวัติการเปลี่ยนโปรไฟล์และเป้าหมาย · ข้อความที่สนทนากับระบบ
+        และรายการอาหารที่คุณบันทึก · เวลาเริ่ม หมดอายุ และยกเลิกการเข้าสู่ระบบ
       </p>
       <p>
         <strong className="font-semibold text-foreground">ใช้ทำอะไร:</strong>{" "}
@@ -52,6 +55,10 @@ export default function ConsentNotice() {
         </strong>
       </p>
       <p>
+        ระบบส่งอีเมลและลิงก์ที่ใช้ได้ครั้งเดียวผ่านผู้ให้บริการอีเมล เพื่อยืนยันอีเมลและกู้คืนบัญชี
+        รหัสผ่านของคุณไม่ถูกส่งทางอีเมล
+      </p>
+      <p>
         <strong className="font-semibold text-foreground">สิทธิของคุณ:</strong> ขอดู แก้ไข
         หรือลบข้อมูลของคุณได้ โดยติดต่อ{" "}
         <a
@@ -59,8 +66,7 @@ export default function ConsentNotice() {
           className="underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           {CONTACT_EMAIL}
-        </a>{" "}
-        ขณะนี้ระบบยังไม่มีปุ่มลบบัญชีด้วยตนเอง และยังไม่มีระบบรีเซ็ตรหัสผ่าน
+        </a>{" "}        คุณสามารถเปลี่ยนรหัสผ่าน จัดการการเข้าสู่ระบบ ดาวน์โหลดข้อมูล ถอนความยินยอม และลบบัญชีได้ใน <Link href="/account" className="underline underline-offset-2">หน้าบัญชีและความปลอดภัย</Link>
       </p>
       <p>
         <strong className="font-semibold text-foreground">ขอบเขต:</strong>{" "}

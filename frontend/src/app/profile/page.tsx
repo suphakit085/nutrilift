@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ApiError, api, getToken, type Profile, type Targets } from "@/lib/api";
+import { ApiError, api, getToken, type Profile, type ProfileRevision, type Targets } from "@/lib/api";
 import { ageFrom, createProfileDraft, profileFromDraft, toCE, type ProfileDraft } from "@/lib/profile-form";
 
 const ACTIVITY_OPTIONS = [
@@ -44,6 +44,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileDraft>(createProfileDraft);
   const [savedDraft, setSavedDraft] = useState<string | null>(null);
   const [targets, setTargets] = useState<Targets | null>(null);
+  const [history, setHistory] = useState<ProfileRevision[]>([]);
+  const [historyError, setHistoryError] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -87,6 +89,8 @@ export default function ProfilePage() {
           setError(`โหลดเป้าหมายไม่สำเร็จ: ${(err as Error).message}`);
         }
       } finally { if (!cancelled) setLoading(false); }
+      try { const rows = await api.getProfileHistory(); if (!cancelled) setHistory(rows); }
+      catch (err) { if (!cancelled) setHistoryError(`โหลดประวัติไม่สำเร็จ: ${(err as Error).message}`); }
     })();
     return () => { cancelled = true; };
   }, [router, retry]);
@@ -105,10 +109,13 @@ export default function ProfilePage() {
       const saved = createProfileDraft(await api.saveProfile(payload));
       setProfile(saved);
       setSavedDraft(JSON.stringify(saved));
+      setHistoryError("");
       setTargets(null);
       setStatus("บันทึกแล้ว");
       try { setTargets(await api.getTargets()); }
       catch (err) { setError(`บันทึกข้อมูลแล้ว แต่โหลดเป้าหมายไม่สำเร็จ: ${(err as Error).message}`); }
+      try { setHistory(await api.getProfileHistory()); }
+      catch (err) { setHistoryError(`โหลดประวัติไม่สำเร็จ: ${(err as Error).message}`); }
     } catch (err) {
       setStatus("");
       setError((err as Error).message);
@@ -443,6 +450,17 @@ export default function ProfilePage() {
 
       {dirty && savedDraft !== null && <p role="status" className="mt-6 text-sm text-muted">ข้อมูลที่แก้ยังไม่ได้บันทึก กรุณาบันทึกและคำนวณเพื่ออัปเดตเป้าหมาย</p>}
       {targets && !dirty && !loadFailed && <TargetsCard targets={targets} />}
+      {savedDraft !== null && !loadFailed && <section className="mt-8 rounded-lg border border-border bg-surface p-5">
+        <h2 className="font-display text-lg font-semibold">ประวัติโปรไฟล์และเป้าหมาย</h2>
+        <p className="mt-2 text-xs leading-relaxed text-muted">แสดง 20 รายการล่าสุด ประวัติเริ่มจากการบันทึกหลังอัปเดตระบบ เป้าหมายของวันเก่าใช้ข้อมูลที่บันทึกไว้ของวันนั้น</p>
+        {historyError && <p role="alert" className="mt-3 text-sm text-red-600">{historyError}</p>}
+        {history.length > 0 ? <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[480px] text-left text-sm">
+          <thead><tr className="border-b border-border"><th className="py-2 pr-4">เริ่มใช้ (เวลาไทย)</th><th className="pr-4">น้ำหนัก</th><th className="pr-4">เป้าหมาย</th><th className="pr-4">kcal/วัน</th><th>โปรตีน</th></tr></thead>
+          <tbody>{history.map(row => <tr key={row.id} className="border-b border-border last:border-0">
+            <td className="py-3 pr-4">{row.effective_date}</td><td className="stat-figure pr-4">{row.profile.weight_kg} kg</td><td className="pr-4">{row.targets.effective_goal_label_th}</td><td className="stat-figure pr-4">{row.targets.energy_target_kcal.toLocaleString()}</td><td className="stat-figure">{row.targets.macros.protein_g} g</td>
+          </tr>)}</tbody>
+        </table></div> : !historyError && <p className="mt-3 text-sm text-muted">ยังไม่มีประวัติ บันทึกโปรไฟล์เพื่อเริ่มเก็บข้อมูล</p>}
+      </section>}
       <p className="mt-6 text-xs text-muted">สำหรับการจัดมื้อให้เข้ากับชีวิตประจำวัน แจ้งจำนวนมื้อ เวลาออกกำลัง งบประมาณ และอาหารที่ไม่ต้องการเพิ่มเติมในแชทได้</p>
     </main>
   );

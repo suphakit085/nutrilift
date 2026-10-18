@@ -26,7 +26,15 @@ DEV: dict[str, str] = {}
 
 def make_settings(**overrides) -> Settings:
     """A Settings that ignores backend/.env so the test is hermetic."""
-    values = {"jwt_secret": GOOD_SECRET, "gemini_api_key": GOOD_KEY}
+    values = {
+        "jwt_secret": GOOD_SECRET,
+        "gemini_api_key": GOOD_KEY,
+        "email_provider": "smtp",
+        "email_from": "",
+        "smtp_host": "smtp.example.com",
+        "smtp_from_email": "accounts@example.com",
+        "frontend_url": "https://nutrilift.example.com",
+    }
     values.update(overrides)
     return Settings(_env_file=None, **values)
 
@@ -115,6 +123,48 @@ def test_dev_is_silent_on_good_settings(caplog):
     assert not caplog.records
 
 
+def test_resend_production_config_uses_https_without_smtp_requirements():
+    cfg = make_settings(
+        email_provider="resend",
+        resend_api_key="re_test_only_key",
+        email_from="accounts@example.com",
+        smtp_host="",
+        smtp_from_email="",
+        smtp_starttls=False,
+        smtp_ssl=False,
+    )
+    assert cfg.email_delivery_configured
+    assert production_config_problems(cfg) == []
+
+
+@pytest.mark.parametrize(
+    "key,sender", [("", "accounts@example.com"), ("   ", "accounts@example.com"), ("re_test", "")]
+)
+def test_resend_missing_key_or_sender_is_not_ready(key, sender):
+    cfg = make_settings(
+        email_provider="resend",
+        resend_api_key=key,
+        email_from=sender,
+        smtp_from_email="",
+    )
+    assert not cfg.email_delivery_configured
+    assert any("RESEND_API_KEY" in item for item in production_config_problems(cfg))
+
+
+def test_resend_api_key_is_redacted_in_settings_repr():
+    cfg = make_settings(resend_api_key="re_test_secret_not_for_logs")
+    assert "re_test_secret_not_for_logs" not in repr(cfg)
+
+
+def test_resend_test_sender_cannot_be_mistaken_for_a_production_sender():
+    cfg = make_settings(
+        email_provider="resend",
+        resend_api_key="re_test_only_key",
+        email_from="onboarding@resend.dev",
+    )
+    assert any("verified domain" in item for item in production_config_problems(cfg))
+
+
 # --- CORS origin normalisation -------------------------------------------
 
 
@@ -123,7 +173,10 @@ def test_dev_is_silent_on_good_settings(caplog):
     [
         ("https://x.vercel.app/", ["https://x.vercel.app"]),
         ("HTTPS://My-App.Vercel.app//", ["https://my-app.vercel.app"]),
-        (" http://localhost:3000 , https://x.vercel.app/", ["http://localhost:3000", "https://x.vercel.app"]),
+        (
+            " http://localhost:3000 , https://x.vercel.app/",
+            ["http://localhost:3000", "https://x.vercel.app"],
+        ),
         ("http://localhost:3000,,", ["http://localhost:3000"]),
         ("*", ["*"]),
     ],

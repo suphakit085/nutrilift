@@ -950,15 +950,18 @@ def stream_chat(
     # Retrieval failure (embedding API down, DB unreachable) must not kill the
     # turn - fall back to answering without context and say so in the prompt.
     passages = []
+    retrieval_status = "disabled"
     if use_rag:
         try:
             passages = retrieval.search(db, user_message)
+            retrieval_status = "ready" if passages else "empty"
         except Exception:
             logger.exception("retrieval failed; answering without context")
             use_rag = False
+            retrieval_status = "unavailable"
     citations = [p.as_citation() for p in passages]
     _release_connection(db)
-    yield {"type": "sources", "sources": citations}
+    yield {"type": "sources", "sources": citations, "retrieval_status": retrieval_status}
 
     # Refuse deterministically rather than asking the model to refuse. This also
     # skips the API call, so an off-domain question costs nothing.

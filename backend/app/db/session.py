@@ -30,12 +30,15 @@ def connect_args_for(database_url: str) -> dict[str, Any]:
     """
     if make_url(database_url).get_driver_name() != "psycopg":
         return {}
-    return {"prepare_threshold": None}
+    return {"prepare_threshold": None, "connect_timeout": 5}
 
 
 engine = create_engine(
     settings.database_url,
     pool_pre_ping=True,
+    pool_timeout=5,
+    pool_recycle=300,
+    hide_parameters=True,
     future=True,
     connect_args=connect_args_for(settings.database_url),
 )

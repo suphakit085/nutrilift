@@ -55,14 +55,13 @@ export class ApiError extends Error {
 }
 
 /**
- * A 401 outside `/auth/` means the stored token is expired or revoked (the
+ * A 401 outside login/register means the stored token is expired or revoked (the
  * backend issues 7-day tokens): drop it and send the user back to the login
  * page instead of leaving every request failing with an opaque error.
- * `/auth/login` legitimately answers 401 for a wrong password, so the whole
- * `/auth/` prefix is exempt.
+ * `/auth/login` legitimately answers 401 for a wrong password and is exempt.
  */
 function handleUnauthorized(path: string, status: number): void {
-  if (status !== 401 || path.startsWith("/auth/")) return;
+  if (status !== 401 || path === "/auth/login" || path === "/auth/register") return;
   setToken(null);
   if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
     // A full navigation, not the router: this module has no access to it, and
@@ -82,6 +81,13 @@ function handleUnauthorized(path: string, status: number): void {
  * Keyed on the header rather than the message so rewording the Thai text
  * cannot quietly break the redirect.
  */
+function handleEmailVerificationRequired(response: Response): void {
+  if (response.status !== 403 || !response.headers.get("X-Email-Verification-Required")) return;
+  if (typeof window !== "undefined" && window.location.pathname !== "/verify-email") {
+    window.location.assign(new URL("/verify-email", window.location.origin).href);
+  }
+}
+
 function handleConsentRequired(response: Response): void {
   if (response.status !== 403 || !response.headers.get("X-Consent-Required")) return;
   if (typeof window !== "undefined" && !window.location.pathname.startsWith("/consent")) {
@@ -91,6 +97,8 @@ function handleConsentRequired(response: Response): void {
 
 /** Thai names for the request fields a validation error can point at. */
 const FIELD_TH: Record<string, string> = {
+  new_password: "รหัสผ่านใหม่",
+  token: "ลิงก์ยืนยัน",
   email: "อีเมล",
   password: "รหัสผ่าน",
   birth_year: "ปีเกิด",
@@ -172,6 +180,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     handleUnauthorized(path, response.status);
+    handleEmailVerificationRequired(response);
     handleConsentRequired(response);
     let detail = `เกิดข้อผิดพลาด (${response.status})`;
     try {
@@ -194,7 +203,14 @@ export type CurrentUser = {
   created_at: string;
   consent_version: string | null;
   needs_consent: boolean;
+  email_verified: boolean;
+  email_verified_at: string | null;
+  consent_withdrawn_at: string | null;
 };
+
+export type AuthResult = { access_token: string; email_verification_required: boolean };
+export type AccountSession = { id: string; created_at: string; expires_at: string; is_current: boolean };
+export type AccountMessage = { message: string };
 
 export type Profile = {
   sex: "male" | "female";
@@ -238,6 +254,8 @@ export type Targets = {
   deficit_suppressed_reason: "underweight" | null;
 };
 
+export type ProfileRevision = { id: string; effective_date: string; created_at: string; profile: Profile; targets: Targets };
+
 export type Citation = {
   label: string;
   title: string;
@@ -248,6 +266,7 @@ export type Citation = {
 };
 
 export type ChatMessage = {
+  retrieval_status?: string;
   id: string;
   role: "user" | "assistant";
   content: string;
@@ -348,13 +367,13 @@ export const api = {
     password: string,
     consent: { accepted_terms: boolean; is_adult: boolean },
   ) =>
-    request<{ access_token: string }>("/auth/register", {
+    request<AuthResult>("/auth/register", {
       method: "POST",
       body: JSON.stringify({ email, password, ...consent }),
     }),
 
   login: (email: string, password: string) =>
-    request<{ access_token: string }>("/auth/login", {
+    request<AuthResult>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
@@ -362,6 +381,34 @@ export const api = {
   /** `needs_consent` folds "never asked" and "asked about older wording"
    *  into one flag; the server decides which, this only reacts. */
   me: () => request<CurrentUser>("/auth/me"),
+
+  emailStatus: () => request<{ available: boolean }>("/auth/email-status"),
+  resendVerification: (email: string) => request<AccountMessage>("/auth/resend-verification", { method: "POST", body: JSON.stringify({ email }) }),
+  verifyEmail: (token: string, new_password: string) => request<AccountMessage>("/auth/verify-email", { method: "POST", body: JSON.stringify({ token, new_password }) }),
+  forgotPassword: (email: string) => request<AccountMessage>("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) }),
+  resetPassword: (token: string, newPassword: string) => request<AccountMessage>("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, new_password: newPassword }) }),
+  changePassword: (password: string, newPassword: string) => request<AuthResult>("/auth/change-password", { method: "POST", body: JSON.stringify({ password, new_password: newPassword }) }),
+  changeEmail: (email: string, password: string) => request<AccountMessage>("/auth/change-email", { method: "POST", body: JSON.stringify({ email, password }) }),
+  confirmEmail: (token: string) => request<AccountMessage>("/auth/confirm-email", { method: "POST", body: JSON.stringify({ token }) }),
+  logout: async () => {
+    try { await request<void>("/auth/logout", { method: "POST" }); }
+    catch (error) {
+      // During the frontend-first rollout only the legacy API lacks logout
+      // and the email-verification field. Preserve its existing local logout;
+      // never hide a revocation failure from the new API or a network outage.
+      if (error instanceof ApiError && error.status === 404) {
+        const me = await request<CurrentUser>("/auth/me");
+        if (!("email_verified" in me)) return;
+      }
+      throw error;
+    }
+  },
+  logoutAll: () => request<void>("/auth/logout-all", { method: "POST" }),
+  listSessions: () => request<AccountSession[]>("/auth/sessions"),
+  revokeSession: (id: string) => request<void>(`/auth/sessions/${id}`, { method: "DELETE" }),
+  exportAccount: () => request<Record<string, unknown>>("/auth/export"),
+  deleteAccount: (password: string) => request<void>("/auth/account", { method: "DELETE", body: JSON.stringify({ password }) }),
+  withdrawConsent: (password: string) => request<AccountMessage>("/auth/withdraw-consent", { method: "POST", body: JSON.stringify({ password }) }),
 
   acceptConsent: () => request<CurrentUser>("/auth/consent", { method: "POST" }),
 
@@ -374,6 +421,7 @@ export const api = {
     }),
 
   getTargets: () => request<Targets>("/profile/targets"),
+  getProfileHistory: () => request<ProfileRevision[]>("/profile/history"),
 
   listConversations: () => request<Conversation[]>("/conversations"),
 
@@ -424,6 +472,7 @@ export const api = {
 // --- streaming chat ------------------------------------------------------
 
 export type ChatStreamHandlers = {
+  onRetrievalStatus?: (status: string) => void;
   onSources?: (citations: Citation[]) => void;
   onDelta?: (text: string) => void;
   onTool?: (name: string, status?: ToolStatus) => void;
@@ -515,6 +564,7 @@ export function streamChat(
 
       if (!response.ok || !response.body) {
         handleUnauthorized(path, response.status);
+        handleEmailVerificationRequired(response);
         handleConsentRequired(response);
         // The server explains rate limits and quota exhaustion in `detail`;
         // showing only the status code would leave the user with no idea how
@@ -555,6 +605,7 @@ export function streamChat(
           switch (eventName) {
             case "sources":
               handlers.onSources?.((payload.sources ?? []) as Citation[]);
+              if (typeof payload.retrieval_status === "string") handlers.onRetrievalStatus?.(payload.retrieval_status);
               break;
             case "delta":
               handlers.onDelta?.(String(payload.text ?? ""));

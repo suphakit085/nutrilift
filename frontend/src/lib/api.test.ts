@@ -282,6 +282,22 @@ test("a retry frame reaches onRetry and the stream still finishes", async () => 
 });
 
 // --- validation errors in Thai (production_review_2026-09-24.md B7) --------
+
+test("retrieval outage remains visible while a fallback answer streams", async () => {
+  const statuses: string[] = [];
+  const body = frame("sources", { sources: [], retrieval_status: "unavailable" }) +
+    frame("delta", { text: "คำตอบทั่วไป" }) +
+    frame("done", { text: "คำตอบทั่วไป", citations: [], retrieval_status: "unavailable" });
+  const done = await withMockFetch(body, () => new Promise<{ text: string }>((resolve, reject) => {
+    streamChat("c1", "คำถาม", {
+      onRetrievalStatus: status => statuses.push(status),
+      onDone: resolve,
+      onError: message => reject(new Error(message)),
+    });
+  }));
+  assert.deepEqual(statuses, ["unavailable"]);
+  assert.equal(done.text, "คำตอบทั่วไป");
+});
 // Real bodies captured from production on 2026-09-24.
 
 test("a pydantic range error names the field in Thai", () => {
@@ -359,5 +375,37 @@ test("stream carries the user turn id for cancellation", async () => {
       streamChat("c1", "คำถาม", { onDone: () => resolve() }, "request-123");
     });
     assert.deepEqual(body, { message: "คำถาม", request_id: "request-123" });
+  } finally { globalThis.fetch = previous; }
+});
+
+test("frontend-first rollout permits local logout only for the confirmed legacy API", async () => {
+  const previous = globalThis.fetch;
+  const calls: string[] = [];
+  globalThis.fetch = async url => {
+    calls.push(String(url));
+    return String(url).endsWith("/auth/me")
+      ? new Response(JSON.stringify({ id: "legacy", email: "legacy@example.com", needs_consent: false }))
+      : new Response(JSON.stringify({ detail: "Not Found" }), { status: 404 });
+  };
+  try { await api.logout(); assert.equal(calls.length, 2); }
+  finally { globalThis.fetch = previous; }
+});
+
+test("new-API logout failure remains an error rather than claiming session revocation", async () => {
+  const previous = globalThis.fetch;
+  globalThis.fetch = async url => String(url).endsWith("/auth/me")
+    ? new Response(JSON.stringify({ email_verified: true }))
+    : new Response(JSON.stringify({ detail: "Not Found" }), { status: 404 });
+  try { await assert.rejects(api.logout(), /Not Found/); }
+  finally { globalThis.fetch = previous; }
+});
+
+test("logout network and service failures do not fall back to local logout", async () => {
+  const previous = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({ detail: "unavailable" }), { status: 503 });
+    await assert.rejects(api.logout(), /unavailable/);
+    globalThis.fetch = async () => { throw new TypeError("Failed to fetch"); };
+    await assert.rejects(api.logout(), /เชื่อมต่อระบบไม่สำเร็จ/);
   } finally { globalThis.fetch = previous; }
 });

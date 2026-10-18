@@ -1,8 +1,8 @@
 """Profile API with a transaction stand-in, never the production database."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 import pytest
 from fastapi import FastAPI
@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from app.api.profile import router
 from app.api.schemas import CONSENT_VERSION, ProfileIn
 from app.core.security import create_access_token
-from app.db.models import Profile, ProfileRevision, User
+from app.db.models import AuthSession, Profile, ProfileRevision, User
 from app.db.session import get_db
 from app.services.chat import _profile_summary_th
 from app.services.nutrition import ACTIVITY_LABELS_TH, ProfileInput, calc_nutrition_targets
@@ -84,24 +84,43 @@ def test_restrictions_trim_deduplicate_and_preserve_unknowns():
 class Store:
     def __init__(self):
         self.users = {
-            uid: SimpleNamespace(id=uid, consent_version=CONSENT_VERSION)
+            uid: SimpleNamespace(
+                id=uid, consent_version=CONSENT_VERSION, email_verified_at=datetime.now(UTC)
+            )
             for uid in (uuid4(), uuid4())
         }
         self.rows = {}
         self.saved = {}
         self.commits = 0
+        self.revisions = []
 
     def get(self, model, uid, **kwargs):
+        if model is AuthSession:
+            owner = next(
+                (user_id for user_id in self.users if uuid5(NAMESPACE_URL, str(user_id)) == uid),
+                None,
+            )
+            return (
+                AuthSession(
+                    id=uid,
+                    user_id=owner,
+                    expires_at=datetime.now(UTC) + timedelta(days=7),
+                    revoked_at=None,
+                )
+                if owner
+                else None
+            )
         return (self.users if model is User else self.rows).get(uid)
+
+    def add(self, row):
+        if isinstance(row, ProfileRevision):
+            self.revisions.append(row)
+            return
+        self.rows[row.user_id] = row
 
     def execute(self, statement):
         # Profile-only stand-in. Real history ordering is covered on PostgreSQL.
         return SimpleNamespace(scalar_one_or_none=lambda: None)
-
-    def add(self, row):
-        if isinstance(row, ProfileRevision):
-            return
-        self.rows[row.user_id] = row
 
     def commit(self):
         self.commits += 1
@@ -114,10 +133,7 @@ class Store:
         pass
 
     def rollback(self):
-        self.rows = {
-            uid: Profile(user_id=uid, **fields)
-            for uid, fields in self.saved.items()
-        }
+        self.rows = {uid: Profile(user_id=uid, **fields) for uid, fields in self.saved.items()}
 
 
 @pytest.fixture
@@ -131,7 +147,10 @@ def client_store():
 
 
 def headers(uid):
-    return {"Authorization": "Bearer " + create_access_token(str(uid))}
+    return {
+        "Authorization": "Bearer "
+        + create_access_token(str(uid), session_id=str(uuid5(NAMESPACE_URL, str(uid))))
+    }
 
 
 def test_create_update_and_targets_match_saved_values(client_store):

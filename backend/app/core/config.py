@@ -5,8 +5,10 @@ import os
 from collections.abc import Mapping
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -38,9 +40,7 @@ def _normalise_origin(raw: str) -> str:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore")
 
     # "production" turns the startup secret check in ``check_production_settings``
     # from a warning into a refusal to boot. Render/Railway are detected even
@@ -83,7 +83,30 @@ class Settings(BaseSettings):
     # Auth
     jwt_secret: str = "change-me"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24 * 7
+    access_token_expire_minutes: int = Field(default=60 * 24 * 7, ge=1, le=60 * 24 * 30)
+    frontend_url: str = "http://localhost:3000"
+    email_provider: Literal["smtp", "resend"] = "smtp"
+    email_from: str = ""
+    resend_api_key: SecretStr = SecretStr("")
+    smtp_host: str = ""
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_username: str = ""
+    smtp_password: SecretStr = SecretStr("")
+    smtp_from_email: str = ""
+    smtp_starttls: bool = True
+    smtp_ssl: bool = False
+    email_verification_expire_minutes: int = Field(default=60, ge=1, le=1440)
+    password_reset_expire_minutes: int = Field(default=30, ge=1, le=120)
+
+    @property
+    def email_sender(self) -> str:
+        return self.email_from.strip() or self.smtp_from_email.strip()
+
+    @property
+    def email_delivery_configured(self) -> bool:
+        if self.email_provider == "resend":
+            return bool(self.resend_api_key.get_secret_value().strip() and self.email_sender)
+        return bool(self.smtp_host.strip() and self.email_sender)
 
     # App
     cors_origins: str = "http://localhost:3000"
@@ -160,9 +183,7 @@ def production_config_problems(cfg: "Settings") -> list[str]:
     problems: list[str] = []
     secret = cfg.jwt_secret
     if secret in PLACEHOLDER_JWT_SECRETS:
-        problems.append(
-            f"JWT_SECRET is the placeholder value {secret!r}; anyone can mint tokens"
-        )
+        problems.append(f"JWT_SECRET is the placeholder value {secret!r}; anyone can mint tokens")
     elif len(secret) < MIN_JWT_SECRET_LENGTH:
         problems.append(
             f"JWT_SECRET is only {len(secret)} characters; use at least "
@@ -173,12 +194,28 @@ def production_config_problems(cfg: "Settings") -> list[str]:
         problems.append("GEMINI_API_KEY is empty; every chat turn will fail")
     elif key.startswith(PLACEHOLDER_GEMINI_KEY_PREFIX):
         problems.append("GEMINI_API_KEY is the .env.example placeholder ('AIza...')")
+    if not cfg.email_delivery_configured:
+        if cfg.email_provider == "resend":
+            problems.append("RESEND_API_KEY and EMAIL_FROM are required for Resend account email")
+        else:
+            problems.append(
+                "SMTP_HOST and EMAIL_FROM (or SMTP_FROM_EMAIL) are required for account email"
+            )
+    if not cfg.frontend_url.startswith("https://"):
+        problems.append("FRONTEND_URL must use HTTPS in production for account email links")
+    if cfg.email_provider == "resend" and cfg.email_sender.lower().endswith("@resend.dev"):
+        problems.append(
+            "EMAIL_FROM must use your verified domain in production, not the Resend test sender"
+        )
+    if cfg.email_provider == "smtp":
+        if not (cfg.smtp_starttls or cfg.smtp_ssl):
+            problems.append("SMTP must use STARTTLS or SSL in production")
+        if cfg.smtp_starttls and cfg.smtp_ssl:
+            problems.append("Choose one of SMTP_STARTTLS or SMTP_SSL")
     return problems
 
 
-def check_production_settings(
-    cfg: "Settings", *, environ: Mapping[str, str] | None = None
-) -> None:
+def check_production_settings(cfg: "Settings", *, environ: Mapping[str, str] | None = None) -> None:
     """Refuse to boot a production deployment on placeholder secrets.
 
     Called from the FastAPI lifespan. Outside production the same findings are

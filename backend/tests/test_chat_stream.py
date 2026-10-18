@@ -118,6 +118,31 @@ def test_read_transactions_are_released_between_events():
 # --- empty assistant turn -------------------------------------------------
 
 
+def test_retrieval_outage_survives_stream_and_saved_history():
+    from app.api.schemas import MessageOut
+
+    def stream(session, **kwargs):
+        yield {"type": "sources", "sources": [], "retrieval_status": "unavailable"}
+        yield {"type": "done", "text": "general answer"}
+
+    session = FakeSession()
+    events = run(session, stream)
+    assert events[-1][1]["retrieval_status"] == "unavailable"
+    (assistant,) = messages(session, "assistant")
+    assert assistant.usage["retrieval_status"] == "unavailable"
+    restored = MessageOut.model_validate(
+        {
+            "id": CONV_ID,
+            "role": "assistant",
+            "content": assistant.content,
+            "created_at": "2026-10-17T00:00:00Z",
+            "usage": assistant.usage,
+        }
+    ).model_dump()
+    assert restored["retrieval_status"] == "unavailable"
+    assert "usage" not in restored
+
+
 def test_provider_finish_reasons_are_saved_with_message_usage():
     def stream(session, **kwargs):
         yield {
@@ -132,6 +157,7 @@ def test_provider_finish_reasons_are_saved_with_message_usage():
     assert messages(session, "assistant")[0].usage == {
         "output_tokens": 10,
         "finish_reasons": ["STOP"],
+        "retrieval_status": "not_required",
     }
 
 
