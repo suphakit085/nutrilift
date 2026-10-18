@@ -31,6 +31,9 @@ from app.api.schemas import (
     PasswordRequest,
     PasswordResetRequest,
     RegisterRequest,
+    RegistrationCodeRequest,
+    RegistrationFinishRequest,
+    RegistrationStartRequest,
     SessionOut,
     TokenResponse,
     UserOut,
@@ -45,9 +48,10 @@ from app.db.models import (
     Message,
     Profile,
     ProfileRevision,
+    RegistrationChallenge,
     User,
 )
-from app.services import account_email, accounts
+from app.services import account_email, accounts, registration
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 _EMAIL_TAKEN = "อีเมลนี้ถูกใช้สมัครแล้ว"
@@ -105,6 +109,53 @@ def _check_password(request: Request, user: User, password: str) -> None:
 @router.get("/email-status")
 def email_status() -> dict:
     return {"available": settings.email_delivery_configured}
+
+
+@router.post("/registration/start")
+def start_registration(
+    payload: RegistrationStartRequest,
+    request: Request,
+    background: BackgroundTasks,
+    db: Session = DB_SESSION,
+):
+    account_email.require_email_delivery()
+    email = normalise_email(payload.email)
+    _email_limit(request, email)
+    challenge_id, code = registration.start(db, email)
+    background.add_task(account_email.deliver_registration_code, email, code, str(challenge_id))
+    return {
+        "challenge_id": str(challenge_id),
+        "expires_in": 600,
+        "resend_after": 60,
+        "message": "ส่งรหัสยืนยันไปยังอีเมลแล้ว กรุณาตรวจสอบกล่องจดหมายและสแปม",
+    }
+
+
+@router.post("/registration/verify", dependencies=[Depends(rate_limit_auth)])
+def verify_registration(payload: RegistrationCodeRequest, db: Session = DB_SESSION):
+    grant = registration.verify(db, payload.challenge_id, payload.code)
+    return {
+        "setup_token": grant,
+        "already_registered": grant is None,
+        "message": "บัญชีนี้มีอยู่แล้ว กรุณาเข้าสู่ระบบหรือลืมรหัสผ่าน"
+        if grant is None
+        else "ยืนยันอีเมลแล้ว ตั้งรหัสผ่านเพื่อสมัครให้เสร็จ",
+    }
+
+
+@router.post(
+    "/registration/finish", response_model=TokenResponse, dependencies=[Depends(rate_limit_auth)]
+)
+def finish_registration(payload: RegistrationFinishRequest, db: Session = DB_SESSION):
+    try:
+        return TokenResponse(
+            access_token=registration.finish(
+                db, payload.challenge_id, payload.setup_token, payload.password
+            )
+        )
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "บัญชีนี้มีอยู่แล้ว กรุณาเข้าสู่ระบบหรือลืมรหัสผ่าน") from exc
 
 
 @router.post(
@@ -420,5 +471,6 @@ def delete_account(
     user = _locked_user(db, user.id)
     _check_password(request, user, payload.password)
     # Database foreign keys cascade personal data, action tokens and sessions.
+    db.execute(delete(RegistrationChallenge).where(RegistrationChallenge.email == user.email))
     db.execute(delete(User).where(User.id == user.id))
     db.commit()

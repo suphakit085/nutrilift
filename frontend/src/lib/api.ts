@@ -406,6 +406,12 @@ export const api = {
   logoutAll: () => request<void>("/auth/logout-all", { method: "POST" }),
   listSessions: () => request<AccountSession[]>("/auth/sessions"),
   revokeSession: (id: string) => request<void>(`/auth/sessions/${id}`, { method: "DELETE" }),
+  startRegistration: (email: string, consent: { accepted_terms: boolean; is_adult: boolean }) =>
+    request<{ challenge_id: string; expires_in: number; resend_after: number; message: string }>("/auth/registration/start", { method: "POST", body: JSON.stringify({ email, ...consent }) }),
+  verifyRegistration: (challenge_id: string, code: string) =>
+    request<{ setup_token: string | null; already_registered: boolean; message: string }>("/auth/registration/verify", { method: "POST", body: JSON.stringify({ challenge_id, code }) }),
+  finishRegistration: (challenge_id: string, setup_token: string, password: string) =>
+    request<AuthResult>("/auth/registration/finish", { method: "POST", body: JSON.stringify({ challenge_id, setup_token, password }) }),
   exportAccount: () => request<Record<string, unknown>>("/auth/export"),
   deleteAccount: (password: string) => request<void>("/auth/account", { method: "DELETE", body: JSON.stringify({ password }) }),
   withdrawConsent: (password: string) => request<AccountMessage>("/auth/withdraw-consent", { method: "POST", body: JSON.stringify({ password }) }),

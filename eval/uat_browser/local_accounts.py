@@ -71,7 +71,16 @@ async def capture_smtp(reader, writer):
                 body = message.get_body(preferencelist=("plain",)).get_content()
                 links = re.findall(r"http://127\.0\.0\.1:3026/\S+", body)
                 MAIL.append(
-                    {"to": str(message["To"]), "subject": str(message["Subject"]), "links": links}
+                    {
+                        "to": str(message["To"]),
+                        "subject": str(message["Subject"]),
+                        "links": links,
+                        "code": (
+                            re.search(r"ของคุณคือ: ([0-9]{6})", body).group(1)
+                            if re.search(r"ของคุณคือ: ([0-9]{6})", body)
+                            else None
+                        ),
+                    }
                 )
                 writer.write(b"250 Captured locally\r\n")
             elif command == b"QUIT":

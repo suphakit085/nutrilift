@@ -65,6 +65,38 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class RegistrationStartRequest(BaseModel):
+    email: EmailStr
+    accepted_terms: bool
+    is_adult: bool
+
+    @field_validator("accepted_terms")
+    @classmethod
+    def _consent(cls, value: bool) -> bool:
+        return RegisterRequest._consent_given(value)
+
+    @field_validator("is_adult")
+    @classmethod
+    def _adult(cls, value: bool) -> bool:
+        return RegisterRequest._is_adult(value)
+
+
+class RegistrationCodeRequest(BaseModel):
+    challenge_id: uuid.UUID
+    code: str = Field(pattern=r"^[0-9]{6}$")
+
+
+class RegistrationFinishRequest(BaseModel):
+    challenge_id: uuid.UUID
+    setup_token: str = Field(min_length=32, max_length=256)
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def _password(cls, value: str) -> str:
+        return RegisterRequest._fits_in_bcrypt(value)
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

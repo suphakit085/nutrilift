@@ -114,6 +114,31 @@ class AuthActionToken(Base):
     )
 
 
+class RegistrationChallenge(Base):
+    """Short-lived email proof; contains no password or authenticated session."""
+
+    __tablename__ = "registration_challenges"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    setup_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    setup_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    consent_version: Mapped[str] = mapped_column(String(32), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("attempts >= 0 AND attempts <= 5", name="ck_registration_attempts"),
+    )
+
+
 class Profile(Base):
     """One row per user. Feeds the deterministic nutrition calculators."""
 

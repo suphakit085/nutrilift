@@ -71,7 +71,7 @@ try {
     }
     Push-Location $backend
     try {
-        & $Python -m pytest tests/test_account_lifecycle.py tests/test_postgres_accounts.py tests/test_profile_history.py -m postgres -q -p no:cacheprovider "--junitxml=$junitPath"
+        & $Python -m pytest tests/test_account_lifecycle.py tests/test_postgres_accounts.py tests/test_profile_history.py tests/test_registration_otp.py tests/test_postgres_registration.py -m postgres -q -p no:cacheprovider "--junitxml=$junitPath"
         $exitCode = $LASTEXITCODE
     }
     finally { Pop-Location }

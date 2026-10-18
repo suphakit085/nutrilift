@@ -76,7 +76,7 @@ def user_id(state, headers):
 def test_fresh_migrations_match_current_orm_schema(pg_account):
     state = pg_account
     with state.engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "f16c6106a001"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "f16c6106a003"
         assert connection.scalar(text("SELECT extversion FROM pg_extension WHERE extname='vector'"))
     with migration_config(state.engine) as config:
         command.check(config)

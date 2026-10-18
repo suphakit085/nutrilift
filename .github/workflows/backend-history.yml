@@ -65,7 +65,7 @@ jobs:
       - name: PostgreSQL history, migrations and concurrency
         run: uv run --locked --extra dev pytest tests/test_profile_history.py -q --junitxml=../test-results/history.xml
       - name: PostgreSQL account migrations and concurrent token use
-        run: uv run --locked --extra dev pytest tests/test_account_lifecycle.py tests/test_postgres_accounts.py -m postgres -q --junitxml=../test-results/accounts.xml
+        run: uv run --locked --extra dev pytest tests/test_account_lifecycle.py tests/test_postgres_accounts.py tests/test_registration_otp.py tests/test_postgres_registration.py -m postgres -q --junitxml=../test-results/accounts.xml
       - name: Backend regression
         run: uv run --locked --extra dev pytest tests -m "not postgres and not evidence" --ignore=tests/test_food_audit_fixes.py -q --junitxml=../test-results/backend.xml
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
