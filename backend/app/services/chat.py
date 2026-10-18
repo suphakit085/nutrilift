@@ -916,9 +916,11 @@ def _incomplete_answer(text: str) -> bool:
 
 def _dietary_question_events(
     restrictions: list[str], guard: guardrails.GuardResult, use_rag: bool,
+    *, include_sources: bool = True,
 ) -> Iterator[dict]:
     answer = nut_clarification(restrictions)
-    yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    if include_sources:
+        yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
     yield {"type": "tool", "name": CLARIFY_TOOL, "status": "confirmation_required"}
     yield {"type": "delta", "text": answer}
     yield {
@@ -946,7 +948,9 @@ def _verified_menu_events(
         else:
             effective, note = conversation_profile(profile, history, message)
             if effective is not None and nut_clarification(effective.restrictions):
-                yield from _dietary_question_events(effective.restrictions, guard, use_rag)
+                yield from _dietary_question_events(
+                    effective.restrictions, guard, use_rag, include_sources=False,
+                )
                 return
             if effective is not None:
                 try:

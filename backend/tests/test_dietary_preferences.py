@@ -150,7 +150,9 @@ def test_specific_filters_do_not_blanket_ban_soy_or_change_legacy(foods):
 def test_ambiguous_allergy_asks_before_model_or_planner(monkeypatch, foods, profile, message):
     no_model(monkeypatch, foods)
     before = deepcopy(profile)
-    done = run(message, profile)[-1]
+    events = run(message, profile)
+    assert sum(event["type"] == "sources" for event in events) == 1
+    done = events[-1]
     assert done["model"] == "rule:dietary_clarification"
     assert done["tool_calls"] == [{"name": CLARIFY_TOOL, "status": "confirmation_required"}]
     assert "ถั่วลิสง" in done["text"] and "เฉพาะห้องนี้" in done["text"]
