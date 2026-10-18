@@ -284,6 +284,11 @@ export type Conversation = {
 
 export type ConversationDetail = Conversation & { messages: ChatMessage[] };
 
+export type DietaryContext = {
+  restrictions: string[]; saved_restrictions: string[];
+  has_profile: boolean; context_version: string;
+};
+
 export type FoodSearchResult = {
   id: string;
   name_th: string;
@@ -347,6 +352,17 @@ export type DailySummary = {
 // --- endpoints -----------------------------------------------------------
 
 export const api = {
+  getDietaryOptions: () => request<{version: number; groups: unknown[]}>("/dietary-options"),
+  saveProfileSettings: (payload: Profile) => request<Profile>("/profile/settings", {
+    method: "PUT", body: JSON.stringify(payload),
+  }),
+  getDietaryPreferences: (id: string) => request<DietaryContext>(`/conversations/${id}/dietary-preferences`),
+  saveDietaryPreferences: (id: string, payload: {
+    restrictions: string[]; scope: "conversation" | "profile"; context_version: string;
+    confirm_allergy_changes: boolean;
+  }) => request<DietaryContext & {profile_saved: boolean}>(`/conversations/${id}/dietary-preferences`, {
+    method: "PUT", body: JSON.stringify(payload),
+  }),
   cancelTurn: async (conversationId: string, requestId: string) => {
     for (let attempt = 0; ; attempt++) {
       try {

@@ -11,10 +11,23 @@ from dataclasses import replace
 
 from pythainlp.tokenize import word_tokenize
 
+from app.services.dietary_preferences import confirmed_settings
 from app.services.nutrition import ProfileInput
 from app.services.thai_text import normalize_thai
 
 _FOODS = {
+    "ถั่วลิสง": "แพ้ถั่วลิสง",
+    "ถั่วเปลือกแข็ง": "แพ้ถั่วเปลือกแข็ง",
+    "อัลมอนด์": "แพ้ถั่วเปลือกแข็ง",
+    "มะม่วงหิมพานต์": "แพ้ถั่วเปลือกแข็ง",
+    "เม็ดมะม่วงหิมพานต์": "แพ้ถั่วเปลือกแข็ง",
+    "วอลนัท": "แพ้ถั่วเปลือกแข็ง",
+    "งา": "แพ้งา",
+    "peanut": "แพ้ถั่วลิสง",
+    "tree nuts": "แพ้ถั่วเปลือกแข็ง",
+    "almond": "แพ้ถั่วเปลือกแข็ง",
+    "cashew": "แพ้ถั่วเปลือกแข็ง",
+    "sesame": "แพ้งา",
     "ถั่วเหลือง": "แพ้ถั่วเหลือง",
     "เต้าหู้": "แพ้ถั่วเหลือง",
     "เทมเป้": "แพ้ถั่วเหลือง",
@@ -180,27 +193,36 @@ def requested_meal_count(history: list[dict], user_message: str) -> int:
     return 4 if count is None else count
 
 
-def conversation_profile(
+def _conversation_settings(
     profile: ProfileInput | None, history: list[dict], user_message: str
-) -> tuple[ProfileInput | None, str | None]:
-    if profile is None:
-        return None, None
-    restrictions = list(profile.restrictions)
-    goal = profile.goal
+) -> tuple[list[str], str | None, str | None]:
+    saved_restrictions = list(profile.restrictions) if profile else []
+    saved_goal = profile.goal if profile else None
+    restrictions = list(saved_restrictions)
+    goal = saved_goal
     explicit_exclusions: set[str] = set()
     allergies: list[str] = []
     current_reset = (False, False)
-    turns = [t.get("content", "") for t in history if t.get("role") == "user"]
-    turns.append(user_message)
+    turns = [t for t in history if t.get("role") == "user"]
+    turns.append({"role": "user", "content": user_message})
     for index, turn in enumerate(turns):
-        text = normalize_thai(turn)
+        confirmed = confirmed_settings(turn)
+        if confirmed is not None:
+            # Keep restrictions added to the saved profile AFTER this room's
+            # explicit choice; an old room must not erase a new allergy.
+            added = [r for r in saved_restrictions if r not in confirmed["saved_restrictions"]]
+            restrictions = list(dict.fromkeys([*confirmed["restrictions"], *added]))
+            allergies = [r for r in restrictions if r.startswith(("แพ้", "ข้อจำกัดที่ยังไม่รองรับ:"))]
+            explicit_exclusions = set(restrictions)
+            continue
+        text = normalize_thai(turn.get("content", ""))
         reset_goal, reset_diet = _saved_profile_reset(text)
         if index == len(turns) - 1:
             current_reset = reset_goal, reset_diet
         if reset_goal:
-            goal = profile.goal
+            goal = saved_goal
         if reset_diet:
-            restrictions = list(dict.fromkeys([*profile.restrictions, *allergies]))
+            restrictions = list(dict.fromkeys([*saved_restrictions, *allergies]))
             explicit_exclusions = set(allergies)
         # A reference to a rejected old goal is not a new goal request.
         positive = re.split(r"ไม่ใช่|ไม่เอาเป้า|ไม่ต้องการ", text)[0]
@@ -275,7 +297,6 @@ def conversation_profile(
                 and name not in restrictions
             ):
                 restrictions.append(name)
-    effective = replace(profile, goal=goal, restrictions=restrictions)
     if any(current_reset):
         scope = "เป้าหมายและข้อจำกัดอาหาร" if all(current_reset) else (
             "เป้าหมาย" if current_reset[0] else "ข้อจำกัดอาหาร"
@@ -283,7 +304,23 @@ def conversation_profile(
         note = f"กลับไปใช้{scope}จากโปรไฟล์ที่บันทึกล่าสุดตามที่ขอ โดยไม่ได้แก้ไขโปรไฟล์"
         if allergies:
             note += " และยังคงหลีกเลี่ยงอาหารที่คุณเคยแจ้งว่าแพ้ในห้องนี้"
-        return effective, note
-    if effective == profile:
-        return profile, None
-    return effective, ("ใช้เป้าหมายหรือข้อจำกัดอาหารที่คุณแจ้งในห้องแชตนี้เป็นการชั่วคราว ไม่ได้เปลี่ยนโปรไฟล์ที่บันทึกไว้")
+        return restrictions, goal, note
+    if restrictions == saved_restrictions and goal == saved_goal:
+        return restrictions, goal, None
+    return restrictions, goal, (
+        "ใช้เป้าหมายหรือข้อจำกัดอาหารที่คุณแจ้งในห้องแชตนี้เป็นการชั่วคราว "
+        "ไม่ได้เปลี่ยนโปรไฟล์ที่บันทึกไว้"
+    )
+
+
+def conversation_restrictions(profile: ProfileInput | None, history: list[dict]) -> list[str]:
+    return _conversation_settings(profile, history, "")[0]
+
+
+def conversation_profile(
+    profile: ProfileInput | None, history: list[dict], user_message: str,
+) -> tuple[ProfileInput | None, str | None]:
+    if profile is None:
+        return None, None
+    restrictions, goal, note = _conversation_settings(profile, history, user_message)
+    return replace(profile, goal=goal, restrictions=restrictions), note

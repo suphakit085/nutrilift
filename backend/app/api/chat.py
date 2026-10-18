@@ -6,6 +6,7 @@ import json
 import logging
 import uuid
 from collections.abc import Callable, Iterator
+from dataclasses import fields
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_, select, update
@@ -13,13 +14,15 @@ from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
 from app.api.deps import DB_SESSION, get_consented_user, profile_to_input, rate_limit_chat
-from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut
+from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut, DietaryPreferencesIn
 from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
 from app.db.session import SessionLocal
-from app.services import guardrails
+from app.services import guardrails, profile_history
 from app.services.chat import stream_chat
-from app.services.nutrition import ProfileInput
+from app.services.dietary_preferences import DIETARY_GROUPS, SETTING_TOOL, context_version
+from app.services.menu_context import conversation_restrictions
+from app.services.nutrition import NutritionInputError, ProfileInput, calc_nutrition_targets
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +37,11 @@ INTERNAL_ERROR_MESSAGE = "เกิดข้อผิดพลาดภายใ
 
 
 # --- conversations ------------------------------------------------------
+
+
+@router.get("/dietary-options")
+def dietary_options(user: User = Depends(get_consented_user)) -> dict:
+    return {"version": 1, "groups": DIETARY_GROUPS}
 
 
 @router.get("/conversations", response_model=list[ConversationOut])
@@ -120,6 +128,78 @@ def _active_history(messages: list[Message]) -> list[Message]:
         if not getattr(message, "cancelled", False)
         and getattr(message, "reply_to_id", None) not in cancelled
     ]
+
+
+def _dietary_context(db: Session, user: User, conversation: Conversation) -> dict:
+    profile = db.get(Profile, user.id, populate_existing=True)
+    saved = list(profile.restrictions or []) if profile else []
+    history = [
+        {"id": str(m.id), "role": m.role, "content": m.content, "tool_calls": m.tool_calls or []}
+        for m in _active_history(conversation.messages)
+    ]
+    return {
+        "restrictions": conversation_restrictions(profile_to_input(profile), history),
+        "saved_restrictions": saved,
+        "has_profile": profile is not None,
+        "context_version": context_version(saved, history),
+    }
+
+
+@router.get("/conversations/{conversation_id}/dietary-preferences")
+def get_dietary_preferences(
+    conversation_id: uuid.UUID, user: User = Depends(get_consented_user), db: Session = DB_SESSION,
+) -> dict:
+    return _dietary_context(db, user, _owned_conversation(db, user, conversation_id))
+
+
+@router.put("/conversations/{conversation_id}/dietary-preferences")
+def set_dietary_preferences(
+    conversation_id: uuid.UUID, payload: DietaryPreferencesIn,
+    user: User = Depends(get_consented_user), db: Session = DB_SESSION,
+) -> dict:
+    conversation = _owned_conversation(db, user, conversation_id)
+    db.get(User, user.id, with_for_update=True)
+    before = _dietary_context(db, user, conversation)
+    if payload.context_version != before["context_version"]:
+        raise HTTPException(409, "ข้อจำกัดอาหารหรือประวัติเปลี่ยนแล้ว กรุณาเปิดหน้าตั้งค่าใหม่ก่อนยืนยัน")
+    removed = [r for r in before["restrictions"]
+               if r.startswith(("แพ้", "ข้อจำกัดที่ยังไม่รองรับ:")) and r not in payload.restrictions]
+    if removed and not payload.confirm_allergy_changes:
+        raise HTTPException(422, "กรุณายืนยันการเปลี่ยนข้อแพ้เดิมหลังตรวจรายการที่เลือกให้ครบ")
+    if payload.scope == "profile":
+        profile = db.get(Profile, user.id, populate_existing=True)
+        if profile is None:
+            raise HTTPException(409, "กรุณากรอกโปรไฟล์ก่อนบันทึกถาวร หรือเลือกใช้เฉพาะห้องนี้")
+        profile.restrictions = list(payload.restrictions)
+        snapshot = {f.name: getattr(profile, f.name) for f in fields(ProfileInput)}
+        try:
+            targets = calc_nutrition_targets(ProfileInput(**snapshot))
+        except NutritionInputError as exc:
+            db.rollback()
+            raise HTTPException(422, str(exc)) from exc
+        profile_history.add_revision(db, user.id, snapshot, targets)
+    scope = "ห้องนี้และโปรไฟล์" if payload.scope == "profile" else "เฉพาะห้องนี้"
+    values = " / ".join(payload.restrictions) or "ไม่ระบุข้อจำกัดอาหาร"
+    message = Message(
+        conversation_id=conversation.id, role="user",
+        content=f"ยืนยันข้อจำกัดอาหาร{scope}: {values}",
+        tool_calls=[{"name": SETTING_TOOL, "status": "success", "arguments": {
+            "version": 1, "scope": payload.scope, "restrictions": payload.restrictions,
+            "saved_restrictions": before["saved_restrictions"],
+        }}],
+    )
+    db.add(message)
+    db.flush()
+    db.add(Message(
+        conversation_id=conversation.id, role="assistant", reply_to_id=message.id,
+        content=f"ใช้ข้อจำกัดอาหาร{scope}แล้วครับ: {values}\nส่งคำขอจัดเมนูต่อได้เลย",
+        tool_calls=[{"name": SETTING_TOOL, "status": "success"}],
+    ))
+    if not conversation.messages:
+        conversation.title = "ตั้งค่าข้อจำกัดอาหาร"
+    db.commit()
+    db.expire(conversation, ["messages"])
+    return {**_dietary_context(db, user, conversation), "profile_saved": payload.scope == "profile"}
 
 
 def _pending_food_confirmations(messages: list[Message]) -> list[str]:

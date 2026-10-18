@@ -15,7 +15,7 @@ real_foods = test_meal_practicality.real_foods
     (3, 55, 160, [], "success"),
     (3, 110, 195, [], "partial"),
     (7, 55, 160, [], "error"),
-    (3, 55, 160, ["วีแกน", "แพ้ถั่ว"], "error"),
+    (3, 55, 160, ["วีแกน", "แพ้ถั่วเหลือง"], "error"),
 ])
 def test_real_menu_result_has_same_outcome_in_stream_and_saved_log(
     real_foods, monkeypatch, count, weight, height, restrictions, expected

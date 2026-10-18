@@ -236,6 +236,18 @@ class ProfileIn(BaseModel):
         return cleaned
 
 
+class DietaryPreferencesIn(BaseModel):
+    restrictions: list[Annotated[str, Field(min_length=1, max_length=80)]] = Field(max_length=20)
+    scope: Literal["conversation", "profile"]
+    context_version: str = Field(pattern=r"^[a-f0-9]{64}$")
+    confirm_allergy_changes: bool = False
+
+    @field_validator("restrictions")
+    @classmethod
+    def _clean_restrictions(cls, values: list[str]) -> list[str]:
+        return ProfileIn._clean_restrictions(values)
+
+
 class ProfileOut(ProfileIn):
     model_config = ConfigDict(from_attributes=True)
 

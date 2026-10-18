@@ -301,6 +301,14 @@ _RESTRICTION_RULES: dict[str, tuple[tuple[str, ...], frozenset[str]]] = {
         ("ถั่วเหลือง", "เต้าหู้", "เต้าเจี้ยว", "เทมเป้", "โปรตีนเกษตร", "soy"),
         frozenset(),
     ),
+    "แพ้ถั่วลิสง": (("ถั่วลิสง", "peanut", "groundnut"), frozenset()),
+    "แพ้ถั่วเปลือกแข็ง": (
+        ("อัลมอนด์", "almond", "มะม่วงหิมพานต์", "cashew", "วอลนัท", "walnut",
+         "เฮเซลนัท", "hazelnut", "แมคคาเดเมีย", "macadamia", "พิสตาชิโอ",
+         "pistachio", "พีแคน", "pecan", "บราซิลนัท", "brazil nut"),
+        frozenset(),
+    ),
+    "แพ้งา": (("งา", "sesame", "tahini"), frozenset()),
     "ฮาลาล": (
         # blood and amphibians are haram alongside pork and alcohol; the ASEAN
         # table has boiled chicken/duck blood and frog as plain "เนื้อสัตว์" rows

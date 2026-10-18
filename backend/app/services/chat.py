@@ -27,12 +27,17 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
 from app.services.food_portions import verified_food_portion_reply
 from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, plan_day_menu
-from app.services.menu_context import conversation_profile, menu_planning_options
+from app.services.menu_context import (
+    conversation_profile,
+    conversation_restrictions,
+    menu_planning_options,
+)
 from app.services.menu_request import (
     next_menu_variant,
     requests_menu,
@@ -318,7 +323,7 @@ def _run_menu_tool(
                 "กรุณากรอกโปรไฟล์ก่อนเพื่อคำนวณพลังงานและสารอาหาร"
             ),
         }
-    if any(r.startswith("ข้อจำกัดที่ยังไม่รองรับ:") for r in profile.restrictions):
+    if any(r not in DIETARY_VALUES for r in profile.restrictions):
         return {
             "error": "unsupported_menu_constraint",
             "message": (
@@ -327,6 +332,9 @@ def _run_menu_tool(
                 "กรุณาระบุข้อจำกัดให้ชัดเจน หรือให้นักกำหนดอาหารช่วยจัดเมนูครับ"
             ),
         }
+    clarify = nut_clarification(profile.restrictions)
+    if clarify:
+        return {"error": "ambiguous_allergy", "message": clarify}
     try:
         targets = calc_nutrition_targets(profile)
     except NutritionInputError as exc:
@@ -417,6 +425,8 @@ def _unverified_food_reply(candidates: list[str]) -> str:
 
 def _tool_status(name: str, result: dict) -> str | None:
     """Outcome belongs to the application, never to the model or stream state."""
+    if name == "suggest_day_menu" and result.get("error") == "ambiguous_allergy":
+        return "confirmation_required"
     if result.get("error"):
         return "error"
     if name == "suggest_day_menu":
@@ -904,6 +914,24 @@ def _incomplete_answer(text: str) -> bool:
     return len(visible) < 2 or visible in {"ขอ", "ขออภัย", "ครับ", "ค่ะ", "ขอโทษ", "สำหรับ", "ดังนี้"}
 
 
+def _dietary_question_events(
+    restrictions: list[str], guard: guardrails.GuardResult, use_rag: bool,
+    *, include_sources: bool = True,
+) -> Iterator[dict]:
+    answer = nut_clarification(restrictions)
+    if include_sources:
+        yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    yield {"type": "tool", "name": CLARIFY_TOOL, "status": "confirmation_required"}
+    yield {"type": "delta", "text": answer}
+    yield {
+        "type": "done", "text": answer, "citations": [], "retrieved": [],
+        "tool_calls": [{"name": CLARIFY_TOOL, "status": "confirmation_required"}],
+        "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+        "safety_flags": guard.as_json(), "model": "rule:dietary_clarification",
+        "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+    }
+
+
 def _verified_menu_events(
     db: Session, message: str, profile: ProfileInput | None,
     history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
@@ -919,6 +947,11 @@ def _verified_menu_events(
             answer = clarification
         else:
             effective, note = conversation_profile(profile, history, message)
+            if effective is not None and nut_clarification(effective.restrictions):
+                yield from _dietary_question_events(
+                    effective.restrictions, guard, use_rag, include_sources=False,
+                )
+                return
             if effective is not None:
                 try:
                     targets = calc_nutrition_targets(effective)
@@ -1027,6 +1060,13 @@ def stream_chat(
         return
 
     operation_history = menu_history if menu_history is not None else (history or [])
+    if re.search(r"แพ้ถั่ว(?!ลิสง|เหลือง|เปลือกแข็ง)", normalize_thai(user_message)):
+        restrictions = conversation_restrictions(
+            profile, [*operation_history, {"role": "user", "content": user_message}],
+        )
+        if nut_clarification(restrictions):
+            yield from _dietary_question_events(restrictions, guard, use_rag)
+            return
     if requests_menu(user_message, operation_history):
         yield from _verified_menu_events(
             db, user_message, profile, operation_history, guard, use_rag,

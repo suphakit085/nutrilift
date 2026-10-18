@@ -169,8 +169,8 @@ def test_variants_use_successful_tool_metadata_not_assistant_text():
 
 def test_followup_keeps_allergies_count_and_changes_variant(monkeypatch, foods):
     no_model(monkeypatch, foods)
-    first = run("แพ้ถั่ว ช่วยจัดเมนู 3 มื้อ ไม่เอาอาหารเสริม", adult())[-1]
-    history = [{"role": "user", "content": "แพ้ถั่ว ช่วยจัดเมนู 3 มื้อ ไม่เอาอาหารเสริม"},
+    first = run("แพ้ถั่วลิสง ช่วยจัดเมนู 3 มื้อ ไม่เอาอาหารเสริม", adult())[-1]
+    history = [{"role": "user", "content": "แพ้ถั่วลิสง ช่วยจัดเมนู 3 มื้อ ไม่เอาอาหารเสริม"},
                {"role": "assistant", "content": first["text"], "tool_calls": first["tool_calls"]}]
     done = run("ขออีกแบบ ไม่กินไก่", adult(), history=history, menu_history=history)[-1]
     assert done["tool_calls"][0]["arguments"]["variant"] == 1

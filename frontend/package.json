@@ -10,7 +10,8 @@
     "test": "node --test --experimental-strip-types src/lib/*.test.ts tests/*.test.mjs",
     "test:diary-ui": "node ../eval/uat_browser/run_diary_requests.mjs",
     "test:meal-ui": "node ../eval/uat_browser/run_meal_cards.mjs",
-    "test:account-ui": "node ../eval/uat_browser/run_account_flows.mjs"
+    "test:account-ui": "node ../eval/uat_browser/run_account_flows.mjs",
+    "test:dietary-ui": "node ../eval/uat_browser/run_dietary_preferences.mjs"
   },
   "dependencies": {
     "next": "16.3.8",

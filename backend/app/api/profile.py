@@ -24,6 +24,7 @@ def get_profile(user: User = Depends(get_consented_user), db: Session = DB_SESSI
 
 
 @router.put("", response_model=ProfileOut)
+@router.put("/settings", response_model=ProfileOut)
 def upsert_profile(
     payload: ProfileIn,
     user: User = Depends(get_consented_user),
