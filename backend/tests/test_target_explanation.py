@@ -10,6 +10,7 @@ from app.services import chat
 from app.services.nutrition import ACTIVITY_FACTORS, ProfileInput, calc_nutrition_targets
 from app.services.target_explanation import (
     ISSN_PROTEIN_URL,
+    KATCH_METHOD_URL,
     MIFFLIN_URL,
     explicit_target_explanation_reply,
     requests_target_explanation,
@@ -142,7 +143,8 @@ def test_body_fat_formula_never_borrows_the_mifflin_reference():
     targets = calc_nutrition_targets(adult(body_fat_pct=17.25))
     result = explicit_target_explanation_reply(QUESTION, targets)
     assert "Katch-McArdle" in result and "21.6" in result and "17.25" in result
-    assert "ยังไม่มีลิงก์เอกสารต้นฉบับ" in result and MIFFLIN_URL not in result
+    assert KATCH_METHOD_URL in result and MIFFLIN_URL not in result
+    assert "ไม่ได้เป็นต้นกำเนิดสมการ" in result and "ไม่ได้ยืนยันว่าสมการแม่นยำสำหรับคุณ" in result
     assert ISSN_PROTEIN_URL in result
     assert targets["calculation_details"]["lean_mass_kg"] == pytest.approx(70 * .8275)
 

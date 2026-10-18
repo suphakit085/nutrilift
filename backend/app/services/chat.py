@@ -27,8 +27,10 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.creatine_facts import creatine_necessity_reply
 from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
 from app.services.food_portions import verified_food_portion_reply
+from app.services.food_preparation import food_preparation
 from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
@@ -327,13 +329,15 @@ def _run_menu_tool(
                 "กรุณากรอกโปรไฟล์ก่อนเพื่อคำนวณพลังงานและสารอาหาร"
             ),
         }
-    if any(r not in DIETARY_VALUES for r in profile.restrictions):
+    unknown = [r for r in profile.restrictions if r not in DIETARY_VALUES]
+    if unknown:
+        labels = [r.removeprefix("ข้อจำกัดที่ยังไม่รองรับ:").strip() for r in unknown]
         return {
             "error": "unsupported_menu_constraint",
             "message": (
-                "ยังจัดเมนูตามข้อจำกัดอาหารทั้งหมดที่คุณแจ้งไม่ได้ครับ "
+                "ระบบยังไม่มีตัวกรองที่ตรวจข้อจำกัดนี้ได้: " + ", ".join(labels) + " "
                 "ระบบจึงไม่เสนอเมนูที่อาจมีอาหารที่คุณงดหรือแพ้ "
-                "กรุณาระบุข้อจำกัดให้ชัดเจน หรือให้นักกำหนดอาหารช่วยจัดเมนูครับ"
+                "ข้อจำกัดที่แจ้งยังคงอยู่ กรุณาให้นักกำหนดอาหารช่วยเลือกอาหารที่เหมาะสมครับ"
             ),
         }
     clarify = nut_clarification(profile.restrictions)
@@ -436,7 +440,8 @@ def _tool_status(name: str, result: dict) -> str | None:
     if name == "suggest_day_menu":
         if not result.get("meals"):
             return "error"
-        return "success" if result.get("within_tolerance") else "partial"
+        return "success" if (result.get("within_tolerance")
+                             and result.get("budget_status") != "not_calculated") else "partial"
     if name == "lookup_food":
         if result.get("found"):
             return "success"
@@ -579,6 +584,8 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     cited study is the latest as of today. Keep the study/date/citation intact.
     """
     cleaned = _INTERNAL_REFERENCE_RE.sub("", text)
+    # Translate the observed unit contamination, preserving its number/source.
+    cleaned = cleaned.replace("किलोग्राम", "กิโลกรัม").replace("ग्राम", "กรัม")
     # Oxidation is not excretion. Correct the observed mistranslation without
     # changing the study's dose, endpoint, or citation.
     cleaned = cleaned.replace(
@@ -696,9 +703,16 @@ def _menu_reply(plan: dict) -> str:
         if extras:
             structure += f" + {extras} มื้อเสริม"
         lines.insert(1, structure)
+    if plan.get("target_warnings"):
+        lines = [
+            "### ข้อควรทราบก่อนใช้เมนู",
+            *["- " + warning for warning in dict.fromkeys(plan["target_warnings"])],
+            "", *lines,
+        ]
     for meal in plan["meals"]:
         foods = "<br>".join(
-            (item["name_th"] + ": " + item["portion_desc_th"]).replace("|", "/")
+            (item["name_th"] + ": " + item["portion_desc_th"] + " — "
+             + (item.get("preparation") or food_preparation(item))["label_th"]).replace("|", "/")
             for item in meal["items"]
         )
         macros = " | ".join(f"{meal[key]:.1f}" for key in ("kcal", "protein_g", "carb_g", "fat_g"))
@@ -715,6 +729,10 @@ def _menu_reply(plan: dict) -> str:
     )
     lines.append(
         "รายการนี้เป็นวัตถุดิบและปริมาณ ปรับวิธีปรุงได้ แต่การเพิ่มน้ำมันหรือเครื่องปรุงจะเปลี่ยนตัวเลขจากที่คำนวณไว้"
+    )
+    lines.append(
+        "ชั่งส่วนที่กินได้ตามสถานะที่ระบุในแต่ละรายการ ไม่เทียบน้ำหนักดิบกับสุกโดยตรง "
+        "รายการที่ข้อมูลไม่ระบุดิบ/สุกยังแปลงน้ำหนักหลังปรุงให้ไม่ได้"
     )
     for option in plan.get("extra_meal_options") or []:
         lines.extend([
@@ -991,10 +1009,6 @@ def _verified_menu_events(
                 )}
             else:
                 result = _run_menu_tool(db, effective, args, guard)
-            status = _tool_status("suggest_day_menu", result)
-            calls = [{"name": "suggest_day_menu", "arguments": args, "status": status}]
-            _release_connection(db)
-            yield {"type": "tool", "name": "suggest_day_menu", "args": args, "status": status}
             if result.get("meals"):
                 if note:
                     result["conversation_note"] = note
@@ -1006,9 +1020,14 @@ def _verified_menu_events(
                         "เมนูนี้คำนวณเฉพาะพลังงานและสารอาหาร ยังไม่ได้คำนวณราคา"
                         "หรือยืนยันว่าอยู่ในงบที่แจ้ง กรุณาตรวจราคาจริงก่อนเลือกซื้อ"
                     )
+                    result["budget_status"] = "not_calculated"
                 answer = _append_menu_data_notes(_menu_reply(result), [result])
             else:
                 answer = result.get("message") or "ยังจัดเมนูตามข้อจำกัดนี้ไม่ได้ครับ"
+            status = _tool_status("suggest_day_menu", result)
+            calls = [{"name": "suggest_day_menu", "arguments": args, "status": status}]
+            _release_connection(db)
+            yield {"type": "tool", "name": "suggest_day_menu", "args": args, "status": status}
     except Exception as exc:
         logger.exception("verified menu execution failed")
         _release_connection(db)
@@ -1194,6 +1213,19 @@ def stream_chat(
         }
         return
 
+    necessity = creatine_necessity_reply(user_message, [p.as_dict() for p in passages])
+    if necessity:
+        yield {"type": "delta", "text": necessity}
+        yield {
+            "type": "done", "text": necessity,
+            "citations": cited_only(necessity, citations), "retrieved": citations,
+            "tool_calls": [],
+            "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(), "model": "rule:creatine_necessity",
+            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+        }
+        return
+
     absorption_reply = explicit_single_meal_absorption_reply(user_message)
     if absorption_reply:
         yield {"type": "delta", "text": absorption_reply}
@@ -1289,6 +1321,9 @@ def stream_chat(
 
     if menu_context_note:
         system_prompt += "\n\n" + menu_context_note + " ต้องแจ้งข้อนี้เมื่อรายงานเป้าหมายหรือเมนู"
+    focus = prompts.answer_focus_th(user_message)
+    if focus:
+        system_prompt += "\n\n" + focus
     contents = _history_to_contents(history or [])
     contents.append(types.Content(role="user", parts=[types.Part.from_text(text=user_message)]))
 
@@ -1464,6 +1499,7 @@ def stream_chat(
                             "เมนูนี้คำนวณเฉพาะพลังงานและสารอาหาร ยังไม่ได้คำนวณราคา"
                             "หรือยืนยันว่าอยู่ในงบที่แจ้ง กรุณาตรวจราคาจริงก่อนเลือกซื้อ"
                         )
+                        result["budget_status"] = "not_calculated"
                     verified_menu_results.append(result)
                 elif call.name == "suggest_day_menu" and result.get("error"):
                     menu_errors.append(result.get("message") or "ยังจัดเมนูตามข้อจำกัดนี้ไม่ได้ครับ")

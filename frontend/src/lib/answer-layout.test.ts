@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { foodWarningParts, isMealTable, warningSection, withWarningSections } from "./answer-layout.ts";
+import { foodWarningParts, isMealTable, prioritizeMenuWarnings, warningSection, withWarningSections } from "./answer-layout.ts";
 import { toBlocks } from "./markdown.ts";
 
 const menu = [
@@ -11,6 +11,36 @@ const menu = [
   "| มื้อเสริมที่ 3 | นม: 1 กล่อง | 150.0 | 8.0 | 15.0 | 5.0 |",
   "| รวมทั้งวัน | | 2500.0 | 140.0 | 300.0 | 70.0 |",
 ].join("\n");
+
+test("saved menu health warning moves before the menu without changing text or totals", () => {
+  const warning = "BMI 15.4 ต่ำกว่าเกณฑ์ 18.5 ระบบไม่กำหนดพลังงานขาดดุลให้";
+  const blocks = toBlocks(menu + "\n\nข้อจำกัดของเมนู\n- " + warning + "\n- โปรตีนขาด 20%");
+  const before = JSON.stringify(blocks);
+  const ordered = prioritizeMenuWarnings(blocks);
+  assert.deepEqual(ordered[0], { kind: "heading", text: "ข้อควรทราบก่อนใช้เมนู" });
+  assert.deepEqual(ordered[1], { kind: "list", items: [warning] });
+  assert.deepEqual(ordered.find(b => b.kind === "table"), blocks.find(b => b.kind === "table"));
+  assert.equal(JSON.stringify(ordered).split(warning).length - 1, 1);
+  assert.ok(JSON.stringify(ordered).includes("โปรตีนขาด 20%"));
+  assert.equal(JSON.stringify(blocks), before);
+  assert.deepEqual(prioritizeMenuWarnings(ordered), ordered);
+});
+
+test("new health section is visible before the meal and never becomes a food disclosure", () => {
+  const warning = "พลังงานเป้าหมายต่ำกว่า 1,200 kcal/วัน กรุณาปรึกษานักกำหนดอาหาร";
+  const ordered = prioritizeMenuWarnings(toBlocks("### ข้อควรทราบก่อนใช้เมนู\n- " + warning + "\n\n" + menu));
+  const health = withWarningSections(ordered).find(item => item.warning === "health" && item.block.kind === "list");
+  assert.ok(health);
+  assert.equal(foodWarningParts(warning), null);
+  assert.deepEqual(ordered[1], { kind: "list", items: [warning] });
+});
+
+test("ordinary answers and meal source notes keep their existing order", () => {
+  for (const text of ["งานวิจัยเรื่อง BMI [S1]", menu + "\n\nข้อจำกัดข้อมูลอาหาร\n- ข้อมูลใยอาหารยังไม่ครบ"]) {
+    const blocks = toBlocks(text);
+    assert.deepEqual(prioritizeMenuWarnings(blocks), blocks);
+  }
+});
 
 test("meal recognition preserves all portions, supplemental rows, totals and zero values", () => {
   const table = toBlocks(menu)[0];

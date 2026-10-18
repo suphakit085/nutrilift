@@ -10,6 +10,7 @@ from app.services.thai_text import normalize_thai
 
 MIFFLIN_URL = "https://pubmed.ncbi.nlm.nih.gov/2305711/"
 ISSN_PROTEIN_URL = "https://link.springer.com/article/10.1186/s12970-017-0177-8"
+KATCH_METHOD_URL = "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1543263/full"
 
 
 def requests_target_explanation(message: str) -> bool:
@@ -89,8 +90,10 @@ def explicit_target_explanation_reply(
             (f"- BMR ใช้สมการ Katch-McArdle ที่ระบบใช้อยู่: 370 + 21.6 \u00d7 มวลไร้ไขมัน "
             f"≈ {targets['bmr_kcal']} กิโลแคลอรี/วัน"),
             "",
-            ("สมการนี้ขึ้นกับเปอร์เซ็นต์ไขมันที่กรอก ขณะนี้ยังไม่มีลิงก์เอกสารต้นฉบับของสมการนี้"
-            "ที่ตรวจยืนยันไว้ในระบบ จึงไม่ใช้งาน Mifflin อ้างรองรับสมการคนละสูตร"),
+            (f"อ้างอิงรูปสมการ: [Katch-McArdle: Tang และคณะ (2025)]({KATCH_METHOD_URL}) "
+             "ส่วนวิธีการระบุสมการเดียวกัน งานนี้ศึกษาผู้มีน้ำหนักเกิน/โรคอ้วน "
+             "ไม่ได้เป็นต้นกำเนิดสมการ และไม่ได้ยืนยันว่าสมการแม่นยำสำหรับคุณ "
+             "ผลขึ้นกับเปอร์เซ็นต์ไขมันที่กรอก"),
         ]
     else:
         return None
