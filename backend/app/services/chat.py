@@ -57,6 +57,10 @@ from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
+from app.services.target_explanation import (
+    explicit_target_explanation_reply,
+    requests_target_explanation,
+)
 from app.services.thai_text import normalize_thai
 
 logger = logging.getLogger(__name__)
@@ -596,20 +600,35 @@ def clean_answer(text: str, citations: list[dict] | None = None) -> str:
     cleaned = _BRACKET_RE.sub(keep_citation_or_link, cleaned)
     cleaned = _without_navigation_citations(cleaned)
     # Publication labels cannot establish application state or calculator policy.
-    # Only remove pure markers in these operational paragraphs; links survive.
+    # Inspect the claim immediately before each marker. A calculator result and
+    # a supported research claim can share a paragraph or Markdown bullet list.
+    # Removing all markers in that paragraph erased the research claim's source.
     operational = re.compile(
         r"กติกาของ(?:เครื่องคำนวณ)?(?:ระบบ|โครงการ)|โครงการมีกติกา|"
         r"กติกา.{0,35}(?:ระบบ|โครงการ)|"
-        r"ข้อกำหนดของเครื่องคำนวณ|พลังงานเป้าหมาย|"
+        r"ข้อกำหนดของเครื่องคำนวณ|"
         r"ติดตาม.{0,35}2[-\u2013]4\s*สัปดาห์|"
         r"(?:ไม่ได้|ไม่มีการ|ไม่)เปลี่ยน(?:แปลง)?(?:ข้อมูลใน)?โปรไฟล์|"
         r"ฐานข้อมูล.{0,45}(?:ยังไม่มี|ไม่มีข้อมูล|ไม่พบ)"
     )
-    cleaned = "\n\n".join(
-        re.sub(r"\[S\d{1,2}(?:, S\d{1,2})*\](?!\()", "", paragraph).rstrip()
-        if operational.search(paragraph.replace("*", "")) else paragraph
-        for paragraph in cleaned.split("\n\n")
+    calculated_energy = re.compile(
+        r"^\s*(?:[-•]\s*|\d+[.)]\s*)?พลังงานเป้าหมาย"
+        r"(?:จากโปรไฟล์|ของคุณ|ที่ระบบคำนวณได้)?\s*(?::|คือ|เท่ากับ|อยู่ที่)?\s*\d"
     )
+    previous_end = 0
+    is_operational = False
+
+    def keep_claim(match: re.Match) -> str:
+        nonlocal previous_end, is_operational
+        claim = cleaned[previous_end:match.start()]
+        previous_end = match.end()
+        if claim.strip():
+            claims = [part for part in re.split(r"\n|(?<=[.!?;])\s+", claim) if part.strip()]
+            claim = (claims[-1] if claims else claim).replace("*", "")
+            is_operational = bool(operational.search(claim) or calculated_energy.search(claim))
+        return "" if is_operational else match.group(0)
+
+    cleaned = _CITATION_MARKER_RE.sub(keep_claim, cleaned)
     return re.sub(r"(งานวิจัย|งานศึกษา|งานทดลอง|หลักฐาน|บททบทวน)ล่าสุด", r"\1ในชุดข้อมูลนี้", cleaned)
 
 
@@ -1072,6 +1091,36 @@ def stream_chat(
             db, user_message, profile, operation_history, guard, use_rag,
         )
         return
+
+    # Formula/provenance questions use the actual calculator payload. Primary
+    # links are scoped in the reply, not fabricated as retrieved S passages.
+    if requests_target_explanation(user_message) and guardrails.personalization_allowed(guard):
+        effective_profile, context_note = conversation_profile(
+            profile, operation_history, user_message,
+        )
+        if effective_profile is not None:
+            try:
+                explanation_targets = calc_nutrition_targets(effective_profile)
+                explanation = explicit_target_explanation_reply(
+                    user_message, explanation_targets, context_note,
+                )
+            except NutritionInputError:
+                explanation = None
+            if explanation:
+                guard = guardrails.combine(
+                    guard, guardrails.check_profile(effective_profile, explanation_targets),
+                )
+                _release_connection(db)
+                yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+                yield {"type": "delta", "text": explanation}
+                yield {
+                    "type": "done", "text": explanation, "citations": [], "retrieved": [],
+                    "tool_calls": [],
+                    "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+                    "safety_flags": guard.as_json(), "model": "rule:target_explanation",
+                    "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+                }
+                return
 
     # Retrieval failure (embedding API down, DB unreachable) must not kill the
     # turn - fall back to answering without context and say so in the prompt.

@@ -20,36 +20,37 @@
 
 import { toBlocks } from "@/lib/markdown";
 import { foodWarningParts, isMealTable, withWarningSections, type TableBlock } from "@/lib/answer-layout";
+import { tokenizeInline } from "@/lib/answer-inline";
 
-/** `**bold**` and `` `code` ``. An unclosed marker is left as literal text so a
- *  half-streamed token does not eat the rest of the line. */
+/** Render the safe Markdown subset; incomplete or unsupported tokens stay text. */
 function inline(text: string, keyPrefix: string) {
-  const parts: React.ReactNode[] = [];
-  const pattern = /\*\*(.+?)\*\*|`([^`]+?)`/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  let index = 0;
-
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > last) parts.push(text.slice(last, match.index));
-    if (match[1] !== undefined) {
-      parts.push(
+  return tokenizeInline(text).map((part, index) => {
+    if (part.kind === "bold") {
+      return (
         <strong key={`${keyPrefix}-b${index}`} className="font-semibold">
-          {match[1]}
-        </strong>,
-      );
-    } else {
-      parts.push(
-        <code key={`${keyPrefix}-c${index}`} className="stat-figure text-[0.95em]">
-          {match[2]}
-        </code>,
+          {part.text}
+        </strong>
       );
     }
-    last = pattern.lastIndex;
-    index += 1;
-  }
-  if (last < text.length) parts.push(text.slice(last));
-  return parts;
+    if (part.kind === "code") {
+      return (
+        <code key={`${keyPrefix}-c${index}`} className="stat-figure text-[0.95em]">
+          {part.text}
+        </code>
+      );
+    }
+    if (part.kind === "link") {
+      return (
+        <a key={`${keyPrefix}-a${index}`} href={part.href}
+          target={part.external ? "_blank" : undefined}
+          rel={part.external ? "noopener noreferrer" : undefined}
+          className="text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2">
+          {part.text}
+        </a>
+      );
+    }
+    return part.text;
+  });
 }
 
 function MealCards({ table }: { table: TableBlock }) {

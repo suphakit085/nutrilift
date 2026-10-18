@@ -328,6 +328,25 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "carb_kcal": round(carb_kcal),
         },
         "warnings": warnings,
+        # Exact operands for explaining this calculation. Do not reconstruct a
+        # TDEE from rounded BMR or imply a paper prescribed this person's target.
+        "calculation_details": {
+            "weight_kg": profile.weight_kg,
+            "height_cm": profile.height_cm,
+            "age": age,
+            "sex_constant": 5 if profile.sex == "male" else -161,
+            "body_fat_pct": profile.body_fat_pct,
+            "lean_mass_kg": (
+                lean_body_mass(profile.weight_kg, profile.body_fat_pct)
+                if profile.body_fat_pct is not None else None
+            ),
+            "bmr_unrounded_kcal": bmr,
+            "tdee_unrounded_kcal": tdee,
+            "activity_factor": activity_factor,
+            "energy_adjustment_fraction": (adj_low + adj_high) / 2,
+            "protein_g_per_kg": (p_low_per_kg + p_high_per_kg) / 2,
+            "protein_unrounded_g": protein_g,
+        },
         "references": [
             bmr_reference,
             (

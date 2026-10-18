@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnswerText } from "@/components/AnswerText";
 import { ChatDietaryPreferences } from "@/components/ChatDietaryPreferences";
 import { toolPresentation, type ToolCall } from "@/lib/tools";
+import { tokenizeInline } from "@/lib/answer-inline";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -503,7 +504,10 @@ export default function ChatPage() {
 
         {sources.length === 0 ? (
           <p className="mt-3 rounded-md bg-surface-sunken px-4 py-5 text-xs leading-relaxed text-muted">
-            ยังไม่มีแหล่งอ้างอิง — จะแสดงเมื่อบอทตอบคำถามที่ใช้ฐานความรู้
+            {tokenizeInline([...bubbles].reverse().find(b => b.role === "assistant" && !b.cancelled)?.content ?? "")
+              .some(part => part.kind === "link" && part.external)
+              ? "อ่านแหล่งอ้างอิงได้จากลิงก์ในคำตอบ"
+              : "ยังไม่มีแหล่งอ้างอิง — จะแสดงเมื่อบอทตอบคำถามที่ใช้ฐานความรู้"}
           </p>
         ) : (
           <ul className="mt-4 space-y-2.5">
