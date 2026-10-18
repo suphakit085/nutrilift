@@ -25,6 +25,8 @@ export function readToolStatus(value: unknown): ToolStatus | undefined {
 }
 
 export const TOOL_LABELS: Record<string, ToolLabel> = {
+  set_dietary_preferences: { running: "กำลังยืนยันข้อจำกัดอาหาร…", done: "ยืนยันข้อจำกัดอาหารแล้ว" },
+  clarify_dietary_restrictions: { running: "กำลังตรวจข้อจำกัดอาหาร…", done: "ตรวจข้อจำกัดอาหารแล้ว" },
   calc_nutrition_targets: {
     running: "กำลังคำนวณพลังงานและสารอาหาร…",
     done: "คำนวณพลังงานและสารอาหารจากโปรไฟล์แล้ว",
@@ -54,7 +56,8 @@ export function toolLabel(tool: string, running: boolean, status?: ToolStatus): 
     ? "จัดตัวอย่างเมนูแล้ว ยังเข้าเป้าไม่ครบ" : "ได้ผลลัพธ์บางส่วน";
   if (status === "error") return tool === "suggest_day_menu"
     ? "ยังจัดเมนูตามคำขอไม่ได้" : "ยังดำเนินการตามคำขอไม่ได้";
-  if (status === "confirmation_required") return "รอคุณยืนยันชื่ออาหาร";
+  if (status === "confirmation_required") return tool === "clarify_dietary_restrictions" || tool === "suggest_day_menu"
+    ? "รอระบุชนิดอาหารที่แพ้" : "รอคุณยืนยันชื่ออาหาร";
   if (status === "not_found") return "ไม่พบรายการอาหารในฐานข้อมูล";
   if (running) return labels.running;
   // Old history has only a tool name: completion is not evidence of success.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiError, api, getToken, type Profile, type ProfileRevision, type Targets } from "@/lib/api";
 import { ageFrom, createProfileDraft, profileFromDraft, toCE, type ProfileDraft } from "@/lib/profile-form";
+import { DietaryRestrictionFields, dietaryLabel } from "@/components/DietaryRestrictionFields";
 
 const ACTIVITY_OPTIONS = [
   { value: "sedentary", label: "แทบไม่ออกกำลังกาย (นั่งทำงานเป็นหลัก)" },
@@ -19,18 +20,6 @@ const GOAL_OPTIONS = [
   { value: "maintain", label: "รักษาน้ำหนัก" },
   { value: "bulk", label: "เพิ่มกล้ามเนื้อ (bulk)" },
 ] as const;
-
-const RESTRICTION_OPTIONS = [
-  "ฮาลาล",
-  "มังสวิรัติ",
-  "วีแกน",
-  "แพ้นมวัว",
-  "แพ้ถั่ว",
-  "แพ้อาหารทะเล",
-  "ไม่กินเนื้อวัว",
-  "ไม่กินไก่",
-  "ไม่กินไข่",
-];
 
 const BE_OFFSET = 543;
 
@@ -62,6 +51,10 @@ export default function ProfilePage() {
     let cancelled = false;
     (async () => {
       try {
+        const options = await api.getDietaryOptions().catch(() => {
+          throw new Error("ระบบข้อจำกัดอาหารยังไม่พร้อม กรุณาลองใหม่ภายหลัง");
+        });
+        if (options.version !== 1) throw new Error("ระบบข้อจำกัดอาหารยังไม่พร้อม กรุณาลองใหม่ภายหลัง");
         const draft = createProfileDraft(await api.getProfile());
         if (cancelled) return;
         setProfile(draft);
@@ -106,7 +99,7 @@ export default function ProfilePage() {
     setError("");
     setStatus("กำลังบันทึก…");
     try {
-      const saved = createProfileDraft(await api.saveProfile(payload));
+      const saved = createProfileDraft(await api.saveProfileSettings(payload));
       setProfile(saved);
       setSavedDraft(JSON.stringify(saved));
       setHistoryError("");
@@ -123,15 +116,6 @@ export default function ProfilePage() {
       savingRef.current = false;
       setSaving(false);
     }
-  }
-
-  function toggleRestriction(item: string) {
-    setProfile((p) => ({
-      ...p,
-      restrictions: p.restrictions.includes(item)
-        ? p.restrictions.filter((r) => r !== item)
-        : [...p.restrictions, item],
-    }));
   }
 
   if (loading) {
@@ -404,30 +388,14 @@ export default function ProfilePage() {
           </select>
         </label>
 
-        <div>
-          <span className="field-label text-xs text-muted">ข้อจำกัดด้านอาหาร</span>
-          <p className="mt-0.5 text-xs text-muted">เลือกได้มากกว่า 1 ข้อ</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {Array.from(new Set([...RESTRICTION_OPTIONS, ...profile.restrictions])).map((item) => {
-              const selected = profile.restrictions.includes(item);
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => toggleRestriction(item)}
-                  className={`rounded-sm border px-4 py-2 text-sm transition ${
-                    selected
-                      ? "border-accent bg-accent-soft font-medium text-accent"
-                      : "border-border bg-surface-sunken text-muted hover:border-accent/40 hover:text-foreground"
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <details className="rounded-md border border-border p-4">
+          <summary className="cursor-pointer font-medium">ข้อจำกัดอาหาร — แก้ไข</summary>
+          <p className="my-3 text-sm text-muted">{profile.restrictions.length
+            ? profile.restrictions.map(dietaryLabel).join(" / ") : "ยังไม่ได้ระบุ"}</p>
+          <DietaryRestrictionFields value={profile.restrictions}
+            original={savedDraft ? (JSON.parse(savedDraft) as ProfileDraft).restrictions : []}
+            onChange={(restrictions) => setProfile((p) => ({...p, restrictions}))} />
+        </details>
 
         {error && (
           <p role="alert" className="rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-600">

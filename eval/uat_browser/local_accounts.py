@@ -125,6 +125,25 @@ def run():
 
     main.app.dependency_overrides[get_db] = database
     main.engine = engine
+    # Chat streaming opens short-lived sessions separately from Depends(get_db).
+    from app.api import chat as chat_api
+    chat_api.SessionLocal = lambda: Session(engine)
+    if os.environ.get("DIETARY_UAT") == "1":
+        import csv
+        import json
+
+        from app.db.models import Food
+        with Session(engine) as db:
+            for row in csv.DictReader((ROOT / "knowledge/foods.csv").open(encoding="utf-8-sig")):
+                db.add(Food(
+                    name_th=row["name_th"], name_en=row.get("name_en") or None,
+                    category=row["category"], serving_desc=row["serving_desc"],
+                    serving_g=float(row["serving_g"]),
+                    **{key: float(row[key]) if row.get(key) else None
+                       for key in ("kcal", "protein_g", "carb_g", "fat_g", "fiber_g")},
+                    source=row["source"], nutrition_meta=json.loads(row.get("nutrition_meta") or "{}"),
+                ))
+            db.commit()
 
     @main.app.get("/__test/mail", include_in_schema=False)
     def captured_mail():

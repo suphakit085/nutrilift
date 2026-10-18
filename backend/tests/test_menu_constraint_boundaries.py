@@ -46,6 +46,11 @@ def test_production_requests_and_old_history_reach_real_planner(
     assert set(effective.restrictions) == expected
     options = menu_planning_options(history, message)
     plan = chat._run_menu_tool(None, effective, options)
+    if "แพ้ถั่ว" in expected:
+        assert plan["error"] == "ambiguous_allergy"
+        assert "ถั่วลิสง" in plan["message"]
+        assert profile == original
+        return
     assert "error" not in plan, plan
     assert len(plan["meals"]) == options["meal_count"]
     validate_day_plan(plan, foods)
@@ -98,7 +103,7 @@ def test_no_abstinence_instruction_inside_ordinary_thai_words(message):
     assert effective.restrictions == []
 
 
-@pytest.mark.parametrize("food", ["งา", "เห็ด", "ผลไม้ทุกชนิด", "ของหมัก", "ขอนขาว", "บอกฉ่อย"])
+@pytest.mark.parametrize("food", ["คื่นช่าย", "เห็ด", "ผลไม้ทุกชนิด", "ของหมัก", "ขอนขาว", "บอกฉ่อย"])
 @pytest.mark.parametrize("ending", ["", " ขอปริมาณอาหารและยอดรวม", " พร้อมชื่ออาหารและปริมาณ"])
 def test_unknown_allergy_still_blocks_menu_and_survives_reset(food, ending):
     disclosure = "ฉันแพ้" + food + ending

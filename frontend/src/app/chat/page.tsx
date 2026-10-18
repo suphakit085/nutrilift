@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AnswerText } from "@/components/AnswerText";
+import { ChatDietaryPreferences } from "@/components/ChatDietaryPreferences";
 import { toolPresentation, type ToolCall } from "@/lib/tools";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ type Bubble = {
   citations?: Citation[];
   tools?: ToolCall[];
   pending?: boolean;
+  cancelled?: boolean;
   /** Transient status while pending (e.g. the backend is retrying a 429). */
   notice?: string;
 };
@@ -48,6 +50,8 @@ export default function ChatPage() {
   const [error, setError] = useState("");
   const [sources, setSources] = useState<Citation[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dietaryRoom, setDietaryRoom] = useState<string | null>(null);
+  const [openingDietary, setOpeningDietary] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   // The in-flight stream. `streamId` is bumped whenever a stream starts or is
   // cancelled, so callbacks from a stream the user has already abandoned
@@ -69,7 +73,7 @@ export default function ChatPage() {
     setStreaming(false);
     setBubbles((prev) =>
       prev.some((b) => b.pending)
-        ? prev.map((b) => (b.pending ? { ...b, pending: false } : b))
+        ? prev.map((b) => (b.pending ? { ...b, pending: false, cancelled: true } : b))
         : prev,
     );
   }, []);
@@ -120,6 +124,7 @@ export default function ChatPage() {
           detail.messages.map((message: ChatMessage) => ({
             retrievalStatus: message.retrieval_status,
             role: message.role,
+            cancelled: message.cancelled,
             content: message.cancelled && message.role === "assistant" ? "(หยุดการตอบแล้ว)" : message.content,
             citations: message.citations ?? undefined,
             // Stored with the row; without this a reopened room lost the
@@ -285,6 +290,8 @@ export default function ChatPage() {
 
   function startNew() {
     stopStream();
+    openSeqRef.current += 1;
+    setDietaryRoom(null);
     setActiveId(null);
     setBubbles([]);
     setSources([]);
@@ -313,6 +320,22 @@ export default function ChatPage() {
       setToken(null);
       router.replace("/login");
     } catch (err) { setError(`ออกจากระบบไม่สำเร็จ: ${(err as Error).message}`); }
+  }
+
+  async function openDietary() {
+    if (streaming || openingDietary) return;
+    setOpeningDietary(true); setError("");
+    const seq = openSeqRef.current;
+    try {
+      let id = activeId;
+      if (!id) {
+        const room = await api.createConversation();
+        if (seq !== openSeqRef.current) return;
+        setActiveId(room.id); setConversations((prev) => [room, ...prev]); id = room.id;
+      }
+      setDietaryRoom(id);
+    } catch (err) { setError((err as Error).message); }
+    finally { setOpeningDietary(false); }
   }
 
   const sidebarProps = {
@@ -368,9 +391,11 @@ export default function ChatPage() {
             </span>
             <span className="text-sm font-medium">โค้ชนัท</span>
           </div>
-          <Link href="/profile" className="text-sm text-accent hover:underline md:hidden">
-            โปรไฟล์
-          </Link>
+          <div className="flex items-center gap-3">
+            <button type="button" disabled={streaming || openingDietary} onClick={openDietary}
+              className="text-sm text-accent hover:underline disabled:opacity-50">ข้อจำกัดอาหาร</button>
+            <Link href="/profile" className="text-sm text-accent hover:underline md:hidden">โปรไฟล์</Link>
+          </div>
         </header>
 
         <div className="flex-1 space-y-5 overflow-y-auto p-4 md:p-6">
@@ -402,7 +427,14 @@ export default function ChatPage() {
           )}
 
           {bubbles.map((bubble, index) => (
-            <MessageBubble key={index} bubble={bubble} />
+            <div key={index}>
+              <MessageBubble bubble={bubble} />
+              {index === bubbles.length - 1 && bubble.role === "assistant" && !bubble.pending && !bubble.cancelled
+                && bubble.tools?.some((tool) => tool.status === "confirmation_required"
+                  && ["clarify_dietary_restrictions", "suggest_day_menu"].includes(tool.name))
+                && <button type="button" disabled={streaming || openingDietary} onClick={openDietary}
+                  className="mt-3 rounded-md border border-accent px-4 py-2 text-sm text-accent">ระบุข้อจำกัดอาหาร</button>}
+            </div>
           ))}
 
           {error && (
@@ -449,7 +481,10 @@ export default function ChatPage() {
               </button>
             )}
           </div>
-          <p className="mt-3 text-center text-xs text-muted">
+          <p className="mt-2 text-center text-xs text-muted">
+            ข้อจำกัดที่แจ้งในแชตใช้เฉพาะห้องนี้ บันทึกถาวรได้ที่ “ข้อจำกัดอาหาร”
+          </p>
+          <p className="mt-2 text-center text-xs text-muted">
             ข้อมูลเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำทางการแพทย์
           </p>
         </form>
@@ -518,6 +553,9 @@ export default function ChatPage() {
           </ul>
         )}
       </aside>
+      {dietaryRoom && <ChatDietaryPreferences conversationId={dietaryRoom}
+        onClose={() => setDietaryRoom(null)}
+        onSaved={() => { const id = dietaryRoom; setDietaryRoom(null); void openConversation(id); }} />}
     </div>
   );
 }

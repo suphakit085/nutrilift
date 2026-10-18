@@ -12,14 +12,16 @@ async (page) => {
   await page.getByRole('spinbutton',{name:'น้ำหนัก (กก.)',exact:true}).fill('60');
   await page.getByRole('spinbutton',{name:/เปอร์เซ็นต์ไขมัน/}).fill('22');
   await page.getByRole('combobox',{name:'เป้าหมาย',exact:true}).selectOption('bulk');
-  await page.getByRole('button',{name:'วีแกน',exact:true}).click();
-  await page.getByRole('button',{name:'แพ้ถั่ว',exact:true}).click();
+  await page.getByText('ข้อจำกัดอาหาร — แก้ไข',{exact:true}).click();
+  await page.getByRole('checkbox',{name:'วีแกน',exact:true}).check();
+  await page.getByRole('checkbox',{name:'แพ้ถั่ว — ยังไม่ระบุชนิด',exact:true}).check();
   await page.getByRole('button',{name:'บันทึกและคำนวณ'}).click();
   await page.getByText('บันทึกแล้ว',{exact:true}).waitFor();
   add('UI-14','Save female profile with body fat and restrictions','saved confirmation',await page.getByText('บันทึกแล้ว',{exact:true}).innerText(),true);
   await page.reload();
-  await page.getByRole('button',{name:'วีแกน',exact:true,pressed:true}).waitFor();
-  const values={sex:await page.getByRole('combobox',{name:'เพศ',exact:true}).inputValue(),year:await page.getByRole('spinbutton',{name:/ปีเกิด/}).inputValue(),weight:await page.getByRole('spinbutton',{name:'น้ำหนัก (กก.)',exact:true}).inputValue(),bodyfat:await page.getByRole('spinbutton',{name:/เปอร์เซ็นต์ไขมัน/}).inputValue(),nuts:await page.getByRole('button',{name:'แพ้ถั่ว',exact:true}).getAttribute('aria-pressed')};
+  await page.getByText('ข้อจำกัดอาหาร — แก้ไข',{exact:true}).click();
+  await page.getByRole('checkbox',{name:'วีแกน',exact:true}).waitFor();
+  const values={sex:await page.getByRole('combobox',{name:'เพศ',exact:true}).inputValue(),year:await page.getByRole('spinbutton',{name:/ปีเกิด/}).inputValue(),weight:await page.getByRole('spinbutton',{name:'น้ำหนัก (กก.)',exact:true}).inputValue(),bodyfat:await page.getByRole('spinbutton',{name:/เปอร์เซ็นต์ไขมัน/}).inputValue(),nuts:String(await page.getByRole('checkbox',{name:'แพ้ถั่ว — ยังไม่ระบุชนิด',exact:true}).isChecked())};
   add('UI-15','Reload retains profile and multiple restrictions','female / 2000 / 60 / 22 / selected',values,values.sex==='female'&&values.year==='2000'&&values.weight==='60'&&values.bodyfat==='22'&&values.nuts==='true');
   for(const width of [390,768,1280]) {
     await page.setViewportSize({width,height:900});

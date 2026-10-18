@@ -162,7 +162,7 @@ def test_tool_reports_no_eligible_foods_without_exposing_an_exception(
 
     profile = ProfileInput(sex="female", birth_year=1998, birth_month=1, weight_kg=55,
                            height_cm=160, activity_level="moderate", goal="maintain",
-                           restrictions=["วีแกน", "แพ้ถั่ว"])
+                           restrictions=["วีแกน", "แพ้ถั่วเหลือง"])
     monkeypatch.setattr(chat, "all_foods", lambda _db: real_foods)
     result = chat._run_menu_tool(None, profile, {"meal_count": count})
     assert result["error"] == "cannot_build_menu"
@@ -171,7 +171,7 @@ def test_tool_reports_no_eligible_foods_without_exposing_an_exception(
 
 
 @pytest.mark.parametrize("count,restrictions", [
-    (3, []), (4, []), (3, ["วีแกน"]), (4, ["แพ้ถั่ว"]), (5, []), (6, []),
+    (3, []), (4, []), (3, ["วีแกน"]), (4, ["แพ้ถั่วลิสง"]), (5, []), (6, []),
 ])
 def test_chat_stream_uses_real_planner_and_requested_meals(
     real_foods, monkeypatch, count, restrictions

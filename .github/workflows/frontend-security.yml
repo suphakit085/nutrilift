@@ -53,6 +53,8 @@ jobs:
         run: uv sync --locked --extra dev
       - name: Verify account ownership, recovery and revocation in Chrome
         run: npm run test:account-ui
+      - name: Verify dietary clarification and explicit persistence in Chrome
+        run: npm run test:dietary-ui
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -61,5 +63,6 @@ jobs:
             output/playwright/diary-regressions/
             output/playwright/meal-card-regressions/
             output/playwright/account-regressions/
+            output/playwright/dietary-regressions/
           if-no-files-found: ignore
           retention-days: 14
