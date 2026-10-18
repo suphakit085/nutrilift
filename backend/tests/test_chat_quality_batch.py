@@ -181,7 +181,11 @@ def test_necessity_faq_never_fabricates_a_missing_reference(passages):
 def test_dose_or_comparison_questions_remain_on_the_model_path():
     passages = [{"label": "S1", "document_slug": "creatine",
                  "content": "ไม่จำเป็นต้องโหลด", "source_refs": ["ISSN 2017"]}]
-    for question in ["ครีเอทีนโหลดขนาดกี่กรัม", "ครีเอทีนแบบไม่โหลดต่างจากโหลดอย่างไร"]:
+    for question in [
+        "ครีเอทีนโหลดขนาดกี่กรัม", "ครีเอทีนแบบไม่โหลดต่างจากโหลดอย่างไร",
+        "ผมกินวีแกน ครีเอทีนจำเป็นไหม", "ครีเอทีนจำเป็นสำหรับผู้สูงอายุไหม",
+        "ครีเอทีนชนิดใหม่จำเป็นไหม", "ครีเอทีนต้องโหลดก่อนฝึกไหม",
+    ]:
         assert creatine_necessity_reply(question, passages) is None
 
 

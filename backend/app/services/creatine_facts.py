@@ -13,7 +13,9 @@ def creatine_necessity_reply(message: str, passages: list[dict]) -> str | None:
         return None
     if re.search(normalize_thai(
         r"กี่กรัม|ขนาด|โดส|ปริมาณ|ต่าง|เปรียบเทียบ|เทียบกับ|"
-        r"dose|grams?|compare|difference"
+        r"อายุ|ผู้สูง|วีแกน|มังสวิรัติ|ผู้หญิง|เฉพาะ|ยี่ห้อ|แบรนด์|"
+        r"ก่อนฝึก|หลังฝึก|เวลา|ชนิด|รูปแบบ|20\d{2}|"
+        r"dose|grams?|compare|difference|vegan|vegetarian|older|women|brand"
     ), query, re.I):
         return None
     for passage in passages:
