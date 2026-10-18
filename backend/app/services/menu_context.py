@@ -9,6 +9,8 @@ from __future__ import annotations
 import re
 from dataclasses import replace
 
+from pythainlp.tokenize import word_tokenize
+
 from app.services.nutrition import ProfileInput
 from app.services.thai_text import normalize_thai
 
@@ -40,11 +42,23 @@ _SUPPLEMENT_DENIAL = (
     r"ไม่(?:ใช้|ต้อง(?:การ)?)(?=\s*(?:"
     + "|".join(re.escape(name) for name in _SUPPLEMENTS) + r"))"
 )
+# A request for output is a clause boundary, not another item in a food list.
+# Require an action AND a topic: bare "ขอ"/"บอก" also start real food names
+# (e.g. ของหมัก/บอกฉ่อย), whose unknown allergies must still block planning.
+_DETAIL_REQUEST = re.compile(normalize_thai(
+    r"(?:ขอ(?:ให้)?|พร้อม(?:ทั้ง)?|(?:ช่วย)?(?:แสดง|ระบุ|บอก|สรุป|แจกแจง|คำนวณ|จัด)|"
+    r"ให้(?:แสดง|ระบุ|บอก))\s*"
+    r"(?:ชื่อ(?:อาหาร|เมนู)|ปริมาณ|ยอด|พลังงาน|แคลอรี่?|แคลอรี|โปรตีน|สารอาหาร|"
+    r"คาร์บ|ไขมัน|ตาราง|เมนู|รายละเอียด|แหล่งอ้างอิง|ส่วนที่(?:ยัง)?ขาด)"
+), re.I)
+_ALLERGY = re.compile(r"แพ้|\b(?:allergic|allergy) to\b", re.I)
 _EXCLUSION = re.compile(
-    r"(?:" + _SUPPLEMENT_DENIAL + r"|ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่)|งด(?:กิน)?|แพ้|ไม่มี|"
-    r"allergic to |allergy to |avoid |without |don't eat |no )\s*"
-    r"(.+?)(?=แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|ไม่(?:กิน|เอา|ใส่|ใช้|ต้อง(?:การ)?)|"
-    r"(?:และ|กับ)?\s*แพ้|"
+    r"(?:" + _SUPPLEMENT_DENIAL + r"|ไม่(?:กิน|เอา|ใส่)|ห้าม(?:มี|ใส่|ใช้)|"
+    r"งด(?:กิน)?|แพ้|ไม่มี|"
+    r"\b(?:allergic to|allergy to|avoid|without|don't eat|no)\s+)\s*"
+    r"(.+?)(?=" + _DETAIL_REQUEST.pattern + r"|แต่|ครับ|ค่ะ|นะ|เลย|ช่วย|อยาก|ด้วย|แล้ว|ไม่มี|"
+    r"ไม่(?:กิน|เอา|ใส่|ใช้|ต้อง(?:การ)?)|"
+    r"(?:และ|กับ)?\s*(?:ยัง)?\s*แพ้|"
     r"\s+(?:no|without|avoid|allergic to|don't eat)\s+|\s*[.!?\n]|$)",
     re.I,
 )
@@ -65,6 +79,21 @@ _WANT_GOAL = re.compile(
         + _GOAL_NAMES + r")"
     ), re.I,
 )
+
+
+def _abstinence_positions(text: str) -> set[int]:
+    """Find the verb งด, not a substring of อ้างอิงด้วย/แตงดอง/งดงาม.
+
+    Use the existing offline Thai tokenizer only for this ambiguous marker;
+    a list of pronoun prefixes would miss free-form Thai without spaces.
+    """
+    positions = set()
+    offset = 0
+    for word in word_tokenize(text, engine="newmm", keep_whitespace=True):
+        if word == "งด":
+            positions.add(offset)
+        offset += len(word)
+    return positions
 
 
 def _saved_profile_reset(text: str) -> tuple[bool, bool]:
@@ -186,12 +215,18 @@ def conversation_profile(
             goal = _GOALS[change.group(1).lower()]
         elif wants:
             goal = _GOALS[wants[-1].group(1).lower()]
+        abstinence_positions = None
         for match in _EXCLUSION.finditer(text):
+            if match.group(0).startswith("งด"):
+                if abstinence_positions is None:
+                    abstinence_positions = _abstinence_positions(text)
+                if match.start() not in abstinence_positions:
+                    continue
             if match.group(0).startswith("แพ้") and text[: match.start()].endswith(
                 ("ไม่", "ไม่ได้", "ไม่เคย")
             ):
                 continue
-            if reset_diet and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I):
+            if reset_diet and not _ALLERGY.match(match.group(0)):
                 new_choices = re.search(r"แต่|\bbut\b", text)
                 if new_choices is None or match.start() < new_choices.end():
                     continue  # A withdrawn preference is not a new exclusion.
@@ -199,7 +234,7 @@ def conversation_profile(
             if (phrase in {"สองอย่างเมื่อกี้", "สองรายการเมื่อกี้", "ทั้งสองอย่างเมื่อกี้"}
                     and len(explicit_exclusions) == 2):
                 continue  # Exactly two explicit exclusions are already carried.
-            for food in re.split(r"\s*(?:และ|กับ|,|/|\band\b|&)\s*", phrase):
+            for food in re.split(r"\s*(?:และ|กับ|หรือ|รวมถึง|,|/|\band\b|\bor\b|&)\s*", phrase):
                 food = food.strip()
                 if not food:
                     continue
@@ -209,7 +244,7 @@ def conversation_profile(
                 # supplement allergy still requires clarification of ingredients.
                 supplement_preference = (
                     food.startswith(_SUPPLEMENTS)
-                    and not re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
+                    and not _ALLERGY.match(match.group(0))
                 )
                 # Longest prefix matters: soy allergy must not turn into a nut rule.
                 key = "ไม่ใช้อาหารเสริม" if supplement_preference else next(
@@ -217,8 +252,9 @@ def conversation_profile(
                      if food.startswith(k)),
                     None,
                 )
+                is_allergy = bool(_ALLERGY.match(match.group(0)))
                 if key is None and (match.group(0).startswith("ไม่มี") or
-                                    re.match(normalize_thai(r"จัดเมนู|ขอ|คำนวณ|ช่วย"), food)):
+                                    (not is_allergy and _DETAIL_REQUEST.match(food))):
                     continue  # A separate request/data gap is not a food exclusion.
                 if key is None:
                     key = "ข้อจำกัดที่ยังไม่รองรับ: " + food[:80]
@@ -227,8 +263,7 @@ def conversation_profile(
                 if key not in restrictions:
                     restrictions.append(key)
                 # Withdrawing a preference must never erase an allergy disclosure.
-                if (re.match(r"แพ้|allergic to |allergy to ", match.group(0), re.I)
-                        and key not in allergies):
+                if is_allergy and key not in allergies:
                     allergies.append(key)
         for name in ("วีแกน", "มังสวิรัติ", "ฮาลาล"):
             if (
