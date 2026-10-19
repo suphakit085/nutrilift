@@ -14,6 +14,9 @@ def test_active_card_hashes_match_v9_manifest():
     canonical = json.loads(
         (Path(__file__).parent / "fixtures/active-card-text-hashes.json").read_text(encoding="utf8")
     )
+    correction = json.loads(
+        (ROOT / "knowledge/releases/q5-attribution-v1.json").read_text(encoding="utf8")
+    )
     assert len(manifest["cards"]) == 26
     assert {r["card"] for r in manifest["cards"] if r["changed"]} == {
         "energy-balance-cut-bulk", "fiber", "sodium-water"
@@ -25,7 +28,11 @@ def test_active_card_hashes_match_v9_manifest():
         # Git normalizes text line endings. Preserve the original evidence hash
         # above while checking identical UTF-8 text on both Windows and Linux.
         actual = path.read_bytes().replace(b"\r\n", b"\n")
-        assert hashlib.sha256(actual).hexdigest() == recorded["utf8_lf_sha256"]
+        expected = recorded["utf8_lf_sha256"]
+        if row["card"] == correction["card"]:
+            assert correction["base_utf8_lf_sha256"] == expected
+            expected = correction["utf8_lf_sha256"]
+        assert hashlib.sha256(actual).hexdigest() == expected
 
 
 def test_direct_2009_citation_discloses_abstract_only_access():

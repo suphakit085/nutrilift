@@ -1,0 +1,12 @@
+{
+  "version": "q5-attribution-v1",
+  "card": "energy-balance-cut-bulk",
+  "path": "knowledge/cards/energy-balance-cut-bulk.md",
+  "base_commit": "1fd74c80c4fd953e0846b8c3073bbc05ed8099c1",
+  "base_utf8_lf_sha256": "b0510a0b8add94272806835fe587c26cb4baaaffa425abba6c8639ccb85f4541",
+  "utf8_lf_sha256": "e09ac17b05bd04729c169ed17bdadb18142839c07e636877793cf99ec2238b53",
+  "scope": "Separate Helms 2014 Fat claim attribution from Aragon 2017 conclusions; no nutrient or calculator changes",
+  "primary_source": "https://link.springer.com/article/10.1186/1550-2783-11-20",
+  "primary_section": "Fat, paragraph beginning Thus, a lower end fat intake",
+  "clinical_approval": false
+}
