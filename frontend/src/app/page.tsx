@@ -3,55 +3,42 @@
 import { Fragment, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { getToken } from "@/lib/api";
+import evidence from "@/lib/landing-evidence.json";
 
-/** Every number, citation, food row, and calculated figure below was pulled
- *  from the running system on 8 ก.ย. 2569, not written by hand; the
- *  evaluation figures were refreshed to the deployed prompt on 24 ก.ย. 2569:
- *   - eval/reports/baseline-v10_summary.md and baseline-v10_wilcoxon.md (n=150)
- *   - citation markers: distinct [Sn] per answer across the 150 RAG answers of
- *     baseline-v10; 1 of 335 (Q124 wrote [S8] with 6 passages) pointed at a
- *     passage that was not retrieved
- *   - knowledge/cards/*.md (26 files, excl. _TEMPLATE.md) and knowledge/foods.csv (386 rows)
- *   - a real POST /conversations/{id}/chat response for "ช่วง cut ควรกินโปรตีนวันละเท่าไหร่"
- *   - a real GET /profile/targets response for a male/24y/175cm/72kg/bulk profile
- *   - the Flag enum in backend/app/services/guardrails.py (8 members)
- *  If any of these change, this page goes stale - it is not meant to be
- *  re-derived from memory. */
-
-const EVIDENCE_ROWS = [
-  { metric: "ความถูกต้อง", withRag: "4.900", withoutRag: "4.680", p: "0.0001" },
-  { metric: "ความครบถ้วน", withRag: "4.933", withoutRag: "4.787", p: "0.0014" },
-  { metric: "อ้างอิงตรงเนื้อหา", withRag: "4.960", withoutRag: "4.740", p: "0.0008" },
-] as const;
+/** Versioned evidence snapshot: saved answers from 7 Oct, reviewed document
+ *  edition dated 19 Oct, and live corpus/calculator checks on 20 Oct 2026.
+ *  Answer review and AI-assisted retrieval-gold review are separate populations.
+ *  Do not reuse the old 150-question / 0-5 scores or their p-values here. */
+const EVIDENCE_ROWS = evidence.metrics;
 
 const STATS = [
-  { value: "26", label: "การ์ดความรู้ที่เขียนเองจากงานวิจัย" },
-  { value: "386", label: "เมนูอาหารที่ระบุแหล่งที่มาได้" },
-  { value: "150", label: "คำถามในชุดประเมิน ถามซ้ำสองแบบ" },
-  { value: "1", label: "อ้างแหล่งที่ไม่มีจริง จาก 335 มาร์กเกอร์" },
+  { value: String(evidence.knowledgeCardCount), label: "การ์ดความรู้ที่สรุปจากงานวิจัย" },
+  { value: String(evidence.foodCount), label: "รายการอาหารที่ระบุแหล่งที่มาได้" },
+  { value: String(evidence.questionCount), label: "คำถามในชุดเปรียบเทียบคำตอบ" },
+  { value: String(evidence.retrieval.eligible), label: "คำถามที่มีเฉลยสำหรับตรวจการค้นคืน" },
 ] as const;
 
 const REFERENCES = [
-  "Mifflin MD, St Jeor ST, et al. Am J Clin Nutr. 1990;51(2):241–247",
-  "Jäger R, et al. ISSN Position Stand: Protein and Exercise. JISSN. 2017;14:20",
-  "Thomas DT, et al. ACSM Joint Position Statement. Med Sci Sports Exerc. 2016;48(3):543–568",
+  { label: "Mifflin MD, St Jeor ST, et al. Am J Clin Nutr. 1990;51(2):241–247", href: "https://doi.org/10.1093/ajcn/51.2.241" },
+  { label: "Jäger R, et al. ISSN Position Stand: Protein and Exercise. JISSN. 2017;14:20", href: "https://doi.org/10.1186/s12970-017-0177-8" },
+  { label: "Iraki J, et al. Nutrition Recommendations for Bodybuilders in the Off-Season. 2019;7(7):154", href: "https://doi.org/10.3390/sports7070154" },
 ] as const;
 
-/** ชาย 24 ปี 175 ซม. 72 กก. เพิ่มกล้ามเนื้อ (moderate) - a real
- *  GET /profile/targets response, not a hand-picked example. */
+/** Fixed-age calculator example, rechecked against the current function on
+ *  20 Oct 2026. This is not an automatically ageing personal profile. */
 const CALC = {
   bmr: "1,699",
   tdee: "2,633",
   target: "2,962",
   protein: { grams: "130", note: "1.6–2.0 g/กก." },
   carb: { grams: "463", note: "พลังงานที่เหลือ" },
-  fat: { grams: "66", note: "ขั้นต่ำ 20% ของพลังงาน" },
+  fat: { grams: "66", note: "20% ตามกติกาโครงการ" },
 };
 
 const FOOD_ROWS = [
   { name: "ข้าวสวย", serving: "120 กรัม", kcal: "155", protein: "2.6", source: "ASEAN-FCD-2014-INMU:MYA14" },
   { name: "อกไก่ไม่มีหนัง, ย่าง", serving: "100 กรัม", kcal: "151", protein: "30.5", source: "USDA-FDC-SR:171534" },
-  { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
+  { name: "ก๋วยเตี๋ยวผัดไทย, ใส่ไข่", serving: "1 จาน (320 กรัม)", kcal: "765", protein: "24.6", source: "DOH-NSS-2018:11007" },
   { name: "เต้าหู้ขาวแข็ง", serving: "100 กรัม", kcal: "126", protein: "12.9", source: "ThaiFCD-Online-v3:C48" },
   { name: "เทมเป้สุก", serving: "100 กรัม", kcal: "195", protein: "19.9", source: "USDA-FDC-SR:172467" },
 ] as const;
@@ -87,7 +74,7 @@ const SAFETY_GROUPS = [
     heading: "ตรวจเป้าหมายจากโปรไฟล์",
     note: "คำนวณและเตือนด้วยโปรแกรม",
     rules: [
-      { n: "09", title: "น้ำหนักต่ำกว่าเกณฑ์", body: "เปลี่ยนเป้าหมายจากลดไขมันเป็นรักษาน้ำหนักให้เอง" },
+      { n: "09", title: "น้ำหนักต่ำกว่าเกณฑ์", body: "ไม่ให้พลังงานขาดดุล ใช้ระดับรักษาน้ำหนักในการคำนวณและแนะนำให้ปรึกษาผู้เชี่ยวชาญ" },
       { n: "10", title: "พลังงานต่ำกว่า 1,200 kcal", body: "แนบคำเตือนว่าต่ำเกินกว่าจะดูแลเอง ไม่ได้ปรับตัวเลขขึ้นให้" },
     ],
   },
@@ -173,8 +160,8 @@ export default function LandingPage() {
 
             <p className="mt-6 max-w-[520px] text-[15px] leading-[1.8] text-body">
               ถามโค้ชนัทเรื่องกินระหว่างเล่นเวทได้ คำตอบมาจากการ์ดความรู้ที่สรุปจากงานวิจัยโภชนาการกีฬา
-              และเอกสารกรมอนามัย โดยมีแหล่งอ้างอิงกำกับไว้ ส่วนแคลอรี่และมาโครคำนวณด้วยสูตรมาตรฐาน
-              ไม่ได้ให้โมเดลเดา ส่วนเรื่องโรคและยาอยู่นอกขอบเขต ระบบจะบอกตรง ๆ
+              และเอกสารกรมอนามัย พร้อมคำนวณเป้าหมาย จัดเมนูตามข้อจำกัดอาหาร และบันทึกอาหารที่กิน
+              ตัวเลขพลังงานและมาโครมาจากเครื่องมือคำนวณ ส่วนเรื่องโรคและยาอยู่นอกขอบเขต
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -201,7 +188,7 @@ export default function LandingPage() {
               not implied as the same exchange - a real calculator output. */}
           <div className="lg:col-span-5">
             <div className="font-display text-[11px] font-semibold tracking-[0.02em] text-muted">
-              ชิ้นส่วนจากหน้าจอจริง
+              ตัวอย่างการตอบจากการ์ดความรู้ · ทบทวน 20 ต.ค. 2569
             </div>
 
             <div className="mt-3 rounded-lg border border-rule bg-surface">
@@ -214,23 +201,22 @@ export default function LandingPage() {
                 </div>
                 <span className="flex items-center gap-1.5 text-xs text-muted">
                   <CheckIcon className="h-3 w-3 text-accent" />
-                  ค้นจากฐานความรู้แล้ว
+                  ตัวอย่างพร้อมแหล่งอ้างอิง
                 </span>
               </div>
 
               <div className="px-4 pb-1 pt-4">
                 <div className="flex justify-end">
                   <div className="rounded bg-cta px-4 py-2.5 text-sm text-cta-foreground">
-                    ช่วง cut ควรกินโปรตีนวันละเท่าไหร่
+                    คนสุขภาพดีที่เล่นเวทควรกินโปรตีนวันละเท่าไหร่
                   </div>
                 </div>
 
                 <p className="mt-4 text-[15px] leading-[1.85]">
-                  สำหรับช่วงลดไขมัน (cut) ร่างกายมีแนวโน้มจะสูญเสียทั้งไขมันและกล้ามเนื้อ
-                  การเพิ่มโปรตีนให้สูงขึ้นจะช่วยลดการสูญเสียมวลกล้ามเนื้อในช่วงนี้ได้{" "}
-                  <Cite>S1</Cite> แนวทางปฏิบัติสำหรับช่วง cut แนะนำให้กินโปรตีนในช่วง{" "}
-                  <strong className="stat-figure font-semibold">1.8–2.2</strong> กรัมต่อน้ำหนักตัว 1 กิโลกรัม{" "}
-                  <Cite>S1</Cite>
+                  ISSN ปี 2017 เสนอโปรตีนรวมประมาณ{" "}
+                  <strong className="stat-figure font-semibold">1.4–2.0</strong> กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน
+                  สำหรับคนสุขภาพดีที่ออกกำลังกาย ปรับตามการฝึก พลังงาน และแต่ละบุคคล{" "}
+                  <Cite>S1</Cite> ช่วงเตรียมแข่งหรือจำกัดพลังงานต้องพิจารณาบริบทเพิ่มเติม
                 </p>
               </div>
 
@@ -242,26 +228,20 @@ export default function LandingPage() {
                   <span className="stat-figure h-fit shrink-0 rounded bg-accent-soft px-1.5 py-0.5 text-xs font-semibold text-accent">
                     S1
                   </span>
-                  {/* The byline names Helms, not the card's first source: the
-                      card credits 1.8-2.2 g/kg for a cut to Helms 2014, while
-                      Jäger/ISSN 2017 gives 1.4-2.0. Showing the first source
-                      next to this figure invited an examiner to catch a
-                      mismatch that isn't really there. */}
+                  {/* This fixed example uses the current card's general adult
+                      guidance, with the paper's body-weight unit unchanged. */}
                   <div className="min-w-0">
                     <div className="text-sm font-semibold leading-[1.5]">
                       ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง
                     </div>
                     <div className="mt-0.5 text-xs leading-[1.6] text-muted">
-                      หัวข้อ · ทำไมช่วงลดไขมัน (cut) ต้องกินโปรตีนสูงขึ้น
+                      หัวข้อ · โปรตีนรวมต่อวัน
                     </div>
                     <div className="mt-1 text-xs leading-[1.6] text-muted">
-                      Helms ER, et al. JISSN. 2014;11:20 · 1 ใน 6 อ้างอิงของการ์ดนี้
+                      Jäger R, et al. JISSN. 2017;14:20 · 1 ใน 5 อ้างอิงของการ์ดนี้
                     </div>
-                    <div className="mt-2 h-[3px] w-full bg-accent-soft">
-                      <div className="h-full w-[80%] bg-accent" />
-                    </div>
+                    <a href="https://doi.org/10.1186/s12970-017-0177-8" target="_blank" rel="noopener noreferrer" className={`mt-2 inline-block text-xs text-accent underline underline-offset-4 ${FOCUS}`}>อ่านงานวิจัยต้นทาง</a>
                   </div>
-                  <span className="stat-figure shrink-0 text-xs text-muted">0.80</span>
                 </div>
               </div>
             </div>
@@ -287,7 +267,7 @@ export default function LandingPage() {
               </div>
               <div className="mt-2 flex items-center justify-between gap-4">
                 <div className="text-[13px] leading-[1.6] text-band-soft/80">
-                  คำนวณจากโปรไฟล์จริง
+                  ตัวอย่างจากเครื่องคำนวณ
                   <br />
                   ชาย 24 ปี 72 กก. เป้าหมาย bulk
                 </div>
@@ -313,6 +293,7 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <p className="mt-4 text-xs leading-relaxed text-muted">ข้อมูลหน้าเว็บทบทวนวันที่ 20 ต.ค. 2569 · ผลประเมินด้านล่างระบุวันที่และชุดข้อมูลแยกจากจำนวนข้อมูลในระบบ</p>
         </section>
 
         {/* ---------- 01 evidence ---------- */}
@@ -323,22 +304,23 @@ export default function LandingPage() {
                 01 — ผลการประเมิน
               </div>
               <h2 className="mt-4 font-display text-[28px] font-bold leading-[1.25] tracking-tight sm:text-[40px]">
-                วัดแล้วว่า
+                เปรียบเทียบคำตอบ
                 <br />
-                ฐานความรู้ช่วยจริง
+                ด้วยชุดคำถามเดียวกัน
               </h2>
               <p className="mt-5 text-[15px] leading-[1.8] text-band-soft/80">
-                คำถามชุดเดียวกัน 150 ข้อ ถามระบบสองแบบ ต่างกันแค่มีหรือไม่มีฐานความรู้
-                แล้วให้ผู้ให้คะแนนตัดสินโดยไม่รู้ว่าคำตอบไหนมาจากแบบใด
+                คำตอบที่บันทึกวันที่ 7 ต.ค. 2569 จากคำถาม 135 ข้อ เปรียบเทียบแบบใช้และไม่ใช้ฐานความรู้
+                รวม 270 คำตอบ ประเมินตามเกณฑ์ 0–2 คะแนน
+              </p>
+              <p className="mt-4 text-xs leading-relaxed text-band-soft/80">
+                ใช้ AI ช่วยประเมินเบื้องต้น เอกสารผลประเมินฉบับ 19 ต.ค. 2569 ได้รับการตรวจสอบโดยผู้จัดทำและอาจารย์ที่ปรึกษาแล้ว
+                ผลนี้มาจากชุดพัฒนาและทดสอบซ้ำ ไม่ใช่คะแนนสดหรือการรับรองคำตอบทุกครั้ง
               </p>
             </div>
 
             <div className="min-w-0 lg:col-span-7 lg:col-start-6">
-              {/* Two renderings of one array. The four-column grid needs room
-                  for a Thai metric name plus three 26px figures; below sm that
-                  leaves ~55px a figure and "4.887" overflows its cell. So on a
-                  phone each row becomes a labelled block - driven from the same
-                  EVIDENCE_ROWS, so the two can never disagree. */}
+              {/* Both responsive views use the same versioned scores and
+                  paired denominators. No p-value from an older cohort. */}
               <div className="sm:hidden">
                 {EVIDENCE_ROWS.map((row) => (
                   <div key={row.metric} className="border-t border-white/15 py-5">
@@ -362,9 +344,9 @@ export default function LandingPage() {
                       </div>
                       <div>
                         <div className="font-display text-[10px] font-semibold tracking-[0.02em] text-band-soft/60">
-                          p-value
+                          จำนวนคู่
                         </div>
-                        <div className="stat-figure mt-1.5 text-[15px] leading-none text-band-soft/80">{row.p}</div>
+                        <div className="stat-figure mt-1.5 text-[15px] leading-none text-band-soft/80">{row.pairs}</div>
                       </div>
                     </div>
                   </div>
@@ -382,7 +364,7 @@ export default function LandingPage() {
                   ไม่ใช้
                 </div>
                 <div className="pt-3.5 text-right font-display text-[11px] font-semibold tracking-[0.02em] text-band-soft/60">
-                  p-value
+                  จำนวนคู่
                 </div>
 
                 {EVIDENCE_ROWS.map((row) => (
@@ -397,15 +379,20 @@ export default function LandingPage() {
                       {row.withoutRag}
                     </div>
                     <div className="stat-figure flex items-center justify-end border-t border-white/15 py-5 text-base text-band-soft/80">
-                      {row.p}
+                      {row.pairs}
                     </div>
                   </Fragment>
                 ))}
               </div>
               <p className="mt-5 text-[13px] leading-[1.7] text-band-soft/60">
-                Wilcoxon signed-rank แบบจับคู่รายข้อ · n = 150 คู่ · มีนัยสำคัญที่ระดับ 0.05 ทั้งสามตัวชี้วัด ·
-                ค้นคืนถูกภายใน 6 อันดับแรก <span className="stat-figure text-band-soft/80">0.992</span>
+                คะแนนเฉลี่ยเต็ม 2 · ความถูกต้องและความครบถ้วนใช้ 135 คู่ ส่วนการรองรับด้วยหลักฐานใช้เฉพาะ
+                85 คู่ที่มีคะแนนครบทั้งสองแบบจากหลักฐานที่ตรวจได้ อีก 50 คู่ไม่รวมในตัวชี้วัดนี้ ไม่ถือว่าผ่านโดยอัตโนมัติ
               </p>
+              <div className="mt-7 border-t border-white/15 pt-5 text-[13px] leading-[1.8] text-band-soft/80">
+                <p className="font-semibold text-white">ผลค้นคืน · คำตอบชุด 7 ต.ค. 2569</p>
+                <p>พบการ์ดที่เกี่ยวข้องใน 6 อันดับแรก <span className="stat-figure font-semibold text-accent-loud">{evidence.retrieval.hits}/{evidence.retrieval.eligible} ({evidence.retrieval.hitAt6.toFixed(2)}%)</span> · MRR <span className="stat-figure">{evidence.retrieval.mrr.toFixed(4)}</span></p>
+                <p className="mt-2 text-xs text-band-soft/60">เฉลยค้นคืนส่วนนี้ทบทวนด้วย AI วันที่ 20 ต.ค. 2569 และยังรอการยืนยันเพิ่มเติมโดยผู้จัดทำ แยกจากการตรวจเอกสารคะแนนคำตอบข้างต้น รวมกรณีที่ระบบจำกัดคำตอบก่อนค้นคืนไว้ในจำนวนทั้งหมดแล้ว</p>
+              </div>
             </div>
           </div>
         </section>
@@ -423,11 +410,11 @@ export default function LandingPage() {
             </h2>
             <p className="mt-5 text-[15px] leading-[1.8] text-body">
               เป้าหมายพลังงานและมาโครคำนวณด้วยโปรแกรมที่เขียนแยกไว้ต่างหาก เรียกใช้เป็นเครื่องมือ
-              โมเดลมีหน้าที่อธิบายผลลัพธ์เท่านั้น ตัวเลขชุดเดิมจะได้ค่าเดิมทุกครั้ง และมีเทสต์ล็อกไว้
+              โมเดลมีหน้าที่อธิบายผลลัพธ์ เมื่อข้อมูลและอายุที่ใช้คำนวณเท่ากัน จะได้ตัวเลขเดิม และมีเทสต์ตรวจผล
             </p>
             <div className="mt-8 border-t border-rule pt-5 text-[13px] leading-[1.9] text-muted">
               {REFERENCES.map((ref) => (
-                <div key={ref}>{ref}</div>
+                <a key={ref.href} href={ref.href} target="_blank" rel="noopener noreferrer" className={`mb-2 block underline underline-offset-4 ${FOCUS}`}>{ref.label}</a>
               ))}
             </div>
           </div>
@@ -446,6 +433,7 @@ export default function LandingPage() {
               <Macro label="คาร์โบไฮเดรต" grams={CALC.carb.grams} note={CALC.carb.note} bar="bg-macro-carb" />
               <Macro label="ไขมัน" grams={CALC.fat.grams} note={CALC.fat.note} bar="bg-macro-fat" />
             </div>
+            <p className="mt-5 text-xs leading-relaxed text-muted">ตัวอย่างกำหนดอายุคงที่ 24 ปี · ไขมันขั้นต่ำ 20% เป็นกติกาเครื่องคำนวณของโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล · ปัดตัวเลขเพื่อแสดงผล</p>
           </div>
         </section>
 
@@ -464,8 +452,8 @@ export default function LandingPage() {
               {/* Unverified foods are excluded from generated menus.
                   Unknown fibre remains unknown. */}
               <p className="mt-5 text-[15px] leading-[1.8] text-body">
-                ตารางอาหารมี 386 รายการ พร้อมแหล่งที่มาและข้อจำกัดของข้อมูล
-                ทุกรายการผ่านการตรวจเทียบแหล่งข้อมูลแล้ว และยังรอผู้ตรวจทานอิสระ
+                ตารางอาหารมี {evidence.foodCount} รายการ พร้อมแหล่งที่มาและข้อจำกัดของข้อมูล
+                ทุกรายการมีบันทึกการตรวจเทียบแหล่งข้อมูลด้วย AI และยังรอผู้ตรวจทานอิสระ
                 ค่าใยอาหารที่ไม่ทราบจะระบุว่ายังไม่มีข้อมูล ไม่ใช้แทนค่าศูนย์
               </p>
             </div>
@@ -509,10 +497,8 @@ export default function LandingPage() {
                   caveat that remains, and that the note states, is that 445 is
                   written for packaged food. */}
               <p className="mt-4 text-[13px] leading-[1.7] text-muted">
-                แถวที่เป็นหน่วยเสิร์ฟคำนวณจากค่าต่อ 100 กรัมของแหล่งอ้างอิง ด้วยน้ำหนัก
-                หนึ่งหน่วยบริโภคอ้างอิงตามประกาศกระทรวงสาธารณสุข ฉบับที่ 445 พ.ศ. 2566
-                (ข้าวหรือเส้นสุก 120 ก. · แกงหรือกับข้าว 200 ก. · ผลไม้ 140 ก. ·
-                จานเดียว = 120 + 200 = 320 ก.) ส่วนแถว 100 กรัม เป็นค่าจากแหล่งโดยตรง
+                ค่าที่แสดงตรงกับหน่วยและน้ำหนักในฐานข้อมูล แถวที่เป็นหน่วยเสิร์ฟคำนวณจากค่าต่อ 100 กรัม
+                โดยใช้น้ำหนักอ้างอิงของโครงการ ขนาดจานจริงและสูตรของแต่ละร้านอาจต่างกัน ควรระบุน้ำหนักที่กินจริงเมื่อทำได้
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
@@ -583,7 +569,8 @@ export default function LandingPage() {
                 ลองถามคำถามแรก
               </h2>
               <p className="mt-4 max-w-[480px] text-[15px] leading-[1.8] text-band-soft/80">
-                ใช้ผ่านเบราว์เซอร์ได้เลย ไม่มีค่าใช้จ่าย กรอกโปรไฟล์ครั้งเดียวเพื่อให้ระบบคำนวณเป้าหมายให้ตรงกับคุณ
+                ใช้ผ่านเบราว์เซอร์ได้เลย ไม่มีค่าใช้จ่าย สมัครและยืนยันอีเมล แล้วกรอกโปรไฟล์เพื่อคำนวณเป้าหมาย
+                จัดเมนู และติดตามอาหารที่กิน ปรับข้อมูลได้เมื่อเป้าหมายหรือน้ำหนักเปลี่ยน
               </p>
             </div>
             <Link
