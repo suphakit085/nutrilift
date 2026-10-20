@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, getToken, setToken } from "@/lib/api";
 import ConsentNotice from "@/components/ConsentNotice";
+import { postAuthDestination } from "@/lib/post-auth";
 
 /** The gate for accounts that owe consent.
  *
@@ -39,7 +40,7 @@ export default function ConsentPage() {
         const me = await api.me();
         if (me.email_verified === false) { router.replace("/verify-email"); return; }
         if (!me.needs_consent) {
-          router.replace("/chat");
+          router.replace(await postAuthDestination());
           return;
         }
       } catch (err) {
@@ -54,7 +55,7 @@ export default function ConsentPage() {
     setBusy(true);
     try {
       await api.acceptConsent();
-      router.replace("/chat");
+      router.replace(await postAuthDestination());
     } catch (err) {
       setError((err as Error).message);
       setBusy(false);

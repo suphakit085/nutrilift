@@ -102,6 +102,10 @@ export default function ProfilePage() {
       const saved = createProfileDraft(await api.saveProfileSettings(payload));
       setProfile(saved);
       setSavedDraft(JSON.stringify(saved));
+      if (savedDraft === null) {
+        router.replace("/chat");
+        return;
+      }
       setHistoryError("");
       setTargets(null);
       setStatus("บันทึกแล้ว");
@@ -158,6 +162,7 @@ export default function ProfilePage() {
           <p className="mt-1 text-sm text-muted">
             ใช้คำนวณพลังงานและสารอาหารเฉพาะบุคคล
           </p>
+          {savedDraft === null && !loadFailed && <p className="mt-2 text-sm text-accent">กรอกโปรไฟล์และเป้าหมายก่อนเริ่มใช้งาน บันทึกแล้วระบบจะพาไปหน้าแชต</p>}
         </div>
         <div className="flex items-center gap-2">
           <Link
