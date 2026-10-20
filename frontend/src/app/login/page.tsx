@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, setToken } from "@/lib/api";
 import RegistrationFlow from "@/components/RegistrationFlow";
+import { postAuthDestination } from "@/lib/post-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,8 +24,7 @@ export default function LoginPage() {
       const result = await api.login(email, password);
       setToken(result.access_token);
       if (result.email_verification_required) { router.push("/verify-email"); return; }
-      const me = await api.me();
-      router.push(me.email_verified === false ? "/verify-email" : me.needs_consent ? "/consent" : "/chat");
+      router.push(await postAuthDestination());
     } catch (err) { setError((err as Error).message); }
     finally { setBusy(false); }
   }

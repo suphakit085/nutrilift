@@ -53,6 +53,8 @@ jobs:
         run: uv sync --locked --extra dev
       - name: Verify account ownership, recovery and revocation in Chrome
         run: npm run test:account-ui
+      - name: Verify profile onboarding in Chrome
+        run: npm run test:onboarding-ui
       - name: Verify dietary clarification and explicit persistence in Chrome
         run: npm run test:dietary-ui
       - name: Verify calculator provenance links and persisted answers in Chrome

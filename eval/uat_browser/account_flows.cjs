@@ -24,7 +24,7 @@ async(page)=>{
     }
     throw new Error('Expected local SMTP message was not captured');
   };
-  const login=async(address,password,destination='/chat')=>{
+  const login=async(address,password,destination='/profile')=>{
     await page.goto(origin+'/login');
     await page.locator('body').ariaSnapshot();
     await page.locator('input[name=email]').fill(address);
@@ -72,7 +72,7 @@ async(page)=>{
   await passwordFields('OtpFirstPassword_123!');
   await page.screenshot({path:artifactDir+'/otp-password-phone.png',fullPage:true});
   await page.getByRole('button',{name:'ตั้งรหัสผ่านและเริ่มใช้งาน',exact:true}).click();
-  await page.waitForURL('**/chat');
+  await page.waitForURL('**/profile');
   const otpHeaders=await headers();
   const otpMe=await(await page.request.get(api+'/auth/me',{headers:otpHeaders})).json();
   add('otp-completed-verified',otpMe.email_verified===true&&!otpMe.needs_consent);
@@ -196,10 +196,11 @@ async(page)=>{
     if(path==='/auth/login')return json(200,{access_token:'legacy-fixture-only',token_type:'bearer'});
     if(path==='/auth/me')return json(200,{id:'legacy',email:'legacy@example.com',needs_consent:false,consent_version:'2026-09-11'});
     if(path==='/conversations')return json(200,[]);
+    if(path==='/profile')return json(200,{sex:'male',birth_year:2000,birth_month:1,height_cm:175,weight_kg:70,body_fat_pct:null,activity_level:'moderate',training_days:3,goal:'maintain',restrictions:[]});
     return json(404,{detail:'Not Found'});
   });
   await page.setViewportSize({width:1280,height:900});
-  await login('legacy@example.com','LegacyPassword_123!');
+  await login('legacy@example.com','LegacyPassword_123!','/chat');
   await page.getByPlaceholder('พิมพ์คำถามเรื่องอาหารและโภชนาการ…').waitFor();
   await page.locator('body').ariaSnapshot();
   await page.getByRole('button',{name:'ออกจากระบบ',exact:true}).click();

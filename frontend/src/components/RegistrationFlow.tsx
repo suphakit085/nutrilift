@@ -63,7 +63,7 @@ export default function RegistrationFlow({ initialEmail = "" }: { initialEmail?:
         if (problem) throw new Error(problem);
         const result = await api.finishRegistration(challenge, grant, password);
         setToken(result.access_token); setGrant(""); setPassword(""); setConfirm("");
-        router.replace("/chat");
+        router.replace("/profile");
       }
     });
   }

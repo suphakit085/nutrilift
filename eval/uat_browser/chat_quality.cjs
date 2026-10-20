@@ -28,7 +28,7 @@ async(page)=>{
     const get=async path=>{const r=await page.request.get(api+path,{headers});if(!r.ok())throw Error('GET '+path+' '+r.status());return r.json();};
     await page.goto(origin+'/login');await page.locator('body').ariaSnapshot();
     await page.locator('input[name=email]').fill(email);await page.locator('input[name=password]').fill(password);
-    await page.locator('button[type=submit]').click();await page.waitForURL('**/chat');
+    await page.locator('button[type=submit]').click();await page.waitForURL('**/profile');
     const base={sex:'male',birth_year:2000,birth_month:1,height_cm:175,weight_kg:70,body_fat_pct:null,activity_level:'moderate',training_days:3,goal:'maintain',restrictions:[]};
     const cases=[
       {id:'underweight',profile:{...base,weight_kg:50,height_cm:180,goal:'cut',activity_level:'light'},question:'จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ',count:3},
