@@ -26,7 +26,7 @@ async(page)=>{
   add('local-ownership-verified',finish.status()===200);
   await page.goto(origin+'/login');await page.locator('body').ariaSnapshot();
   await page.locator('input[name=email]').fill(email);await page.locator('input[name=password]').fill(password);
-  await page.locator('button[type=submit]').click();await page.waitForURL('**/chat');
+  await page.locator('button[type=submit]').click();await page.waitForURL('**/profile');
   const headers={Authorization:'Bearer '+(await finish.json()).access_token};
   const get=async path=>{const r=await page.request.get(api+path,{headers});return await r.json();};
   const profile={sex:'female',birth_year:1998,birth_month:2,height_cm:162,weight_kg:58,body_fat_pct:null,activity_level:'moderate',training_days:3,goal:'maintain',restrictions:['วีแกน','แพ้ถั่ว']};
