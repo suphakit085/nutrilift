@@ -1,0 +1,53 @@
+{
+  "updatedAt": "2026-10-20",
+  "answersRecordedAt": "2026-10-07",
+  "documentEditionAt": "2026-10-19",
+  "scoreScale": {
+    "min": 0,
+    "max": 2
+  },
+  "questionCount": 135,
+  "answerCount": 270,
+  "knowledgeCardCount": 26,
+  "foodCount": 386,
+  "metrics": [
+    {
+      "metric": "ความถูกต้อง",
+      "pairs": 135,
+      "withRag": "1.99",
+      "withRagTotal": 269,
+      "withoutRag": "1.93",
+      "withoutRagTotal": 261
+    },
+    {
+      "metric": "ความครบถ้วน",
+      "pairs": 135,
+      "withRag": "1.99",
+      "withRagTotal": 269,
+      "withoutRag": "1.93",
+      "withoutRagTotal": 261
+    },
+    {
+      "metric": "การรองรับด้วยหลักฐาน",
+      "pairs": 85,
+      "withRag": "2.00",
+      "withRagTotal": 170,
+      "withoutRag": "1.95",
+      "withoutRagTotal": 166
+    }
+  ],
+  "retrieval": {
+    "eligible": 107,
+    "hits": 104,
+    "hitAt6": 97.2,
+    "mrr": 0.9408,
+    "reviewStatus": "AI-assisted gold review; additional human confirmation pending"
+  },
+  "provenance": {
+    "answerReviewFile": "output/adviser-assessment-20261019/reviewed/01-knowledge-comparison-reviewed.csv",
+    "answerReviewSha256": "1b074b10336852e65c18876bdccdf46e0890550abb1d977bf55ef0237a1ccba8",
+    "retrievalFile": "output/thesis-metrics-audit-20261020/metrics-summary.json",
+    "countsCheckedAt": "2026-10-20",
+    "cohort": "development and regression; saved answers, not a live accuracy guarantee"
+  }
+}
