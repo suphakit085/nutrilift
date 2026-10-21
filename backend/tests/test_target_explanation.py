@@ -199,7 +199,7 @@ def test_history_uses_effective_goal_and_warns_without_changing_saved_profile(mo
 
 def test_underweight_uses_actual_maintenance_with_warning_before_numbers(monkeypatch):
     no_provider(monkeypatch)
-    profile = adult(weight_kg=50, height_cm=180, goal="cut")
+    profile = adult(weight_kg=50, height_cm=175, goal="cut")
     result = chat.collect_answer(SimpleNamespace(commit=lambda: None),
         user_message=QUESTION, profile=profile)
     text = result["text"]

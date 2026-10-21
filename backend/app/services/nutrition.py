@@ -27,6 +27,9 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Literal
 
+from app.services.calculation_methods import methods_for_targets, methods_note
+from app.services.profile_safety import BULK_REVIEW_BMI, support_boundary
+
 Sex = Literal["male", "female"]
 Goal = Literal["cut", "bulk", "maintain"]
 ActivityLevel = Literal["sedentary", "light", "moderate", "active", "very_active"]
@@ -199,6 +202,9 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     verbatim rather than recompute them.
     """
     _validate(profile)
+    unsupported = support_boundary(profile.weight_kg, profile.height_cm)
+    if unsupported:
+        raise NutritionInputError(unsupported)
     age = profile.age()
 
     if profile.body_fat_pct is not None:
@@ -227,6 +233,11 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     if profile.goal == "cut" and bmi_value < BMI_UNDERWEIGHT:
         effective_goal = "maintain"
         deficit_suppressed_reason = "underweight"
+
+    surplus_suppressed_reason = None
+    if profile.goal == "bulk" and bmi_value >= BULK_REVIEW_BMI:
+        effective_goal = "maintain"
+        surplus_suppressed_reason = "bmi_screening"
 
     adj_low, adj_high = GOAL_ENERGY_ADJUSTMENT[effective_goal]
     kcal_low = tdee * (1 + adj_low)
@@ -271,6 +282,19 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "ระบบไม่กำหนดพลังงานขาดดุลให้ จึงปรับเป้าหมายพลังงานจากลดไขมันเป็นระดับรักษาน้ำหนัก "
             "(เท่ากับ TDEE) ควรปรึกษาแพทย์หรือนักกำหนดอาหารก่อนตัดสินใจลดไขมัน"
         )
+    if surplus_suppressed_reason:
+        warnings.append(f"BMI {bmi_value:.1f} ตั้งแต่เกณฑ์คัดกรอง {BULK_REVIEW_BMI} "
+                        "ระบบไม่สร้างพลังงานส่วนเกินเพื่อ bulk "
+                        "จึงใช้ระดับรักษาน้ำหนักตามกติกาโครงการ กรุณาปรึกษาแพทย์หรือนักกำหนดอาหาร "
+                        "BMI ไม่แยกกล้ามเนื้อจากไขมันและไม่ได้ใช้วินิจฉัยโรค")
+    goal_recommendation = "cut" if bmi_value >= BULK_REVIEW_BMI and profile.goal != "cut" else None
+    if goal_recommendation:
+        warnings.append(
+            "แนะนำให้พิจารณาเลือกเป้าหมายลดไขมันก่อน bulk หากมีไขมันสะสมสูง "
+            "ควรให้แพทย์หรือนักกำหนดอาหารประเมินความเหมาะสมก่อนเริ่ม "
+            "BMI สูงอาจมาจากมวลกล้ามเนื้อได้ จึงไม่สรุปว่าอ้วนจากน้ำหนักหรือ BMI เพียงอย่างเดียว "
+            "ระบบยังไม่เปลี่ยนเป้าหมายที่คุณบันทึกเป็นลดไขมันโดยอัตโนมัติ"
+        )
     if kcal_target < MIN_SELF_MANAGED_KCAL:
         warnings.append(
             f"พลังงานเป้าหมายต่ำกว่า {MIN_SELF_MANAGED_KCAL:,} kcal/วัน ซึ่งต่ำเกินกว่าจะดูแลด้วยตนเอง "
@@ -290,7 +314,9 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "ตามน้ำหนักเป้าหมายหรือมวลกล้ามเนื้อแทน"
         )
 
-    return {
+    result = {
+        "goal_recommendation": goal_recommendation,
+        "surplus_suppressed_reason": surplus_suppressed_reason,
         "inputs": {
             "sex": profile.sex,
             "age": age,
@@ -349,6 +375,9 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "energy_adjustment_fraction": (adj_low + adj_high) / 2,
             "protein_g_per_kg": (p_low_per_kg + p_high_per_kg) / 2,
             "protein_unrounded_g": protein_g,
+            "energy_target_unrounded_kcal": kcal_target,
+            "fat_unrounded_g": fat_g,
+            "carb_unrounded_g": carb_g,
         },
         "references": [
             bmr_reference,
@@ -373,6 +402,8 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "หากมีโรคประจำตัว ตั้งครรภ์ หรืออายุต่ำกว่า 18 ปี"
         ),
     }
+    result["calculation_methods"] = methods_for_targets(result)
+    return result
 
 
 def summarize_targets_th(targets: dict) -> str:
@@ -398,4 +429,4 @@ def summarize_targets_th(targets: dict) -> str:
     warnings = targets.get("warnings") or []
     if warnings:
         line += "\nคำเตือนจากระบบคำนวณ (ต้องแจ้งผู้ใช้ให้ชัดเจน): " + " / ".join(warnings)
-    return line
+    return line + methods_note(targets.get("calculation_methods"))

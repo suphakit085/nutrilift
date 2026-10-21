@@ -1,0 +1,43 @@
+{
+  "batches": [
+    {
+      "tag": "nutrition",
+      "http_status": 200,
+      "items": 100,
+      "quota_remaining": 299
+    },
+    {
+      "tag": "diet",
+      "http_status": 200,
+      "items": 100,
+      "quota_remaining": 299
+    },
+    {
+      "tag": "protein",
+      "http_status": 200,
+      "items": 100,
+      "quota_remaining": 297
+    },
+    {
+      "tag": "supplements",
+      "http_status": 200,
+      "items": 100,
+      "quota_remaining": 297
+    },
+    {
+      "tag": "weight-gain",
+      "http_status": 200,
+      "items": 100,
+      "quota_remaining": 295
+    },
+    {
+      "tag": "weight-loss",
+      "http_status": 200,
+      "items": 99,
+      "quota_remaining": 295
+    }
+  ],
+  "unique_candidates": 150,
+  "collection_method": "Official Stack Exchange API; question titles unchanged after HTML entity decoding; pre-2020 source publication dates; no answers copied; no AI generation or translation",
+  "warning": "Published community questions are not verified NutriLift users, not a random sample and not yet a Thai evaluation set. Source tags are not gold labels. Freeze policy, translation and human-reviewed rubrics before held-out evaluation."
+}

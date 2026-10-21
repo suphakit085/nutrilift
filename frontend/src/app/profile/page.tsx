@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CalculationMethods } from "@/components/CalculationMethods";
 import { useRouter } from "next/navigation";
 import { ApiError, api, getToken, type Profile, type ProfileRevision, type Targets } from "@/lib/api";
 import { ageFrom, createProfileDraft, profileFromDraft, toCE, type ProfileDraft } from "@/lib/profile-form";
@@ -422,7 +423,11 @@ export default function ProfilePage() {
       </form>
 
       {dirty && savedDraft !== null && <p role="status" className="mt-6 text-sm text-muted">ข้อมูลที่แก้ยังไม่ได้บันทึก กรุณาบันทึกและคำนวณเพื่ออัปเดตเป้าหมาย</p>}
-      {targets && !dirty && !loadFailed && <TargetsCard targets={targets} />}
+      {targets && !dirty && !loadFailed && <TargetsCard targets={targets} onChooseCut={() => {
+        setProfile(current => ({ ...current, goal: "cut" }));
+        setStatus("");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }} />}
       {savedDraft !== null && !loadFailed && <section className="mt-8 rounded-lg border border-border bg-surface p-5">
         <h2 className="font-display text-lg font-semibold">ประวัติโปรไฟล์และเป้าหมาย</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted">แสดง 20 รายการล่าสุด ประวัติเริ่มจากการบันทึกหลังอัปเดตระบบ เป้าหมายของวันเก่าใช้ข้อมูลที่บันทึกไว้ของวันนั้น</p>
@@ -439,7 +444,7 @@ export default function ProfilePage() {
   );
 }
 
-function TargetsCard({ targets }: { targets: Targets }) {
+function TargetsCard({ targets, onChooseCut }: { targets: Targets; onChooseCut: () => void }) {
   const { macros } = targets;
   const total = targets.energy_target_kcal || 1;
 
@@ -514,8 +519,16 @@ function TargetsCard({ targets }: { targets: Targets }) {
         </ul>
       )}
 
+      {targets.goal_recommendation === "cut" && <div className="rounded-lg border border-accent p-4">
+        <p className="text-sm">หากต้องการเลือกเป้าหมายลดไขมัน กดปุ่มนี้แล้วตรวจข้อมูลและบันทึกเพื่อคำนวณใหม่</p>
+        <button type="button" onClick={onChooseCut} className="mt-3 rounded-sm bg-accent px-4 py-2 text-sm text-surface">
+          เลือกเป้าหมายลดไขมัน
+        </button>
+      </div>}
+
       <div className="rounded-lg border border-border bg-surface p-5">
-        <details>
+        <CalculationMethods targets={targets} />
+        <details className="mt-4">
           <summary className="cursor-pointer text-sm font-medium">
             สูตรและแหล่งอ้างอิงที่ใช้คำนวณ
           </summary>

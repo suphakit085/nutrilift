@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.calculation_methods import methods_note, target_methods_note
 from app.services.creatine_facts import creatine_necessity_reply
 from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
 from app.services.food_portions import verified_food_portion_reply
@@ -367,6 +368,7 @@ def _run_menu_tool(
             suggest_extra_meals=args.get("suggest_extra_meals", True),
         )
         plan["target_warnings"] = targets.get("warnings") or []
+        plan["calculation_methods"] = targets.get("calculation_methods") or []
         return plan
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
@@ -742,7 +744,7 @@ def _menu_reply(plan: dict) -> str:
             ("หากต้องการลองแผนนี้ พิมพ์ว่า เพิ่มมื้อเสริมได้ ระบบจะจัดปริมาณทั้งแผนใหม่ "
              "ตัวเลือกนี้ยังไม่ได้รวมอยู่ในตารางและยอดรวมด้านบน"),
         ])
-    return "\n".join(lines)
+    return "\n".join(lines) + methods_note(plan.get("calculation_methods"))
 
 
 def _append_menu_data_notes(answer: str, plans: list[dict]) -> str:
@@ -1276,6 +1278,7 @@ def stream_chat(
             if profile is not None and targets is not None else None
         )
         if profile_reply:
+            profile_reply += target_methods_note(profile_reply, targets)
             yield {"type": "delta", "text": profile_reply}
             yield {
                 "type": "done", "text": profile_reply, "citations": [], "retrieved": citations,
@@ -1290,6 +1293,7 @@ def stream_chat(
             history=history,
         )
         if split_reply:
+            split_reply += target_methods_note(split_reply, targets)
             yield {"type": "delta", "text": split_reply}
             yield {
                 "type": "done", "text": split_reply, "citations": [], "retrieved": citations,
@@ -1451,6 +1455,7 @@ def stream_chat(
                             "กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
                         )}
                         return
+                    answer += target_methods_note(answer, targets)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
                 elif not food_lookup_unverified:
@@ -1597,6 +1602,8 @@ def stream_chat(
                 "ยังยืนยันเมนูนี้กับฐานข้อมูลอาหารไม่ได้ครับ กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
             )}
             return
+        if answer_text and not verified_menu_results:
+            answer_text += target_methods_note(answer_text, targets)
         if answer_text:
             yield {"type": "delta", "text": answer_text}
     else:

@@ -227,6 +227,9 @@ export type Profile = {
 };
 
 export type Targets = {
+  goal_recommendation?: "cut" | null;
+  calculation_methods?: Array<{ key: string; name: string; equation: string; result: number; unit: string; basis: string; source_url: string | null }>;
+  surplus_suppressed_reason?: "bmi_screening" | null;
   bmr_kcal: number;
   bmr_formula: string;
   tdee_kcal: number;
@@ -244,7 +247,7 @@ export type Targets = {
   references: string[];
   disclaimer: string;
   inputs: { goal: "cut" | "bulk" | "maintain"; goal_label_th: string; activity_label_th: string };
-  /** kg/m². Only the low side is used for advice - see nutrition.py BMI_UNDERWEIGHT. */
+  /** kg/m². Screening and service support limits; never a diagnosis. */
   bmi: number;
   underweight: boolean;
   /** Goal the numbers were actually built from. Differs from inputs.goal when a

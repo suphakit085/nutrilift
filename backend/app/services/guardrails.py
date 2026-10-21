@@ -22,6 +22,13 @@ from app.services.nutrition import (
     ProfileInput,
     bmi,
 )
+from app.services.profile_safety import (
+    MAX_SELF_SERVICE_WEIGHT_KG,
+    SPECIALIST_BMI_HIGH,
+    SPECIALIST_BMI_LOW,
+    support_boundary,
+    support_boundary_reply,
+)
 from app.services.thai_text import normalize_thai
 
 
@@ -34,6 +41,8 @@ class Flag(StrEnum):
     MINOR = "minor"
     PREGNANCY = "pregnancy"
     OUT_OF_SCOPE = "out_of_scope"
+    #: Declared measurements or saved profile outside the service's planning range.
+    SPECIALIST_PROFILE = "specialist_profile"
     #: Profile-derived (see check_profile): BMI under the WHO threshold.
     UNDERWEIGHT = "underweight"
     #: Profile-derived: the computed energy target is under the self-managed floor.
@@ -133,6 +142,7 @@ _PATTERNS: dict[Flag, tuple[str, ...]] = {
         "อีเฟดรีน",
     ),
     Flag.MEDICAL: (
+        "ทุพโภชนาการ", "ขาดสารอาหาร",
         "mounjaro",
         "ozempic",
         "wegovy",
@@ -784,6 +794,29 @@ def check(message: str) -> GuardResult:
     if Flag.EMERGENCY in flags and Flag.MEDICAL not in flags:
         flags.append(Flag.MEDICAL)
         matched[str(Flag.MEDICAL)] = ["urgent_symptom"]
+    risk_text = text.translate(str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789"))
+    risk_text = re.sub(r"(?<=\d),(?=\d)", "", risk_text)
+    for hit in re.finditer(
+        r"(?:น้ำหนัก(?:ตัว)?|หนัก)\s*(\d+(?:\.\d+)?)\s*(?:กก\.?|กิโล(?:กรัม)?|โล|kg\b)",
+        risk_text, re.I,
+    ):
+        prefix = risk_text[max(0, hit.start()-12):hit.start()]
+        if (float(hit.group(1)) >= MAX_SELF_SERVICE_WEIGHT_KG
+                and not re.search(r"ไม่ใช่|ไม่ได้|ไม่ถึง|ต่ำกว่า", prefix)):
+            if Flag.SPECIALIST_PROFILE not in flags:
+                flags.append(Flag.SPECIALIST_PROFILE)
+            matched.setdefault(str(Flag.SPECIALIST_PROFILE), []).append(
+                "text:weight_outside_supported_range")
+    for hit in re.finditer(r"\bbmi\s*(?:=|:|คือ|เท่ากับ)?\s*(\d+(?:\.\d+)?)", risk_text, re.I):
+        value = float(hit.group(1))
+        prefix = risk_text[max(0, hit.start()-12):hit.start()]
+        if (0 < value < SPECIALIST_BMI_LOW or value >= SPECIALIST_BMI_HIGH) and not re.search(
+            r"ไม่ใช่|ไม่ได้|ไม่ถึง|ต่ำกว่า", prefix,
+        ):
+            if Flag.SPECIALIST_PROFILE not in flags:
+                flags.append(Flag.SPECIALIST_PROFILE)
+            matched.setdefault(str(Flag.SPECIALIST_PROFILE), []).append(
+                "text:bmi_outside_supported_range")
     return GuardResult(flags=flags, matched=matched)
 
 
@@ -796,6 +829,7 @@ def check(message: str) -> GuardResult:
 #: too - check_profile recomputes them from the profile every turn already.
 PERSISTENT_FLAGS: frozenset[Flag] = frozenset(
     {
+        Flag.SPECIALIST_PROFILE,
         Flag.MEDICAL,
         Flag.PREGNANCY,
         Flag.MINOR,
@@ -865,6 +899,7 @@ PERSONALIZATION_BLOCK_FLAGS = frozenset(
     {
         Flag.EMERGENCY,
         Flag.SELF_HARM,
+        Flag.SPECIALIST_PROFILE,
         Flag.MEDICAL,
         Flag.PED,
         Flag.MINOR,
@@ -954,6 +989,8 @@ def safety_reply(result: GuardResult) -> tuple[str, str] | None:
                 "่วมกับแพทย์หรือนักกำหนดอาหารครับ"
             ),
         )
+    if Flag.SPECIALIST_PROFILE in result.flags:
+        return ("specialist_profile", support_boundary_reply())
     return None
 
 
@@ -973,6 +1010,10 @@ def check_profile(profile: ProfileInput | None, targets: dict | None = None) -> 
     matched: dict[str, list[str]] = {}
     if profile is None:
         return GuardResult(flags=flags, matched=matched)
+
+    if support_boundary(profile.weight_kg, profile.height_cm):
+        flags.append(Flag.SPECIALIST_PROFILE)
+        matched[str(Flag.SPECIALIST_PROFILE)] = ["profile:outside_supported_planning_range"]
 
     age = profile.age()
     if age < MINOR_AGE_LIMIT:
