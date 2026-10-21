@@ -100,11 +100,11 @@ def run(message, profile, **kwargs):
 
 def test_underweight_warning_precedes_target_and_menu_without_duplicates(monkeypatch, foods):
     no_external_calls(monkeypatch, foods)
-    p = adult(weight_kg=50, height_cm=180, goal="cut", activity_level="light")
+    p = adult(weight_kg=50, height_cm=175, goal="cut", activity_level="light")
     text = run("จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ", p)[-1]["text"]
-    assert text.index("BMI 15.4") < text.index("เป้าหมาย: พลังงาน") < text.index("| มื้ออาหาร")
-    assert text.count("BMI 15.4") == 1
-    assert "2062 kcal" in text and p.goal == "cut"
+    assert text.index("BMI 16.3") < text.index("เป้าหมาย: พลังงาน") < text.index("| มื้ออาหาร")
+    assert text.count("BMI 16.3") == 1
+    assert "รักษาน้ำหนัก" in text and p.goal == "cut"
 
 
 def test_budget_is_partial_even_when_nutrients_meet_target(monkeypatch, foods):

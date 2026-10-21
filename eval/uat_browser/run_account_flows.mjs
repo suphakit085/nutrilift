@@ -51,7 +51,7 @@ try{
   await ready(origin+'/login',web);
   const config={origin,apiOrigin,artifactDir};
   if(process.env.AUTH_UAT_RECIPIENT_FILE)Object.assign(config,JSON.parse(readFileSync(process.env.AUTH_UAT_RECIPIENT_FILE,'utf8')));
-  const script=process.env.AUTH_UAT_SCRIPT||path.join(workspace,process.argv.includes('--onboarding')?'eval/uat_browser/profile_onboarding.cjs':'eval/uat_browser/account_flows.cjs');
+  const script=process.env.AUTH_UAT_SCRIPT||path.join(workspace,process.argv.includes('--methods')?'eval/uat_browser/presentation_methods.cjs':process.argv.includes('--onboarding')?'eval/uat_browser/profile_onboarding.cjs':'eval/uat_browser/account_flows.cjs');
   const snippet=path.join(artifactDir,'browser-check.cjs');
   writeFileSync(snippet,readFileSync(script,'utf8').replace('__AUTH_UAT_CONFIG__',JSON.stringify(config)));
   cli(['open',origin+'/login','--browser=chrome']);opened=true;

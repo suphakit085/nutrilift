@@ -104,14 +104,13 @@ def test_menu_executes_without_model_and_keeps_verified_numbers(
     assert "ข้าวขาหมู" not in done["text"]
 
 
-def test_original_underweight_uat_uses_maintenance_and_keeps_warning(monkeypatch, foods):
+def test_original_severe_underweight_uat_now_refers_without_menu(monkeypatch, foods):
     no_model(monkeypatch, foods)
     p = adult(height_cm=180, weight_kg=50, activity_level="light", goal="cut")
     done = run("จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ", p)[-1]
-    assert done["tool_calls"][0]["status"] in {"success", "partial"}
-    assert "2062 kcal" in done["text"] and "BMI 15.4" in done["text"]
-    assert "ไม่กำหนดพลังงานขาดดุล" in done["text"]
-    assert "ปรึกษาแพทย์" in done["text"] and "รักษาน้ำหนัก" in done["text"]
+    assert not done["tool_calls"]
+    assert done["model"] == "rule:specialist_profile"
+    assert "ปรึกษาแพทย์" in done["text"]
     assert "[S" not in done["text"]
     assert p.goal == "cut"
 

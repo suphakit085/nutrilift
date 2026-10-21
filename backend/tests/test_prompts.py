@@ -87,7 +87,7 @@ from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VER
 
 
 def test_prompt_version_records_claim_attribution_release():
-    assert PROMPT_VERSION == "v1.19.0"
+    assert PROMPT_VERSION == "v1.20.0"
 
 
 def test_base_prompt_reserves_square_brackets_for_citations():

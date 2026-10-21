@@ -1,0 +1,5 @@
+{
+  "verified_titles": 20,
+  "failed": [],
+  "scope": "Titles only, not full forum posts. Review source body before assigning answerability, risk or gold. Never use comments as nutrition ground truth."
+}
