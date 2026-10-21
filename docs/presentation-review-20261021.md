@@ -70,3 +70,5 @@ BMI เพียงค่าเดียววินิจฉัยภาวะ�
 ทดสอบ regression backend ตามคำสั่ง CI ที่ไม่ใช้ PostgreSQL/ชุด evidence, frontend tests/lint/build และ Chrome กับ API/ฐานข้อมูล/SMTP ชั่วคราว เก็บรายงานจริงไว้ที่ `output/presentation-review-20261021/` และภาพหน้าจอที่ `output/playwright/presentation-review-20261021/` ชุด Chrome มี 22 จุด ครอบคลุมสองสมการ, ขอบเขต bulk/cut, กรณีส่งต่อ, ซ่อนผลเก่า, เลือกลดไขมันแบบรอยืนยันบันทึก และมือถือ สคริปต์รันซ้ำอยู่ใน `eval/uat_browser/presentation_methods.cjs` โดยใช้ runner บัญชีเดิมและ `AUTH_UAT_SCRIPT`
 
 ยังไม่ได้วัดคุณภาพคำตอบใหม่ด้วยชุดคำถามเผยแพร่จริง ยังไม่ได้ยืนยันความเหมาะสมทางคลินิก และยังไม่ได้ deploy การทดสอบ PostgreSQL/อิมเมจรันไทม์เป็นคนละรายการกับ local regression ต้องรายงานผลตามสถานะจริงเมื่อทำแล้ว
+
+รันทดสอบเบราว์เซอร์ชุดนี้ซ้ำด้วย `npm run test:profile-methods-ui` จาก `frontend/` หลัง build โดยตั้ง `NEXT_PUBLIC_API_BASE=https://api.example.invalid` ให้ตรงกับ runner และ `AUTH_UAT_PYTHON` หากใช้ Python environment นอกโฟลเดอร์ candidate มีขั้นตอนนี้ใน CI แล้ว กรณี UI เดิมที่ 50 กก./180 ซม. ถูกแยกเป็นการส่งต่อ; การทดสอบคำเตือนน้ำหนักน้อยที่ยังจัดเมนูได้ใช้ 50 กก./175 ซม. แทน

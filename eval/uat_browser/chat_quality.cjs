@@ -30,8 +30,10 @@ async(page)=>{
     await page.locator('input[name=email]').fill(email);await page.locator('input[name=password]').fill(password);
     await page.locator('button[type=submit]').click();await page.waitForURL('**/profile');
     const base={sex:'male',birth_year:2000,birth_month:1,height_cm:175,weight_kg:70,body_fat_pct:null,activity_level:'moderate',training_days:3,goal:'maintain',restrictions:[]};
+    // Mild underweight retains maintenance/menu coverage. BMI <16 referral is
+    // covered separately by presentation_methods.cjs (50 kg / 180 cm).
     const cases=[
-      {id:'underweight',profile:{...base,weight_kg:50,height_cm:180,goal:'cut',activity_level:'light'},question:'จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ',count:3},
+      {id:'underweight',profile:{...base,weight_kg:50,height_cm:175,goal:'cut',activity_level:'light'},question:'จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ',count:3},
       {id:'six-meals',profile:{...base,weight_kg:82,height_cm:178,birth_year:2005,activity_level:'active',goal:'bulk',restrictions:['ไม่ใช้อาหารเสริม']},question:'ช่วยจัดเมนูทั้งหมด 6 มื้อ เพิ่มมื้อเสริมได้ ไม่ใช้อาหารเสริม',count:6},
       {id:'budget',profile:base,question:'จัดเมนู 3 มื้อ งบ 120 บาทต่อวัน',count:3},
       {id:'vegan-peanut',profile:{...base,sex:'female',weight_kg:58,height_cm:162,restrictions:['วีแกน','แพ้ถั่วลิสง']},question:'ช่วยจัดเมนู 3 มื้อจากโปรไฟล์',count:3},
@@ -53,8 +55,8 @@ async(page)=>{
       add(item.id+'-count',rows.length===item.count);
       add(item.id+'-profile-unchanged',JSON.stringify(await get('/profile'))===JSON.stringify(before)&&JSON.stringify(await get('/profile/history'))===JSON.stringify(revisions));
       if(item.id==='underweight'){
-        add('health-warning-before-target',text.indexOf('BMI 15.4')>=0&&text.indexOf('BMI 15.4')<text.indexOf('เป้าหมาย: พลังงาน')&&text.split('BMI 15.4').length===2);
-        add('health-maintenance-unchanged',text.includes('2062 kcal')&&text.includes('ไม่กำหนดพลังงานขาดดุล'));
+        add('health-warning-before-target',text.indexOf('BMI 16.3')>=0&&text.indexOf('BMI 16.3')<text.indexOf('เป้าหมาย: พลังงาน')&&text.split('BMI 16.3').length===2);
+        add('health-maintenance-unchanged',text.includes('2020 kcal')&&text.includes('ไม่กำหนดพลังงานขาดดุล'));
         const note=page.getByRole('note',{name:'ข้อควรทราบก่อนใช้เมนู',exact:true});await note.waitFor();
         add('health-notice-before-table-in-dom',await note.evaluate(node=>!!(node.compareDocumentPosition(document.querySelector('table'))&Node.DOCUMENT_POSITION_FOLLOWING)));
       }
