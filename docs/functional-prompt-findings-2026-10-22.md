@@ -1,62 +1,56 @@
-# Functional prompt findings: runtime remediation
+# Functional prompt findings: semantic request interpretation
 
-The 24-case functional test found false profile requests for negated calculations,
-guessed answers to incomplete pairing questions, unstable medical scope endings,
-misattributed personal targets, unsupported percentages, and an extra introduction
-in a table-only answer. Repeated outputs represent nine failing cases, not 24
-independent defects.
+The original 24 functional cases, repeated three times, exposed nine failing
+cases. Plausible prose could conceal stale calculator inputs. Intermediate
+wording-specific fixes are preserved in evaluation artifacts but superseded:
+the final production path does not infer new request semantics by expanding
+regular expressions one phrase at a time.
 
-## Changes
+## Production flow
 
-- Mask explicitly negated actions for profile routing while preserving a later
-  affirmative request. General explanation requests that prohibit calculation do
-  not receive the personal-target prompt block.
-- Ask for the missing partner in an incomplete pairing question. Fully specified
-  pairs and open-ended requests for possible pairings remain answerable.
-- Recognize organ/lab-result wording variants and retain the existing medical
-  flag across user history. Medical/PED refusals precede retrieval and generation.
-- Route explicit personal calculation requests through the existing calculator
-  renderer even when the user does not separately request a formula. The same
-  current conversation profile, screening decisions, warnings and real operands
-  are used. No calculation formula or clinical threshold changes in this patch.
-- Explicit user weight/height updates reach the temporary conversation profile
-  and calculator, including a corrected value separated from the measurement
-  name. Ignore assistant guesses, hypotheticals and negated values; disclose the
-  active measurements without changing the saved profile. Explicit reset restores
-  saved measurements. Calculator imperatives need not contain a first-person word.
-- Keep publication citations separate from actual calculator results in model
-  prose, preserving neighboring research clauses and adding calculator provenance.
-- Extend the existing source-bound creatine loading FAQ to spelling variants and
-  explicit dose exclusions. Without the supporting passage it remains a model
-  question. This changes the observed model/rule coverage and must be reported.
-- Validate explicit JSON/table/bullet constraints and excluded doses before
-  displaying ordinary model prose. Percentage ranges must have numeric support
-  in the cited passages. A failed draft gets one bounded repair; another failure
-  ends with an error instead of displaying the rejected draft. Repair is recorded
-  in the terminal event and may add one generation call.
-- Normalize the observed mixed-script spelling of the exercise term "set" and
-  known numerical week-unit spellings before validation. Other unexpected scripts
-  still trigger repair; normalizing a unit does not authorize an unsupported
-  tracking interval. Rejected drafts remain withheld.
+1. Existing deterministic safety checks can refuse before any model call.
+2. `stream_understood_chat` asks the current model for a JSON request state,
+   using an explicit JSON Schema. The schema separates the requested operation,
+   excluded actions, personal context, medical concern, missing information,
+   output format, and temporary measurements/goal.
+3. Pydantic validates types/enums and rejects extra fields. Measurement/goal
+   changes require exact quotes from numbered user turns; assistant guesses
+   cannot be quoted as user evidence. Numeric syntax is checked independently.
+   Contradictory or ungrounded state stops execution and asks for clarification.
+4. Valid temporary values reach the actual calculator and profile screening.
+   They do not write the saved profile. Responses disclose this distinction.
+   Explicit target requests render real operands, warnings and scoped sources.
+5. General answers receive the typed request constraints; raw extracted quotes
+   are never promoted into system instructions. Excluded calculator/menu tools
+   are also blocked in application execution, not just by prompt.
+6. Output syntax, prohibited dose quantities, unexpected scripts and unsupported
+   numeric percentages/intervals are checked before display. One bounded repair
+   is permitted; another failure withholds the draft and returns an error.
 
-The numeric-support check is deliberately limited: matching a number does not
-prove semantic entailment, population applicability or clinical correctness.
-Human review is still required. Existing verified food/menu tool rendering stays
-authoritative. This patch does not reintroduce RESPONSE_CONTRACT; the selected
-original prompt assembly remains, with a focused evidence rule and version
-v1.20.2 for traceability.
+The API and main evaluation runner use the semantic entry point. `stream_chat`
+and `collect_answer` remain low-level executor interfaces for existing unit
+tests; they are not evidence that language interpretation has been tested.
+Full-system evaluations must use `stream_understood_chat` or
+`collect_understood_answer`.
 
-## Validation
+## Boundaries and tradeoffs
 
-Regression cases include paraphrases, negated/affirmative mixed requests, complete
-pairing questions, clinical/nonclinical similar words, calculator provenance,
-format repair, bounded failure and withholding rejected drafts. The local CI
-regression command includes 1,674 tests (76 PostgreSQL/evidence cases deselected;
-the CI-excluded food-audit file requires external local evidence). Ruff passed.
-Hosted CI separately exercises PostgreSQL and the runtime image.
+- The semantic model is fallible. Quote presence proves provenance, not complete
+  semantic correctness. Repetition/paraphrase tests remain necessary.
+- The model may add a medical concern but cannot clear an existing safety flag.
+  Calculator formulas, nutrition scope and specialist thresholds are unchanged.
+- Existing legacy safety/menu/food handlers still contain established text
+  rules. This change replaces the new phrase-by-phrase intent/measurement fixes;
+  it does not claim that all regular expressions have been removed from the app.
+- Regex remains appropriate for syntax checks such as numbers, citations and
+  Markdown. It is not the new mechanism for interpreting negation/corrections.
+- Interpretation adds one provider call on a turn that is not refused early;
+  target/menu answers then use application calculation, while knowledge answers
+  need a generation call. Cost, quota and first-answer latency must be measured.
+- Format checks and matching numbers do not prove that a cited passage entails
+  the prose, nor prevent every hallucinated name or conflated research result.
+- The original prompt assembly remains; no RESPONSE_CONTRACT framework is added.
+  Prompt version is v1.20.3; interpretation schema/policy version is v1.
 
-The real-model retest reuses all 24 frozen input/expected cases and their supplied
-contexts, three repetitions each. This is an integration regression with model
-and rule routes reported separately, not a prompt-only A/B or a production website
-test. Original evidence remains in output/prompt-functional-testing-20261022;
-follow-up evidence belongs in output/prompt-functional-fixes-20261022.
+JSON Schema configuration was checked against the installed SDK and real model.
+See [Google's structured output documentation](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).

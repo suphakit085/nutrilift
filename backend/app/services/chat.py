@@ -29,7 +29,6 @@ from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.answer_validation import (
     answer_issues,
-    normalize_answer_terms,
     repair_instruction,
     without_target_citations,
 )
@@ -66,7 +65,7 @@ from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
-from app.services.request_constraints import excludes_personal_calculation, incomplete_pairing_reply
+from app.services.request_understanding import RequestUnderstanding, interpret_request
 from app.services.target_explanation import (
     explicit_target_explanation_reply,
     requests_target_explanation,
@@ -910,8 +909,6 @@ def _database_food_request(message: str) -> bool:
 
 def _personal_context_requested(message: str) -> bool:
     """Only expose personal targets when the current question needs them."""
-    if excludes_personal_calculation(message):
-        return False
     return bool(re.search(normalize_thai(
         r"ผม|ฉัน|ดิฉัน|ตัวเอง|โปรไฟล์|เป้า(?:หมาย)?|เมนู|ตารางอาหาร|"
         r"(?:ควร|ต้อง|ให้)(?:กิน|ทาน)|กี่(?:แคล|กรัม)|my\b"
@@ -983,6 +980,7 @@ def _dietary_question_events(
 def _verified_menu_events(
     db: Session, message: str, profile: ProfileInput | None,
     history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
+    understanding: RequestUnderstanding | None = None,
 ) -> Iterator[dict]:
     """Execute a requested operation on the server; no model transcription."""
     yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
@@ -994,7 +992,7 @@ def _verified_menu_events(
         if clarification:
             answer = clarification
         else:
-            effective, note = conversation_profile(profile, history, message)
+            effective, note = conversation_profile(profile, history, message, understanding)
             if effective is not None and nut_clarification(effective.restrictions):
                 yield from _dietary_question_events(
                     effective.restrictions, guard, use_rag, include_sources=False,
@@ -1066,6 +1064,7 @@ def stream_chat(
     pending_food_confirmations: list[str] | None = None,
     persistent_safety_flags: list[str] | None = None,
     menu_history: list[dict] | None = None,
+    understanding: RequestUnderstanding | None = None,
 ) -> Iterator[dict]:
     """Run one turn. Yields event dicts:
 
@@ -1086,6 +1085,16 @@ def stream_chat(
         guardrails.from_stored_flags(persistent_safety_flags),
         guardrails.check_profile(profile),
     )
+    if understanding and understanding.medical_self_context:
+        guard = guardrails.combine(guard, guardrails.GuardResult(
+            flags=[guardrails.Flag.MEDICAL], matched={"medical_condition": ["semantic_context"]},
+        ))
+    if understanding and profile is not None:
+        interpreted_profile, _ = conversation_profile(
+            profile, menu_history if menu_history is not None else (history or []),
+            user_message, understanding,
+        )
+        guard = guardrails.combine(guard, guardrails.check_profile(interpreted_profile))
 
     # Safety precedes retrieval and all model/tool calls, including outages.
     safety = guardrails.safety_reply(guard)
@@ -1113,6 +1122,17 @@ def stream_chat(
         return
 
     operation_history = menu_history if menu_history is not None else (history or [])
+    if understanding:
+        if understanding.task == "clarify":
+            reply = understanding.missing_information
+            yield from _understanding_reply(reply, guard, use_rag, "missing_information")
+            return
+        if understanding.task == "calculate_targets" and profile is None:
+            reply = ("ยังไม่มีข้อมูลเพียงพอสำหรับคำนวณเป้าหมายของคุณครับ "
+                     "กรุณากรอกและบันทึกเพศ ปีและเดือนเกิด ส่วนสูง น้ำหนัก ระดับกิจกรรม "
+                     "และเป้าหมายในหน้าโปรไฟล์ก่อน เปอร์เซ็นต์ไขมันเป็นข้อมูลเสริม")
+            yield from _understanding_reply(reply, guard, use_rag, "missing_personal_context")
+            return
     if re.search(r"แพ้ถั่ว(?!ลิสง|เหลือง|เปลือกแข็ง)", normalize_thai(user_message)):
         restrictions = conversation_restrictions(
             profile, [*operation_history, {"role": "user", "content": user_message}],
@@ -1120,23 +1140,27 @@ def stream_chat(
         if nut_clarification(restrictions):
             yield from _dietary_question_events(restrictions, guard, use_rag)
             return
-    if requests_menu(user_message, operation_history):
+    menu_requested = (understanding.task == "plan_menu" if understanding
+                      else requests_menu(user_message, operation_history))
+    if menu_requested:
         yield from _verified_menu_events(
-            db, user_message, profile, operation_history, guard, use_rag,
+            db, user_message, profile, operation_history, guard, use_rag, understanding,
         )
         return
 
     # Formula/provenance questions use the actual calculator payload. Primary
     # links are scoped in the reply, not fabricated as retrieved S passages.
-    if requests_target_explanation(user_message) and guardrails.personalization_allowed(guard):
+    target_requested = (understanding.task == "calculate_targets" if understanding
+                        else requests_target_explanation(user_message))
+    if target_requested and guardrails.personalization_allowed(guard):
         effective_profile, context_note = conversation_profile(
-            profile, operation_history, user_message,
+            profile, operation_history, user_message, understanding,
         )
         if effective_profile is not None:
             try:
                 explanation_targets = calc_nutrition_targets(effective_profile)
                 explanation = explicit_target_explanation_reply(
-                    user_message, explanation_targets, context_note,
+                    user_message, explanation_targets, context_note, requested=target_requested,
                 )
             except NutritionInputError:
                 explanation = None
@@ -1215,7 +1239,7 @@ def stream_chat(
         }
         return
 
-    clarification = missing_personal_context_reply(
+    clarification = None if understanding else missing_personal_context_reply(
         user_message, menu_history or history or [], has_profile=profile is not None,
     )
     if clarification:
@@ -1228,18 +1252,8 @@ def stream_chat(
         }
         return
 
-    clarification = incomplete_pairing_reply(user_message)
-    if clarification:
-        yield {"type": "delta", "text": clarification}
-        yield {
-            "type": "done", "text": clarification, "citations": [], "retrieved": citations,
-            "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
-            "safety_flags": guard.as_json(), "model": "rule:incomplete_question",
-            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
-        }
-        return
-
-    necessity = creatine_necessity_reply(user_message, [p.as_dict() for p in passages])
+    necessity = (None if understanding else
+                 creatine_necessity_reply(user_message, [p.as_dict() for p in passages]))
     if necessity:
         yield {"type": "delta", "text": necessity}
         yield {
@@ -1264,7 +1278,8 @@ def stream_chat(
         return
 
     profile, menu_context_note = conversation_profile(
-        profile, menu_history if menu_history is not None else (history or []), user_message
+        profile, menu_history if menu_history is not None else (history or []),
+        user_message, understanding,
     )
     macro_reply = explicit_macro_energy_reply(user_message)
     if macro_reply:
@@ -1343,13 +1358,25 @@ def stream_chat(
         sex=profile.sex if profile else None,
         age=profile.age() if profile else None,
         reference_only=(
+            not understanding.personal_context if understanding else
             _reference_question(user_message) or not _personal_context_requested(user_message)
         ),
     )
 
     if menu_context_note:
         system_prompt += "\n\n" + menu_context_note + " ต้องแจ้งข้อนี้เมื่อรายงานเป้าหมายหรือเมนู"
-    focus = prompts.answer_focus_th(user_message)
+    focus = "" if understanding else prompts.answer_focus_th(user_message)
+    if understanding:
+        # Never promote user-provided quotes into system instructions.
+        state = understanding.model_dump(exclude={
+            "weight_kg", "height_cm", "goal_quote", "goal_user_turn", "missing_information",
+        })
+        focus += "\nข้อมูลความต้องการที่ผ่านการตรวจโครงสร้างแล้ว:\n" + str(state)
+        focus += ("\nเคารพ blocked_actions ห้ามทำกิจกรรมที่ระบุไว้ "
+                  "ไม่สร้างชื่อผู้ใช้หรือข้อมูลส่วนตัวเพิ่ม ไม่อ้างการไม่มีข้อมูลว่าเป็นผลจากบทความ")
+        if understanding.topic == "progress_tracking":
+            focus += ("\nใช้เป้าหมายล่าสุด ถ้าหลักฐานไม่มีวิธีติดตามโดยตรงให้แจ้งช่องว่างก่อน "
+                      "แล้วสรุปเฉพาะปัจจัยที่มีหลักฐาน ไม่เพิ่มอัตราหรือช่วงเวลาตายตัวจากความจำ")
     if focus:
         system_prompt += "\n\n" + focus
     contents = _history_to_contents(history or [])
@@ -1367,7 +1394,8 @@ def stream_chat(
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         tool_config=(types.ToolConfig(function_calling_config=types.FunctionCallingConfig(
             mode="ANY", allowed_function_names=["lookup_food"],
-        )) if _database_food_request(user_message) else None),
+        )) if (understanding.task == "lookup_food" if understanding
+               else _database_food_request(user_message)) else None),
     )
 
     text_parts: list[str] = []
@@ -1475,7 +1503,7 @@ def stream_chat(
             if not function_calls:
                 if not tool_chain_active:
                     answer = without_target_citations(
-                        normalize_answer_terms(clean_answer("".join(turn_text_parts), citations)),
+                        clean_answer("".join(turn_text_parts), citations),
                         targets,
                     )
                     if unverified_menu_table(answer):
@@ -1486,6 +1514,7 @@ def stream_chat(
                         return
                     issues = answer_issues(
                         user_message, answer, [p.as_dict() for p in passages], use_rag=use_rag,
+                        understanding=understanding,
                     )
                     if issues:
                         answer_validation_issues.extend(issues)
@@ -1525,7 +1554,13 @@ def stream_chat(
                         **args,
                         **menu_planning_options(menu_history or history or [], user_message),
                     }
-                if call.name == "lookup_food":
+                blocked_action = {
+                    "calc_nutrition_targets": "calculate", "suggest_day_menu": "menu",
+                }.get(call.name)
+                if understanding and blocked_action in understanding.blocked_actions:
+                    result = {"error": "action_excluded",
+                              "message": "ผู้ใช้ไม่ต้องการกิจกรรมนี้ ห้ามดำเนินการ"}
+                elif call.name == "lookup_food":
                     result = _run_food_lookup(
                         db,
                         str(args.get("query") or ""),
@@ -1721,11 +1756,69 @@ def user_facing_error(exc: Exception) -> str:
     return "เกิดข้อผิดพลาดในการสร้างคำตอบ ลองส่งคำถามอีกครั้งนะครับ หากยังไม่ได้กรุณาแจ้งผู้ดูแลระบบ"
 
 
+def _understanding_reply(reply: str, guard, use_rag: bool, route: str) -> Iterator[dict]:
+    yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    yield {"type": "delta", "text": reply}
+    yield {"type": "done", "text": reply, "citations": [], "retrieved": [], "tool_calls": [],
+           "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+           "safety_flags": guard.as_json(), "model": "rule:" + route,
+           "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag}
+
+
+def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
+    """Production entry: semantic interpretation -> validated state -> execution.
+
+    Existing deterministic safety rules can refuse before any provider call.
+    The semantic stage can add a medical concern, never clear a safety flag.
+    """
+    history = kwargs.get("menu_history")
+    if history is None:
+        history = kwargs.get("history") or []
+    pre_guard = guardrails.combine(
+        guardrails.check(kwargs["user_message"]), guardrails.check_history(history, lookback=None),
+        guardrails.from_stored_flags(kwargs.get("persistent_safety_flags")),
+        guardrails.check_profile(kwargs.get("profile")),
+    )
+    if guardrails.safety_reply(pre_guard) or guardrails.refusal_reply(pre_guard):
+        yield from stream_chat(db, **kwargs)
+        return
+    _release_connection(db)
+    try:
+        understanding, usage = interpret_request(
+            get_client(), model=kwargs.get("model") or settings.llm_model,
+            message=kwargs["user_message"], history=history, profile=kwargs.get("profile"),
+        )
+    except Exception as exc:
+        logger.warning("request interpretation failed: %s", type(exc).__name__)
+        yield {"type": "error", "code": "request_understanding_failed",
+               "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
+                           "กรุณาระบุคำถามและข้อมูลที่ต้องการใช้ให้ชัดเจนอีกครั้ง")}
+        return
+    for event in stream_chat(db, **kwargs, understanding=understanding):
+        if event["type"] in ("done", "error"):
+            event["request_understanding"] = {
+                "version": "v1", **understanding.model_dump(mode="json"),
+            }
+            total = dict(event.get("usage") or {})
+            for key, count in usage.items():
+                total[key] = (total.get(key) or 0) + count
+            event["usage"] = total
+        yield event
+
+
+def collect_understood_answer(db: Session, **kwargs) -> dict:
+    last = {"type": "error", "message": "no events produced"}
+    for event in stream_understood_chat(db, **kwargs):
+        if event["type"] in ("done", "error"):
+            last = event
+    return last
+
+
 def collect_answer(db: Session, **kwargs) -> dict:
     """Run a turn to completion and return the final ``done`` (or ``error``) event.
 
-    Used by eval/run_eval.py so the harness exercises exactly the same code path
-    as the web app.
+    Low-level executor helper for deterministic unit tests. Full production
+    evaluation uses collect_understood_answer, including semantic interpretation.
     """
     last: dict = {"type": "error", "message": "no events produced"}
     for event in stream_chat(db, **kwargs):

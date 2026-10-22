@@ -8,27 +8,11 @@ import json
 import re
 from decimal import Decimal
 
-from app.services.request_constraints import excludes_dose
+from app.services.request_understanding import RequestUnderstanding
 from app.services.thai_text import normalize_thai
 
 _CITATION = re.compile(r"\[S\d+(?:[\s,;]+S\d+)*\]", re.I)
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:[.]\d+)?")
-
-
-def normalize_answer_terms(answer: str) -> str:
-    """Normalize known mixed-script spellings, not arbitrary foreign words.
-
-    This is a terminology correction, not replacement of a generated answer.
-    Localize known week units only after a number; evidence validation still
-    rejects a fixed interval not supported by the supplied passages.
-    """
-    answer = answer.replace("เซ\u05d8\u05d9\u05dd", "เซต")
-    return re.sub(
-        r"(?<=\d)\s*(?:semaines?|minggu|wochen|semanas)\b",
-        " สัปดาห์",
-        answer,
-        flags=re.I,
-    )
 
 
 def without_target_citations(answer: str, targets: dict | None) -> str:
@@ -126,7 +110,10 @@ def _numbers(text: str) -> set[Decimal]:
     return {Decimal(n.group()) for n in _NUMBER.finditer(text)}
 
 
-def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: bool) -> list[str]:
+def answer_issues(
+    message: str, answer: str, passages: list[dict], *, use_rag: bool,
+    understanding: RequestUnderstanding | None = None,
+) -> list[str]:
     issues = []
     # Technical Latin/Greek terms are valid; unrelated alphabets absent from
     # the question and evidence are output artifacts, not facts to guess at.
@@ -141,10 +128,11 @@ def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: b
             if re.search(alphabet, answer) and not re.search(alphabet, supplied):
                 issues.append("มีตัวอักษรภาษาอื่นแทรกโดยไม่มีในคำถามหรือหลักฐาน ให้เขียนคำอธิบายไทยที่สมบูรณ์")
                 break
-    issue = format_issue(answer, requested_format(message))
+    spec = understanding.format_spec() if understanding else requested_format(message)
+    issue = format_issue(answer, spec)
     if issue:
         issues.append(issue)
-    if excludes_dose(message) and re.search(
+    if understanding and "dose" in understanding.blocked_actions and re.search(
         r"\d+(?:[.]\d+)?(?:\s*[-\u2013]\s*\d+(?:[.]\d+)?)?\s*"
         r"(?:กรัม|มิลลิกรัม|mg|grams?|g)\s*(?:/|ต่อ|per)\s*(?:วัน|ครั้ง|day|dose)",
         answer,
@@ -155,7 +143,7 @@ def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: b
         # Match a numeric percentage/range against the specific cited context.
         # A cut percentage somewhere else in the corpus cannot substantiate bulk.
         by_label = {p.get("label", "").upper(): p.get("content", "") for p in passages}
-        tracking = re.search(
+        tracking = understanding.topic == "progress_tracking" if understanding else re.search(
             normalize_thai(r"ติดตาม|ความก้าวหน้า|track|progress"), normalize_thai(message)
         )
         for line in answer.splitlines():

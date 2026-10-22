@@ -19,7 +19,7 @@ from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
 from app.db.session import SessionLocal
 from app.services import guardrails, profile_history
-from app.services.chat import stream_chat
+from app.services.chat import stream_understood_chat as stream_chat
 from app.services.dietary_preferences import DIETARY_GROUPS, SETTING_TOOL, context_version
 from app.services.menu_context import conversation_restrictions
 from app.services.nutrition import NutritionInputError, ProfileInput, calc_nutrition_targets

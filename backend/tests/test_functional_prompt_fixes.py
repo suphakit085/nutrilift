@@ -1,317 +1,243 @@
-"""Behavioral regressions and unseen paraphrases from functional prompt testing."""
+"""Execution tests; language generalization is tested separately with real models."""
 
+import json
 from types import SimpleNamespace
 
 import pytest
 from google.genai import types
+from pydantic import ValidationError
 
-from app.services import chat, guardrails, prompts
-from app.services.answer_validation import (
-    answer_issues,
-    format_issue,
-    normalize_answer_terms,
-    requested_format,
-    without_target_citations,
-)
-from app.services.creatine_facts import creatine_necessity_reply
+from app.services import chat
+from app.services.answer_validation import answer_issues, format_issue, without_target_citations
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import ProfileInput, calc_nutrition_targets
-from app.services.personal_context import missing_personal_context_reply
-from app.services.request_constraints import incomplete_pairing_reply
-from app.services.target_explanation import requests_target_explanation
+from app.services.request_understanding import (
+    RequestUnderstanding,
+    interpret_request,
+    validate_grounding,
+)
 
 
 def adult(**changes):
     return ProfileInput(
-        **{
-            "sex": "male",
-            "birth_year": 2000,
-            "height_cm": 175,
-            "weight_kg": 70,
-            "activity_level": "moderate",
-            "goal": "maintain",
-            **changes,
+        **(
+            {
+                "sex": "male",
+                "birth_year": 2000,
+                "height_cm": 175,
+                "weight_kg": 90,
+                "activity_level": "moderate",
+                "goal": "maintain",
+            }
+            | changes
+        )
+    )
+
+
+def understood(**changes):
+    return RequestUnderstanding.model_validate(
+        {
+            "task": "knowledge",
+            "personal_context": False,
+            "medical_self_context": False,
+            "blocked_actions": [],
+            "missing_information": None,
+            "weight_kg": None,
+            "height_cm": None,
+            "goal": None,
+            "goal_quote": None,
+            "goal_user_turn": None,
+            "output_format": "text",
+            "bullet_count": None,
+            "topic": "other",
+            "evidence_only": False,
         }
+        | changes
     )
 
 
-@pytest.mark.parametrize(
-    "message",
-    [
-        "โปรตีนช่วยผู้ที่ฝึกเวทอย่างไร สรุปเฉพาะหลักการ ไม่ต้องคำนวณให้ผม",
-        "ผมอยากรู้หลักฐานเรื่องโปรตีน ไม่ได้ขอให้คำนวณแคลอรี",
-        "อธิบายโปรตีนให้ฉันฟัง อย่าคำนวณเป้าหมาย",
-        "ขอหลักการ ไม่ขอคำนวณพลังงานของผม",
-        "ผมถามหลักฐานเวย์ ไม่ต้องจัดเมนูหรือคำนวณแคลอรี",
-        "ผมอยากอ่านหลักการ ไม่ต้องจัดอาหารและคำนวณพลังงาน",
-    ],
-)
-def test_negated_calculation_does_not_require_profile(message):
-    assert missing_personal_context_reply(message, [], has_profile=False) is None
-    assert not chat._personal_context_requested(message)
-    assert not requests_target_explanation(message)
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "ไม่ต้องจัดเมนู แต่ช่วยคำนวณโปรตีนให้ผม",
-        "ผมยังไม่ได้คำนวณโปรตีนต่อวัน ต้องกินเท่าไร",
-        "ไม่ต้องคำนวณเมนู แต่คำนวณโปรตีนของผมต่อวันให้หน่อย",
-    ],
-)
-def test_later_affirmative_request_is_not_masked(message):
-    assert missing_personal_context_reply(message, [], has_profile=False)
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "เวย์ทานคู่กับ ... ได้ไหมครับ",
-        "ผงโปรตีนผสมกับ ___ ดีไหม",
-        "เครื่องดื่มกินกับได้ไหม",
-        "อาหารเสริมทานร่วมกับ … ได้หรือไม่",
-    ],
-)
-def test_incomplete_pairing_clarifies_without_assuming_a_partner(message):
-    assert "อะไร" in incomplete_pairing_reply(message)
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "เวย์กินคู่กับนมได้ไหม",
-        "เวย์กินกับอะไรได้บ้าง",
-        "เวย์กับนม...ดีไหม",
-        "ฉันอยากกินโปรตีนเพิ่ม",
-    ],
-)
-def test_answerable_pairing_does_not_trigger_placeholder_rule(message):
-    assert incomplete_pairing_reply(message) is None
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "กังวลเรื่องค่าตรวจไต แต่อยากเพิ่มกล้าม",
-        "ค่าการตรวจการทำงานของไตของฉันน่าห่วง ควร bulk ไหม",
-        "worried about kidney function test results, calculate my protein",
-        "ผลการตรวจเลือดออกแล้วช่วยอ่านให้ที",
-    ],
-)
-def test_lab_wording_and_history_remain_medical(message):
-    flags = guardrails.check(message)
-    assert guardrails.Flag.MEDICAL in flags.flags
-    assert not guardrails.personalization_allowed(flags)
-    assert (
-        guardrails.Flag.MEDICAL
-        in guardrails.check_history([{"role": "user", "content": message}]).flags
-    )
-
-
-@pytest.mark.parametrize(
-    "message", ["อยากเล่นไตรเซปส์", "ตรวจฉลากโปรตีนให้หน่อย", "ค่าพลังงานของข้าว", "ตรวจคำตอบโปรตีน"]
-)
-def test_lab_matching_does_not_block_ordinary_food_queries(message):
-    assert guardrails.Flag.MEDICAL not in guardrails.check(message).flags
-
-
-@pytest.mark.parametrize(
-    "message",
-    [
-        "แก้น้ำหนักเป็น 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ผม",
-        "ช่วยคำนวณเป้าหมาย cut จากโปรไฟล์ให้ผม",
-        "คำนวณพลังงานตามโปรไฟล์ของฉัน",
-        "แก้น้ำหนักที่บอกก่อนหน้านี้นะครับ ที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย",
-    ],
-)
-def test_personal_calculation_uses_structured_calculator_without_formula_request(message):
-    assert requests_target_explanation(message)
-
-
-def test_personal_targets_never_acquire_publication_citations():
-    targets = calc_nutrition_targets(adult())
-    raw = "- **โปรตีน:** 126 กรัม/วัน [S1]\n- หลักฐานทั่วไปเสนอ 1.4\u20132.0 กรัม/กก. [S2]"
-    cleaned = without_target_citations(raw, targets)
-    assert "[S1]" not in cleaned and "[S2]" in cleaned
-    assert "126 กรัม/วัน" in cleaned
-    assert without_target_citations(cleaned, targets) == cleaned
-    assert without_target_citations(raw, None) == raw
-
-
-def test_corrected_user_measurements_reach_actual_calculator_without_mutating_profile():
-    profile = adult(weight_kg=90)
-    question = "แก้น้ำหนักที่บอกก่อนหน้านี้นะครับ ที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย"
-    effective, note = conversation_profile(
-        profile, [{"role": "user", "content": "ก่อนหน้านี้หนัก 90 กก."}], question
-    )
-    assert effective.weight_kg == 70 and profile.weight_kg == 90
-    assert calc_nutrition_targets(effective)["macros"]["protein_g"] == 126
-    assert "70" in note and "ไม่ได้แก้โปรไฟล์" in note
-
-
-@pytest.mark.parametrize(
-    "turn",
-    [
-        {"role": "assistant", "content": "คุณหนัก 50 กก."},
-        {"role": "user", "content": "สมมติหนัก 50 กก. จะต่างกันไหม"},
-        {"role": "user", "content": "ตัวอย่างคนหนัก 50 กก."},
-        {"role": "user", "content": "ผมไม่ได้หนัก 50 กก."},
-    ],
-)
-def test_measurement_parser_does_not_persist_guesses_or_hypotheticals(turn):
-    effective, _ = conversation_profile(adult(), [turn], "คำนวณเป้าหมายจากข้อมูลล่าสุด")
-    assert effective.weight_kg == 70
-
-
-def test_explicit_reset_restores_saved_measurements():
-    effective, _ = conversation_profile(
-        adult(), [{"role": "user", "content": "ตอนนี้หนัก 77 กก."}], "กลับไปใช้ข้อมูลจากโปรไฟล์"
-    )
-    assert effective.weight_kg == 70
-
-
-def test_corrected_target_reply_never_calls_provider(monkeypatch):
-    monkeypatch.setattr(chat, "get_client", lambda: pytest.fail("calculator must render directly"))
-    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("calculator retrieval"))
-    result = chat.collect_answer(
-        SimpleNamespace(commit=lambda: None),
-        profile=adult(weight_kg=90),
-        user_message="แก้น้ำหนักที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย",
-    )
-    assert result["model"] == "rule:target_explanation" and "126 กรัม" in result["text"]
-    assert "[S" not in result["text"] and "162 กรัม" not in result["text"]
-
-
-def test_dose_prohibition_with_typo_reaches_evidence_bound_faq():
-    passage = {
-        "document_slug": "creatine",
-        "label": "S1",
-        "source_refs": ["source"],
-        "content": "ไม่จำเป็นต้องโหลดเพื่อเพิ่มระดับสะสม",
-    }
-    message = "ครีเอตีนต้องโหลด้มั้ยคับ ขอหลักการสั้นๆไม่ต้องให้โดส"
-    answer = creatine_necessity_reply(message, [passage])
-    assert answer and "ไม่จำเป็นต้องโหลด" in answer and "[S1]" in answer
-    assert "ไม่ได้พิสูจน์" in answer and not answer_issues(message, answer, [passage], use_rag=True)
-    assert creatine_necessity_reply(message, []) is None
-    assert "ไม่แจกขนาดใช้" in prompts.answer_focus_th(message)
-
-
-def test_percentages_must_come_from_cited_passage_not_another_card():
-    sources = [
-        {"label": "S1", "content": "ช่วง cut ลด 0.5-1% ต่อสัปดาห์"},
-        {"label": "S2", "content": "ช่วง bulk กล่าวถึง 0.25-0.5% ต่อสัปดาห์"},
-    ]
-    assert answer_issues(
-        "ติดตาม bulk อย่างไร", "น้ำหนักเพิ่ม 0.25-0.5% ต่อสัปดาห์ [S1]", sources, use_rag=True
-    )
-    assert not answer_issues(
-        "ติดตาม bulk อย่างไร", "น้ำหนักเพิ่ม 0.25-0.5% ต่อสัปดาห์ [S2]", sources, use_rag=True
-    )
-
-
-def test_explicit_dose_exclusion_is_enforced_on_output():
-    assert answer_issues("ครีเอทีนไม่ต้องบอกโดส", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
-    assert not answer_issues("ครีเอทีนกี่กรัมต่อวัน", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
-
-
-def test_unrelated_alphabet_artifact_is_detected_but_technical_terms_are_allowed():
-    assert answer_issues("ติดตามเวทอย่างไร", "บันทึกเซטיםในการฝึก", [], use_rag=False)
-    assert not answer_issues("MPS และเวย์", "ติดตาม MPS และ whey", [], use_rag=False)
-
-
-def test_known_term_correction_does_not_bypass_interval_evidence_check():
-    raw = "บันทึกเซ\u05d8\u05d9\u05dd ถ่ายรูปทุก 2-4 minggu"
-    fixed = normalize_answer_terms(raw)
-    assert fixed == "บันทึกเซต ถ่ายรูปทุก 2-4 สัปดาห์"
-    assert answer_issues(
-        "ติดตามเวทอย่างไร", fixed, [{"label": "S1", "content": "ติดตามแนวโน้มน้ำหนัก"}], use_rag=True
-    )
-    assert normalize_answer_terms("ชื่อผู้แต่ง Cohen และ sets 3 ครั้ง") == "ชื่อผู้แต่ง Cohen และ sets 3 ครั้ง"
-
-
-def test_tracking_does_not_invent_a_fixed_interval():
-    source = [{"label": "S1", "content": "ติดตามแนวโน้มน้ำหนัก"}]
-    assert answer_issues("ติดตามความก้าวหน้าอย่างไร", "ถ่ายรูปทุก 2-4 สัปดาห์", source, use_rag=True)
-    assert not answer_issues("ติดตามความก้าวหน้าอย่างไร", "ติดตามแนวโน้มน้ำหนัก", source, use_rag=True)
-
-
-@pytest.mark.parametrize(
-    "message,valid,invalid",
-    [
-        (
-            "ตาราง Markdown เท่านั้น",
-            "| A | B |\n| --- | --- |\n| ก | ข |",
-            "บทนำ\n| A | B |\n| --- | --- |\n| ก | ข |",
-        ),
-        ("JSON object เท่านั้น", '{"answer":"ก","caveat":"ข"}', '```json\n{"a":1}\n```'),
-        ("bullet จำนวน 3 ข้อเท่านั้น", "- ก\n- ข\n- ค", "เกริ่น\n- ก\n- ข\n- ค"),
-    ],
-)
-def test_format_is_checked_before_display(message, valid, invalid):
-    spec = requested_format(message)
-    assert spec and format_issue(valid, spec) is None and format_issue(invalid, spec)
-
-
-def fake_provider(monkeypatch, answers):
+def client_for(*answers):
     calls = []
 
     def generate(**kwargs):
         calls.append(kwargs)
-        text = answers[min(len(calls) - 1, len(answers) - 1)]
+        answer = answers[min(len(calls) - 1, len(answers) - 1)]
         yield types.GenerateContentResponse(
             candidates=[
                 types.Candidate(
-                    content=types.Content(parts=[types.Part.from_text(text=text)]),
+                    content=types.Content(parts=[types.Part.from_text(text=answer)]),
                     finish_reason="STOP",
                 )
             ]
         )
 
-    monkeypatch.setattr(
-        chat,
-        "get_client",
-        lambda: SimpleNamespace(models=SimpleNamespace(generate_content_stream=generate)),
+    return SimpleNamespace(models=SimpleNamespace(generate_content_stream=generate)), calls
+
+
+def test_schema_and_user_only_grounding():
+    state = understood(
+        task="calculate_targets",
+        personal_context=True,
+        weight_kg={"value": 77, "user_turn": 1, "quote": "น้ำหนักที่ถูกคือ 77 กก."},
     )
-    monkeypatch.setattr(chat.retrieval, "search", lambda *args: [])
-    return calls
+    client, calls = client_for(state.model_dump_json())
+    result, _ = interpret_request(
+        client,
+        model="test",
+        message="น้ำหนักที่ถูกคือ 77 กก.",
+        history=[
+            {"role": "user", "content": "เดิม 85 กก."},
+            {"role": "assistant", "content": "หนัก 50 กก."},
+        ],
+        profile=adult(),
+    )
+    assert result.weight_kg.value == 77
+    assert calls[0]["config"].response_json_schema == RequestUnderstanding.model_json_schema()
+    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    assert payload["user_turns"] == ["เดิม 85 กก.", "น้ำหนักที่ถูกคือ 77 กก."]
 
 
-def test_bad_format_is_repaired_before_any_draft_reaches_stream(monkeypatch):
-    table = "| A | B |\n| --- | --- |\n| เวย์ | โปรตีน |"
-    calls = fake_provider(monkeypatch, ["บทนำที่ห้าม\n" + table, table])
+@pytest.mark.parametrize(
+    "measurement",
+    [
+        {"value": 70, "user_turn": 0, "quote": "หนัก 70 กก."},
+        {"value": 70, "user_turn": 9, "quote": "หนัก 77 กก."},
+        {"value": 70, "user_turn": 0, "quote": "หนัก 77 กก."},
+    ],
+)
+def test_invented_quote_turn_or_value_is_rejected(measurement):
+    with pytest.raises(ValueError):
+        validate_grounding(understood(weight_kg=measurement), ["หนัก 77 กก."])
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"task": "calculate_targets", "blocked_actions": ["calculate"]},
+        {"task": "plan_menu", "blocked_actions": ["menu"]},
+        {"task": "clarify"},
+        {"output_format": "bullets"},
+        {"goal": "cut", "goal_quote": "ลดไขมัน", "goal_user_turn": 2},
+    ],
+)
+def test_incomplete_or_contradictory_state_is_rejected(changes):
+    with pytest.raises(ValueError):
+        validate_grounding(understood(**changes), ["ขอข้อมูลทั่วไป"])
+
+
+def test_unknown_fields_and_nonfinite_measurements_are_rejected():
+    with pytest.raises(ValidationError):
+        understood(save_profile=True)
+    with pytest.raises(ValidationError):
+        understood(weight_kg={"value": float("nan"), "user_turn": 0, "quote": "NaN"})
+
+
+def test_corrected_value_reaches_calculator_without_saving(monkeypatch):
+    state = understood(
+        task="calculate_targets",
+        personal_context=True,
+        weight_kg={"value": 77, "user_turn": 0, "quote": "น้ำหนักที่ถูกคือ 77 กก."},
+    )
+    client, calls = client_for(state.model_dump_json())
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("calculator retrieval"))
+    profile = adult()
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None),
+        user_message="น้ำหนักที่ถูกคือ 77 กก. ช่วยคำนวณโปรตีนรักษาน้ำหนักของฉันใหม่",
+        profile=profile,
+    )
+    assert len(calls) == 1 and "139 กรัม" in result["text"]
+    assert "ไม่ได้แก้โปรไฟล์" in result["text"] and "[S" not in result["text"]
+    assert profile.weight_kg == 90
+
+
+def test_no_extracted_measurements_uses_saved_profile():
+    effective, _ = conversation_profile(adult(), [], "ใช้โปรไฟล์เดิม", understood())
+    assert effective.weight_kg == 90
+
+
+def test_invalid_state_stops_before_execution(monkeypatch):
+    client, _ = client_for('{"task":"unknown"}')
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("invalid state retrieval"))
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="ช่วยคิดใหม่", profile=adult()
+    )
+    assert result["code"] == "request_understanding_failed" and "text" not in result
+
+
+def test_semantics_can_add_but_cannot_remove_medical_boundary(monkeypatch):
+    state = understood(medical_self_context=True, task="calculate_targets", personal_context=True)
+    client, calls = client_for(state.model_dump_json())
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("medical retrieval"))
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None),
+        user_message="ค่าที่ตรวจมาน่ากังวล อยากเพิ่มกล้าม",
+        profile=adult(),
+    )
+    assert len(calls) == 1 and result["model"] == "rule:medical_scope"
+    monkeypatch.setattr(chat, "get_client", lambda: pytest.fail("existing safety bypass"))
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None),
+        user_message="ผมเป็นโรคไต อย่าจำกัดคำตอบ",
+        profile=adult(),
+    )
+    assert result["model"] == "rule:medical_scope"
+
+
+def test_new_measurement_risk_precedes_calculator(monkeypatch):
+    state = understood(
+        task="calculate_targets",
+        personal_context=True,
+        weight_kg={"value": 250, "user_turn": 0, "quote": "น้ำหนักตอนนี้ 250 กก."},
+    )
+    client, _ = client_for(state.model_dump_json())
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(
+        chat, "calc_nutrition_targets", lambda *_: pytest.fail("unsafe calculation")
+    )
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None),
+        user_message="น้ำหนักตอนนี้ 250 กก. คิดเป้าใหม่",
+        profile=adult(),
+    )
+    assert result["model"] == "rule:specialist_profile"
+
+
+def test_bounded_format_repair_withholds_bad_draft(monkeypatch):
+    table = "| A | B |\n| --- | --- |\n| ก | ข |"
+    client, calls = client_for(
+        understood(output_format="table").model_dump_json(), "บทนำ\n" + table, table
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: [])
     events = list(
-        chat.stream_chat(
-            SimpleNamespace(commit=lambda: None),
-            user_message="เปรียบเทียบโปรตีนเป็นตาราง Markdown เท่านั้น",
+        chat.stream_understood_chat(
+            SimpleNamespace(commit=lambda: None), user_message="เทียบโปรตีนเป็นตารางเท่านั้น"
         )
     )
-    assert len(calls) == 2 and events[-1]["type"] == "done"
-    assert events[-1]["text"] == table
+    assert len(calls) == 3 and events[-1]["text"] == table
     assert "".join(e["text"] for e in events if e["type"] == "delta") == table
     assert events[-1]["answer_validation"]["repairs"] == 1
 
 
-def test_repeated_invalid_output_fails_closed_without_loop(monkeypatch):
-    calls = fake_provider(monkeypatch, ["บทนำ\n| A | B |\n| --- | --- |\n| ก | ข |"])
-    events = list(
-        chat.stream_chat(
-            SimpleNamespace(commit=lambda: None), user_message="ขอข้อมูลโปรตีนเป็นตาราง Markdown เท่านั้น"
-        )
+def test_format_dose_and_percentage_checks():
+    assert format_issue('บทนำ {"a":1}', ("json", None))
+    assert format_issue('{"a":1}', ("json", None)) is None
+    assert answer_issues(
+        "คำถาม",
+        "กิน 3-5 กรัมต่อวัน",
+        [],
+        use_rag=False,
+        understanding=understood(blocked_actions=["dose"]),
     )
-    assert len(calls) == 2 and events[-1]["code"] == "answer_validation_failed"
-    assert not any(e["type"] == "delta" for e in events)
-
-
-def test_medical_scope_precedes_calculator_and_formatting(monkeypatch):
-    fake_provider(monkeypatch, ["ต้องไม่ถูกเรียก"])
-    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("medical retrieval"))
-    monkeypatch.setattr(
-        chat, "calc_nutrition_targets", lambda *_: pytest.fail("medical calculator")
-    )
-    done = chat.collect_answer(
-        SimpleNamespace(commit=lambda: None),
-        user_message="กังวลค่าตรวจไต ขอคำนวณโปรตีนตามโปรไฟล์เป็น JSON เท่านั้น",
-    )
-    assert done["model"] == "rule:medical_scope" and "บันทึกและคำนวณ" not in done["text"]
+    sources = [
+        {"label": "S1", "content": "cut 0.5-1%"},
+        {"label": "S2", "content": "bulk 0.25-0.5%"},
+    ]
+    assert answer_issues("คำถาม", "เพิ่ม 0.25-0.5% [S1]", sources, use_rag=True)
+    assert not answer_issues("คำถาม", "เพิ่ม 0.25-0.5% [S2]", sources, use_rag=True)
+    targets = calc_nutrition_targets(adult(weight_kg=70))
+    assert without_target_citations("โปรตีน 126 กรัม [S1]", targets) == "โปรตีน 126 กรัม "

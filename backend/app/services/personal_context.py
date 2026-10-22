@@ -2,7 +2,6 @@
 
 import re
 
-from app.services.request_constraints import affirmative_actions
 from app.services.thai_text import normalize_thai
 
 
@@ -41,10 +40,7 @@ def missing_personal_context_reply(
             "โปรไฟล์ยังไม่มีข้อมูลเหล่านี้ จึงยังจัดเมนูให้ตรงกับของที่มีและวิธีทำที่สะดวกไม่ได้ครับ"
         )
     if (not has_profile and re.search(r"ผม|ฉัน|ดิฉัน|ของตัวเอง|โปรไฟล์", text)
-            and re.search(
-                normalize_thai(r"คำนวณ|กี่(?:กรัม|แคล)|เท่า(?:ไร|ไหร่)"),
-                affirmative_actions(message),
-            )
+            and re.search(normalize_thai(r"คำนวณ|กี่(?:กรัม|แคล)|เท่า(?:ไร|ไหร่)"), text)
             and re.search(r"พลังงาน|โปรตีน|แคล", text)
             and not re.search(r"\d+(?:\.\d+)?\s*(?:กก|kg|ซม|cm|กรัม)", text, re.I)):
         return (
