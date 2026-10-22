@@ -167,6 +167,27 @@ def test_invalid_state_stops_before_execution(monkeypatch):
     assert result["code"] == "request_understanding_failed" and "text" not in result
 
 
+def test_transient_interpretation_retry_is_bounded_and_not_a_quality_retry(monkeypatch):
+    calls = []
+
+    class Unavailable(Exception):
+        code = 503
+
+    def interpret(*args, **kwargs):
+        calls.append(kwargs)
+        raise Unavailable("provider unavailable")
+
+    monkeypatch.setattr(chat, "get_client", lambda: None)
+    monkeypatch.setattr(chat, "interpret_request", interpret)
+    monkeypatch.setattr(chat.time, "sleep", lambda _: None)
+    events = list(
+        chat.stream_understood_chat(SimpleNamespace(commit=lambda: None), user_message="อธิบายโปรตีน")
+    )
+    assert len(calls) == 2 and calls[0] == calls[1]
+    assert events[-1]["code"] == "request_understanding_unavailable"
+    assert not any(e["type"] == "delta" for e in events)
+
+
 def test_semantics_can_add_but_cannot_remove_medical_boundary(monkeypatch):
     state = understood(medical_self_context=True, task="calculate_targets", personal_context=True)
     client, calls = client_for(state.model_dump_json())

@@ -1784,17 +1784,30 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
         yield from stream_chat(db, **kwargs)
         return
     _release_connection(db)
-    try:
-        understanding, usage = interpret_request(
-            get_client(), model=kwargs.get("model") or settings.llm_model,
-            message=kwargs["user_message"], history=history, profile=kwargs.get("profile"),
-        )
-    except Exception as exc:
-        logger.warning("request interpretation failed: %s", type(exc).__name__)
-        yield {"type": "error", "code": "request_understanding_failed",
-               "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
-                           "กรุณาระบุคำถามและข้อมูลที่ต้องการใช้ให้ชัดเจนอีกครั้ง")}
-        return
+    for attempt in range(2):
+        try:
+            understanding, usage = interpret_request(
+                get_client(), model=kwargs.get("model") or settings.llm_model,
+                message=kwargs["user_message"], history=history, profile=kwargs.get("profile"),
+            )
+            break
+        except Exception as exc:
+            code = getattr(exc, "code", None)
+            if attempt == 0 and code in {429, 500, 502, 503, 504}:
+                delay = 12 if code == 429 else 1
+                yield {"type": "retry", "wait_s": delay,
+                       "message": "กำลังลองเชื่อมต่อผู้ให้บริการอีกครั้งครับ"}
+                time.sleep(delay)
+                continue
+            logger.warning("request interpretation failed: %s", type(exc).__name__)
+            if code is not None:
+                yield {"type": "error", "code": "request_understanding_unavailable",
+                       "message": user_facing_error(exc)}
+            else:
+                yield {"type": "error", "code": "request_understanding_failed",
+                       "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
+                                   "กรุณาระบุคำถามและข้อมูลที่ต้องการใช้ให้ชัดเจนอีกครั้ง")}
+            return
     for event in stream_chat(db, **kwargs, understanding=understanding):
         if event["type"] in ("done", "error"):
             event["request_understanding"] = {
