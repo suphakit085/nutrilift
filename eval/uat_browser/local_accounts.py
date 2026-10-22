@@ -127,7 +127,7 @@ def install_fixture_interpreter():
         "โปรไฟล์นี้คำนวณพลังงานอย่างไร ขออ้างอิงด้วย",
     ]})
     state = RequestUnderstanding(
-        task="knowledge", personal_context=True, medical_self_context=False,
+        task="knowledge", personal_context=True, medical_self_context=False, exclusion_phrases=[],
         blocked_actions=[], missing_information=None, weight_kg=None, height_cm=None,
         goal=None, goal_quote=None, goal_user_turn=None, output_format="text",
         bullet_count=None, topic="other", evidence_only=False,

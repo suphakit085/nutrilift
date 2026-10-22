@@ -1430,6 +1430,7 @@ def stream_chat(
     finish_reasons: list[str] = []
     answer_repair_used = False
     answer_validation_issues: list[str] = []
+    evidence_ledger: list[dict] = []
 
     try:
         for _ in range(MAX_TOOL_ITERATIONS):
@@ -1548,6 +1549,7 @@ def stream_chat(
                             return
                         for key, value in review_usage.items():
                             usage_total[key] += value
+                        evidence_ledger = verdict.ledger
                         issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
                                   for i in verdict.issues]
                     if issues:
@@ -1748,6 +1750,7 @@ def stream_chat(
         "use_rag": use_rag,
         "answer_validation": {
             "repairs": int(answer_repair_used), "issues": answer_validation_issues,
+            "evidence_ledger": evidence_ledger,
         },
     }
 

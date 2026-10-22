@@ -9,7 +9,12 @@ from google.genai import types
 from pydantic import ValidationError
 
 from app.services import chat
-from app.services.answer_review import AnswerReview, review_answer
+from app.services.answer_review import (
+    EvidenceReview,
+    draft_units,
+    review_answer,
+    source_paragraphs,
+)
 from app.services.answer_validation import answer_issues, format_issue, without_target_citations
 from app.services.creatine_facts import creatine_necessity_reply
 from app.services.menu_context import conversation_profile
@@ -43,6 +48,7 @@ def understood(**changes):
             "task": "knowledge",
             "personal_context": False,
             "medical_self_context": False,
+            "exclusion_phrases": [],
             "blocked_actions": [],
             "missing_information": None,
             "weight_kg": None,
@@ -56,6 +62,20 @@ def understood(**changes):
             "evidence_only": False,
         }
         | changes
+    )
+
+
+def ledger(*kinds, support=None, issues=None):
+    support = support or {}
+    return json.dumps(
+        {
+            "units": [
+                {"unit": i, "kind": k, "names_source": False, "support": support.get(i, [])}
+                for i, k in enumerate(kinds)
+            ],
+            "issues": issues or [],
+        },
+        ensure_ascii=False,
     )
 
 
@@ -237,9 +257,9 @@ def test_transport_timeout_does_not_request_more_user_data(monkeypatch):
     assert "วันนี้" not in chat.user_facing_error(Exception("429 quota"))
 
 
-def test_evidence_review_receives_explicit_citation_pairs():
-    client, calls = client_for('{"accepted":true}')
-    review_answer(
+def test_evidence_review_receives_program_units_and_numbered_paragraphs():
+    client, calls = client_for(ledger("research", support={0: ["S1.1"]}))
+    verdict, _ = review_answer(
         client,
         model="test",
         question="หลักฐานคืออะไร",
@@ -248,8 +268,114 @@ def test_evidence_review_receives_explicit_citation_pairs():
         understanding=understood(),
     )
     payload = json.loads(calls[0]["contents"][0].parts[0].text)
-    assert [p["label"] for p in payload["passages"]] == ["S1"]
-    assert payload["citation_checks"][0]["source_labels"] == ["S1"]
+    assert payload["draft_units"] == [{"unit": 0, "text": "ข้อความ [S1]", "labels": ["S1"]}]
+    assert [p["id"] for p in payload["source_paragraphs"]] == ["S1.1", "S9.1"]
+    assert calls[0]["config"].response_json_schema == EvidenceReview.model_json_schema()
+    assert verdict.accepted and verdict.ledger[0]["support"] == ["S1.1"]
+
+
+def test_units_split_json_leaves_and_label_boundaries():
+    draft = json.dumps({"answer": "ก [S1] ข [S2, S3] ค", "caveat": "ง"}, ensure_ascii=False)
+    assert [(u["text"], u["labels"]) for u in draft_units(draft)] == [
+        ("ก [S1]", ["S1"]),
+        ("ข [S2, S3]", ["S2", "S3"]),
+        ("ค", []),
+        ("ง", []),
+    ]
+    assert [u["text"] for u in draft_units("| A |\n| --- |\n\n* ข้อ")] == ["| A |", "* ข้อ"]
+    assert source_paragraphs([{"label": "S2", "content": "หัวข้อ\n\nย่อหน้า"}]) == [
+        {"id": "S2.1", "text": "หัวข้อ"},
+        {"id": "S2.2", "text": "ย่อหน้า"},
+    ]
+
+
+PASSAGES = [
+    {"label": "S1", "content": "บททบทวนปี 2023 พบว่าโปรตีนถั่วเหลืองใกล้เคียงเวย์"},
+    {"label": "S2", "content": "ปริมาณโปรตีนรวมต่อวัน"},
+]
+
+
+@pytest.mark.parametrize(
+    ("draft", "kind", "names_source", "support", "category"),
+    [
+        # A label on a sentence that its source does not state (PT10/VX03 class).
+        ("ชั่งน้ำหนักเพื่อแยกกล้ามเนื้อ [S2]", "advice", False, [], "citation"),
+        ("ชงคู่นมได้เพราะไม่มีข้อห้าม [S2]", "research", False, [], "citation"),
+        # A research claim a source supports but that carries no label (PT22 class).
+        ("บททบทวนปี 2023 ระบุว่าถั่วเหลืองใกล้เคียงเวย์", "research", True, ["S1.1"], "citation"),
+        # A comparison no supplied paragraph states (PT20 class).
+        ("เวย์ไม่ได้ดีกว่าอาหารหลัก", "research", False, [], "unsupported_fact"),
+        # A paragraph id that does not exist is not support.
+        ("ข้อความ [S1]", "research", False, ["S1.9"], "citation"),
+    ],
+)
+def test_ledger_rejects_unsupported_or_unlabelled_evidence(
+    draft, kind, names_source, support, category
+):
+    review = json.dumps(
+        {
+            "units": [{"unit": 0, "kind": kind, "names_source": names_source, "support": support}],
+            "issues": [],
+        },
+        ensure_ascii=False,
+    )
+    client, _ = client_for(review)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted
+    assert verdict.issues[0].category == category and verdict.issues[0].fragment == draft
+
+
+@pytest.mark.parametrize(
+    ("kind", "passages"),
+    [("advice", PASSAGES), ("evidence_gap", PASSAGES), ("framing", PASSAGES), ("research", [])],
+)
+def test_ledger_accepts_unlabelled_non_evidence_and_sourceless_principles(kind, passages):
+    client, _ = client_for(ledger(kind))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="ติดตามการฝึกสม่ำเสมอ",
+        passages=passages,
+        understanding=understood(),
+    )
+    assert verdict.accepted
+
+
+def test_sourceless_named_study_is_rejected():
+    review = '{"units":[{"unit":0,"kind":"research","names_source":true,"support":[]}],"issues":[]}'
+    client, _ = client_for(review)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="งานวิจัยปี 2020 พบว่า",
+        passages=[],
+        understanding=understood(),
+    )
+    assert verdict.issues[0].category == "unsupported_fact"
+
+
+def test_incomplete_ledger_is_retried_once_then_fails(monkeypatch):
+    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
+    client, calls = client_for('{"units":[],"issues":[]}')
+    with pytest.raises(ValueError):
+        review_answer(
+            client,
+            model="test",
+            question="q",
+            draft="ก\nข",
+            passages=[],
+            understanding=understood(),
+        )
+    assert len(calls) == 2
 
 
 def test_invalid_state_stops_before_execution(monkeypatch):
@@ -335,7 +461,7 @@ def test_bounded_format_repair_withholds_bad_draft(monkeypatch):
         understood(output_format="table").model_dump_json(),
         "บทนำ\n" + table,
         table,
-        '{"accepted":true,"issues":[]}',
+        ledger("framing", "framing"),
     )
     monkeypatch.setattr(chat, "get_client", lambda: client)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_: [])
@@ -349,17 +475,10 @@ def test_bounded_format_repair_withholds_bad_draft(monkeypatch):
     assert events[-1]["answer_validation"]["repairs"] == 1
 
 
-def test_semantic_review_cannot_cite_a_fragment_not_in_the_draft():
-    client, _ = client_for(
-        json.dumps(
-            {
-                "accepted": False,
-                "issues": [
-                    {"category": "citation", "fragment": "invented", "reason": "not in draft"},
-                ],
-            }
-        )
-    )
+def test_semantic_review_issue_must_refer_to_a_real_unit(monkeypatch):
+    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
+    bad = ledger("framing", issues=[{"unit": 7, "category": "language", "reason": "ไม่มี"}])
+    client, _ = client_for(bad)
     with pytest.raises(ValueError):
         review_answer(
             client,
@@ -374,20 +493,18 @@ def test_semantic_review_cannot_cite_a_fragment_not_in_the_draft():
 @pytest.mark.parametrize("second_accepted", [True, False])
 def test_semantic_repair_is_bounded_and_unverified_draft_is_withheld(monkeypatch, second_accepted):
     draft = "คุณสมชายควรติดตามการฝึก"
-    issue = {
-        "accepted": False,
-        "issues": [
-            {"category": "user_fact", "fragment": "คุณสมชาย", "reason": "ไม่มีชื่อในข้อมูลผู้ใช้"},
-        ],
-    }
+    issue = ledger(
+        "advice",
+        issues=[{"unit": 0, "category": "user_fact", "reason": "ไม่มีชื่อในข้อมูลผู้ใช้"}],
+    )
     fixed = "ติดตามการฝึกตามหลักการทั่วไป" if second_accepted else draft
-    verdict = {"accepted": True, "issues": []} if second_accepted else issue
+    verdict = ledger("advice") if second_accepted else issue
     client, calls = client_for(
         understood().model_dump_json(),
         draft,
-        json.dumps(issue, ensure_ascii=False),
+        issue,
         fixed,
-        json.dumps(verdict, ensure_ascii=False),
+        verdict,
     )
     monkeypatch.setattr(chat, "get_client", lambda: client)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_: [])
@@ -402,7 +519,7 @@ def test_semantic_repair_is_bounded_and_unverified_draft_is_withheld(monkeypatch
         assert shown == fixed and events[-1]["type"] == "done"
     else:
         assert not shown and events[-1]["code"] == "answer_validation_failed"
-    assert calls[2]["config"].response_json_schema == AnswerReview.model_json_schema()
+    assert calls[2]["config"].response_json_schema == EvidenceReview.model_json_schema()
 
 
 def test_format_dose_and_percentage_checks():
@@ -423,3 +540,43 @@ def test_format_dose_and_percentage_checks():
     assert not answer_issues("คำถาม", "เพิ่ม 0.25-0.5% [S2]", sources, use_rag=True)
     targets = calc_nutrition_targets(adult(weight_kg=70))
     assert without_target_citations("โปรตีน 126 กรัม [S1]", targets) == "โปรตีน 126 กรัม "
+
+
+def test_ungrounded_interpretation_gets_one_correction_with_the_exact_error():
+    bad = understood(
+        task="calculate_targets", goal="cut", goal_quote="ลดเขียนไขมัน", goal_user_turn=0
+    )
+    good = bad.model_copy(update={"goal_quote": "ลดไขมัน"})
+    client, calls = client_for(bad.model_dump_json(), good.model_dump_json())
+    result, _ = interpret_request(
+        client, model="test", message="ช่วยคำนวณเป้าหมายลดไขมันจากโปรไฟล์", history=[], profile=adult()
+    )
+    assert result.goal_quote == "ลดไขมัน" and len(calls) == 2
+    correction = calls[1]["contents"][-1].parts[0].text
+    assert "goal_quote" in correction and "user turn 0" in correction
+    assert calls[1]["contents"][-2].role == "model"
+
+
+def test_escaped_thai_quote_correction_names_the_escape_problem():
+    bad = understood(goal="cut", goal_quote="ลดเขียนไขมัน", goal_user_turn=0).model_dump_json()
+    assert "ลด" in bad
+    escaped = json.dumps(json.loads(bad), ensure_ascii=True)
+    good = understood(goal="cut", goal_quote="ลดไขมัน", goal_user_turn=0).model_dump_json()
+    client, calls = client_for(escaped, good)
+    interpret_request(client, model="test", message="ช่วยลดไขมัน", history=[], profile=None)
+    assert "Unicode escape" in calls[1]["contents"][-1].parts[0].text
+
+
+def test_second_ungrounded_interpretation_still_fails_closed():
+    bad = understood(goal="bulk", goal_quote="ที่ลัดขลัด", goal_user_turn=0).model_dump_json()
+    client, calls = client_for(bad, bad)
+    with pytest.raises(ValueError):
+        interpret_request(client, model="test", message="เพิ่มกล้าม", history=[], profile=None)
+    assert len(calls) == 2
+
+
+def test_exclusion_phrases_precede_and_scaffold_blocked_actions():
+    schema = RequestUnderstanding.model_json_schema()
+    order = list(schema["properties"])
+    assert "exclusion_phrases" in schema["required"]
+    assert order.index("exclusion_phrases") < order.index("blocked_actions")
