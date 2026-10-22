@@ -1100,6 +1100,12 @@ def stream_chat(
             user_message, understanding,
         )
         guard = guardrails.combine(guard, guardrails.check_profile(interpreted_profile))
+    elif understanding:
+        guard = guardrails.combine(guard, guardrails.check_stated_measurements(
+            understanding.weight_kg.value if understanding.weight_kg else None,
+            understanding.height_cm.value if understanding.height_cm else None,
+            understanding.goal,
+        ))
 
     # Safety precedes retrieval and all model/tool calls, including outages.
     safety = guardrails.safety_reply(guard)

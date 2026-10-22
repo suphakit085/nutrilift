@@ -23,6 +23,7 @@ from app.services.nutrition import (
     bmi,
 )
 from app.services.profile_safety import (
+    BULK_REVIEW_BMI,
     MAX_SELF_SERVICE_WEIGHT_KG,
     SPECIALIST_BMI_HIGH,
     SPECIALIST_BMI_LOW,
@@ -47,6 +48,8 @@ class Flag(StrEnum):
     UNDERWEIGHT = "underweight"
     #: Profile-derived: the computed energy target is under the self-managed floor.
     LOW_ENERGY_TARGET = "low_energy_target"
+    #: BMI at or above the bulk review threshold while the stated goal is bulk.
+    BULK_REVIEW = "bulk_review"
 
 
 #: Substring patterns per flag. Thai has no word boundaries, so these are matched
@@ -1034,6 +1037,36 @@ def check_profile(profile: ProfileInput | None, targets: dict | None = None) -> 
     return GuardResult(flags=flags, matched=matched)
 
 
+def check_stated_measurements(
+    weight_kg: float | None, height_cm: float | None, goal: str | None
+) -> GuardResult:
+    """Screen weight/height a user typed in chat when no saved profile exists.
+
+    The saved-profile path already screens temporary values through the
+    calculator profile. Without a profile, grounded values from the request
+    interpreter get the same boundaries before any model answer: 200 kg alone,
+    BMI under 16 or from 40, under 18.5, and bulk from BMI 30. A single
+    weight without height can only be screened against the weight limit.
+    """
+    flags: list[Flag] = []
+    matched: dict[str, list[str]] = {}
+    if weight_kg is not None and weight_kg >= MAX_SELF_SERVICE_WEIGHT_KG:
+        flags.append(Flag.SPECIALIST_PROFILE)
+        matched[str(Flag.SPECIALIST_PROFILE)] = [f"stated:weight_kg={weight_kg:g}"]
+    if weight_kg and height_cm and weight_kg > 0 and height_cm > 0:
+        value = bmi(weight_kg, height_cm)
+        if support_boundary(weight_kg, height_cm) and Flag.SPECIALIST_PROFILE not in flags:
+            flags.append(Flag.SPECIALIST_PROFILE)
+            matched[str(Flag.SPECIALIST_PROFILE)] = [f"stated:bmi={value:.1f}"]
+        if value < BMI_UNDERWEIGHT:
+            flags.append(Flag.UNDERWEIGHT)
+            matched[str(Flag.UNDERWEIGHT)] = [f"stated:bmi={value:.1f}"]
+        if goal == "bulk" and value >= BULK_REVIEW_BMI:
+            flags.append(Flag.BULK_REVIEW)
+            matched[str(Flag.BULK_REVIEW)] = [f"stated:bmi={value:.1f}"]
+    return GuardResult(flags=flags, matched=matched)
+
+
 def combine(*results: GuardResult) -> GuardResult:
     """Union of several results, first occurrence wins the ordering, no duplicates."""
     flags: list[Flag] = []
@@ -1126,10 +1159,16 @@ FLAG_INSTRUCTIONS: dict[Flag, str] = {
         "ห้ามประมาณตัวเลขเป้าหมายให้เองแม้ผู้ใช้จะขอ"
     ),
     Flag.UNDERWEIGHT: (
-        "โปรไฟล์ผู้ใช้มีค่า BMI ต่ำกว่า 18.5 (น้ำหนักน้อยกว่าเกณฑ์) ห้ามแนะนำการลดพลังงานหรือลดน้ำหนัก "
+        "โปรไฟล์หรือข้อมูลที่ผู้ใช้แจ้งมีค่า BMI ต่ำกว่า 18.5 (น้ำหนักน้อยกว่าเกณฑ์) ห้ามแนะนำการลดพลังงานหรือลดน้ำหนัก "
         "แม้ผู้ใช้จะตั้งเป้าหมายลดไขมันไว้ ให้บอกตรง ๆ ว่าตัวเลขเป้าหมายที่ระบบให้เป็นระดับรักษาน้ำหนัก "
         "อธิบายเหตุผลสั้น ๆ (เสี่ยงต่อมวลกล้ามเนื้อ ฮอร์โมน กระดูก และภาวะ EA ต่ำ) "
         "และแนะนำให้ปรึกษาแพทย์หรือนักกำหนดอาหารก่อนตัดสินใจลดไขมัน"
+    ),
+    Flag.BULK_REVIEW: (
+        "ผู้ใช้แจ้งน้ำหนักและส่วนสูงที่ BMI ตั้งแต่ 30 และต้องการเพิ่มกล้ามเนื้อ (bulk) "
+        "ห้ามแนะนำพลังงานส่วนเกินหรือการเพิ่มน้ำหนัก ให้บอกว่าระบบไม่สร้างพลังงานส่วนเกินในกรณีนี้ "
+        "แนะนำให้พิจารณาเป้าหมายลดไขมันหรือรักษาน้ำหนักร่วมกับการฝึกแรงต้าน "
+        "และให้แพทย์หรือนักกำหนดอาหารประเมิน โดยไม่วินิจฉัยจาก BMI อย่างเดียว"
     ),
     Flag.LOW_ENERGY_TARGET: (
         "พลังงานเป้าหมายที่ระบบคำนวณได้ต่ำกว่า 1,200 kcal/วัน ต้องบอกผู้ใช้ชัดเจนว่าระดับนี้ไม่ควรทำ "
