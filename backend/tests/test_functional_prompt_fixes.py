@@ -9,6 +9,7 @@ from app.services import chat, guardrails, prompts
 from app.services.answer_validation import (
     answer_issues,
     format_issue,
+    normalize_answer_terms,
     requested_format,
     without_target_citations,
 )
@@ -218,6 +219,16 @@ def test_explicit_dose_exclusion_is_enforced_on_output():
 def test_unrelated_alphabet_artifact_is_detected_but_technical_terms_are_allowed():
     assert answer_issues("ติดตามเวทอย่างไร", "บันทึกเซטיםในการฝึก", [], use_rag=False)
     assert not answer_issues("MPS และเวย์", "ติดตาม MPS และ whey", [], use_rag=False)
+
+
+def test_known_term_correction_does_not_bypass_interval_evidence_check():
+    raw = "บันทึกเซ\u05d8\u05d9\u05dd ถ่ายรูปทุก 2-4 minggu"
+    fixed = normalize_answer_terms(raw)
+    assert fixed == "บันทึกเซต ถ่ายรูปทุก 2-4 สัปดาห์"
+    assert answer_issues(
+        "ติดตามเวทอย่างไร", fixed, [{"label": "S1", "content": "ติดตามแนวโน้มน้ำหนัก"}], use_rag=True
+    )
+    assert normalize_answer_terms("ชื่อผู้แต่ง Cohen และ sets 3 ครั้ง") == "ชื่อผู้แต่ง Cohen และ sets 3 ครั้ง"
 
 
 def test_tracking_does_not_invent_a_fixed_interval():

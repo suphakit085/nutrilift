@@ -29,6 +29,7 @@ from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
 from app.services.answer_validation import (
     answer_issues,
+    normalize_answer_terms,
     repair_instruction,
     without_target_citations,
 )
@@ -1474,7 +1475,8 @@ def stream_chat(
             if not function_calls:
                 if not tool_chain_active:
                     answer = without_target_citations(
-                        clean_answer("".join(turn_text_parts), citations), targets,
+                        normalize_answer_terms(clean_answer("".join(turn_text_parts), citations)),
+                        targets,
                     )
                     if unverified_menu_table(answer):
                         yield {"type": "error", "code": "unverified_menu", "message": (
@@ -1492,6 +1494,10 @@ def stream_chat(
                                 "type": "error", "code": "answer_validation_failed",
                                 "message": "ยังตรวจยืนยันคำตอบให้ตรงเงื่อนไขที่ขอไม่ได้ครับ กรุณาลองใหม่อีกครั้ง",
                                 "usage": usage_total, "safety_flags": guard.as_json(),
+                                "answer_validation": {
+                                    "repairs": int(answer_repair_used),
+                                    "issues": answer_validation_issues,
+                                },
                             }
                             return
                         answer_repair_used = True

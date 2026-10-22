@@ -34,6 +34,10 @@ independent defects.
   in the cited passages. A failed draft gets one bounded repair; another failure
   ends with an error instead of displaying the rejected draft. Repair is recorded
   in the terminal event and may add one generation call.
+- Normalize the observed mixed-script spelling of the exercise term "set" and
+  known numerical week-unit spellings before validation. Other unexpected scripts
+  still trigger repair; normalizing a unit does not authorize an unsupported
+  tracking interval. Rejected drafts remain withheld.
 
 The numeric-support check is deliberately limited: matching a number does not
 prove semantic entailment, population applicability or clinical correctness.
@@ -47,7 +51,7 @@ v1.20.2 for traceability.
 Regression cases include paraphrases, negated/affirmative mixed requests, complete
 pairing questions, clinical/nonclinical similar words, calculator provenance,
 format repair, bounded failure and withholding rejected drafts. The local CI
-regression command passed 1,673 tests (76 PostgreSQL/evidence cases deselected;
+regression command includes 1,674 tests (76 PostgreSQL/evidence cases deselected;
 the CI-excluded food-audit file requires external local evidence). Ruff passed.
 Hosted CI separately exercises PostgreSQL and the runtime image.
 

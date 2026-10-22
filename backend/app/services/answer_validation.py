@@ -15,6 +15,22 @@ _CITATION = re.compile(r"\[S\d+(?:[\s,;]+S\d+)*\]", re.I)
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:[.]\d+)?")
 
 
+def normalize_answer_terms(answer: str) -> str:
+    """Normalize known mixed-script spellings, not arbitrary foreign words.
+
+    This is a terminology correction, not replacement of a generated answer.
+    Localize known week units only after a number; evidence validation still
+    rejects a fixed interval not supported by the supplied passages.
+    """
+    answer = answer.replace("เซ\u05d8\u05d9\u05dd", "เซต")
+    return re.sub(
+        r"(?<=\d)\s*(?:semaines?|minggu|wochen|semanas)\b",
+        " สัปดาห์",
+        answer,
+        flags=re.I,
+    )
+
+
 def without_target_citations(answer: str, targets: dict | None) -> str:
     """Keep calculator provenance separate from adjacent research citations."""
     if not targets:
