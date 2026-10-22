@@ -16,6 +16,8 @@ def affirmative_actions(message: str) -> str:
         normalize_thai(
             r"(?:ไม่ต้อง|ไม่เอา|ไม่ขอ|ไม่ได้ขอ(?:ให้)?|อย่า|งด)\s*"
             r"(?:การ|ให้|ช่วย)?\s*(?:คำนวณ|คิด(?:ค่า|แคล|เป้า)|จัด(?:เมนู|อาหาร|ตารางอาหาร))"
+            r"(?:\s*(?:หรือ|และ|รวมถึง)\s*"
+            r"(?:คำนวณ|คิด(?:ค่า|แคล|เป้า)|จัด(?:เมนู|อาหาร|ตารางอาหาร)))*"
         ),
         " ",
         text,
@@ -24,9 +26,8 @@ def affirmative_actions(message: str) -> str:
 
 def excludes_personal_calculation(message: str) -> bool:
     text = normalize_thai(message)
-    return bool(
-        re.search(normalize_thai(r"(?:ไม่ต้อง|ไม่ขอ|ไม่ได้ขอ(?:ให้)?|อย่า)\s*(?:ให้|ช่วย)?\s*คำนวณ"), text)
-    ) and not re.search(normalize_thai(r"คำนวณ|คิด(?:ค่า|เป้า)"), affirmative_actions(message))
+    pattern = normalize_thai(r"คำนวณ|คิด(?:ค่า|เป้า)")
+    return bool(re.search(pattern, text)) and not re.search(pattern, affirmative_actions(message))
 
 
 def excludes_dose(message: str) -> bool:

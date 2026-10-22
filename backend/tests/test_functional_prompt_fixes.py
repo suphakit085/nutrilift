@@ -40,6 +40,8 @@ def adult(**changes):
         "ผมอยากรู้หลักฐานเรื่องโปรตีน ไม่ได้ขอให้คำนวณแคลอรี",
         "อธิบายโปรตีนให้ฉันฟัง อย่าคำนวณเป้าหมาย",
         "ขอหลักการ ไม่ขอคำนวณพลังงานของผม",
+        "ผมถามหลักฐานเวย์ ไม่ต้องจัดเมนูหรือคำนวณแคลอรี",
+        "ผมอยากอ่านหลักการ ไม่ต้องจัดอาหารและคำนวณพลังงาน",
     ],
 )
 def test_negated_calculation_does_not_require_profile(message):
@@ -165,6 +167,12 @@ def test_percentages_must_come_from_cited_passage_not_another_card():
 def test_explicit_dose_exclusion_is_enforced_on_output():
     assert answer_issues("ครีเอทีนไม่ต้องบอกโดส", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
     assert not answer_issues("ครีเอทีนกี่กรัมต่อวัน", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
+
+
+def test_tracking_does_not_invent_a_fixed_interval():
+    source = [{"label": "S1", "content": "ติดตามแนวโน้มน้ำหนัก"}]
+    assert answer_issues("ติดตามความก้าวหน้าอย่างไร", "ถ่ายรูปทุก 2-4 สัปดาห์", source, use_rag=True)
+    assert not answer_issues("ติดตามความก้าวหน้าอย่างไร", "ติดตามแนวโน้มน้ำหนัก", source, use_rag=True)
 
 
 @pytest.mark.parametrize(

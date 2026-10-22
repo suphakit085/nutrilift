@@ -126,11 +126,22 @@ def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: b
         # Match a numeric percentage/range against the specific cited context.
         # A cut percentage somewhere else in the corpus cannot substantiate bulk.
         by_label = {p.get("label", "").upper(): p.get("content", "") for p in passages}
+        tracking = re.search(
+            normalize_thai(r"ติดตาม|ความก้าวหน้า|track|progress"), normalize_thai(message)
+        )
         for line in answer.splitlines():
             percentages = re.findall(
                 r"\d+(?:[.]\d+)?(?:\s*[-\u2013]\s*\d+(?:[.]\d+)?)?\s*(?:%|เปอร์เซ็นต์)", line
             )
-            if not percentages:
+            intervals = (
+                re.findall(
+                    r"\d+(?:[.]\d+)?\s*[-\u2013]\s*\d+(?:[.]\d+)?\s*(?:วัน|สัปดาห์|เดือน)",
+                    line,
+                )
+                if tracking
+                else []
+            )
+            if not percentages and not intervals:
                 continue
             labels = [
                 label.upper()
@@ -145,6 +156,14 @@ def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: b
                 else "\n".join(by_label.values())
             )
             available = _numbers(evidence)
+            compact_evidence = re.sub(r"\s+", "", normalize_thai(evidence)).replace("\u2013", "-")
+            if any(
+                re.sub(r"\s+", "", normalize_thai(value)).replace("\u2013", "-")
+                not in compact_evidence
+                for value in intervals
+            ):
+                issues.append("ช่วงเวลาติดตามที่กำหนดไม่มีในข้อความหลักฐาน ห้ามตั้งช่วงตายตัวจากความจำ")
+                break
             if any(not _numbers(value) <= available for value in percentages):
                 issues.append(
                     "เปอร์เซ็นต์ที่ตอบไม่มีในข้อความหลักฐานที่ใช้อ้าง "
