@@ -261,7 +261,7 @@ def test_transport_timeout_does_not_request_more_user_data(monkeypatch):
 def test_evidence_review_receives_program_units_and_numbered_paragraphs():
     client, calls = client_for(
         ledger("research", support={0: ["S1.1"]}),
-        '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
     )
     verdict, _ = review_answer(
         client,
@@ -325,7 +325,11 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
         },
         ensure_ascii=False,
     )
-    client, _ = client_for(review)
+    claim = (
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":%s,"type":"evidence_or_effect"}]}'
+        % ("true" if names_source else "false")
+    )
+    client, _ = client_for(review, claim)
     verdict, _ = review_answer(
         client,
         model="test",
@@ -343,7 +347,9 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
     [("advice", PASSAGES), ("evidence_gap", PASSAGES), ("framing", PASSAGES), ("research", [])],
 )
 def test_ledger_accepts_unlabelled_non_evidence_and_sourceless_principles(kind, passages):
-    not_a_claim = '{"sentences":[{"sentence":0,"type":"instruction"}]}'
+    not_a_claim = (
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
+    )
     client, _ = client_for(ledger(kind), not_a_claim)
     verdict, _ = review_answer(
         client,
@@ -602,7 +608,15 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
         "framing",
         issues=[{"unit": 1, "category": "unsupported_fact", "reason": "ไม่มีแหล่งรับรองความปลอดภัย"}],
     )
-    claims = '{"sentences":[{"sentence":0,"type":"framing"},{"sentence":1,"type":"framing"}]}'
+    claims = json.dumps(
+        {
+            "sentences": [
+                {"sentence": 0, "claims_evidence_backing": False, "type": "framing"},
+                {"sentence": 1, "claims_evidence_backing": False, "type": "permission_or_safety"},
+                {"sentence": 2, "claims_evidence_backing": False, "type": "framing"},
+            ]
+        }
+    )
     client, _ = client_for(review, claims)
     verdict, _ = review_answer(
         client,
@@ -661,7 +675,7 @@ def test_exempted_unit_that_is_an_evidence_claim_is_rejected(support, category):
     draft = "หลักฐานส่วนใหญ่รองรับเวย์"  # PT20: ledger called this a general fact
     client, calls = client_for(
         ledger("general_fact", support={0: support}),
-        '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
     )
     verdict, _ = review_answer(
         client,
@@ -717,7 +731,8 @@ def test_draft_without_content_is_rejected_without_a_model_call(draft):
 def test_framing_unit_with_an_evidence_claim_is_checked():
     draft = "เวย์เป็นอาหารเสริมที่มีหลักฐานรองรับเด่นชัด"
     client, calls = client_for(
-        ledger("framing"), '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}'
+        ledger("framing"),
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
     )
     verdict, _ = review_answer(
         client,
@@ -733,8 +748,8 @@ def test_framing_unit_with_an_evidence_claim_is_checked():
 @pytest.mark.parametrize(
     "answer",
     [
-        '{"sentences":[{"sentence":0,"type":"instruction"},{"sentence":0,"type":"evidence_or_effect"}]}',
-        '{"sentences":[{"sentence":0,"type":"instruction"},{"sentence":0,"type":"instruction"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}',
         '{"sentences":[]}',
     ],
 )
@@ -761,7 +776,7 @@ def test_cited_permission_must_be_stated_by_its_own_paragraph(stated, accepted):
     draft = "เวย์กินคู่กับนมได้ตามความสะดวก [S3]"  # VX03: permission from a silent source
     client, calls = client_for(
         ledger("advice", support={0: ["S3.1"]}),
-        '{"sentences":[{"sentence":0,"type":"permission_or_safety"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"permission_or_safety"}]}',
         json.dumps({"pairs": [{"pair": 0, "stated": stated}]}),
     )
     verdict, _ = review_answer(
@@ -784,7 +799,7 @@ def test_cited_permission_must_be_stated_by_its_own_paragraph(stated, accepted):
 def test_cited_non_permission_claim_skips_the_permission_check():
     client, calls = client_for(
         ledger("research", support={0: ["S3.1"]}),
-        '{"sentences":[{"sentence":0,"type":"instruction"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}',
     )
     verdict, _ = review_answer(
         client,
@@ -795,3 +810,58 @@ def test_cited_non_permission_claim_skips_the_permission_check():
         understanding=understood(),
     )
     assert verdict.accepted and len(calls) == 2
+
+
+def test_ledger_research_label_on_a_practical_tip_does_not_reject_it():
+    # A whole-draft ledger may call "check the label" research and note it as
+    # unsupported; the per-sentence check types it as an instruction.
+    draft = "ตรวจฉลากอาหารก่อนเลือกซื้อ"
+    review = ledger(
+        "research",
+        issues=[{"unit": 0, "category": "unsupported_fact", "reason": "ไม่มีในแหล่ง"}],
+    )
+    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
+    client, _ = client_for(review, claim)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted and verdict.ledger[0]["cleared_unsupported_note"] is True
+
+
+def test_numeric_instruction_keeps_the_ledger_unsupported_note():
+    draft = "กินโปรตีนวันละ 3 กรัมต่อกิโลกรัม"
+    review = ledger(
+        "advice",
+        issues=[{"unit": 0, "category": "unsupported_fact", "reason": "ตัวเลขไม่มีในแหล่ง"}],
+    )
+    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
+    client, _ = client_for(review, claim)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted
+
+
+def test_evidence_backing_in_an_introduction_is_rejected_even_when_typed_framing():
+    draft = "ครีเอทีนและเวย์เป็นอาหารเสริมที่มีหลักฐานรองรับเด่นชัด ดังนี้ครับ"
+    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":true,"type":"framing"}]}'
+    client, _ = client_for(ledger("framing"), claim)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and verdict.issues[0].category == "unsupported_fact"
