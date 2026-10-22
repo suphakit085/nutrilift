@@ -3,6 +3,7 @@
 import json
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from google.genai import types
 from pydantic import ValidationError
@@ -215,6 +216,25 @@ def test_supported_fact_uses_typed_intent_not_query_spellings():
     assert reply and "[S1]" in reply and "ไม่ได้พิสูจน์" in reply
     assert creatine_necessity_reply("ครีเอทีนต้องโหลดไหม", passages, understood()) is None
     assert creatine_necessity_reply("ข้อความใดก็ได้", [], state) is None
+
+
+def test_transport_timeout_does_not_request_more_user_data(monkeypatch):
+    calls = []
+
+    def timeout(*args, **kwargs):
+        calls.append(kwargs)
+        raise httpx.ReadTimeout("read timed out")
+
+    monkeypatch.setattr(chat, "get_client", lambda: None)
+    monkeypatch.setattr(chat, "interpret_request", timeout)
+    monkeypatch.setattr(chat.time, "sleep", lambda _: pytest.fail("no extra timeout wait"))
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="โปรตีนช่วยอย่างไร"
+    )
+    assert len(calls) == 1 and result["code"] == "request_understanding_unavailable"
+    assert "ใช้เวลาตอบนาน" in result["message"]
+    assert "ข้อมูลที่แก้ไข" not in result["message"]
+    assert "วันนี้" not in chat.user_facing_error(Exception("429 quota"))
 
 
 def test_evidence_review_receives_explicit_citation_pairs():

@@ -1765,7 +1765,7 @@ _ERROR_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
     (
         ("resource_exhausted", "429", "quota"),
         (
-            "ตอนนี้ระบบใช้โควตาการตอบของวันนี้เต็มแล้ว ลองใหม่อีกครั้งในภายหลังนะครับ "
+            "ตอนนี้ผู้ให้บริการจำกัดโควตาการตอบ กรุณาลองใหม่ในภายหลังนะครับ "
             "(คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)"
         ),
     ),
@@ -1826,8 +1826,12 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
             break
         except Exception as exc:
             code = getattr(exc, "code", None)
-            unavailable = getattr(exc, "transient", False)
-            if attempt == 0 and (unavailable or code in {429, 500, 502, 503, 504}):
+            empty_generation = getattr(exc, "transient", False)
+            network_failure = isinstance(exc, httpx.HTTPError)
+            unavailable = empty_generation or network_failure
+            # A timeout already used its request budget; do not add another
+            # long wait or tell the user their data was incomplete.
+            if attempt == 0 and (empty_generation or code in {429, 500, 502, 503, 504}):
                 delay = 12 if code == 429 else 1
                 yield {"type": "retry", "wait_s": delay,
                        "message": "กำลังลองเชื่อมต่อผู้ให้บริการอีกครั้งครับ"}
@@ -1836,7 +1840,8 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
             logger.warning("request interpretation failed: %s", type(exc).__name__)
             if code is not None or unavailable:
                 yield {"type": "error", "code": "request_understanding_unavailable",
-                       "message": (user_facing_error(exc) if code is not None else
+                       "message": (user_facing_error(exc)
+                                   if code is not None or network_failure else
                                    "ยังอ่านผลจากผู้ให้บริการโมเดลไม่ได้ครับ กรุณาลองใหม่อีกครั้ง")}
             else:
                 yield {"type": "error", "code": "request_understanding_failed",

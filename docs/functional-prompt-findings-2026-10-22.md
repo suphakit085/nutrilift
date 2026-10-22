@@ -20,6 +20,9 @@ regular expressions one phrase at a time.
    Control fields are mandatory: exclusions cannot disappear through omitted
    defaults. Empty/truncated generations are service failures, not missing user
    information; the same input gets at most one transient-only retry.
+   Network/read timeouts also return a service error without another long wait;
+   they do not ask the user to correct their data. A bare429 does not establish
+   whether the limit is per-minute or daily, so the UI does not claim a period.
 4. Valid temporary values reach the actual calculator and profile screening.
    They do not write the saved profile. Responses disclose this distinction.
    Explicit target requests render real operands, warnings and scoped sources.
