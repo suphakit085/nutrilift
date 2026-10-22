@@ -259,7 +259,10 @@ def test_transport_timeout_does_not_request_more_user_data(monkeypatch):
 
 
 def test_evidence_review_receives_program_units_and_numbered_paragraphs():
-    client, calls = client_for(ledger("research", support={0: ["S1.1"]}))
+    client, calls = client_for(
+        ledger("research", support={0: ["S1.1"]}),
+        '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}',
+    )
     verdict, _ = review_answer(
         client,
         model="test",
@@ -278,11 +281,13 @@ def test_evidence_review_receives_program_units_and_numbered_paragraphs():
 def test_units_split_json_leaves_and_label_boundaries():
     draft = json.dumps({"answer": "ก [S1] ข [S2, S3] ค", "caveat": "ง"}, ensure_ascii=False)
     assert [(u["text"], u["labels"]) for u in draft_units(draft)] == [
-        ("ก [S1]", ["S1"]),
-        ("ข [S2, S3]", ["S2", "S3"]),
-        ("ค", []),
-        ("ง", []),
+        ("answer: ก [S1]", ["S1"]),
+        ("answer: ข [S2, S3]", ["S2", "S3"]),
+        ("answer: ค", []),
+        ("caveat: ง", []),
     ]
+    nested = json.dumps({"plan": {"items": [{"dose": "5 g"}]}}, ensure_ascii=False)
+    assert [u["text"] for u in draft_units(nested)] == ["plan.items[0].dose: 5 g"]
     assert [u["text"] for u in draft_units("| A |\n| --- |\n\n* ข้อ")] == ["| A |", "* ข้อ"]
     assert source_paragraphs([{"label": "S2", "content": "หัวข้อ\n\nย่อหน้า"}]) == [
         {"id": "S2.1", "text": "หัวข้อ"},
@@ -338,7 +343,7 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
     [("advice", PASSAGES), ("evidence_gap", PASSAGES), ("framing", PASSAGES), ("research", [])],
 )
 def test_ledger_accepts_unlabelled_non_evidence_and_sourceless_principles(kind, passages):
-    not_a_claim = '{"sentences":[{"sentence":0,"evidence_or_effect_claim":false}]}'
+    not_a_claim = '{"sentences":[{"sentence":0,"type":"instruction"}]}'
     client, _ = client_for(ledger(kind), not_a_claim)
     verdict, _ = review_answer(
         client,
@@ -589,7 +594,7 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
     assert [u["text"] for u in draft_units(draft)] == [
         "protein_g: 180",
         "safe_for_kidney: true",
-        "ก",
+        "note: ก",
     ]
     review = ledger(
         "framing",
@@ -597,7 +602,8 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
         "framing",
         issues=[{"unit": 1, "category": "unsupported_fact", "reason": "ไม่มีแหล่งรับรองความปลอดภัย"}],
     )
-    client, _ = client_for(review)
+    claims = '{"sentences":[{"sentence":0,"type":"framing"},{"sentence":1,"type":"framing"}]}'
+    client, _ = client_for(review, claims)
     verdict, _ = review_answer(
         client,
         model="test",
@@ -655,7 +661,7 @@ def test_exempted_unit_that_is_an_evidence_claim_is_rejected(support, category):
     draft = "หลักฐานส่วนใหญ่รองรับเวย์"  # PT20: ledger called this a general fact
     client, calls = client_for(
         ledger("general_fact", support={0: support}),
-        '{"sentences":[{"sentence":0,"evidence_or_effect_claim":true}]}',
+        '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}',
     )
     verdict, _ = review_answer(
         client,
@@ -682,13 +688,110 @@ def test_claim_check_is_skipped_without_sources_or_exempt_units():
         passages=[],
         understanding=understood(),
     )
-    client2, calls2 = client_for(ledger("framing"))
+    client2, calls2 = client_for(ledger("personal"))
     review_answer(
         client2,
         model="test",
         question="q",
-        draft="สรุปดังนี้",
+        draft="เป้าหมายโปรตีน 126 กรัม",
         passages=PASSAGES,
         understanding=understood(),
     )
     assert len(calls) == 1 and len(calls2) == 1
+
+
+@pytest.mark.parametrize("draft", ["{}", "[]", '{"a": {}}', " - "])
+def test_draft_without_content_is_rejected_without_a_model_call(draft):
+    client, calls = client_for(ledger())
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and not calls
+
+
+def test_framing_unit_with_an_evidence_claim_is_checked():
+    draft = "เวย์เป็นอาหารเสริมที่มีหลักฐานรองรับเด่นชัด"
+    client, calls = client_for(
+        ledger("framing"), '{"sentences":[{"sentence":0,"type":"evidence_or_effect"}]}'
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and len(calls) == 2
+
+
+@pytest.mark.parametrize(
+    "answer",
+    [
+        '{"sentences":[{"sentence":0,"type":"instruction"},{"sentence":0,"type":"evidence_or_effect"}]}',
+        '{"sentences":[{"sentence":0,"type":"instruction"},{"sentence":0,"type":"instruction"}]}',
+        '{"sentences":[]}',
+    ],
+)
+def test_claim_check_with_duplicate_or_missing_sentences_fails_closed(monkeypatch, answer):
+    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
+    client, calls = client_for(ledger("advice"), answer, ledger("advice"), answer)
+    with pytest.raises(ValueError):
+        review_answer(
+            client,
+            model="test",
+            question="q",
+            draft="ตรวจฉลากอาหารก่อนซื้อ",
+            passages=PASSAGES,
+            understanding=understood(),
+        )
+    assert len(calls) == 4  # one retry of the whole review, then it stops
+
+
+PERMISSION_PASSAGES = [{"label": "S3", "content": "เลือกโปรตีนตามปริมาณรวม คุณภาพ และข้อจำกัดอาหาร"}]
+
+
+@pytest.mark.parametrize(("stated", "accepted"), [(False, False), (True, True)])
+def test_cited_permission_must_be_stated_by_its_own_paragraph(stated, accepted):
+    draft = "เวย์กินคู่กับนมได้ตามความสะดวก [S3]"  # VX03: permission from a silent source
+    client, calls = client_for(
+        ledger("advice", support={0: ["S3.1"]}),
+        '{"sentences":[{"sentence":0,"type":"permission_or_safety"}]}',
+        json.dumps({"pairs": [{"pair": 0, "stated": stated}]}),
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PERMISSION_PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted is accepted and len(calls) == 3
+    pair = json.loads(calls[2]["contents"][0].parts[0].text)["pairs"][0]
+    assert pair == {
+        "pair": 0,
+        "claim": "เวย์กินคู่กับนมได้ตามความสะดวก",
+        "evidence": ["เลือกโปรตีนตามปริมาณรวม คุณภาพ และข้อจำกัดอาหาร"],
+    }
+
+
+def test_cited_non_permission_claim_skips_the_permission_check():
+    client, calls = client_for(
+        ledger("research", support={0: ["S3.1"]}),
+        '{"sentences":[{"sentence":0,"type":"instruction"}]}',
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="เลือกโปรตีนตามปริมาณรวม [S3]",
+        passages=PERMISSION_PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted and len(calls) == 2
