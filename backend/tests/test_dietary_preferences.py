@@ -13,6 +13,7 @@ from app.services.meal_plan import _RESTRICTION_RULES, MealPlanError, excluded_b
 from app.services.menu_context import conversation_profile, conversation_restrictions
 from tests.test_account_lifecycle import account_app as account_app
 from tests.test_account_lifecycle import signup
+from tests.test_functional_prompt_fixes import client_for, understood
 from tests.test_verified_menu_routing import adult, no_model, run
 from tests.test_verified_menu_routing import foods as foods
 
@@ -232,6 +233,12 @@ def test_room_only_survives_reload_and_drives_real_menu_without_profile_write(
     assert state.client.get("/profile/history", headers=headers).json() == before_history
     assert context(state, headers, room(state, headers))["restrictions"] == PROFILE["restrictions"]
     no_model(monkeypatch, foods)
+    # Mock only language interpretation. The planner executes against actual
+    # room constraints and stored foods, without an answer-generation call.
+    interpretation_client, calls = client_for(
+        understood(task="plan_menu", personal_context=True).model_dump_json(),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: interpretation_client)
     monkeypatch.setattr(chat_api, "SessionLocal", lambda: Session(state.engine))
     response = state.client.post(
         f"/conversations/{identifier}/chat",
@@ -246,6 +253,7 @@ def test_room_only_survives_reload_and_drives_real_menu_without_profile_write(
         next(line[6:] for line in done_block.splitlines() if line.startswith("data: "))
     )
     assert done["model"] == "rule:verified_menu"
+    assert len(calls) == 1
     assert done["tool_calls"][0]["status"] in {"success", "partial"}
     assert "ถั่วลิสง," not in done["text"]
     assert state.client.get("/profile", headers=headers).json() == before_profile

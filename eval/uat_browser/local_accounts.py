@@ -102,6 +102,57 @@ async def serve_mail(ready):
         await server.serve_forever()
 
 
+def install_fixture_interpreter():
+    """Declared browser intents only; real-model quality runs are separate."""
+    import json
+    from types import SimpleNamespace
+    from google.genai import types
+    from app.services import chat
+    from app.services.request_understanding import RequestUnderstanding
+
+    intents = {question: "plan_menu" for question in [
+        "ช่วยจัดมื้ออาหารทั้งหมด 3 มื้อให้ตรงกับเป้าหมายของผม",
+        "ช่วยจัดเมนู 3 มื้อตามเป้าหมายและข้อจำกัดที่ยืนยัน",
+        "ขอเมนูตามโปรไฟล์ 3 มื้อ",
+        "ช่วยจัดเมนู 3 มื้อให้ตรงเป้าหมาย",
+        "จากโปรไฟล์ผมอยากลดไขมัน ช่วยกำหนดแคลอรี่และจัดเมนู 3 มื้อ",
+        "ช่วยจัดเมนูทั้งหมด 6 มื้อ เพิ่มมื้อเสริมได้ ไม่ใช้อาหารเสริม",
+        "จัดเมนู 3 มื้อ งบ 120 บาทต่อวัน",
+        "ช่วยจัดเมนู 3 มื้อจากโปรไฟล์",
+        "ช่วยจัดเมนู 3 มื้อ",
+    ]}
+    intents.update({question: "calculate_targets" for question in [
+        "จากโปรไฟล์ตอนนี้ ฉันควรกินพลังงานและโปรตีนวันละเท่าไร ใช้สูตรอะไร ขอแหล่งอ้างอิงด้วย",
+        "ช่วยสรุปเป้าพลังงานตามโปรไฟล์ พร้อมสูตรและที่มา",
+        "โปรไฟล์นี้คำนวณพลังงานอย่างไร ขออ้างอิงด้วย",
+    ]})
+    state = RequestUnderstanding(
+        task="knowledge", personal_context=True, medical_self_context=False, exclusion_phrases=[],
+        blocked_actions=[], missing_information=None, weight_kg=None, height_cm=None,
+        goal=None, goal_quote=None, goal_user_turn=None, output_format="text",
+        bullet_count=None, topic="other", evidence_only=False,
+    )
+
+    def fixture_interpretation(**kwargs):
+        schema = kwargs["config"].response_json_schema or {}
+        if schema.get("title") != "RequestUnderstanding":
+            raise AssertionError("Browser calculator/planner must not generate an AI answer")
+        payload = json.loads(kwargs["contents"][0].parts[0].text)
+        question = payload["user_turns"][-1]
+        if question not in intents:
+            raise AssertionError("Unexpected browser fixture input")
+        parsed = state.model_copy(update={"task": intents[question]})
+        yield types.GenerateContentResponse(candidates=[types.Candidate(
+            content=types.Content(parts=[types.Part.from_text(text=parsed.model_dump_json())]),
+            finish_reason="STOP",
+        )])
+
+    fixture_client = SimpleNamespace(models=SimpleNamespace(
+        generate_content_stream=fixture_interpretation,
+    ))
+    chat.get_client = lambda: fixture_client
+
+
 def run():
     for table in Base.metadata.tables.values():
         for column in table.columns:
@@ -128,6 +179,7 @@ def run():
     # Chat streaming opens short-lived sessions separately from Depends(get_db).
     from app.api import chat as chat_api
     chat_api.SessionLocal = lambda: Session(engine)
+    install_fixture_interpreter()
     if os.environ.get("DIETARY_UAT") == "1":
         import csv
         import json

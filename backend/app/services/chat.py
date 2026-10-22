@@ -27,6 +27,12 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.answer_review import review_answer
+from app.services.answer_validation import (
+    answer_issues,
+    repair_instruction,
+    without_target_citations,
+)
 from app.services.calculation_methods import methods_note, target_methods_note
 from app.services.creatine_facts import creatine_necessity_reply
 from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
@@ -60,6 +66,11 @@ from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
+from app.services.request_understanding import (
+    UNDERSTANDING_VERSION,
+    RequestUnderstanding,
+    interpret_request,
+)
 from app.services.target_explanation import (
     explicit_target_explanation_reply,
     requests_target_explanation,
@@ -974,6 +985,7 @@ def _dietary_question_events(
 def _verified_menu_events(
     db: Session, message: str, profile: ProfileInput | None,
     history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
+    understanding: RequestUnderstanding | None = None,
 ) -> Iterator[dict]:
     """Execute a requested operation on the server; no model transcription."""
     yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
@@ -985,7 +997,7 @@ def _verified_menu_events(
         if clarification:
             answer = clarification
         else:
-            effective, note = conversation_profile(profile, history, message)
+            effective, note = conversation_profile(profile, history, message, understanding)
             if effective is not None and nut_clarification(effective.restrictions):
                 yield from _dietary_question_events(
                     effective.restrictions, guard, use_rag, include_sources=False,
@@ -1057,6 +1069,7 @@ def stream_chat(
     pending_food_confirmations: list[str] | None = None,
     persistent_safety_flags: list[str] | None = None,
     menu_history: list[dict] | None = None,
+    understanding: RequestUnderstanding | None = None,
 ) -> Iterator[dict]:
     """Run one turn. Yields event dicts:
 
@@ -1077,9 +1090,23 @@ def stream_chat(
         guardrails.from_stored_flags(persistent_safety_flags),
         guardrails.check_profile(profile),
     )
+    if understanding and understanding.medical_self_context:
+        guard = guardrails.combine(guard, guardrails.GuardResult(
+            flags=[guardrails.Flag.MEDICAL], matched={"medical_condition": ["semantic_context"]},
+        ))
+    if understanding and profile is not None:
+        interpreted_profile, _ = conversation_profile(
+            profile, menu_history if menu_history is not None else (history or []),
+            user_message, understanding,
+        )
+        guard = guardrails.combine(guard, guardrails.check_profile(interpreted_profile))
 
     # Safety precedes retrieval and all model/tool calls, including outages.
     safety = guardrails.safety_reply(guard)
+    if safety is None:
+        refusal = guardrails.refusal_reply(guard)
+        if refusal:
+            safety = ("medical_scope", refusal)
     if safety:
         route, reply = safety
         _release_connection(db)
@@ -1100,6 +1127,28 @@ def stream_chat(
         return
 
     operation_history = menu_history if menu_history is not None else (history or [])
+    if understanding:
+        if understanding.task == "clarify":
+            reply = {
+                "pair_partner": "ต้องการกินหรือผสมอะไรคู่กับอะไรครับ กรุณาระบุทั้งสองอย่างก่อนครับ",
+                "profile": ("กรุณากรอกและบันทึกข้อมูลในหน้าโปรไฟล์ก่อนครับ "
+                            "ระบบจึงจะใช้ข้อมูลครบสำหรับคำนวณเป้าหมายเฉพาะบุคคลได้"),
+                "food_quantity": "เป็นอาหารหรือผลิตภัณฑ์ใด และปริมาณที่กินกี่กรัมหรือกี่หน่วยครับ",
+                "training_schedule": "คุณเริ่มและเลิกฝึกกี่โมง และกินมื้อก่อนฝึกเวลาใดครับ",
+                "budget": ("งบอาหารกี่บาทต่อวันหรือต่อมื้อครับ ฐานข้อมูลยังไม่มีราคาอาหาร "
+                           "จึงต้องตรวจราคาจริงก่อนยืนยันว่าอยู่ในงบ"),
+                "goal": "ตอนนี้ต้องการลดไขมัน เพิ่มกล้ามเนื้อ หรือรักษาน้ำหนักครับ",
+                "allergy_type": "แพ้อาหารหรือส่วนประกอบชนิดใดบ้างครับ กรุณาระบุให้ครบก่อนจัดเมนู",
+                "other": "ช่วยระบุสิ่งที่ต้องการทราบหรือรายละเอียดที่ยังไม่ได้แจ้งเพิ่มเติมครับ",
+            }[understanding.missing_information]
+            yield from _understanding_reply(reply, guard, use_rag, "missing_information")
+            return
+        if understanding.task == "calculate_targets" and profile is None:
+            reply = ("ยังไม่มีข้อมูลเพียงพอสำหรับคำนวณเป้าหมายของคุณครับ "
+                     "กรุณากรอกและบันทึกเพศ ปีและเดือนเกิด ส่วนสูง น้ำหนัก ระดับกิจกรรม "
+                     "และเป้าหมายในหน้าโปรไฟล์ก่อน เปอร์เซ็นต์ไขมันเป็นข้อมูลเสริม")
+            yield from _understanding_reply(reply, guard, use_rag, "missing_personal_context")
+            return
     if re.search(r"แพ้ถั่ว(?!ลิสง|เหลือง|เปลือกแข็ง)", normalize_thai(user_message)):
         restrictions = conversation_restrictions(
             profile, [*operation_history, {"role": "user", "content": user_message}],
@@ -1107,23 +1156,27 @@ def stream_chat(
         if nut_clarification(restrictions):
             yield from _dietary_question_events(restrictions, guard, use_rag)
             return
-    if requests_menu(user_message, operation_history):
+    menu_requested = (understanding.task == "plan_menu" if understanding
+                      else requests_menu(user_message, operation_history))
+    if menu_requested:
         yield from _verified_menu_events(
-            db, user_message, profile, operation_history, guard, use_rag,
+            db, user_message, profile, operation_history, guard, use_rag, understanding,
         )
         return
 
     # Formula/provenance questions use the actual calculator payload. Primary
     # links are scoped in the reply, not fabricated as retrieved S passages.
-    if requests_target_explanation(user_message) and guardrails.personalization_allowed(guard):
+    target_requested = (understanding.task == "calculate_targets" if understanding
+                        else requests_target_explanation(user_message))
+    if target_requested and guardrails.personalization_allowed(guard):
         effective_profile, context_note = conversation_profile(
-            profile, operation_history, user_message,
+            profile, operation_history, user_message, understanding,
         )
         if effective_profile is not None:
             try:
                 explanation_targets = calc_nutrition_targets(effective_profile)
                 explanation = explicit_target_explanation_reply(
-                    user_message, explanation_targets, context_note,
+                    user_message, explanation_targets, context_note, requested=target_requested,
                 )
             except NutritionInputError:
                 explanation = None
@@ -1202,7 +1255,7 @@ def stream_chat(
         }
         return
 
-    clarification = missing_personal_context_reply(
+    clarification = None if understanding else missing_personal_context_reply(
         user_message, menu_history or history or [], has_profile=profile is not None,
     )
     if clarification:
@@ -1215,7 +1268,9 @@ def stream_chat(
         }
         return
 
-    necessity = creatine_necessity_reply(user_message, [p.as_dict() for p in passages])
+    necessity = creatine_necessity_reply(
+        user_message, [p.as_dict() for p in passages], understanding,
+    )
     if necessity:
         yield {"type": "delta", "text": necessity}
         yield {
@@ -1240,7 +1295,8 @@ def stream_chat(
         return
 
     profile, menu_context_note = conversation_profile(
-        profile, menu_history if menu_history is not None else (history or []), user_message
+        profile, menu_history if menu_history is not None else (history or []),
+        user_message, understanding,
     )
     macro_reply = explicit_macro_energy_reply(user_message)
     if macro_reply:
@@ -1319,13 +1375,26 @@ def stream_chat(
         sex=profile.sex if profile else None,
         age=profile.age() if profile else None,
         reference_only=(
+            (not understanding.personal_context or "calculate" in understanding.blocked_actions)
+            if understanding else
             _reference_question(user_message) or not _personal_context_requested(user_message)
         ),
     )
 
     if menu_context_note:
         system_prompt += "\n\n" + menu_context_note + " ต้องแจ้งข้อนี้เมื่อรายงานเป้าหมายหรือเมนู"
-    focus = prompts.answer_focus_th(user_message)
+    focus = "" if understanding else prompts.answer_focus_th(user_message)
+    if understanding:
+        # Never promote user-provided quotes into system instructions.
+        state = understanding.model_dump(exclude={
+            "weight_kg", "height_cm", "goal_quote", "goal_user_turn", "missing_information",
+        })
+        focus += "\nข้อมูลความต้องการที่ผ่านการตรวจโครงสร้างแล้ว:\n" + str(state)
+        focus += ("\nเคารพ blocked_actions ห้ามทำกิจกรรมที่ระบุไว้ "
+                  "ไม่สร้างชื่อผู้ใช้หรือข้อมูลส่วนตัวเพิ่ม ไม่อ้างการไม่มีข้อมูลว่าเป็นผลจากบทความ")
+        if understanding.topic == "progress_tracking":
+            focus += ("\nใช้เป้าหมายล่าสุด ถ้าหลักฐานไม่มีวิธีติดตามโดยตรงให้แจ้งช่องว่างก่อน "
+                      "แล้วสรุปเฉพาะปัจจัยที่มีหลักฐาน ไม่เพิ่มอัตราหรือช่วงเวลาตายตัวจากความจำ")
     if focus:
         system_prompt += "\n\n" + focus
     contents = _history_to_contents(history or [])
@@ -1343,7 +1412,8 @@ def stream_chat(
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         tool_config=(types.ToolConfig(function_calling_config=types.FunctionCallingConfig(
             mode="ANY", allowed_function_names=["lookup_food"],
-        )) if _database_food_request(user_message) else None),
+        )) if (understanding.task == "lookup_food" if understanding
+               else _database_food_request(user_message)) else None),
     )
 
     text_parts: list[str] = []
@@ -1358,6 +1428,9 @@ def stream_chat(
     menu_errors: list[str] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     finish_reasons: list[str] = []
+    answer_repair_used = False
+    answer_validation_issues: list[str] = []
+    evidence_ledger: list[dict] = []
 
     try:
         for _ in range(MAX_TOOL_ITERATIONS):
@@ -1448,13 +1521,56 @@ def stream_chat(
                 return
             if not function_calls:
                 if not tool_chain_active:
-                    answer = clean_answer("".join(turn_text_parts), citations)
+                    answer = without_target_citations(
+                        clean_answer("".join(turn_text_parts), citations),
+                        targets,
+                    )
                     if unverified_menu_table(answer):
                         yield {"type": "error", "code": "unverified_menu", "message": (
                             "ยังยืนยันเมนูนี้กับฐานข้อมูลอาหารไม่ได้ครับ "
                             "กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
                         )}
                         return
+                    issues = answer_issues(
+                        user_message, answer, [p.as_dict() for p in passages], use_rag=use_rag,
+                        understanding=understanding,
+                    )
+                    if understanding and not issues:
+                        try:
+                            verdict, review_usage = review_answer(
+                                client, model=chosen_model, question=user_message,
+                                draft=answer, passages=[p.as_dict() for p in passages],
+                                understanding=understanding,
+                            )
+                        except Exception as exc:
+                            logger.warning("semantic answer review failed: %s", type(exc).__name__)
+                            yield {"type": "error", "code": "answer_review_unavailable",
+                                   "message": "ยังตรวจยืนยันคำตอบกับหลักฐานไม่ได้ครับ กรุณาลองใหม่อีกครั้ง"}
+                            return
+                        for key, value in review_usage.items():
+                            usage_total[key] += value
+                        evidence_ledger = verdict.ledger
+                        issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
+                                  for i in verdict.issues]
+                    if issues:
+                        answer_validation_issues.extend(issues)
+                        if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:
+                            yield {
+                                "type": "error", "code": "answer_validation_failed",
+                                "message": "ยังตรวจยืนยันคำตอบให้ตรงเงื่อนไขที่ขอไม่ได้ครับ กรุณาลองใหม่อีกครั้ง",
+                                "usage": usage_total, "safety_flags": guard.as_json(),
+                                "answer_validation": {
+                                    "repairs": int(answer_repair_used),
+                                    "issues": answer_validation_issues,
+                                },
+                            }
+                            return
+                        answer_repair_used = True
+                        contents.append(types.Content(role="user", parts=[types.Part.from_text(
+                            text=repair_instruction(issues),
+                        )]))
+                        yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ", "wait_s": 0}
+                        continue
                     answer += target_methods_note(answer, targets)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
@@ -1474,7 +1590,13 @@ def stream_chat(
                         **args,
                         **menu_planning_options(menu_history or history or [], user_message),
                     }
-                if call.name == "lookup_food":
+                blocked_action = {
+                    "calc_nutrition_targets": "calculate", "suggest_day_menu": "menu",
+                }.get(call.name)
+                if understanding and blocked_action in understanding.blocked_actions:
+                    result = {"error": "action_excluded",
+                              "message": "ผู้ใช้ไม่ต้องการกิจกรรมนี้ ห้ามดำเนินการ"}
+                elif call.name == "lookup_food":
                     result = _run_food_lookup(
                         db,
                         str(args.get("query") or ""),
@@ -1603,6 +1725,7 @@ def stream_chat(
             )}
             return
         if answer_text and not verified_menu_results:
+            answer_text = without_target_citations(answer_text, targets)
             answer_text += target_methods_note(answer_text, targets)
         if answer_text:
             yield {"type": "delta", "text": answer_text}
@@ -1625,6 +1748,10 @@ def stream_chat(
         "model": chosen_model,
         "prompt_version": prompts.PROMPT_VERSION,
         "use_rag": use_rag,
+        "answer_validation": {
+            "repairs": int(answer_repair_used), "issues": answer_validation_issues,
+            "evidence_ledger": evidence_ledger,
+        },
     }
 
 
@@ -1641,7 +1768,7 @@ _ERROR_HINTS: tuple[tuple[tuple[str, ...], str], ...] = (
     (
         ("resource_exhausted", "429", "quota"),
         (
-            "ตอนนี้ระบบใช้โควตาการตอบของวันนี้เต็มแล้ว ลองใหม่อีกครั้งในภายหลังนะครับ "
+            "ตอนนี้ผู้ให้บริการจำกัดโควตาการตอบ กรุณาลองใหม่ในภายหลังนะครับ "
             "(คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)"
         ),
     ),
@@ -1666,11 +1793,89 @@ def user_facing_error(exc: Exception) -> str:
     return "เกิดข้อผิดพลาดในการสร้างคำตอบ ลองส่งคำถามอีกครั้งนะครับ หากยังไม่ได้กรุณาแจ้งผู้ดูแลระบบ"
 
 
+def _understanding_reply(reply: str, guard, use_rag: bool, route: str) -> Iterator[dict]:
+    yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    yield {"type": "delta", "text": reply}
+    yield {"type": "done", "text": reply, "citations": [], "retrieved": [], "tool_calls": [],
+           "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+           "safety_flags": guard.as_json(), "model": "rule:" + route,
+           "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag}
+
+
+def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
+    """Production entry: semantic interpretation -> validated state -> execution.
+
+    Existing deterministic safety rules can refuse before any provider call.
+    The semantic stage can add a medical concern, never clear a safety flag.
+    """
+    history = kwargs.get("menu_history")
+    if history is None:
+        history = kwargs.get("history") or []
+    pre_guard = guardrails.combine(
+        guardrails.check(kwargs["user_message"]), guardrails.check_history(history, lookback=None),
+        guardrails.from_stored_flags(kwargs.get("persistent_safety_flags")),
+        guardrails.check_profile(kwargs.get("profile")),
+    )
+    if guardrails.safety_reply(pre_guard) or guardrails.refusal_reply(pre_guard):
+        yield from stream_chat(db, **kwargs)
+        return
+    _release_connection(db)
+    for attempt in range(2):
+        try:
+            understanding, usage = interpret_request(
+                get_client(), model=kwargs.get("model") or settings.llm_model,
+                message=kwargs["user_message"], history=history, profile=kwargs.get("profile"),
+            )
+            break
+        except Exception as exc:
+            code = getattr(exc, "code", None)
+            empty_generation = getattr(exc, "transient", False)
+            network_failure = isinstance(exc, httpx.HTTPError)
+            unavailable = empty_generation or network_failure
+            # A timeout already used its request budget; do not add another
+            # long wait or tell the user their data was incomplete.
+            if attempt == 0 and (empty_generation or code in {429, 500, 502, 503, 504}):
+                delay = 12 if code == 429 else 1
+                yield {"type": "retry", "wait_s": delay,
+                       "message": "กำลังลองเชื่อมต่อผู้ให้บริการอีกครั้งครับ"}
+                time.sleep(delay)
+                continue
+            logger.warning("request interpretation failed: %s", type(exc).__name__)
+            if code is not None or unavailable:
+                yield {"type": "error", "code": "request_understanding_unavailable",
+                       "message": (user_facing_error(exc)
+                                   if code is not None or network_failure else
+                                   "ยังอ่านผลจากผู้ให้บริการโมเดลไม่ได้ครับ กรุณาลองใหม่อีกครั้ง")}
+            else:
+                yield {"type": "error", "code": "request_understanding_failed",
+                       "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
+                                   "กรุณาระบุคำถามและข้อมูลที่ต้องการใช้ให้ชัดเจนอีกครั้ง")}
+            return
+    for event in stream_chat(db, **kwargs, understanding=understanding):
+        if event["type"] in ("done", "error"):
+            event["request_understanding"] = {
+                "version": UNDERSTANDING_VERSION, **understanding.model_dump(mode="json"),
+            }
+            total = dict(event.get("usage") or {})
+            for key, count in usage.items():
+                total[key] = (total.get(key) or 0) + count
+            event["usage"] = total
+        yield event
+
+
+def collect_understood_answer(db: Session, **kwargs) -> dict:
+    last = {"type": "error", "message": "no events produced"}
+    for event in stream_understood_chat(db, **kwargs):
+        if event["type"] in ("done", "error"):
+            last = event
+    return last
+
+
 def collect_answer(db: Session, **kwargs) -> dict:
     """Run a turn to completion and return the final ``done`` (or ``error``) event.
 
-    Used by eval/run_eval.py so the harness exercises exactly the same code path
-    as the web app.
+    Low-level executor helper for deterministic unit tests. Full production
+    evaluation uses collect_understood_answer, including semantic interpretation.
     """
     last: dict = {"type": "error", "message": "no events produced"}
     for event in stream_chat(db, **kwargs):

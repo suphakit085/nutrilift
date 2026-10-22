@@ -42,7 +42,7 @@ from google.genai import types  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
-from app.services.chat import collect_answer  # noqa: E402
+from app.services.chat import collect_understood_answer as collect_answer  # noqa: E402
 from app.services.llm import get_client  # noqa: E402
 from app.services.prompts import PROMPT_VERSION  # noqa: E402
 from judge_prompts import (  # noqa: E402

@@ -50,8 +50,9 @@ def _number(value: float) -> str:
 
 def explicit_target_explanation_reply(
     message: str, targets: dict, context_note: str | None = None,
+    *, requested: bool | None = None,
 ) -> str | None:
-    if not requests_target_explanation(message):
+    if not (requests_target_explanation(message) if requested is None else requested):
         return None
     details = targets.get("calculation_details")
     if not details:

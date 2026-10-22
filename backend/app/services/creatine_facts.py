@@ -2,10 +2,33 @@
 
 import re
 
+from app.services.request_understanding import RequestUnderstanding
 from app.services.thai_text import normalize_thai
 
 
-def creatine_necessity_reply(message: str, passages: list[dict]) -> str | None:
+def creatine_necessity_reply(
+    message: str, passages: list[dict], understanding: RequestUnderstanding | None = None,
+) -> str | None:
+    if understanding is not None:
+        # Select a supported fact by typed intent, never by spelling variants.
+        # A quote from the canonical card is required; this is not a cached
+        # answer for a test question or proof of model answer consistency.
+        if (understanding.task != "knowledge" or understanding.topic != "creatine_loading"
+                or "dose" not in understanding.blocked_actions):
+            return None
+        for passage in passages:
+            label = passage.get("label") or ""
+            content = normalize_thai(passage.get("content") or "")
+            if (passage.get("document_slug") == "creatine"
+                    and normalize_thai("ไม่จำเป็นต้องโหลด") in content
+                    and re.fullmatch(r"S\d{1,2}", label, re.I) and passage.get("source_refs")):
+                return (
+                    "ไม่จำเป็นต้องโหลดเพื่อเพิ่มระดับสะสมครีเอทีน การโหลดช่วยให้สะสมเร็วขึ้น "
+                    f"ส่วนการกินขนาดต่ำต่อเนื่องค่อย ๆ เพิ่มระดับสะสมได้ [{label}]\n\n"
+                    "การสะสมเร็วหรือช้าไม่ได้พิสูจน์ว่าสองวิธีให้ผลเพิ่มแรงหรือมวลกล้ามเนื้อ"
+                    "ระยะยาวเท่ากัน และไม่ได้รับรองผลรายบุคคล"
+                )
+        return None
     query = normalize_thai(message)
     if not re.search(normalize_thai(r"ครีเอทีน|creatine"), query, re.I):
         return None

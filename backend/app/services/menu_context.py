@@ -13,6 +13,7 @@ from pythainlp.tokenize import word_tokenize
 
 from app.services.dietary_preferences import confirmed_settings
 from app.services.nutrition import ProfileInput
+from app.services.request_understanding import RequestUnderstanding
 from app.services.thai_text import normalize_thai
 
 _FOODS = {
@@ -319,8 +320,22 @@ def conversation_restrictions(profile: ProfileInput | None, history: list[dict])
 
 def conversation_profile(
     profile: ProfileInput | None, history: list[dict], user_message: str,
+    understanding: RequestUnderstanding | None = None,
 ) -> tuple[ProfileInput | None, str | None]:
     if profile is None:
         return None, None
     restrictions, goal, note = _conversation_settings(profile, history, user_message)
-    return replace(profile, goal=goal, restrictions=restrictions), note
+    changes = {}
+    if understanding is not None:
+        parts = []
+        for key, unit in [("weight_kg", "กก."), ("height_cm", "ซม.")]:
+            measurement = getattr(understanding, key)
+            if measurement is not None:
+                changes[key] = measurement.value
+                label = "น้ำหนัก" if key == "weight_kg" else "ส่วนสูง"
+                parts.append(f"{label} {measurement.value:g} {unit}")
+        goal = understanding.goal or profile.goal
+        if parts:
+            note = "\n".join(p for p in [note, "ใช้" + " และ".join(parts)
+                + "ที่คุณแจ้งล่าสุดเฉพาะห้องสนทนานี้ ไม่ได้แก้โปรไฟล์ที่บันทึกไว้"] if p)
+    return replace(profile, goal=goal, restrictions=restrictions, **changes), note
