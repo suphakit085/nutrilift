@@ -17,12 +17,18 @@ regular expressions one phrase at a time.
    changes require exact quotes from numbered user turns; assistant guesses
    cannot be quoted as user evidence. Numeric syntax is checked independently.
    Contradictory or ungrounded state stops execution and asks for clarification.
+   Control fields are mandatory: exclusions cannot disappear through omitted
+   defaults. Empty/truncated generations are service failures, not missing user
+   information; the same input gets at most one transient-only retry.
 4. Valid temporary values reach the actual calculator and profile screening.
    They do not write the saved profile. Responses disclose this distinction.
    Explicit target requests render real operands, warnings and scoped sources.
 5. General answers receive the typed request constraints; raw extracted quotes
    are never promoted into system instructions. Excluded calculator/menu tools
    are also blocked in application execution, not just by prompt.
+   An explicitly no-dose loading question can use a supported creatine fact
+   selected by typed topic, provided the canonical passage is retrieved. This
+   program-rendered response is not counted as a generated-model answer.
 6. Output syntax, prohibited dose quantities, unexpected scripts and unsupported
    numeric percentages/intervals are checked before display. A separate
    schema-constrained semantic review checks sentence-level evidence, invented
@@ -30,6 +36,8 @@ regular expressions one phrase at a time.
    actual draft. One bounded repair is permitted; another failure withholds the
    draft and returns an error. Provider faults get one transient-only retry of
    the same input; schema/quality failures are not retried to pick a better score.
+   Citation statements are paired with their specific source labels so an
+   unrelated passage elsewhere in the context cannot substitute for that source.
 
 The API and main evaluation runner use the semantic entry point. `stream_chat`
 and `collect_answer` remain low-level executor interfaces for existing unit
@@ -56,7 +64,7 @@ Full-system evaluations must use `stream_understood_chat` or
   review is itself fallible and uses the same model family; it is not independent
   expert validation or a guarantee against hallucinations.
 - The original prompt assembly remains; no RESPONSE_CONTRACT framework is added.
-  Prompt version is v1.20.3; interpretation schema/policy version is v1.
+  Prompt version is v1.20.3; interpretation schema/policy version is v2.
 
 JSON Schema configuration was checked against the installed SDK and real model.
 See [Google's structured output documentation](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).

@@ -2,6 +2,7 @@
 """Semantic review of generated prose; never a substitute for clinical review."""
 
 import json
+import re
 import time
 from typing import Literal
 
@@ -34,6 +35,8 @@ Check the CURRENT request, excluded actions, missing information, goal change an
 When sources are available, research claims must be supported by them. Clearly distinguished, cautious, nonnumeric general suggestions may be given without pretending the sources tested them. If evidence is missing, a truthful gap statement needs no S label. With no sources, safe broad principles with an explicit coverage disclaimer are acceptable; invented scientific attribution is not.
 Do not fail harmless wording variation, correct technical terms, or a brief relevant invitation. Do fail garbled language that changes meaning. Do not rewrite the draft or calculate new targets.
 accepted must be true exactly when issues is empty. This is a fallible model review, not proof of truth.
+The typed interpretation can also be wrong: check it against the original question, especially exclusions and missing information. Do not treat a mistaken task label as permission to guess an omitted object.
+For every citation_check, evaluate its statement ONLY against its listed sources. A source used elsewhere cannot support this statement. Distinguish a mixture being studied from permission to combine other substances.
 """
 
 
@@ -46,11 +49,21 @@ def _review_once(
     passages: list[dict],
     understanding: RequestUnderstanding,
 ):
+    citation_checks = []
+    used = set()
+    for line in draft.splitlines():
+        labels = []
+        for group in re.findall(r"\[S\d+(?:[\s,;]+S\d+)*\]", line):
+            labels.extend(re.findall(r"S\d+", group))
+        if labels:
+            citation_checks.append({"statement": line, "source_labels": sorted(set(labels))})
+            used.update(labels)
     payload = {
         "question": question,
         "request": understanding.model_dump(mode="json"),
         "draft": draft,
-        "passages": passages,
+        "passages": [p for p in passages if not used or p.get("label") in used],
+        "citation_checks": citation_checks,
     }
     pieces, usage = [], {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     for chunk in client.models.generate_content_stream(

@@ -66,7 +66,11 @@ from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
-from app.services.request_understanding import RequestUnderstanding, interpret_request
+from app.services.request_understanding import (
+    UNDERSTANDING_VERSION,
+    RequestUnderstanding,
+    interpret_request,
+)
 from app.services.target_explanation import (
     explicit_target_explanation_reply,
     requests_target_explanation,
@@ -1125,7 +1129,18 @@ def stream_chat(
     operation_history = menu_history if menu_history is not None else (history or [])
     if understanding:
         if understanding.task == "clarify":
-            reply = understanding.missing_information
+            reply = {
+                "pair_partner": "ต้องการกินหรือผสมอะไรคู่กับอะไรครับ กรุณาระบุทั้งสองอย่างก่อนครับ",
+                "profile": ("กรุณากรอกและบันทึกข้อมูลในหน้าโปรไฟล์ก่อนครับ "
+                            "ระบบจึงจะใช้ข้อมูลครบสำหรับคำนวณเป้าหมายเฉพาะบุคคลได้"),
+                "food_quantity": "เป็นอาหารหรือผลิตภัณฑ์ใด และปริมาณที่กินกี่กรัมหรือกี่หน่วยครับ",
+                "training_schedule": "คุณเริ่มและเลิกฝึกกี่โมง และกินมื้อก่อนฝึกเวลาใดครับ",
+                "budget": ("งบอาหารกี่บาทต่อวันหรือต่อมื้อครับ ฐานข้อมูลยังไม่มีราคาอาหาร "
+                           "จึงต้องตรวจราคาจริงก่อนยืนยันว่าอยู่ในงบ"),
+                "goal": "ตอนนี้ต้องการลดไขมัน เพิ่มกล้ามเนื้อ หรือรักษาน้ำหนักครับ",
+                "allergy_type": "แพ้อาหารหรือส่วนประกอบชนิดใดบ้างครับ กรุณาระบุให้ครบก่อนจัดเมนู",
+                "other": "ช่วยระบุสิ่งที่ต้องการทราบหรือรายละเอียดที่ยังไม่ได้แจ้งเพิ่มเติมครับ",
+            }[understanding.missing_information]
             yield from _understanding_reply(reply, guard, use_rag, "missing_information")
             return
         if understanding.task == "calculate_targets" and profile is None:
@@ -1253,8 +1268,9 @@ def stream_chat(
         }
         return
 
-    necessity = (None if understanding else
-                 creatine_necessity_reply(user_message, [p.as_dict() for p in passages]))
+    necessity = creatine_necessity_reply(
+        user_message, [p.as_dict() for p in passages], understanding,
+    )
     if necessity:
         yield {"type": "delta", "text": necessity}
         yield {
@@ -1810,16 +1826,18 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
             break
         except Exception as exc:
             code = getattr(exc, "code", None)
-            if attempt == 0 and code in {429, 500, 502, 503, 504}:
+            unavailable = getattr(exc, "transient", False)
+            if attempt == 0 and (unavailable or code in {429, 500, 502, 503, 504}):
                 delay = 12 if code == 429 else 1
                 yield {"type": "retry", "wait_s": delay,
                        "message": "กำลังลองเชื่อมต่อผู้ให้บริการอีกครั้งครับ"}
                 time.sleep(delay)
                 continue
             logger.warning("request interpretation failed: %s", type(exc).__name__)
-            if code is not None:
+            if code is not None or unavailable:
                 yield {"type": "error", "code": "request_understanding_unavailable",
-                       "message": user_facing_error(exc)}
+                       "message": (user_facing_error(exc) if code is not None else
+                                   "ยังอ่านผลจากผู้ให้บริการโมเดลไม่ได้ครับ กรุณาลองใหม่อีกครั้ง")}
             else:
                 yield {"type": "error", "code": "request_understanding_failed",
                        "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
@@ -1828,7 +1846,7 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
     for event in stream_chat(db, **kwargs, understanding=understanding):
         if event["type"] in ("done", "error"):
             event["request_understanding"] = {
-                "version": "v1", **understanding.model_dump(mode="json"),
+                "version": UNDERSTANDING_VERSION, **understanding.model_dump(mode="json"),
             }
             total = dict(event.get("usage") or {})
             for key, count in usage.items():

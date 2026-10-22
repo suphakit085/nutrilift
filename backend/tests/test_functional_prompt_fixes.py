@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from app.services import chat
 from app.services.answer_review import AnswerReview, review_answer
 from app.services.answer_validation import answer_issues, format_issue, without_target_citations
+from app.services.creatine_facts import creatine_necessity_reply
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import ProfileInput, calc_nutrition_targets
 from app.services.request_understanding import (
@@ -166,6 +167,71 @@ def test_no_extracted_measurements_uses_saved_profile():
     assert effective.goal == "maintain"
 
 
+def test_control_fields_cannot_be_silently_omitted():
+    payload = understood().model_dump()
+    for field in [
+        "blocked_actions",
+        "medical_self_context",
+        "missing_information",
+        "output_format",
+    ]:
+        with pytest.raises(ValidationError):
+            RequestUnderstanding.model_validate({k: v for k, v in payload.items() if k != field})
+
+
+def test_clarification_renders_only_a_validated_slot(monkeypatch):
+    state = understood(task="clarify", missing_information="pair_partner")
+    client, calls = client_for(state.model_dump_json())
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="คำถามที่เว้นข้อมูล"
+    )
+    assert len(calls) == 1 and "ระบุทั้งสองอย่าง" in result["text"]
+    with pytest.raises(ValidationError):
+        understood(task="clarify", missing_information="ask for a password")
+
+
+def test_blank_provider_result_is_not_blame_for_missing_user_data(monkeypatch):
+    client, calls = client_for("")
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.time, "sleep", lambda _: None)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="โปรตีนมีหน้าที่อะไร"
+    )
+    assert len(calls) == 2 and result["code"] == "request_understanding_unavailable"
+
+
+def test_supported_fact_uses_typed_intent_not_query_spellings():
+    passages = [
+        {
+            "document_slug": "creatine",
+            "label": "S1",
+            "source_refs": ["source"],
+            "content": "ไม่จำเป็นต้องโหลดเพื่อเพิ่มระดับสะสมครีเอทีน",
+        }
+    ]
+    state = understood(topic="creatine_loading", blocked_actions=["dose"])
+    reply = creatine_necessity_reply("ข้อความใดก็ได้", passages, state)
+    assert reply and "[S1]" in reply and "ไม่ได้พิสูจน์" in reply
+    assert creatine_necessity_reply("ครีเอทีนต้องโหลดไหม", passages, understood()) is None
+    assert creatine_necessity_reply("ข้อความใดก็ได้", [], state) is None
+
+
+def test_evidence_review_receives_explicit_citation_pairs():
+    client, calls = client_for('{"accepted":true}')
+    review_answer(
+        client,
+        model="test",
+        question="หลักฐานคืออะไร",
+        draft="ข้อความ [S1]",
+        passages=[{"label": "S1", "content": "หลักฐานจริง"}, {"label": "S9", "content": "เรื่องอื่น"}],
+        understanding=understood(),
+    )
+    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    assert [p["label"] for p in payload["passages"]] == ["S1"]
+    assert payload["citation_checks"][0]["source_labels"] == ["S1"]
+
+
 def test_invalid_state_stops_before_execution(monkeypatch):
     client, _ = client_for('{"task":"unknown"}')
     monkeypatch.setattr(chat, "get_client", lambda: client)
@@ -198,7 +264,14 @@ def test_transient_interpretation_retry_is_bounded_and_not_a_quality_retry(monke
 
 
 def test_semantics_can_add_but_cannot_remove_medical_boundary(monkeypatch):
-    state = understood(medical_self_context=True, task="calculate_targets", personal_context=True)
+    state = understood(
+        medical_self_context=True,
+        task="calculate_targets",
+        personal_context=True,
+        goal="bulk",
+        goal_quote="not in message",
+        goal_user_turn=99,
+    )
     client, calls = client_for(state.model_dump_json())
     monkeypatch.setattr(chat, "get_client", lambda: client)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("medical retrieval"))
