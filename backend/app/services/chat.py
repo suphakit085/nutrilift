@@ -27,6 +27,11 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.answer_validation import (
+    answer_issues,
+    repair_instruction,
+    without_target_citations,
+)
 from app.services.calculation_methods import methods_note, target_methods_note
 from app.services.creatine_facts import creatine_necessity_reply
 from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
@@ -60,6 +65,7 @@ from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
 from app.services.protein_split import equal_protein_split_reply
+from app.services.request_constraints import excludes_personal_calculation, incomplete_pairing_reply
 from app.services.target_explanation import (
     explicit_target_explanation_reply,
     requests_target_explanation,
@@ -903,6 +909,8 @@ def _database_food_request(message: str) -> bool:
 
 def _personal_context_requested(message: str) -> bool:
     """Only expose personal targets when the current question needs them."""
+    if excludes_personal_calculation(message):
+        return False
     return bool(re.search(normalize_thai(
         r"ผม|ฉัน|ดิฉัน|ตัวเอง|โปรไฟล์|เป้า(?:หมาย)?|เมนู|ตารางอาหาร|"
         r"(?:ควร|ต้อง|ให้)(?:กิน|ทาน)|กี่(?:แคล|กรัม)|my\b"
@@ -1080,6 +1088,10 @@ def stream_chat(
 
     # Safety precedes retrieval and all model/tool calls, including outages.
     safety = guardrails.safety_reply(guard)
+    if safety is None:
+        refusal = guardrails.refusal_reply(guard)
+        if refusal:
+            safety = ("medical_scope", refusal)
     if safety:
         route, reply = safety
         _release_connection(db)
@@ -1211,6 +1223,17 @@ def stream_chat(
             "type": "done", "text": clarification, "citations": [], "retrieved": citations,
             "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
             "safety_flags": guard.as_json(), "model": "rule:missing_personal_context",
+            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+        }
+        return
+
+    clarification = incomplete_pairing_reply(user_message)
+    if clarification:
+        yield {"type": "delta", "text": clarification}
+        yield {
+            "type": "done", "text": clarification, "citations": [], "retrieved": citations,
+            "tool_calls": [], "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+            "safety_flags": guard.as_json(), "model": "rule:incomplete_question",
             "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
         }
         return
@@ -1358,6 +1381,8 @@ def stream_chat(
     menu_errors: list[str] = []
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     finish_reasons: list[str] = []
+    answer_repair_used = False
+    answer_validation_issues: list[str] = []
 
     try:
         for _ in range(MAX_TOOL_ITERATIONS):
@@ -1448,13 +1473,33 @@ def stream_chat(
                 return
             if not function_calls:
                 if not tool_chain_active:
-                    answer = clean_answer("".join(turn_text_parts), citations)
+                    answer = without_target_citations(
+                        clean_answer("".join(turn_text_parts), citations), targets,
+                    )
                     if unverified_menu_table(answer):
                         yield {"type": "error", "code": "unverified_menu", "message": (
                             "ยังยืนยันเมนูนี้กับฐานข้อมูลอาหารไม่ได้ครับ "
                             "กรุณาขอให้จัดเมนูจากโปรไฟล์อีกครั้ง"
                         )}
                         return
+                    issues = answer_issues(
+                        user_message, answer, [p.as_dict() for p in passages], use_rag=use_rag,
+                    )
+                    if issues:
+                        answer_validation_issues.extend(issues)
+                        if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:
+                            yield {
+                                "type": "error", "code": "answer_validation_failed",
+                                "message": "ยังตรวจยืนยันคำตอบให้ตรงเงื่อนไขที่ขอไม่ได้ครับ กรุณาลองใหม่อีกครั้ง",
+                                "usage": usage_total, "safety_flags": guard.as_json(),
+                            }
+                            return
+                        answer_repair_used = True
+                        contents.append(types.Content(role="user", parts=[types.Part.from_text(
+                            text=repair_instruction(issues),
+                        )]))
+                        yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ", "wait_s": 0}
+                        continue
                     answer += target_methods_note(answer, targets)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
@@ -1603,6 +1648,7 @@ def stream_chat(
             )}
             return
         if answer_text and not verified_menu_results:
+            answer_text = without_target_citations(answer_text, targets)
             answer_text += target_methods_note(answer_text, targets)
         if answer_text:
             yield {"type": "delta", "text": answer_text}
@@ -1625,6 +1671,9 @@ def stream_chat(
         "model": chosen_model,
         "prompt_version": prompts.PROMPT_VERSION,
         "use_rag": use_rag,
+        "answer_validation": {
+            "repairs": int(answer_repair_used), "issues": answer_validation_issues,
+        },
     }
 
 

@@ -409,6 +409,10 @@ _SELF_HARM_PATTERNS = (
     "hurt myself",
 )
 _LAB_VALUE_RE = re.compile(r"\b(?:alt|ast|egfr|creatinine|ldl|hdl|tsh)\s*[:=]?\s*\d", re.I)
+_LAB_CONTEXT_RE = re.compile(normalize_thai(
+    r"(?:ค่า|ผล)(?:การ)?(?:ตรวจ|ทดสอบ|วิเคราะห์)?(?:การทำงานของ)?(?:ไต|ตับ|เลือด)|"
+    r"(?:kidney|renal|liver|blood)\s+(?:function\s+)?(?:tests?|results?)"
+), re.I)
 _ABNORMAL_LAB_RE = re.compile(
     normalize_thai(
         r"(?:\b(?:alt|ast|egfr|creatinine|ldl|hdl|tsh)|ครีเอตินีน|ครีเอทินีน|ครีอะตินีน)"
@@ -768,7 +772,7 @@ def check(message: str) -> GuardResult:
         flags.append(Flag.OUT_OF_SCOPE)
         matched[str(Flag.OUT_OF_SCOPE)] = oos
 
-    if _LAB_VALUE_RE.search(text) or _ABNORMAL_LAB_RE.search(text):
+    if _LAB_VALUE_RE.search(text) or _ABNORMAL_LAB_RE.search(text) or _LAB_CONTEXT_RE.search(text):
         if Flag.MEDICAL not in flags:
             flags.append(Flag.MEDICAL)
         matched.setdefault(str(Flag.MEDICAL), []).append("lab_value")

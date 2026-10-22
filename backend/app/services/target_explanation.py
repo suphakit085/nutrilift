@@ -6,6 +6,7 @@ or proof that a particular calorie/protein target is right for an individual.
 
 import re
 
+from app.services.request_constraints import affirmative_actions, excludes_personal_calculation
 from app.services.thai_text import normalize_thai
 
 MIFFLIN_URL = "https://pubmed.ncbi.nlm.nih.gov/2305711/"
@@ -14,6 +15,8 @@ KATCH_METHOD_URL = "https://www.frontiersin.org/journals/nutrition/articles/10.3
 
 
 def requests_target_explanation(message: str) -> bool:
+    if excludes_personal_calculation(message):
+        return False
     text = normalize_thai(message)
     def search(pattern: str) -> re.Match | None:
         return re.search(normalize_thai(pattern), text, re.I)
@@ -33,13 +36,15 @@ def requests_target_explanation(message: str) -> bool:
         r"คำนวณ.{0,40}(?:อย่างไร|ยังไง)|วิธีคำนวณ|"
         r"equation|formula|reference|source|\bwhy\b|\bhow\b",
     )
+    calculate = re.search(normalize_thai(r"คำนวณ|คิด(?:ค่า|เป้า)|calculate|compute"),
+                          affirmative_actions(message), re.I)
     # Keep compound tasks and study interpretation on the normal chat route.
     other = search(
         r"เมนู|ตารางอาหาร|ต่อมื้อ|มื้อละ|แบ่ง|เปรียบเทียบ|เทียบกับ|"
         r"ถ้า|สมมติ|กินไปแล้ว|กินถึง|ขาดอีก|เหลืออีก|"
         r"ครีเอทีน|คาเฟอีน|อาหารเสริม|meal|compare|\bif\b",
     )
-    return bool(personal and target and explain and not other)
+    return bool(personal and target and (explain or calculate) and not other)
 
 
 def _number(value: float) -> str:
