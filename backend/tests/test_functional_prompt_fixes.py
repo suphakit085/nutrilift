@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from app.services import chat
 from app.services.answer_review import (
+    EvidenceClaimCheck,
     EvidenceReview,
     draft_units,
     review_answer,
@@ -305,8 +306,8 @@ PASSAGES = [
         ("บททบทวนปี 2023 ระบุว่าถั่วเหลืองใกล้เคียงเวย์", "research", True, ["S1.1"], "citation"),
         # A comparison no supplied paragraph states (PT20 class).
         ("เวย์ไม่ได้ดีกว่าอาหารหลัก", "research", False, [], "unsupported_fact"),
-        # A paragraph id that does not exist is not support.
-        ("ข้อความ [S1]", "research", False, ["S1.9"], "citation"),
+        # One supported label cannot carry another unsupported one.
+        ("ข้อความ [S1, S2]", "research", False, ["S1.1"], "citation"),
     ],
 )
 def test_ledger_rejects_unsupported_or_unlabelled_evidence(
@@ -337,7 +338,8 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
     [("advice", PASSAGES), ("evidence_gap", PASSAGES), ("framing", PASSAGES), ("research", [])],
 )
 def test_ledger_accepts_unlabelled_non_evidence_and_sourceless_principles(kind, passages):
-    client, _ = client_for(ledger(kind))
+    not_a_claim = '{"sentences":[{"sentence":0,"evidence_or_effect_claim":false}]}'
+    client, _ = client_for(ledger(kind), not_a_claim)
     verdict, _ = review_answer(
         client,
         model="test",
@@ -580,3 +582,113 @@ def test_exclusion_phrases_precede_and_scaffold_blocked_actions():
     order = list(schema["properties"])
     assert "exclusion_phrases" in schema["required"]
     assert order.index("exclusion_phrases") < order.index("blocked_actions")
+
+
+def test_json_numbers_and_booleans_are_reviewed_as_claims():
+    draft = json.dumps({"protein_g": 180, "safe_for_kidney": True, "note": "ก"}, ensure_ascii=False)
+    assert [u["text"] for u in draft_units(draft)] == [
+        "protein_g: 180",
+        "safe_for_kidney: true",
+        "ก",
+    ]
+    review = ledger(
+        "framing",
+        "framing",
+        "framing",
+        issues=[{"unit": 1, "category": "unsupported_fact", "reason": "ไม่มีแหล่งรับรองความปลอดภัย"}],
+    )
+    client, _ = client_for(review)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and verdict.issues[0].fragment == "safe_for_kidney: true"
+
+
+def test_ledger_citing_a_nonexistent_paragraph_is_retried_then_fails(monkeypatch):
+    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
+    client, calls = client_for(ledger("research", support={0: ["S1.1", "S9.4"]}))
+    with pytest.raises(ValueError):
+        review_answer(
+            client,
+            model="test",
+            question="q",
+            draft="ข้อความ [S1]",
+            passages=PASSAGES,
+            understanding=understood(),
+        )
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"exclusion_phrases": ["ไม่ต้องคำนวณ"], "blocked_actions": ["calculate"]},
+        {"exclusion_phrases": [], "blocked_actions": ["dose"]},
+        {"exclusion_phrases": [""], "blocked_actions": []},
+    ],
+)
+def test_exclusions_must_come_from_the_user(changes):
+    with pytest.raises(ValueError):
+        validate_grounding(understood(**changes), ["ช่วยคำนวณให้หน่อย"])
+
+
+def test_grounded_exclusion_and_medical_override_are_accepted():
+    validate_grounding(
+        understood(exclusion_phrases=["ไม่ต้องให้โดส"], blocked_actions=["dose"]),
+        ["ขอหลักการสั้นๆไม่ต้องให้โดส"],
+    )
+    validate_grounding(
+        understood(medical_self_context=True, blocked_actions=["calculate", "menu", "dose"]),
+        ["เป็นโรคไต"],
+    )
+
+
+@pytest.mark.parametrize(
+    ("support", "category"), [([], "unsupported_fact"), (["S1.1"], "citation")]
+)
+def test_exempted_unit_that_is_an_evidence_claim_is_rejected(support, category):
+    draft = "หลักฐานส่วนใหญ่รองรับเวย์"  # PT20: ledger called this a general fact
+    client, calls = client_for(
+        ledger("general_fact", support={0: support}),
+        '{"sentences":[{"sentence":0,"evidence_or_effect_claim":true}]}',
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.issues[0].category == category and len(calls) == 2
+    assert json.loads(calls[1]["contents"][0].parts[0].text) == {
+        "sentences": [{"sentence": 0, "text": draft}]
+    }
+    assert calls[1]["config"].response_json_schema == EvidenceClaimCheck.model_json_schema()
+
+
+def test_claim_check_is_skipped_without_sources_or_exempt_units():
+    client, calls = client_for(ledger("advice"))
+    review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="ฝึกสม่ำเสมอ",
+        passages=[],
+        understanding=understood(),
+    )
+    client2, calls2 = client_for(ledger("framing"))
+    review_answer(
+        client2,
+        model="test",
+        question="q",
+        draft="สรุปดังนี้",
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert len(calls) == 1 and len(calls2) == 1
