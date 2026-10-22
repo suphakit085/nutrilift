@@ -629,19 +629,32 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
     assert not verdict.accepted and verdict.issues[0].fragment == "safe_for_kidney: true"
 
 
-def test_ledger_citing_a_nonexistent_paragraph_is_retried_then_fails(monkeypatch):
-    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
-    client, calls = client_for(ledger("research", support={0: ["S1.1", "S9.4"]}))
-    with pytest.raises(ValueError):
-        review_answer(
-            client,
-            model="test",
-            question="q",
-            draft="ข้อความ [S1]",
-            passages=PASSAGES,
-            understanding=understood(),
-        )
-    assert len(calls) == 2
+def test_support_ids_are_normalised_and_nonexistent_ones_never_count():
+    from app.services.answer_review import normalize_support
+
+    paragraphs = [
+        {"id": "S1.1", "text": "ก"},
+        {"id": "S1.2", "text": "ข"},
+        {"id": "S2.1", "text": "ค"},
+    ]
+    assert normalize_support(["S1-2", "[S2.1]", "S1", "s1.2", "S9.4", "S1.7", "x"], paragraphs) == (
+        ["S1.2", "S2.1", "S1"],
+        ["S9.4", "S1.7", "x"],
+    )
+    claim = (
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}'
+    )
+    client, calls = client_for(ledger("research", support={0: ["S9.4"]}), claim)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="ข้อความ [S1]",
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and len(calls) == 2  # no retry, no crash
+    assert verdict.ledger[0]["invalid_support"] == ["S9.4"]
 
 
 @pytest.mark.parametrize(
@@ -865,3 +878,140 @@ def test_evidence_backing_in_an_introduction_is_rejected_even_when_typed_framing
         understanding=understood(),
     )
     assert not verdict.accepted and verdict.issues[0].category == "unsupported_fact"
+
+
+def claim_json(*types_):
+    return json.dumps(
+        {
+            "sentences": [
+                {"sentence": i, "claims_evidence_backing": False, "type": t}
+                for i, t in enumerate(types_)
+            ]
+        }
+    )
+
+
+def test_coverage_note_with_labels_is_accepted_and_its_labels_removed():
+    cover = "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1, S2]"
+    client, _ = client_for(ledger("evidence_gap"), claim_json("coverage_statement"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=cover,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted
+    assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+
+
+def test_instruction_keeps_only_labels_its_sources_state():
+    tip = "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S1, S2]"
+    client, _ = client_for(ledger("advice", support={0: ["S2.1"]}), claim_json("instruction"))
+    verdict, _ = review_answer(
+        client, model="test", question="q", draft=tip, passages=PASSAGES, understanding=understood()
+    )
+    assert verdict.accepted
+    assert verdict.label_edits == [[tip, "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S2]"]]
+
+
+def test_claim_with_an_unsupported_label_is_still_rejected():
+    claim = "เวย์ช่วยเพิ่มกล้ามเนื้อ [S1, S2]"
+    client, _ = client_for(
+        ledger("research", support={0: ["S2.1"]}), claim_json("evidence_or_effect")
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=claim,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and not verdict.label_edits
+
+
+def test_chat_shows_the_answer_with_surplus_labels_removed(monkeypatch):
+    draft = "เลือกโปรตีนตามปริมาณรวม [S1]\n\nข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1, S2]"
+    passages = [
+        chat.retrieval.Passage(**p)
+        for p in [
+            {
+                "label": "S1",
+                "score": 0.9,
+                "chunk_id": "c1",
+                "document_id": "d1",
+                "document_slug": "a",
+                "title": "t",
+                "heading": "h",
+                "content": "เลือกโปรตีนตามปริมาณรวม",
+                "source_refs": [],
+            },
+            {
+                "label": "S2",
+                "score": 0.8,
+                "chunk_id": "c2",
+                "document_id": "d2",
+                "document_slug": "b",
+                "title": "t",
+                "heading": "h",
+                "content": "อื่น",
+                "source_refs": [],
+            },
+        ]
+    ]
+    client, _ = client_for(
+        understood().model_dump_json(),
+        draft,
+        ledger("advice", "evidence_gap", support={0: ["S1.1"]}),
+        claim_json("instruction", "coverage_statement"),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: passages)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="เลือกโปรตีนยังไง"
+    )
+    assert result["type"] == "done"
+    assert result["text"].endswith("ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้")
+    assert [c["label"] for c in result["citations"]] == ["S1"]
+
+
+def test_label_standing_alone_joins_the_previous_sentence():
+    units = draft_units("ก ข [S1] [S3]\n[S4]\nค")
+    assert [(u["text"], u["labels"]) for u in units] == [
+        ("ก ข [S1] [S3] [S4]", ["S1", "S3", "S4"]),
+        ("ค", []),
+    ]
+
+
+def test_labelled_coverage_note_is_not_rejected_by_a_ledger_unsupported_note():
+    cover = "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1]"
+    review = ledger(
+        "evidence_gap",
+        issues=[{"unit": 0, "category": "unsupported_fact", "reason": "แหล่งไม่ได้บอกว่าไม่ครอบคลุม"}],
+    )
+    client, _ = client_for(review, claim_json("coverage_statement"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=cover,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted and verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+
+
+def test_labels_are_not_removed_when_the_ledger_calls_the_sentence_research():
+    risky = "เวย์กินคู่กับนมได้ [S1]"  # claim check mistyped it as an instruction
+    client, _ = client_for(ledger("research"), claim_json("instruction"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=risky,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and not verdict.label_edits
