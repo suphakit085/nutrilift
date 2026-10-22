@@ -129,6 +129,14 @@ def validate_grounding(value: RequestUnderstanding, turns: list[str]) -> None:
             raise ValueError(f"{field}: value is absent from its quote")
     if value.goal is not None:
         grounded("goal_quote", value.goal_user_turn, value.goal_quote)
+    for phrase in value.exclusion_phrases:
+        if not phrase or not any(phrase in turn for turn in turns):
+            raise ValueError(
+                "exclusion_phrases: a phrase is not an exact substring of any user turn"
+            )
+    # The medical override blocks every action on purpose, with no phrase.
+    if value.blocked_actions and not value.exclusion_phrases and not value.medical_self_context:
+        raise ValueError("blocked_actions requires the user's exclusion phrase")
     if value.output_format == "bullets" and value.bullet_count is None:
         raise ValueError("bullet_count is required for bullets")
     if value.task == "calculate_targets" and "calculate" in value.blocked_actions:
