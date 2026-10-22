@@ -334,8 +334,7 @@ def conversation_profile(
                 changes[key] = measurement.value
                 label = "น้ำหนัก" if key == "weight_kg" else "ส่วนสูง"
                 parts.append(f"{label} {measurement.value:g} {unit}")
-        if understanding.goal is not None:
-            goal = understanding.goal
+        goal = understanding.goal or profile.goal
         if parts:
             note = "\n".join(p for p in [note, "ใช้" + " และ".join(parts)
                 + "ที่คุณแจ้งล่าสุดเฉพาะห้องสนทนานี้ ไม่ได้แก้โปรไฟล์ที่บันทึกไว้"] if p)

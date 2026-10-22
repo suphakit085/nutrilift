@@ -8,6 +8,7 @@ from google.genai import types
 from pydantic import ValidationError
 
 from app.services import chat
+from app.services.answer_review import AnswerReview, review_answer
 from app.services.answer_validation import answer_issues, format_issue, without_target_citations
 from app.services.menu_context import conversation_profile
 from app.services.nutrition import ProfileInput, calc_nutrition_targets
@@ -153,8 +154,16 @@ def test_corrected_value_reaches_calculator_without_saving(monkeypatch):
 
 
 def test_no_extracted_measurements_uses_saved_profile():
-    effective, _ = conversation_profile(adult(), [], "ใช้โปรไฟล์เดิม", understood())
+    effective, _ = conversation_profile(
+        adult(),
+        [
+            {"role": "user", "content": "เปลี่ยนเป้าหมายเป็นเพิ่มกล้าม"},
+        ],
+        "ใช้โปรไฟล์เดิม",
+        understood(),
+    )
     assert effective.weight_kg == 90
+    assert effective.goal == "maintain"
 
 
 def test_invalid_state_stops_before_execution(monkeypatch):
@@ -230,7 +239,10 @@ def test_new_measurement_risk_precedes_calculator(monkeypatch):
 def test_bounded_format_repair_withholds_bad_draft(monkeypatch):
     table = "| A | B |\n| --- | --- |\n| ก | ข |"
     client, calls = client_for(
-        understood(output_format="table").model_dump_json(), "บทนำ\n" + table, table
+        understood(output_format="table").model_dump_json(),
+        "บทนำ\n" + table,
+        table,
+        '{"accepted":true,"issues":[]}',
     )
     monkeypatch.setattr(chat, "get_client", lambda: client)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_: [])
@@ -239,9 +251,65 @@ def test_bounded_format_repair_withholds_bad_draft(monkeypatch):
             SimpleNamespace(commit=lambda: None), user_message="เทียบโปรตีนเป็นตารางเท่านั้น"
         )
     )
-    assert len(calls) == 3 and events[-1]["text"] == table
+    assert len(calls) == 4 and events[-1]["text"] == table
     assert "".join(e["text"] for e in events if e["type"] == "delta") == table
     assert events[-1]["answer_validation"]["repairs"] == 1
+
+
+def test_semantic_review_cannot_cite_a_fragment_not_in_the_draft():
+    client, _ = client_for(
+        json.dumps(
+            {
+                "accepted": False,
+                "issues": [
+                    {"category": "citation", "fragment": "invented", "reason": "not in draft"},
+                ],
+            }
+        )
+    )
+    with pytest.raises(ValueError):
+        review_answer(
+            client,
+            model="test",
+            question="คำถาม",
+            draft="คำตอบจริง",
+            passages=[],
+            understanding=understood(),
+        )
+
+
+@pytest.mark.parametrize("second_accepted", [True, False])
+def test_semantic_repair_is_bounded_and_unverified_draft_is_withheld(monkeypatch, second_accepted):
+    draft = "คุณสมชายควรติดตามการฝึก"
+    issue = {
+        "accepted": False,
+        "issues": [
+            {"category": "user_fact", "fragment": "คุณสมชาย", "reason": "ไม่มีชื่อในข้อมูลผู้ใช้"},
+        ],
+    }
+    fixed = "ติดตามการฝึกตามหลักการทั่วไป" if second_accepted else draft
+    verdict = {"accepted": True, "issues": []} if second_accepted else issue
+    client, calls = client_for(
+        understood().model_dump_json(),
+        draft,
+        json.dumps(issue, ensure_ascii=False),
+        fixed,
+        json.dumps(verdict, ensure_ascii=False),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: [])
+    events = list(
+        chat.stream_understood_chat(
+            SimpleNamespace(commit=lambda: None), user_message="ติดตามการฝึกอย่างไร"
+        )
+    )
+    assert len(calls) == 5
+    shown = "".join(e["text"] for e in events if e["type"] == "delta")
+    if second_accepted:
+        assert shown == fixed and events[-1]["type"] == "done"
+    else:
+        assert not shown and events[-1]["code"] == "answer_validation_failed"
+    assert calls[2]["config"].response_json_schema == AnswerReview.model_json_schema()
 
 
 def test_format_dose_and_percentage_checks():

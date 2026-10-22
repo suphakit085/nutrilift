@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
+from app.services.answer_review import review_answer
 from app.services.answer_validation import (
     answer_issues,
     repair_instruction,
@@ -1517,6 +1518,22 @@ def stream_chat(
                         user_message, answer, [p.as_dict() for p in passages], use_rag=use_rag,
                         understanding=understanding,
                     )
+                    if understanding and not issues:
+                        try:
+                            verdict, review_usage = review_answer(
+                                client, model=chosen_model, question=user_message,
+                                draft=answer, passages=[p.as_dict() for p in passages],
+                                understanding=understanding,
+                            )
+                        except Exception as exc:
+                            logger.warning("semantic answer review failed: %s", type(exc).__name__)
+                            yield {"type": "error", "code": "answer_review_unavailable",
+                                   "message": "ยังตรวจยืนยันคำตอบกับหลักฐานไม่ได้ครับ กรุณาลองใหม่อีกครั้ง"}
+                            return
+                        for key, value in review_usage.items():
+                            usage_total[key] += value
+                        issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
+                                  for i in verdict.issues]
                     if issues:
                         answer_validation_issues.extend(issues)
                         if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:

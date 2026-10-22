@@ -24,8 +24,12 @@ regular expressions one phrase at a time.
    are never promoted into system instructions. Excluded calculator/menu tools
    are also blocked in application execution, not just by prompt.
 6. Output syntax, prohibited dose quantities, unexpected scripts and unsupported
-   numeric percentages/intervals are checked before display. One bounded repair
-   is permitted; another failure withholds the draft and returns an error.
+   numeric percentages/intervals are checked before display. A separate
+   schema-constrained semantic review checks sentence-level evidence, invented
+   user facts and request adherence. Review issue fragments must occur in the
+   actual draft. One bounded repair is permitted; another failure withholds the
+   draft and returns an error. Provider faults get one transient-only retry of
+   the same input; schema/quality failures are not retried to pick a better score.
 
 The API and main evaluation runner use the semantic entry point. `stream_chat`
 and `collect_answer` remain low-level executor interfaces for existing unit
@@ -46,9 +50,11 @@ Full-system evaluations must use `stream_understood_chat` or
   Markdown. It is not the new mechanism for interpreting negation/corrections.
 - Interpretation adds one provider call on a turn that is not refused early;
   target/menu answers then use application calculation, while knowledge answers
-  need a generation call. Cost, quota and first-answer latency must be measured.
-- Format checks and matching numbers do not prove that a cited passage entails
-  the prose, nor prevent every hallucinated name or conflated research result.
+  need generation and semantic review calls. Repair can add another generation
+  and review pair. Cost, quota and first-answer latency must be measured.
+- Format checks and matching numbers do not prove citation entailment. Semantic
+  review is itself fallible and uses the same model family; it is not independent
+  expert validation or a guarantee against hallucinations.
 - The original prompt assembly remains; no RESPONSE_CONTRACT framework is added.
   Prompt version is v1.20.3; interpretation schema/policy version is v1.
 
