@@ -133,6 +133,44 @@ def run():
         import json
 
         from app.db.models import Food
+        from google.genai import types
+        from types import SimpleNamespace
+        from app.services import chat
+        from app.services.request_understanding import RequestUnderstanding
+
+        # This browser suite tests persistence, real planning and rendering,
+        # not natural-language model quality. Supply the declared fixture intent
+        # through the actual schema parser; prohibit all generation/review calls.
+        # Language interpretation is exercised separately by real-model tests.
+        menu_questions = {
+            "ช่วยจัดมื้ออาหารทั้งหมด 3 มื้อให้ตรงกับเป้าหมายของผม",
+            "ช่วยจัดเมนู 3 มื้อตามเป้าหมายและข้อจำกัดที่ยืนยัน",
+            "ขอเมนูตามโปรไฟล์ 3 มื้อ",
+            "ช่วยจัดเมนู 3 มื้อให้ตรงเป้าหมาย",
+        }
+        state = RequestUnderstanding(
+            task="plan_menu", personal_context=True, medical_self_context=False,
+            blocked_actions=[], missing_information=None, weight_kg=None, height_cm=None,
+            goal=None, goal_quote=None, goal_user_turn=None, output_format="text",
+            bullet_count=None, topic="other", evidence_only=False,
+        )
+
+        def fixture_interpretation(**kwargs):
+            schema = kwargs["config"].response_json_schema or {}
+            if schema.get("title") != "RequestUnderstanding":
+                raise AssertionError("Dietary browser planner must not generate an AI answer")
+            payload = json.loads(kwargs["contents"][0].parts[0].text)
+            if payload["user_turns"][-1] not in menu_questions:
+                raise AssertionError("Unexpected dietary browser fixture input")
+            yield types.GenerateContentResponse(candidates=[types.Candidate(
+                content=types.Content(parts=[types.Part.from_text(text=state.model_dump_json())]),
+                finish_reason="STOP",
+            )])
+
+        fixture_client = SimpleNamespace(models=SimpleNamespace(
+            generate_content_stream=fixture_interpretation,
+        ))
+        chat.get_client = lambda: fixture_client
         with Session(engine) as db:
             for row in csv.DictReader((ROOT / "knowledge/foods.csv").open(encoding="utf-8-sig")):
                 db.add(Food(
