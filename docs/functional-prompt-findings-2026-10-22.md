@@ -33,14 +33,27 @@ regular expressions one phrase at a time.
    selected by typed topic, provided the canonical passage is retrieved. This
    program-rendered response is not counted as a generated-model answer.
 6. Output syntax, prohibited dose quantities, unexpected scripts and unsupported
-   numeric percentages/intervals are checked before display. A separate
-   schema-constrained semantic review checks sentence-level evidence, invented
-   user facts and request adherence. Review issue fragments must occur in the
-   actual draft. One bounded repair is permitted; another failure withholds the
-   draft and returns an error. Provider faults get one transient-only retry of
-   the same input; schema/quality failures are not retried to pick a better score.
-   Citation statements are paired with their specific source labels so an
-   unrelated passage elsewhere in the context cannot substitute for that source.
+   numeric percentages/intervals are checked before display. Semantic review is
+   an evidence ledger, not a model verdict: the program splits the draft into
+   units at citation-label boundaries (JSON string leaves or lines otherwise)
+   and the sources into numbered paragraphs (`S2.3`). The model classifies each
+   unit (research, general fact, advice, evidence gap, personal value, framing),
+   marks attributions to studies/evidence, and lists the paragraph ids that
+   state it. The program then rejects a label whose own paragraphs do not
+   support the unit, an evidence claim with support but no label, and an
+   evidence claim no paragraph states. Other defects (invented user facts,
+   excluded actions, format) refer to unit ids, so fragments are exact by
+   construction. The ledger is returned with the answer for audit. One bounded
+   repair is permitted; another failure withholds the draft and returns an
+   error. Provider faults or an incomplete ledger get one retry of the same draft.
+
+The interpreter lists the user's exclusion phrases before deriving
+`blocked_actions`. Every interpreter quote that the model emitted as JSON
+Unicode escapes was corrupted (4/4 in recorded runs) while every literal Thai
+quote was exact (19/19); a prompt instruction alone did not stop the escapes.
+An invalid or ungrounded interpretation therefore receives one correction
+naming the exact validation error. The checks are unchanged, so a second
+ungrounded answer still stops.
 
 The API and main evaluation runner use the semantic entry point. `stream_chat`
 and `collect_answer` remain low-level executor interfaces for existing unit
@@ -63,11 +76,17 @@ Full-system evaluations must use `stream_understood_chat` or
   target/menu answers then use application calculation, while knowledge answers
   need generation and semantic review calls. Repair can add another generation
   and review pair. Cost, quota and first-answer latency must be measured.
-- Format checks and matching numbers do not prove citation entailment. Semantic
-  review is itself fallible and uses the same model family; it is not independent
-  expert validation or a guarantee against hallucinations.
+- Format checks and matching numbers do not prove citation entailment. The
+  ledger forces a pointer for every accepted citation, but choosing a paragraph
+  that does not actually state the claim is still a model judgement. Confirmed
+  misses: unlabelled whey claims classified as "general fact" in a creatine
+  context (PT20), and "whey can be taken with milk" asserted from silent
+  sources (VX03). A side-by-side entailment pass caught both in replay but also
+  rejected 6/19 previously accepted drafts, so it was not adopted here.
+- Interpretation can still choose a wrong task: one of three VX03 runs asked
+  for a missing pairing item although both items were given.
 - The original prompt assembly remains; no RESPONSE_CONTRACT framework is added.
-  Prompt version is v1.20.3; interpretation schema/policy version is v2.
+  Prompt version is v1.20.3; interpretation schema/policy version is v3.
 
 JSON Schema configuration was checked against the installed SDK and real model.
 See [Google's structured output documentation](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
