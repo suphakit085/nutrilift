@@ -86,8 +86,8 @@ def test_system_prompt_threads_sex_and_goal_through():
 from app.services.prompts import BASE_SYSTEM_PROMPT, NO_CONTEXT_NOTE, PROMPT_VERSION  # noqa: E402
 
 
-def test_prompt_version_records_claim_attribution_release():
-    assert PROMPT_VERSION == "v1.20.0"
+def test_prompt_version_records_original_prompt_selection():
+    assert PROMPT_VERSION == "v1.20.1"
 
 
 def test_base_prompt_reserves_square_brackets_for_citations():

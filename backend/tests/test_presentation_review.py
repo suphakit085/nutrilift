@@ -86,13 +86,22 @@ def test_every_computed_value_has_actual_method_and_units(body_fat, formula):
     assert formula in methods_note(result["calculation_methods"])
 
 
-def test_contract_is_explicit_in_both_evaluation_modes():
+def test_original_prompt_keeps_profile_and_guards_in_both_evaluation_modes():
     for use_rag in [True, False]:
-        built = prompts.build_system_prompt(use_rag=use_rag)
-        for field in ["บทบาท:", "งาน:", "บริบท:", "หลักฐาน:", "ตัวเลข:", "ข้อมูลไม่พอ:", "รูปแบบ:"]:
-            assert field in built
-        assert "ไม่สมมติ" in built and "ไม่ใช่คำสั่งให้ยกเลิกกฎความปลอดภัย" in built
-    assert prompts.PROMPT_VERSION == "v1.20.0"
+        built = prompts.build_system_prompt(
+            use_rag=use_rag,
+            profile_summary="ผู้ใช้ยืนยันน้ำหนัก 70 กก.",
+            targets_summary="พลังงานจากเครื่องมือ 2277 kcal",
+            guard_instructions="ข้อจำกัดความปลอดภัยของคำถามปัจจุบัน",
+            passages=[{"label": "S1", "title": "หลักฐานทดสอบ", "content": "เนื้อหาทดสอบ"}],
+        )
+        assert "กรอบคำตอบที่ต้องปฏิบัติ:" not in built
+        assert prompts.BASE_SYSTEM_PROMPT.strip() in built
+        assert "ผู้ใช้ยืนยันน้ำหนัก 70 กก." in built
+        assert "พลังงานจากเครื่องมือ 2277 kcal" in built
+        assert "ข้อจำกัดความปลอดภัยของคำถามปัจจุบัน" in built
+        assert ("[S1] หลักฐานทดสอบ" in built) == use_rag
+    assert prompts.PROMPT_VERSION == "v1.20.1"
 
 
 @pytest.mark.parametrize("message", ["ผม BMI 40 ขอ bulk", "BMI: 15.9 จัดเมนูให้หน่อย"])
