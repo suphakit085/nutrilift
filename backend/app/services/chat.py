@@ -1358,7 +1358,8 @@ def stream_chat(
         sex=profile.sex if profile else None,
         age=profile.age() if profile else None,
         reference_only=(
-            not understanding.personal_context if understanding else
+            (not understanding.personal_context or "calculate" in understanding.blocked_actions)
+            if understanding else
             _reference_question(user_message) or not _personal_context_requested(user_message)
         ),
     )
