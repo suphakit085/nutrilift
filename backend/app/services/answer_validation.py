@@ -112,6 +112,19 @@ def _numbers(text: str) -> set[Decimal]:
 
 def answer_issues(message: str, answer: str, passages: list[dict], *, use_rag: bool) -> list[str]:
     issues = []
+    # Technical Latin/Greek terms are valid; unrelated alphabets absent from
+    # the question and evidence are output artifacts, not facts to guess at.
+    if re.search(r"[ก-๙]", message):
+        supplied = message + "\n".join(p.get("content", "") for p in passages)
+        for alphabet in [
+            r"[\u0400-\u04ff]",
+            r"[\u0590-\u06ff]",
+            r"[\u0900-\u097f]",
+            r"[\u3040-\u30ff\u4e00-\u9fff]",
+        ]:
+            if re.search(alphabet, answer) and not re.search(alphabet, supplied):
+                issues.append("มีตัวอักษรภาษาอื่นแทรกโดยไม่มีในคำถามหรือหลักฐาน ให้เขียนคำอธิบายไทยที่สมบูรณ์")
+                break
     issue = format_issue(answer, requested_format(message))
     if issue:
         issues.append(issue)

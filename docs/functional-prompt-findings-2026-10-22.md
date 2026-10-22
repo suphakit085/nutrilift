@@ -19,6 +19,11 @@ independent defects.
   renderer even when the user does not separately request a formula. The same
   current conversation profile, screening decisions, warnings and real operands
   are used. No calculation formula or clinical threshold changes in this patch.
+- Explicit user weight/height updates reach the temporary conversation profile
+  and calculator, including a corrected value separated from the measurement
+  name. Ignore assistant guesses, hypotheticals and negated values; disclose the
+  active measurements without changing the saved profile. Explicit reset restores
+  saved measurements. Calculator imperatives need not contain a first-person word.
 - Keep publication citations separate from actual calculator results in model
   prose, preserving neighboring research clauses and adding calculator provenance.
 - Extend the existing source-bound creatine loading FAQ to spelling variants and
@@ -42,7 +47,7 @@ v1.20.2 for traceability.
 Regression cases include paraphrases, negated/affirmative mixed requests, complete
 pairing questions, clinical/nonclinical similar words, calculator provenance,
 format repair, bounded failure and withholding rejected drafts. The local CI
-regression command passed 1,661 tests (76 PostgreSQL/evidence cases deselected;
+regression command passed 1,673 tests (76 PostgreSQL/evidence cases deselected;
 the CI-excluded food-audit file requires external local evidence). Ruff passed.
 Hosted CI separately exercises PostgreSQL and the runtime image.
 

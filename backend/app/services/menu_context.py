@@ -11,6 +11,7 @@ from dataclasses import replace
 
 from pythainlp.tokenize import word_tokenize
 
+from app.services.conversation_measurements import stated_measurements
 from app.services.dietary_preferences import confirmed_settings
 from app.services.nutrition import ProfileInput
 from app.services.thai_text import normalize_thai
@@ -323,4 +324,16 @@ def conversation_profile(
     if profile is None:
         return None, None
     restrictions, goal, note = _conversation_settings(profile, history, user_message)
-    return replace(profile, goal=goal, restrictions=restrictions), note
+    measurements = stated_measurements(history, user_message)
+    if measurements:
+        parts = []
+        if 'weight_kg' in measurements:
+            parts.append(f"น้ำหนัก {measurements['weight_kg']:g} กก.")
+        if 'height_cm' in measurements:
+            parts.append(f"ส่วนสูง {measurements['height_cm']:g} ซม.")
+        measurement_note = (
+            'ใช้' + ' และ'.join(parts)
+            + 'ที่คุณแจ้งล่าสุดเฉพาะห้องสนทนานี้ ไม่ได้แก้โปรไฟล์ที่บันทึกไว้'
+        )
+        note = '\n'.join(part for part in [note, measurement_note] if part)
+    return replace(profile, goal=goal, restrictions=restrictions, **measurements), note

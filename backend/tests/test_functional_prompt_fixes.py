@@ -13,6 +13,7 @@ from app.services.answer_validation import (
     without_target_citations,
 )
 from app.services.creatine_facts import creatine_necessity_reply
+from app.services.menu_context import conversation_profile
 from app.services.nutrition import ProfileInput, calc_nutrition_targets
 from app.services.personal_context import missing_personal_context_reply
 from app.services.request_constraints import incomplete_pairing_reply
@@ -120,6 +121,7 @@ def test_lab_matching_does_not_block_ordinary_food_queries(message):
         "แก้น้ำหนักเป็น 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ผม",
         "ช่วยคำนวณเป้าหมาย cut จากโปรไฟล์ให้ผม",
         "คำนวณพลังงานตามโปรไฟล์ของฉัน",
+        "แก้น้ำหนักที่บอกก่อนหน้านี้นะครับ ที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย",
     ],
 )
 def test_personal_calculation_uses_structured_calculator_without_formula_request(message):
@@ -134,6 +136,50 @@ def test_personal_targets_never_acquire_publication_citations():
     assert "126 กรัม/วัน" in cleaned
     assert without_target_citations(cleaned, targets) == cleaned
     assert without_target_citations(raw, None) == raw
+
+
+def test_corrected_user_measurements_reach_actual_calculator_without_mutating_profile():
+    profile = adult(weight_kg=90)
+    question = "แก้น้ำหนักที่บอกก่อนหน้านี้นะครับ ที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย"
+    effective, note = conversation_profile(
+        profile, [{"role": "user", "content": "ก่อนหน้านี้หนัก 90 กก."}], question
+    )
+    assert effective.weight_kg == 70 and profile.weight_kg == 90
+    assert calc_nutrition_targets(effective)["macros"]["protein_g"] == 126
+    assert "70" in note and "ไม่ได้แก้โปรไฟล์" in note
+
+
+@pytest.mark.parametrize(
+    "turn",
+    [
+        {"role": "assistant", "content": "คุณหนัก 50 กก."},
+        {"role": "user", "content": "สมมติหนัก 50 กก. จะต่างกันไหม"},
+        {"role": "user", "content": "ตัวอย่างคนหนัก 50 กก."},
+        {"role": "user", "content": "ผมไม่ได้หนัก 50 กก."},
+    ],
+)
+def test_measurement_parser_does_not_persist_guesses_or_hypotheticals(turn):
+    effective, _ = conversation_profile(adult(), [turn], "คำนวณเป้าหมายจากข้อมูลล่าสุด")
+    assert effective.weight_kg == 70
+
+
+def test_explicit_reset_restores_saved_measurements():
+    effective, _ = conversation_profile(
+        adult(), [{"role": "user", "content": "ตอนนี้หนัก 77 กก."}], "กลับไปใช้ข้อมูลจากโปรไฟล์"
+    )
+    assert effective.weight_kg == 70
+
+
+def test_corrected_target_reply_never_calls_provider(monkeypatch):
+    monkeypatch.setattr(chat, "get_client", lambda: pytest.fail("calculator must render directly"))
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_: pytest.fail("calculator retrieval"))
+    result = chat.collect_answer(
+        SimpleNamespace(commit=lambda: None),
+        profile=adult(weight_kg=90),
+        user_message="แก้น้ำหนักที่ถูกคือ 70 กก. ช่วยคำนวณเป้าหมายโปรตีนรักษาน้ำหนักให้ด้วย",
+    )
+    assert result["model"] == "rule:target_explanation" and "126 กรัม" in result["text"]
+    assert "[S" not in result["text"] and "162 กรัม" not in result["text"]
 
 
 def test_dose_prohibition_with_typo_reaches_evidence_bound_faq():
@@ -167,6 +213,11 @@ def test_percentages_must_come_from_cited_passage_not_another_card():
 def test_explicit_dose_exclusion_is_enforced_on_output():
     assert answer_issues("ครีเอทีนไม่ต้องบอกโดส", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
     assert not answer_issues("ครีเอทีนกี่กรัมต่อวัน", "กิน 3-5 กรัมต่อวัน", [], use_rag=False)
+
+
+def test_unrelated_alphabet_artifact_is_detected_but_technical_terms_are_allowed():
+    assert answer_issues("ติดตามเวทอย่างไร", "บันทึกเซטיםในการฝึก", [], use_rag=False)
+    assert not answer_issues("MPS และเวย์", "ติดตาม MPS และ whey", [], use_rag=False)
 
 
 def test_tracking_does_not_invent_a_fixed_interval():

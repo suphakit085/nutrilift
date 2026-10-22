@@ -38,6 +38,8 @@ def requests_target_explanation(message: str) -> bool:
     )
     calculate = re.search(normalize_thai(r"คำนวณ|คิด(?:ค่า|เป้า)|calculate|compute"),
                           affirmative_actions(message), re.I)
+    if calculate and target and not search(r"งานวิจัย|งานทดลอง|บททบทวน|สมมติ|ตัวอย่าง|ถ้า"):
+        personal = True  # An imperative calculator request need not repeat "ผม".
     # Keep compound tasks and study interpretation on the normal chat route.
     other = search(
         r"เมนู|ตารางอาหาร|ต่อมื้อ|มื้อละ|แบ่ง|เปรียบเทียบ|เทียบกับ|"
