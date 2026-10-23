@@ -27,10 +27,11 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
-from app.services.answer_review import review_answer
+from app.services.answer_review import has_answer_content, review_answer, trim_unverified
 from app.services.answer_validation import (
     answer_issues,
     repair_instruction,
+    without_food_citations,
     without_target_citations,
 )
 from app.services.calculation_methods import methods_note, target_methods_note
@@ -383,6 +384,47 @@ def _run_menu_tool(
         return plan
     except MealPlanError as exc:
         return {"error": "cannot_build_menu", "message": str(exc)}
+
+
+TRIMMED_NOTE = "ตัดข้อความบางส่วนที่ยังยืนยันกับแหล่งข้อมูลไม่ได้ออกจากคำตอบนี้แล้วครับ"
+
+
+def _keep_verified_part(
+    client, model, question, answer, verdict, passages, understanding, use_rag, usage_total,
+    user_context,
+):
+    """Keep the verified part of an answer whose only defects are unbacked sentences.
+
+    The trimmed text goes through the same deterministic validation and the
+    same review again; only a version that passes both, and still says
+    something beyond framing or a coverage note, is shown, with a note that
+    part of the answer was removed. Anything else keeps the old outcome.
+    """
+    if verdict is None:
+        return None
+    trimmed = trim_unverified(answer, verdict)
+    if trimmed is None:
+        return None
+    text, removed = trimmed
+    source = [p.as_dict() for p in passages]
+    if answer_issues(question, text, source, use_rag=use_rag, understanding=understanding):
+        return None
+    try:
+        recheck, more = review_answer(
+            client, model=model, question=question, draft=text, passages=source,
+            understanding=understanding, user_context=user_context,
+        )
+    except Exception as exc:
+        logger.warning("trimmed answer review failed: %s", type(exc).__name__)
+        return None
+    for key, value in more.items():
+        usage_total[key] += value
+    if recheck.issues or not has_answer_content(recheck):
+        return None
+    for raw, edited in recheck.label_edits:
+        if text.count(raw) == 1:
+            text = text.replace(raw, edited)
+    return f"{text}\n\n{TRIMMED_NOTE}", removed
 
 
 def _release_connection(db: Session) -> None:
@@ -1210,6 +1252,14 @@ def stream_chat(
     if use_rag:
         try:
             passages = retrieval.search(db, user_message)
+            previous = next((t.get("content", "") for t in reversed(history or [])
+                             if t.get("role") == "user"), "")
+            if not passages and previous:
+                # A short follow-up ("แล้วต้องโหลดไหมครับ") names no topic of
+                # its own; searching it alone found nothing and the prompt then
+                # said the knowledge base did not cover a topic it does cover
+                # (23 Oct production test). The domain gate still applies.
+                passages = retrieval.search(db, f"{previous}\n{user_message}")
             retrieval_status = "ready" if passages else "empty"
         except Exception:
             logger.exception("retrieval failed; answering without context")
@@ -1544,6 +1594,7 @@ def stream_chat(
                         user_message, answer, [p.as_dict() for p in passages], use_rag=use_rag,
                         understanding=understanding,
                     )
+                    last_review = None
                     if understanding and not issues:
                         try:
                             verdict, review_usage = review_answer(
@@ -1563,6 +1614,7 @@ def stream_chat(
                         for key, value in review_usage.items():
                             usage_total[key] += value
                         evidence_ledger = verdict.ledger
+                        last_review = verdict
                         issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
                                   for i in verdict.issues]
                         if not issues:
@@ -1576,7 +1628,20 @@ def stream_chat(
                                     answer = answer.replace(raw, edited)
                     if issues:
                         answer_validation_issues.extend(issues)
+                        kept = None
                         if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:
+                            kept = _keep_verified_part(
+                                client, chosen_model, user_message, answer, last_review,
+                                passages, understanding, use_rag, usage_total,
+                                {"user_profile": _profile_summary_th(profile),
+                                 "calculated_targets": targets_summary},
+                            )
+                        if kept is not None:
+                            answer, removed = kept
+                            answer_validation_issues.append(
+                                "trimmed: " + " | ".join(r[:80] for r in removed)
+                            )
+                        elif answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:
                             yield {
                                 "type": "error", "code": "answer_validation_failed",
                                 "message": "ยังตรวจยืนยันคำตอบให้ตรงเงื่อนไขที่ขอไม่ได้ครับ กรุณาลองใหม่อีกครั้ง",
@@ -1587,12 +1652,14 @@ def stream_chat(
                                 },
                             }
                             return
-                        answer_repair_used = True
-                        contents.append(types.Content(role="user", parts=[types.Part.from_text(
-                            text=repair_instruction(issues),
-                        )]))
-                        yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ", "wait_s": 0}
-                        continue
+                        if kept is None:
+                            answer_repair_used = True
+                            contents.append(types.Content(role="user", parts=[types.Part.from_text(
+                                text=repair_instruction(issues),
+                            )]))
+                            yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ",
+                                   "wait_s": 0}
+                            continue
                     answer += target_methods_note(answer, targets, shown_notes)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
@@ -1736,6 +1803,7 @@ def stream_chat(
             else clean_answer("".join(text_parts), citations)
         )
         if not food_lookup_unverified:
+            answer_text = without_food_citations(answer_text, verified_food_results)
             answer_text = _append_food_data_notes(answer_text, verified_food_results)
             answer_text = _append_menu_data_notes(answer_text, verified_menu_results)
         if not verified_menu_results and unverified_menu_table(answer_text):

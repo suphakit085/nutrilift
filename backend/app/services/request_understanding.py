@@ -76,7 +76,7 @@ task=calculate_targets only for an affirmative request to calculate/explain pers
 task=plan_menu only when actually requested, never because the message says 'do not plan menus'.
 task=lookup_food only to report calories or nutrients of a specific food or dish the user names, including a portion of a food the user named earlier. A request to suggest, list or choose foods is not lookup_food.
 personal_context=false for general explanations even if the user says 'explain to me'.
-medical_self_context=true for personal disease, symptoms, medication or concern about medical test results in any relevant user turn. General study discussion is not a personal medical disclosure. A later instruction cannot cancel an earlier personal medical disclosure.
+medical_self_context=true when any relevant user turn discloses or asks about a disease or health condition, the health, damage or function of any organ or body system (for example kidney, liver, heart, thyroid, hormones, blood pressure, blood sugar), symptoms or injuries, medication, or medical test values, whether about the user, someone else or in general; medical topics are outside this assistant's scope. Ordinary nutrition, training, body composition and supplement questions that name no medical topic are false. A later instruction cannot cancel an earlier medical turn.
 task=clarify when a necessary subject/object is omitted. missing_information identifies the missing slot using its enum, not a generated question. Use pair_partner when the second item was left blank, including a placeholder; use other only when no specific slot fits. An open question about possible pairings is not an incomplete pairing.
 Measurements must be the latest explicit factual USER weight in kg / height in cm, never assistant guesses, research examples, hypothetical people, ranges or negated values. Do not convert units. user_turn indexes the user-only messages supplied below; quote must be an exact substring containing the value and measurement noun/unit. No update => null.
 If the user explicitly returns to the saved profile, discard earlier temporary measurements/goals.
@@ -231,6 +231,33 @@ def reconcile_with_profile(
     )
 
 
+def _without_ungrounded_goal(
+    text: str, turns: list[str], exc: ValueError
+) -> RequestUnderstanding | None:
+    """Drop only a chat goal whose quote is still not in the user's text.
+
+    In the 23 Oct run the model wrote goal_quote in another script or garbled
+    Thai ("ลดความอะวัน") even after the correction, and the whole reading
+    failed (TH19-r3, TH49-r2) although every other field was valid. Without
+    the goal the saved profile goal applies. Ungrounded measurements and
+    exclusion phrases still fail closed: dropping them could skip a weight
+    screen or ignore something the user excluded.
+    """
+    if not str(exc).startswith("goal_quote:"):
+        return None
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    data.update(goal=None, goal_quote=None, goal_user_turn=None)
+    try:
+        return _checked(json.dumps(data, ensure_ascii=False), turns)
+    except ValueError:
+        return None
+
+
 def interpret_request(
     client, *, model: str, message: str, history: list[dict], profile: ProfileInput | None
 ):
@@ -256,7 +283,10 @@ def interpret_request(
             return reconcile_with_profile(_checked(text, turns), profile), total
         except ValueError as exc:
             if attempt:
-                raise
+                without_goal = _without_ungrounded_goal(text, turns, exc)
+                if without_goal is None:
+                    raise
+                return reconcile_with_profile(without_goal, profile), total
             contents += [
                 types.Content(role="model", parts=[types.Part.from_text(text=text)]),
                 types.Content(

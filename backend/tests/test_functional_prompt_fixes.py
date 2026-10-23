@@ -606,12 +606,13 @@ def test_escaped_thai_quote_correction_names_the_escape_problem():
     assert "Unicode escape" in calls[1]["contents"][-1].parts[0].text
 
 
-def test_second_ungrounded_interpretation_still_fails_closed():
+def test_second_ungrounded_goal_quote_drops_the_goal_instead_of_failing():
+    # Changed 24 Oct (owner): a goal quote still ungrounded after the correction
+    # no longer withholds the answer; only the chat goal is dropped.
     bad = understood(goal="bulk", goal_quote="ที่ลัดขลัด", goal_user_turn=0).model_dump_json()
     client, calls = client_for(bad, bad)
-    with pytest.raises(ValueError):
-        interpret_request(client, model="test", message="เพิ่มกล้าม", history=[], profile=None)
-    assert len(calls) == 2
+    result, _ = interpret_request(client, model="test", message="เพิ่มกล้าม", history=[], profile=None)
+    assert len(calls) == 2 and result.goal is None
 
 
 def test_exclusion_phrases_precede_and_scaffold_blocked_actions():
@@ -1294,3 +1295,25 @@ def test_interpreter_prompt_defines_every_task():
 
     for task in ("calculate_targets", "plan_menu", "lookup_food", "clarify"):
         assert f"task={task}" in SYSTEM, task
+
+
+def test_goal_quote_still_ungrounded_after_correction_drops_only_the_goal():
+    # 23 Oct final run, TH49-r2: both attempts wrote a garbled goal_quote.
+    bad = understood(goal="cut", goal_quote="ลดความอะวัน", goal_user_turn=0).model_dump_json()
+    client, calls = client_for(bad, bad)
+    result, _ = interpret_request(
+        client, model="test", message="กินแป้งเท่าไหร่ดีสำหรับคนอยากลดความอ้วน",
+        history=[], profile=adult(),
+    )
+    assert len(calls) == 2
+    assert result.goal is None and result.goal_quote is None
+    assert result.task == "knowledge"
+
+
+def test_ungrounded_measurement_still_fails_closed():
+    bad = understood(
+        weight_kg={"value": 38, "user_turn": 0, "quote": "หนัก 83 กิโล"}
+    ).model_dump_json()
+    client, _ = client_for(bad, bad)
+    with pytest.raises(ValueError):
+        interpret_request(client, model="test", message="ผมหนัก 38 กิโล", history=[], profile=adult())

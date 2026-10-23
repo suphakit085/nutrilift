@@ -197,3 +197,40 @@ def repair_instruction(issues: list[str]) -> str:
         + "\nตอบคำถามเดิมใหม่ทั้งคำตอบ คงข้อจำกัดและที่มาที่ถูกต้อง ห้ามแต่งข้อมูลเพิ่ม "
         "ไม่กล่าวถึงขั้นตอนตรวจหรือคำตอบร่าง หากหลักฐานไม่พอให้บอกข้อจำกัดตามรูปแบบที่ผู้ใช้ขอ"
     )
+
+
+_NUMBER = re.compile(r"(?<![\d.])\d+(?:\.\d+)?(?![\d.])")
+
+
+def without_food_citations(answer: str, food_results: list[dict]) -> str:
+    """Drop research labels from lines that quote values read from the food table.
+
+    Food values come from the database lookup, not from the knowledge-card
+    passages, so a card label on them names the wrong source (23 Oct test:
+    "พลังงาน: 701 กิโลแคลอรี [S1]" with S1 a card about ordering Thai food).
+    A line is matched by its numbers - a verified row value, or that value for
+    the row's serving, halved, doubled or tripled - never by its wording.
+    """
+    values: set[float] = set()
+    for result in food_results:
+        for row in result.get("results") or []:
+            serving = row.get("serving_g")
+            for key in ("kcal", "protein_g", "carb_g", "fat_g"):
+                value = row.get(key)
+                if value is None:
+                    continue
+                bases = [float(value)]
+                if serving:
+                    bases.append(float(value) * float(serving) / 100)
+                values.update(round(base * factor, 1) for base in bases
+                              for factor in (0.5, 1, 1.5, 2, 3))
+    if not values:
+        return answer
+    lines = []
+    for line in answer.split("\n"):
+        plain = _CITATION.sub("", line).replace(",", "")
+        numbers = {round(float(n), 1) for n in _NUMBER.findall(plain)}
+        if _CITATION.search(line) and numbers & values:
+            line = re.sub(r"\s*" + _CITATION.pattern, "", line, flags=re.I)
+        lines.append(line)
+    return "\n".join(lines)
