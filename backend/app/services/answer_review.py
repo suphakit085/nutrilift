@@ -267,7 +267,7 @@ Return only the EvidenceClaimCheck JSON schema with exactly one entry per senten
 Judge every sentence on its own words; neighbouring sentences do not change its type.
 claims_evidence_backing: true when the sentence itself says or implies that something has, is supported by or is backed by research, studies, reviews, guidelines or evidence (including inside an introduction that ends with "as follows"). Otherwise false.
 states_outcome: true when the sentence states what something achieves, causes or ensures for the body, weight, muscle, health or performance, including inside a purpose clause ("so that the weight gained is muscle"). Measuring, checking or recording something, or a reason to consult a professional, is not an outcome. Otherwise false.
-- instruction: tells the reader what to do (check the food label, train consistently, weigh food, consult a professional). An instruction stays instruction even when practical and specific.
+- instruction: tells the reader what to do (check the food label, train consistently, weigh food, consult a professional, or use this app's own profile, goal setting, calculator or food diary). An instruction stays instruction even when practical and specific.
 - definition: says what something is or where it comes from, with no effect, benefit or comparison.
 - coverage_statement: says the sources/knowledge base do not cover something, or that evidence is limited or unclear.
 - framing: heading, introduction, transition or politeness with no factual claim.
@@ -331,6 +331,7 @@ def _review_once(
     draft: str,
     passages: list[dict],
     understanding: RequestUnderstanding,
+    user_context: dict | None = None,
 ):
     units = draft_units(draft)
     if not units:
@@ -352,6 +353,20 @@ def _review_once(
         "draft_units": [{k: v for k, v in u.items() if k != "raw"} for u in units],
         "source_paragraphs": paragraphs,
     }
+    # The generator already sees the saved profile and calculator targets;
+    # without them the review cannot tell a personal target from an invented
+    # one. The explanation travels only with the data, so reviews without a
+    # profile use exactly the same instructions as before.
+    context = {k: v for k, v in (user_context or {}).items() if v}
+    if context:
+        payload.update(context)
+        payload["user_context_note"] = (
+            "user_profile and calculated_targets are trusted data the user saved and the "
+            "project calculator computed. Values matching them are personal values, not "
+            "invented user facts. Research ranges quoted from sources are not personal "
+            "calculations. Pointing the user to the app's own profile, targets, calculator "
+            "or food diary is allowed."
+        )
     review, usage = _generate_json(
         client, model=model, system=REVIEW_SYSTEM, payload=payload, schema=EvidenceReview
     )

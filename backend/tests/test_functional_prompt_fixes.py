@@ -1140,3 +1140,57 @@ def test_chat_answers_a_saved_profile_user_instead_of_asking_for_the_goal(monkey
     )
     assert result["type"] == "done" and result["model"] != "rule:missing_information"
     assert "ต้องการลดไขมัน เพิ่มกล้ามเนื้อ หรือรักษาน้ำหนัก" not in result["text"]
+
+
+def test_review_sees_the_saved_profile_and_calculator_targets():
+    client, calls = client_for(ledger("personal"))
+    review_answer(
+        client,
+        model="test",
+        question="ควรกินโปรตีนวันละเท่าไร",
+        draft="เป้าโปรตีนของคุณคือ 117 กรัมต่อวัน",
+        passages=PASSAGES,
+        understanding=understood(),
+        user_context={"user_profile": "หนัก 65 กก.", "calculated_targets": "โปรตีน 117 กรัม/วัน"},
+    )
+    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    assert payload["user_profile"] == "หนัก 65 กก."
+    assert payload["calculated_targets"] == "โปรตีน 117 กรัม/วัน"
+
+
+def test_chat_passes_profile_and_targets_to_the_review(monkeypatch):
+    seen = {}
+
+    def fake_review(client, **kwargs):
+        seen.update(kwargs)
+        from app.services.answer_review import AnswerReview
+
+        return AnswerReview(accepted=True), {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+        }
+
+    client, _ = client_for(understood(personal_context=True).model_dump_json(), "ฝึกและกินโปรตีนให้พอ")
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: [])
+    monkeypatch.setattr(chat, "review_answer", fake_review)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="ควรกินยังไง", profile=adult()
+    )
+    assert result["type"] == "done"
+    assert "90" in seen["user_context"]["user_profile"]
+    assert seen["user_context"]["calculated_targets"]
+
+
+def test_profile_note_is_sent_only_with_profile_data():
+    client, calls = client_for(ledger("framing"))
+    review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="สวัสดี",
+        passages=[],
+        understanding=understood(),
+    )
+    assert "user_context_note" not in json.loads(calls[0]["contents"][0].parts[0].text)
