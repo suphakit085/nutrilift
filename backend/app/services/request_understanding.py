@@ -206,6 +206,30 @@ def _checked(text: str, turns: list[str]) -> RequestUnderstanding:
     return value
 
 
+#: Clarification slots a saved profile already answers. Every saved profile
+#: has sex, birth date, height, weight, activity and goal (ProfileInput).
+PROFILE_SUPPLIED_SLOTS = frozenset({"profile", "goal"})
+
+
+def reconcile_with_profile(
+    value: RequestUnderstanding, profile: ProfileInput | None
+) -> RequestUnderstanding:
+    """Never ask for what the loaded profile already holds.
+
+    The model reads only the conversation; the program holds the saved
+    profile. A "missing profile/goal" reading is checked against it instead of
+    being trusted, so a user with a saved goal is answered from that profile
+    rather than asked to fill it in again.
+    """
+    if profile is None or value.task != "clarify":
+        return value
+    if value.missing_information not in PROFILE_SUPPLIED_SLOTS:
+        return value
+    return value.model_copy(
+        update={"task": "knowledge", "missing_information": None, "personal_context": True}
+    )
+
+
 def interpret_request(
     client, *, model: str, message: str, history: list[dict], profile: ProfileInput | None
 ):
@@ -228,7 +252,7 @@ def interpret_request(
         for key, count in usage.items():
             total[key] += count
         try:
-            return _checked(text, turns), total
+            return reconcile_with_profile(_checked(text, turns), profile), total
         except ValueError as exc:
             if attempt:
                 raise

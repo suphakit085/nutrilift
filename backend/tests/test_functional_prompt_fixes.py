@@ -1093,3 +1093,50 @@ def test_coverage_note_loses_labels_even_when_the_ledger_calls_it_research():
     )
     assert verdict.accepted
     assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงที่ระบุไว้ไม่ได้กล่าวถึงเรื่องนี้"]]
+
+
+@pytest.mark.parametrize("slot", ["goal", "profile"])
+def test_saved_profile_answers_profile_and_goal_clarifications(slot):
+    # Production 23 Oct: "ควรกินโปรตีนวันละกี่กรัม" with a saved goal was asked for
+    # the goal, then told to fill in the profile again.
+    state = understood(task="clarify", missing_information=slot).model_dump_json()
+    client, calls = client_for(state)
+    result, _ = interpret_request(
+        client, model="test", message="ควรกินโปรตีนวันละกี่กรัม", history=[], profile=adult()
+    )
+    assert result.task == "knowledge" and result.missing_information is None
+    assert result.personal_context is True
+    # The saved goal is not sent: the model copied it into the goal field
+    # without a user quote, which then failed grounding (live check 23 Oct).
+    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    assert set(payload) == {"user_turns", "saved_profile_present"}
+
+
+def test_other_clarifications_and_profileless_users_are_unchanged():
+    pair = understood(task="clarify", missing_information="pair_partner").model_dump_json()
+    client, _ = client_for(pair)
+    result, _ = interpret_request(
+        client, model="test", message="เวย์กินคู่กับ ...", history=[], profile=adult()
+    )
+    assert result.task == "clarify"
+    goal = understood(task="clarify", missing_information="goal").model_dump_json()
+    client, _ = client_for(goal)
+    result, _ = interpret_request(
+        client, model="test", message="ควรกินเท่าไร", history=[], profile=None
+    )
+    assert result.task == "clarify"
+
+
+def test_chat_answers_a_saved_profile_user_instead_of_asking_for_the_goal(monkeypatch):
+    client, _ = client_for(
+        understood(task="clarify", missing_information="goal").model_dump_json(),
+        "โปรตีนของคุณประมาณ 162 กรัมต่อวัน",
+        ledger("personal"),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: [])
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="ควรกินโปรตีนวันละกี่กรัม", profile=adult()
+    )
+    assert result["type"] == "done" and result["model"] != "rule:missing_information"
+    assert "ต้องการลดไขมัน เพิ่มกล้ามเนื้อ หรือรักษาน้ำหนัก" not in result["text"]
