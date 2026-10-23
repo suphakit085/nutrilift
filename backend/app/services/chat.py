@@ -31,6 +31,7 @@ from app.services.answer_review import review_answer
 from app.services.answer_validation import (
     answer_issues,
     repair_instruction,
+    without_food_citations,
     without_target_citations,
 )
 from app.services.calculation_methods import methods_note, target_methods_note
@@ -1210,6 +1211,14 @@ def stream_chat(
     if use_rag:
         try:
             passages = retrieval.search(db, user_message)
+            previous = next((t.get("content", "") for t in reversed(history or [])
+                             if t.get("role") == "user"), "")
+            if not passages and previous:
+                # A short follow-up ("แล้วต้องโหลดไหมครับ") names no topic of
+                # its own; searching it alone found nothing and the prompt then
+                # said the knowledge base did not cover a topic it does cover
+                # (23 Oct production test). The domain gate still applies.
+                passages = retrieval.search(db, f"{previous}\n{user_message}")
             retrieval_status = "ready" if passages else "empty"
         except Exception:
             logger.exception("retrieval failed; answering without context")
@@ -1736,6 +1745,7 @@ def stream_chat(
             else clean_answer("".join(text_parts), citations)
         )
         if not food_lookup_unverified:
+            answer_text = without_food_citations(answer_text, verified_food_results)
             answer_text = _append_food_data_notes(answer_text, verified_food_results)
             answer_text = _append_menu_data_notes(answer_text, verified_menu_results)
         if not verified_menu_results and unverified_menu_table(answer_text):
