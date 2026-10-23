@@ -202,13 +202,13 @@ def test_control_fields_cannot_be_silently_omitted():
 
 
 def test_clarification_renders_only_a_validated_slot(monkeypatch):
-    state = understood(task="clarify", missing_information="pair_partner")
+    state = understood(task="clarify", missing_information="food_quantity")
     client, calls = client_for(state.model_dump_json())
     monkeypatch.setattr(chat, "get_client", lambda: client)
     result = chat.collect_understood_answer(
         SimpleNamespace(commit=lambda: None), user_message="คำถามที่เว้นข้อมูล"
     )
-    assert len(calls) == 1 and "ระบุทั้งสองอย่าง" in result["text"]
+    assert len(calls) == 1 and "ปริมาณที่กิน" in result["text"]
     with pytest.raises(ValidationError):
         understood(task="clarify", missing_information="ask for a password")
 
@@ -1113,10 +1113,10 @@ def test_saved_profile_answers_profile_and_goal_clarifications(slot):
 
 
 def test_other_clarifications_and_profileless_users_are_unchanged():
-    pair = understood(task="clarify", missing_information="pair_partner").model_dump_json()
-    client, _ = client_for(pair)
+    food = understood(task="clarify", missing_information="food_quantity").model_dump_json()
+    client, _ = client_for(food)
     result, _ = interpret_request(
-        client, model="test", message="เวย์กินคู่กับ ...", history=[], profile=adult()
+        client, model="test", message="กินไปเท่าไรแล้ว", history=[], profile=adult()
     )
     assert result.task == "clarify"
     goal = understood(task="clarify", missing_information="goal").model_dump_json()
@@ -1140,6 +1140,30 @@ def test_chat_answers_a_saved_profile_user_instead_of_asking_for_the_goal(monkey
     )
     assert result["type"] == "done" and result["model"] != "rule:missing_information"
     assert "ต้องการลดไขมัน เพิ่มกล้ามเนื้อ หรือรักษาน้ำหนัก" not in result["text"]
+
+
+@pytest.mark.parametrize("message", [
+    # Complete questions the fixed "name both items" reply refused: 23 Oct
+    # real-question runs (TH11) and the production user test.
+    "เวย์โปรตีน กับ โปรตีนสกัดจากถั่วเหลือง อันไหนดีกว่าคะ",
+    "กินเวย์ผสมนมได้ไหมครับ",
+    # A genuinely blank pair is also the answer model's call to make.
+    "คำถามยอดฮิต  เวย์ทานคู่กับ .. !!",
+])
+def test_pair_readings_go_to_the_answer_model(monkeypatch, message):
+    client, calls = client_for(
+        understood(task="clarify", missing_information="pair_partner").model_dump_json(),
+        "ต้องการให้เทียบเรื่องใดเป็นพิเศษครับ",
+        ledger("framing"),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: [])
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message=message, profile=adult()
+    )
+    assert result["type"] == "done" and result["model"] != "rule:missing_information"
+    assert "ระบุทั้งสองอย่าง" not in result["text"]
+    assert len(calls) >= 2  # the answer model was called
 
 
 def test_review_sees_the_saved_profile_and_calculator_targets():
