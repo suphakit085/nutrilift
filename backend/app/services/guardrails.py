@@ -540,19 +540,7 @@ _FALSE_FRIENDS: tuple[str, ...] = (
 #: and it shares MEDICAL's instruction (refer out, never diagnose).
 _DIAGNOSIS_REQUEST_PATTERNS: tuple[str, ...] = (
     "แปลว่าป่วย",
-    "ยังเล่นเวทได้ไหม",
-    "ฝึกต่อได้ไหม",
-    "ยังฝึกได้ไหม",
-    "ออกกำลังกายต่อได้ไหม",
-    "รับรองว่าปลอดภัย",
-    "ปลอดภัยสำหรับผม",
-    "ปลอดภัยสำหรับฉัน",
-    "ผมเป็นอะไร",
-    "ฉันเป็นอะไร",
-    "หนูเป็นอะไร",
-    "เราเป็นอะไร",
     "เป็นโรคอะไร",
-    "เป็นอะไรได้บ้าง",
     "วินิจฉัย",
     "ผลเลือด",
     "ตรวจเลือด",
@@ -566,9 +554,30 @@ _DIAGNOSIS_REQUEST_PATTERNS: tuple[str, ...] = (
     "ค่าตับ",
     "ค่าไต",
     "hba1c",
+    "เสี่ยงเป็นโรค",
+)
+
+#: Questions that are a diagnosis or clearance request only after a health
+#: problem has been named: "ใจสั่น ผมเป็นอะไรครับ", "กินยาอยู่ ยังเล่นเวทได้ไหม".
+#: On their own they are everyday Thai - the production test of 23 Oct refused
+#: "ถ้าไม่กินแซลมอนเปลี่ยนเป็นอะไรได้บ้าง" as a medical question. They add the
+#: medical flag only when the same message already carries a health flag;
+#: problems named in earlier turns are flagged by check_history.
+_CONTEXT_DIAGNOSIS_PATTERNS: tuple[str, ...] = (
+    "ยังเล่นเวทได้ไหม",
+    "ฝึกต่อได้ไหม",
+    "ยังฝึกได้ไหม",
+    "ออกกำลังกายต่อได้ไหม",
+    "รับรองว่าปลอดภัย",
+    "ปลอดภัยสำหรับผม",
+    "ปลอดภัยสำหรับฉัน",
+    "ผมเป็นอะไร",
+    "ฉันเป็นอะไร",
+    "หนูเป็นอะไร",
+    "เราเป็นอะไร",
+    "เป็นอะไรได้บ้าง",
     "อาการแบบนี้คือ",
     "อาการนี้คือ",
-    "เสี่ยงเป็นโรค",
 )
 
 #: Topics clearly outside "nutrition for weight training".
@@ -671,6 +680,7 @@ _FOLDED_OUT_OF_SCOPE = _fold_patterns(_OUT_OF_SCOPE_PATTERNS)
 _FOLDED_FALSE_FRIENDS = tuple(normalize_thai(w) for w in _FALSE_FRIENDS)
 _ASCII_LETTER_RE = re.compile(r"[a-z]")
 _FOLDED_DIAGNOSIS = _fold_patterns(_DIAGNOSIS_REQUEST_PATTERNS)
+_FOLDED_CONTEXT_DIAGNOSIS = _fold_patterns(_CONTEXT_DIAGNOSIS_PATTERNS)
 
 _REFERENCE_AGE_RANGE_RE = re.compile(r"(?:ช่วง|กลุ่ม)อายุ\s*\d{1,2}\s*[-\u2013]\s*\d{1,3}(?:\s*ปี)?")
 _PERSONAL_AGE_RE = re.compile(r"(?:ผม|ฉัน|ดิฉัน|หนู|ลูก|เด็ก|น้อง).{0,18}(?:ช่วง|กลุ่ม)?อายุ")
@@ -751,6 +761,10 @@ def check(message: str) -> GuardResult:
             )
 
     diagnosis_hits = [original for folded, original in _FOLDED_DIAGNOSIS if folded in text]
+    if flags:
+        diagnosis_hits += [
+            original for folded, original in _FOLDED_CONTEXT_DIAGNOSIS if folded in text
+        ]
     if diagnosis_hits:
         if Flag.MEDICAL not in flags:
             flags.append(Flag.MEDICAL)
