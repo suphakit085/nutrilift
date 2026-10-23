@@ -271,7 +271,7 @@ states_outcome: true when the sentence states what something achieves, causes or
 - definition: says what something is or where it comes from, with no effect, benefit or comparison.
 - coverage_statement: says the sources/knowledge base do not cover something, or that evidence is limited or unclear.
 - framing: heading, introduction, transition or politeness with no factual claim.
-- permission_or_safety: says a food, drink, supplement, diet or exercise practice can be taken, combined or used, is safe, has no contraindication or danger, or is allowed. Saying the user can use a feature of this app is an instruction, not a permission.
+- permission_or_safety: says something can be taken, combined or used, is safe, has no contraindication or danger, or is allowed.
 - evidence_or_effect: presents something as found or supported by research, studies, reviews or "evidence"; or states an effect, benefit, risk or comparison of a food, supplement or diet.
 Choose permission_or_safety or evidence_or_effect only when the sentence itself asserts such a claim.
 """
