@@ -81,11 +81,33 @@ def ledger(*kinds, support=None, issues=None):
 
 
 def client_for(*answers):
+    """Fake client. Review calls may run concurrently, so a JSON answer goes to
+    the call whose response schema it fits; other answers keep their order."""
     calls = []
+    used: set[int] = set()
+
+    def pick(kwargs) -> str:
+        schema = getattr(kwargs.get("config"), "response_json_schema", None) or {}
+        wanted = set(schema.get("properties") or {})
+        for index, answer in enumerate(answers):
+            if index in used or not wanted:
+                continue
+            try:
+                keys = set(json.loads(answer))
+            except (ValueError, TypeError):
+                continue
+            if keys and keys <= wanted and keys & {"units", "sentences", "pairs"}:
+                used.add(index)
+                return answer
+        for index, answer in enumerate(answers):
+            if index not in used:
+                used.add(index)
+                return answer
+        return answers[-1]
 
     def generate(**kwargs):
         calls.append(kwargs)
-        answer = answers[min(len(calls) - 1, len(answers) - 1)]
+        answer = pick(kwargs)
         yield types.GenerateContentResponse(
             candidates=[
                 types.Candidate(
@@ -96,6 +118,13 @@ def client_for(*answers):
         )
 
     return SimpleNamespace(models=SimpleNamespace(generate_content_stream=generate)), calls
+
+
+def call_for(calls, schema):
+    """The one call made with this response schema (review calls may run concurrently)."""
+    matches = [c for c in calls if c["config"].response_json_schema == schema.model_json_schema()]
+    assert len(matches) == 1, len(matches)
+    return matches[0]
 
 
 def test_schema_and_user_only_grounding():
@@ -271,10 +300,9 @@ def test_evidence_review_receives_program_units_and_numbered_paragraphs():
         passages=[{"label": "S1", "content": "หลักฐานจริง"}, {"label": "S9", "content": "เรื่องอื่น"}],
         understanding=understood(),
     )
-    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    payload = json.loads(call_for(calls, EvidenceReview)["contents"][0].parts[0].text)
     assert payload["draft_units"] == [{"unit": 0, "text": "ข้อความ [S1]", "labels": ["S1"]}]
     assert [p["id"] for p in payload["source_paragraphs"]] == ["S1.1", "S9.1"]
-    assert calls[0]["config"].response_json_schema == EvidenceReview.model_json_schema()
     assert verdict.accepted and verdict.ledger[0]["support"] == ["S1.1"]
 
 
@@ -710,10 +738,9 @@ def test_exempted_unit_that_is_an_evidence_claim_is_rejected(support, category):
         understanding=understood(),
     )
     assert verdict.issues[0].category == category and len(calls) == 2
-    assert json.loads(calls[1]["contents"][0].parts[0].text) == {
+    assert json.loads(call_for(calls, EvidenceClaimCheck)["contents"][0].parts[0].text) == {
         "sentences": [{"sentence": 0, "text": draft}]
     }
-    assert calls[1]["config"].response_json_schema == EvidenceClaimCheck.model_json_schema()
 
 
 def test_claim_check_is_skipped_without_sources_or_exempt_units():
@@ -726,7 +753,7 @@ def test_claim_check_is_skipped_without_sources_or_exempt_units():
         passages=[],
         understanding=understood(),
     )
-    client2, calls2 = client_for(ledger("personal"))
+    client2, calls2 = client_for(ledger("personal"), claim_json("instruction"))
     review_answer(
         client2,
         model="test",
@@ -735,7 +762,10 @@ def test_claim_check_is_skipped_without_sources_or_exempt_units():
         passages=PASSAGES,
         understanding=understood(),
     )
-    assert len(calls) == 1 and len(calls2) == 1
+    # Without sources there is no claim check. With sources it now runs at the
+    # same time as the ledger (no added wait); verdicts on personal units are
+    # ignored, as before.
+    assert len(calls) == 1 and len(calls2) == 2
 
 
 @pytest.mark.parametrize("draft", ["{}", "[]", '{"a": {}}', " - "])
@@ -1167,7 +1197,7 @@ def test_pair_readings_go_to_the_answer_model(monkeypatch, message):
 
 
 def test_review_sees_the_saved_profile_and_calculator_targets():
-    client, calls = client_for(ledger("personal"))
+    client, calls = client_for(ledger("personal"), claim_json("instruction"))
     review_answer(
         client,
         model="test",
@@ -1177,7 +1207,7 @@ def test_review_sees_the_saved_profile_and_calculator_targets():
         understanding=understood(),
         user_context={"user_profile": "หนัก 65 กก.", "calculated_targets": "โปรตีน 117 กรัม/วัน"},
     )
-    payload = json.loads(calls[0]["contents"][0].parts[0].text)
+    payload = json.loads(call_for(calls, EvidenceReview)["contents"][0].parts[0].text)
     assert payload["user_profile"] == "หนัก 65 กก."
     assert payload["calculated_targets"] == "โปรตีน 117 กรัม/วัน"
 

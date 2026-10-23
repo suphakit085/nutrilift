@@ -11,6 +11,7 @@ citation is tied to a concrete paragraph that can be audited later.
 import json
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Literal
 
 from google.genai import types
@@ -367,9 +368,28 @@ def _review_once(
             "calculations. Pointing the user to the app's own profile, targets, calculator "
             "or food diary is allowed."
         )
-    review, usage = _generate_json(
-        client, model=model, system=REVIEW_SYSTEM, payload=payload, schema=EvidenceReview
-    )
+    # The sentence-type check needs only the draft units, not the ledger, so
+    # both calls run at once: one round trip less per review (each is 3-9 s on
+    # the free tier; 24 Oct latency analysis). Personal units are classified
+    # too and their verdicts ignored, as before.
+    claim_payload = {
+        "sentences": [
+            {"sentence": unit["unit"], "text": _LABEL_GROUP.sub("", unit["text"]).strip()}
+            for unit in units
+        ]
+    }
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        claim_future = (
+            pool.submit(
+                _generate_json, client, model=model, system=CLAIM_CHECK_SYSTEM,
+                payload=claim_payload, schema=EvidenceClaimCheck,
+            )
+            if paragraphs else None
+        )
+        review, usage = _generate_json(
+            client, model=model, system=REVIEW_SYSTEM, payload=payload, schema=EvidenceReview
+        )
+        claim_result = claim_future.result() if claim_future else None
     invalid_support = {}
     for check in review.units:
         check.support, bad = normalize_support(check.support, paragraphs)
@@ -392,30 +412,19 @@ def _review_once(
     # checked against their own paragraphs.
     checked = [entry for entry in ledger if paragraphs and entry["kind"] != "personal"]
     if checked:
-        verdict, more = _generate_json(
-            client,
-            model=model,
-            system=CLAIM_CHECK_SYSTEM,
-            payload={
-                "sentences": [
-                    {"sentence": i, "text": _LABEL_GROUP.sub("", entry["text"]).strip()}
-                    for i, entry in enumerate(checked)
-                ]
-            },
-            schema=EvidenceClaimCheck,
-        )
+        verdict, more = claim_result
         for key, count in more.items():
             usage[key] += count
         numbers = [v.sentence for v in verdict.sentences]
-        if sorted(numbers) != list(range(len(checked))):
+        if sorted(numbers) != [unit["unit"] for unit in units]:
             # Duplicates (possibly with contradictory types) or gaps.
             raise ValueError("Claim check does not cover every sentence exactly once")
         verdicts = {v.sentence: v for v in verdict.sentences}
         permissions = []
         cleared = set()
         relabelled = set()
-        for i, entry in enumerate(checked):
-            v = verdicts[i]
+        for entry in checked:
+            v = verdicts[entry["unit"]]
             entry["claim_type"] = v.type
             entry["claims_evidence_backing"] = v.claims_evidence_backing
             is_claim = v.claims_evidence_backing or v.type in {
