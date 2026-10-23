@@ -12,6 +12,7 @@ from app.services import chat
 from app.services.answer_review import (
     EvidenceClaimCheck,
     EvidenceReview,
+    apply_label_edits,
     draft_units,
     review_answer,
     source_paragraphs,
@@ -919,7 +920,9 @@ def test_coverage_note_with_labels_is_accepted_and_its_labels_removed():
         understanding=understood(),
     )
     assert verdict.accepted
-    assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+    assert "labels_removed" not in verdict.ledger[0]
+    assert apply_label_edits(cover, verdict) == "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"
+    assert verdict.ledger[0]["labels_removed"] == ["S1", "S2"]
 
 
 def test_instruction_keeps_only_labels_its_sources_state():
@@ -929,7 +932,7 @@ def test_instruction_keeps_only_labels_its_sources_state():
         client, model="test", question="q", draft=tip, passages=PASSAGES, understanding=understood()
     )
     assert verdict.accepted
-    assert verdict.label_edits == [[tip, "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S2]"]]
+    assert apply_label_edits(tip, verdict) == "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S2]"
 
 
 def test_claim_with_an_unsupported_label_is_still_rejected():
@@ -948,8 +951,12 @@ def test_claim_with_an_unsupported_label_is_still_rejected():
     assert not verdict.accepted and not verdict.label_edits
 
 
-def test_chat_shows_the_answer_with_surplus_labels_removed(monkeypatch):
-    draft = "เลือกโปรตีนตามปริมาณรวม [S1]\n\nข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1, S2]"
+@pytest.mark.parametrize(
+    "labels", ["[S1, S2]", "[S1] [S2]", "[S1], [S2]", "[S1]\n[S2]", "[S1],\r\n  [S2]", "[S1]; [S2]"]
+)
+@pytest.mark.parametrize("broken_span", [False, True])
+def test_chat_shows_the_answer_with_surplus_labels_removed(monkeypatch, labels, broken_span):
+    draft = f"เลือกโปรตีนตามปริมาณรวม [S1]\n\nข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ {labels}"
     passages = [
         chat.retrieval.Passage(**p)
         for p in [
@@ -983,14 +990,29 @@ def test_chat_shows_the_answer_with_surplus_labels_removed(monkeypatch):
         ledger("advice", "evidence_gap", support={0: ["S1.1"]}),
         claim_json("instruction", "coverage_statement"),
     )
+    if broken_span:
+        real_review = chat.review_answer
+
+        def broken_review(*args, **kwargs):
+            verdict, usage = real_review(*args, **kwargs)
+            verdict.label_edits[0].start += 1
+            return verdict, usage
+
+        monkeypatch.setattr(chat, "review_answer", broken_review)
     monkeypatch.setattr(chat, "get_client", lambda: client)
     monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: passages)
     result = chat.collect_understood_answer(
         SimpleNamespace(commit=lambda: None), user_message="เลือกโปรตีนยังไง"
     )
+    if broken_span:
+        assert result["type"] == "error"
+        assert result["code"] == "answer_review_unavailable"
+        assert not result.get("text")
+        return
     assert result["type"] == "done"
     assert result["text"].endswith("ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้")
     assert [c["label"] for c in result["citations"]] == ["S1"]
+    assert result["answer_validation"]["evidence_ledger"][1]["labels_removed"] == ["S1", "S2"]
 
 
 def test_label_standing_alone_joins_the_previous_sentence():
@@ -1016,7 +1038,8 @@ def test_labelled_coverage_note_is_not_rejected_by_a_ledger_unsupported_note():
         passages=PASSAGES,
         understanding=understood(),
     )
-    assert verdict.accepted and verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+    assert verdict.accepted
+    assert apply_label_edits(cover, verdict) == "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"
 
 
 def test_labels_are_not_removed_when_the_ledger_calls_the_sentence_research():
@@ -1092,4 +1115,101 @@ def test_coverage_note_loses_labels_even_when_the_ledger_calls_it_research():
         understanding=understood(),
     )
     assert verdict.accepted
-    assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงที่ระบุไว้ไม่ได้กล่าวถึงเรื่องนี้"]]
+    assert apply_label_edits(cover, verdict) == "ข้อมูลอ้างอิงที่ระบุไว้ไม่ได้กล่าวถึงเรื่องนี้"
+
+
+def test_repeated_text_edits_only_the_selected_occurrence():
+    tip = "ตรวจฉลากก่อนเลือกซื้อ [S1]"
+    draft = f"{tip}\n{tip}"
+    client, _ = client_for(
+        ledger("advice", "advice", support={0: ["S1.1"]}),
+        claim_json("instruction", "instruction"),
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert apply_label_edits(draft, verdict) == f"{tip}\nตรวจฉลากก่อนเลือกซื้อ"
+    assert "labels_removed" not in verdict.ledger[0]
+    assert verdict.ledger[1]["labels_removed"] == ["S1"]
+
+
+@pytest.mark.parametrize("structured", [False, True])
+def test_multiple_edits_preserve_other_content_and_exact_source_locations(structured):
+    first = 'ยังไม่ครอบคลุม "หัวข้อ" นี้ [S1],\r\n [S2]'
+    second = "ข้อมูลไม่ครอบคลุม [S1]; [S2]"
+    # Dots/brackets in JSON keys must not be interpreted as path separators.
+    payload = {"a.b": [{"[0]": first}, first], "note": second, "safe": False, "amount": 5}
+    draft = json.dumps(payload, ensure_ascii=True) if structured else f"  {first}\n\n{second}  "
+    kinds = ["evidence_gap"] * (3 if structured else 2)
+    types_ = ["coverage_statement"] * len(kinds)
+    if structured:
+        kinds += ["personal", "personal"]
+    client, calls = client_for(ledger(*kinds), claim_json(*types_))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted
+    assert all("labels_removed" not in entry for entry in verdict.ledger)
+    for edit in verdict.label_edits:
+        original = json.loads(draft) if structured else draft
+        for key in edit.path or []:
+            original = original[key]
+        assert original[edit.start : edit.end] == edit.original
+    result = apply_label_edits(draft, verdict)
+    if structured:
+        assert json.loads(result) == {
+            "a.b": [{"[0]": 'ยังไม่ครอบคลุม "หัวข้อ" นี้'}, 'ยังไม่ครอบคลุม "หัวข้อ" นี้'],
+            "note": "ข้อมูลไม่ครอบคลุม",
+            "safe": False,
+            "amount": 5,
+        }
+    else:
+        assert result == '  ยังไม่ครอบคลุม "หัวข้อ" นี้\n\nข้อมูลไม่ครอบคลุม  '
+    sent = json.loads(calls[0]["contents"][0].parts[0].text)["draft_units"]
+    assert all(set(unit) == {"unit", "text", "labels"} for unit in sent)
+
+
+@pytest.mark.parametrize("fault", ["draft", "overlap", "replacement", "json_path"])
+def test_invalid_edits_never_report_successful_removal(fault):
+    cover = "ข้อมูลยังไม่ครอบคลุม [S1]"
+    draft = (
+        json.dumps({"notes": [cover, cover]}, ensure_ascii=False)
+        if fault == "json_path"
+        else f"{cover}\n{cover}"
+    )
+    client, _ = client_for(
+        ledger("evidence_gap", "evidence_gap"),
+        claim_json("coverage_statement", "coverage_statement"),
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=draft,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    if fault == "draft":
+        draft = draft.replace("[S1]", "[S2]", 1)
+    elif fault == "overlap":
+        verdict.label_edits[1].start = verdict.label_edits[0].start
+        verdict.label_edits[1].end = verdict.label_edits[0].end
+        verdict.ledger[1]["location"] = dict(verdict.ledger[0]["location"])
+    elif fault == "replacement":
+        verdict.label_edits[0].replacement = "invented content"
+    else:
+        verdict.label_edits[0].path = ["missing"]
+        verdict.ledger[0]["location"]["path"] = ["missing"]
+    with pytest.raises(ValueError):
+        apply_label_edits(draft, verdict)
+    assert all("labels_removed" not in entry for entry in verdict.ledger)

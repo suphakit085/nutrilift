@@ -19,6 +19,20 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.services.request_understanding import RequestUnderstanding
 
 _LABEL_GROUP = re.compile(r"\[S\d+(?:[\s,;]+S\d+)*\]")
+_LABEL_RUN = re.compile(rf"{_LABEL_GROUP.pattern}(?:[\s,;]*{_LABEL_GROUP.pattern})*")
+
+
+class LabelEdit(BaseModel):
+    """An exact span in the draft, or in a decoded JSON string leaf."""
+
+    model_config = ConfigDict(extra="forbid")
+    unit: int
+    path: list[str | int] | None = None
+    start: int
+    end: int
+    original: str
+    replacement: str
+    removed: list[str]
 
 
 class ReviewIssue(BaseModel):
@@ -35,8 +49,7 @@ class AnswerReview(BaseModel):
     accepted: bool
     issues: list[ReviewIssue] = Field(default_factory=list)
     ledger: list[dict] = Field(default_factory=list)
-    #: [raw unit text, same text with surplus labels removed], applied before display.
-    label_edits: list[list[str]] = Field(default_factory=list)
+    label_edits: list[LabelEdit] = Field(default_factory=list)
 
 
 class UnitCheck(BaseModel):
@@ -83,46 +96,53 @@ def draft_units(draft: str) -> list[dict]:
         parsed = json.loads(draft)
     except ValueError:
         parsed = None
-    texts: list[tuple[str, str]] = []
+    texts: list[tuple[str, str, list[str | int] | None, str, int]] = []
 
-    def walk(node, path: str) -> None:
+    def walk(node, path: str, keys: list[str | int]) -> None:
         # Every scalar leaf is a claim ("safe": true, "dose": "5 g"), so all are
         # reviewed, keeping the key path so a value never loses its meaning.
         if isinstance(node, dict):
             for key, child in node.items():
-                walk(child, f"{path}.{key}" if path else str(key))
+                walk(child, f"{path}.{key}" if path else str(key), [*keys, key])
         elif isinstance(node, list):
             for index, child in enumerate(node):
-                walk(child, f"{path}[{index}]")
+                walk(child, f"{path}[{index}]", [*keys, index])
         elif isinstance(node, str):
-            texts.append((path, node))
+            texts.append((path, node, keys, node, 0))
         else:
-            texts.append((path, json.dumps(node, ensure_ascii=False)))
+            text = json.dumps(node, ensure_ascii=False)
+            texts.append((path, text, keys, text, 0))
 
     if isinstance(parsed, (dict, list)):
-        walk(parsed, "")
+        walk(parsed, "", [])
     else:
-        texts = [("", line) for line in draft.splitlines()]
+        offset = 0
+        for line in draft.splitlines(keepends=True):
+            texts.append(("", line, None, draft, offset))
+            offset += len(line)
     out = []
-    for path, text in texts:
+    for path, text, keys, original, offset in texts:
         start, pieces = 0, []
         for match in _LABEL_GROUP.finditer(text):
-            pieces.append(text[start : match.end()])
+            pieces.append((start, text[start : match.end()]))
             start = match.end()
-        pieces.append(text[start:])
-        for piece in pieces:
+        pieces.append((start, text[start:]))
+        for piece_start, piece in pieces:
             stripped = piece.strip()
             if not re.search(r"\w", stripped):
                 continue
+            span_start = offset + piece_start + len(piece) - len(piece.lstrip())
+            span_end = offset + piece_start + len(piece.rstrip())
             if (
                 out
-                and out[-1]["path"] == path
+                and out[-1]["location"]["path"] == keys
                 and not re.search(r"\w", _LABEL_GROUP.sub("", stripped))
             ):
                 # A label standing alone ("... [S1] [S3]" or a label-only line)
                 # belongs to the preceding sentence, not to a unit of its own.
                 previous = out[-1]
-                previous["raw"] = f"{previous['raw']} {stripped}"
+                previous["location"]["end"] = span_end
+                previous["raw"] = original[previous["location"]["start"] : span_end]
                 previous["text"] = f"{previous['text']} {stripped}"
                 previous["labels"] = sorted(
                     set(previous["labels"]) | set(re.findall(r"S\d+", stripped))
@@ -142,12 +162,88 @@ def draft_units(draft: str) -> list[dict]:
                     "text": text_with_path,
                     "labels": labels,
                     "raw": stripped,
-                    "path": path,
+                    "location": {"path": keys, "start": span_start, "end": span_end},
                 }
             )
-    for unit in out:
-        del unit["path"]
     return out
+
+
+def _remove_labels(text: str, removed: set[str]) -> str:
+    """Edit citation syntax only, including separators between adjacent labels."""
+
+    def replace(match: re.Match) -> str:
+        keep = list(
+            dict.fromkeys(label for label in re.findall(r"S\d+", match[0]) if label not in removed)
+        )
+        return f"[{', '.join(keep)}]" if keep else ""
+
+    return _LABEL_RUN.sub(replace, text).rstrip()
+
+
+def apply_label_edits(draft: str, review: AnswerReview) -> str:
+    """Apply verified spans atomically; never claim a skipped edit was applied."""
+    if not review.label_edits:
+        return draft
+    if not review.accepted:
+        raise ValueError("Cannot edit a rejected answer")
+    structured = review.label_edits[0].path is not None
+    parsed = json.loads(draft) if structured else None
+    groups: dict[tuple | None, list[LabelEdit]] = {}
+    seen_units = set()
+    for edit in review.label_edits:
+        if (edit.path is not None) != structured or edit.unit in seen_units:
+            raise ValueError("Inconsistent edit locations")
+        seen_units.add(edit.unit)
+        if not 0 <= edit.unit < len(review.ledger):
+            raise ValueError("Edit has no ledger unit")
+        entry = review.ledger[edit.unit]
+        if (
+            entry.get("unit") != edit.unit
+            or entry.get("raw") != edit.original
+            or entry.get("location") != {"path": edit.path, "start": edit.start, "end": edit.end}
+            or entry.get("labels_to_remove") != edit.removed
+        ):
+            raise ValueError("Edit does not match its ledger unit")
+        if not edit.removed or not set(edit.removed) <= set(entry["labels"]):
+            raise ValueError("Invalid label removal")
+        if edit.replacement != _remove_labels(edit.original, set(edit.removed)):
+            raise ValueError("Edit changes more than citation labels")
+        groups.setdefault(tuple(edit.path) if structured else None, []).append(edit)
+    for path, edits in groups.items():
+        node = parsed if structured else draft
+        parent, key = None, None
+        for key in path or ():
+            parent = node
+            if (isinstance(node, dict) and isinstance(key, str) and key in node) or (
+                isinstance(node, list) and type(key) is int and 0 <= key < len(node)
+            ):
+                node = node[key]
+            else:
+                raise ValueError("Invalid JSON edit path")
+        if not isinstance(node, str):
+            raise ValueError("Citation edits require a string")
+        boundary = len(node)
+        for edit in sorted(edits, key=lambda e: e.start, reverse=True):
+            if (
+                not 0 <= edit.start < edit.end <= boundary
+                or node[edit.start : edit.end] != edit.original
+            ):
+                raise ValueError("Citation edit span mismatch or overlap")
+            node = node[: edit.start] + edit.replacement + node[edit.end :]
+            boundary = edit.start
+        if structured:
+            if parent is None:
+                raise ValueError("Missing JSON leaf parent")
+            parent[key] = node
+        else:
+            draft = node
+    result = json.dumps(parsed, ensure_ascii=False) if structured else draft
+    # Only record completion after every edit has succeeded.
+    for edit in review.label_edits:
+        entry = review.ledger[edit.unit]
+        entry["labels_removed"] = edit.removed
+        entry["display_raw"] = edit.replacement
+    return result
 
 
 def source_paragraphs(passages: list[dict]) -> list[dict]:
@@ -349,7 +445,7 @@ def _review_once(
     payload = {
         "question": question,
         "request": understanding.model_dump(mode="json"),
-        "draft_units": [{k: v for k, v in u.items() if k != "raw"} for u in units],
+        "draft_units": [{k: u[k] for k in ("unit", "text", "labels")} for u in units],
         "source_paragraphs": paragraphs,
     }
     review, usage = _generate_json(
@@ -369,7 +465,7 @@ def _review_once(
         if entry["unit"] in invalid_support:
             # Not counted as support; recorded for audit instead of failing.
             entry["invalid_support"] = invalid_support[entry["unit"]]
-    label_edits: list[list[str]] = []
+    label_edits: list[LabelEdit] = []
     # The whole-draft ledger mislabels claims in both directions (an evidence
     # claim as "framing", a label-check tip as "research"). With sources, every
     # non-personal unit gets a narrow per-sentence type check, which alone
@@ -431,11 +527,16 @@ def _review_once(
                     else set(entry["labels"]) - backed
                 )
                 if drop:
-                    keep = [label for label in entry["labels"] if label not in drop]
-                    base = _LABEL_GROUP.sub("", entry["raw"]).rstrip()
-                    edited = base + (f" [{', '.join(keep)}]" if keep else "")
-                    label_edits.append([entry["raw"], edited])
-                    entry["labels_removed"] = sorted(drop)
+                    label_edits.append(
+                        LabelEdit(
+                            unit=entry["unit"],
+                            **entry["location"],
+                            original=entry["raw"],
+                            replacement=_remove_labels(entry["raw"], drop),
+                            removed=sorted(drop),
+                        )
+                    )
+                    entry["labels_to_remove"] = sorted(drop)
                     relabelled.add(entry["text"])
             if entry["labels"]:
                 own = [pid for pid in entry["support"] if pid.split(".")[0] in entry["labels"]]
