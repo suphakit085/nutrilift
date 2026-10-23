@@ -558,3 +558,49 @@ def review_answer(client, **kwargs):
                 time.sleep(12 if code == 429 else 1)
                 continue
             raise
+
+
+#: Review findings that only say a sentence is not backed by the sources. Such
+#: a sentence can be removed without changing what the rest of the answer
+#: claims. Excluded actions, invented user facts, wrong goals and garbled
+#: language still withhold the whole answer.
+TRIMMABLE_CATEGORIES = frozenset({"unsupported_fact", "citation"})
+_EMPTY_LINE = re.compile(r"^\s*(?:[-*•]|\d+[.)])?\s*$")
+#: Ledger/claim types that carry no answer content on their own.
+_NON_CONTENT = frozenset({"framing", "coverage_statement", "evidence_gap"})
+
+
+def trim_unverified(draft: str, verdict: AnswerReview) -> tuple[str, list[str]] | None:
+    """Remove the units a review flagged only as unbacked; None when not possible.
+
+    Units are located by their exact raw text, which must occur once - the
+    same rule the label edits use. JSON drafts are never trimmed, because a
+    removed leaf changes the meaning of its object.
+    """
+    if not verdict.issues or any(i.category not in TRIMMABLE_CATEGORIES for i in verdict.issues):
+        return None
+    try:
+        if isinstance(json.loads(draft), (dict, list)):
+            return None
+    except ValueError:
+        pass
+    raw_by_text = {entry["text"]: entry["raw"] for entry in verdict.ledger}
+    trimmed, removed = draft, []
+    for fragment in dict.fromkeys(issue.fragment for issue in verdict.issues):
+        raw = raw_by_text.get(fragment)
+        if not raw or trimmed.count(raw) != 1:
+            return None
+        trimmed = trimmed.replace(raw, "", 1)
+        removed.append(raw)
+    lines = [line.rstrip() for line in trimmed.splitlines() if not _EMPTY_LINE.match(line)]
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+    return (text, removed) if text else None
+
+
+def has_answer_content(verdict: AnswerReview) -> bool:
+    """At least one reviewed unit says something beyond framing or coverage."""
+    return any(
+        entry.get("claim_type", entry.get("kind")) not in _NON_CONTENT
+        and entry.get("kind") not in _NON_CONTENT
+        for entry in verdict.ledger
+    )
