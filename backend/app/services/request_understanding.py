@@ -230,23 +230,6 @@ def reconcile_with_profile(
     )
 
 
-#: Clarification slots the answering model resolves itself. The pre-answer
-#: "name both items" reply was wrong on complete questions in every recorded
-#: run - comparisons, substitutions and stated pairs (TH11, TH22, TH42, VX03;
-#: production 23 Oct "กินเวย์ผสมนมได้ไหม"). A program check of quoted items
-#: shifted the model to other slots instead (named_items trial, not adopted).
-#: The answer model sees the whole question with evidence and can either
-#: answer or ask which item the user means, so it decides.
-MODEL_RESOLVED_SLOTS = frozenset({"pair_partner"})
-
-
-def let_model_resolve(value: RequestUnderstanding) -> RequestUnderstanding:
-    """Send pairing questions to the answer model instead of a fixed question."""
-    if value.task != "clarify" or value.missing_information not in MODEL_RESOLVED_SLOTS:
-        return value
-    return value.model_copy(update={"task": "knowledge", "missing_information": None})
-
-
 def interpret_request(
     client, *, model: str, message: str, history: list[dict], profile: ProfileInput | None
 ):
@@ -269,8 +252,7 @@ def interpret_request(
         for key, count in usage.items():
             total[key] += count
         try:
-            value = let_model_resolve(_checked(text, turns))
-            return reconcile_with_profile(value, profile), total
+            return reconcile_with_profile(_checked(text, turns), profile), total
         except ValueError as exc:
             if attempt:
                 raise

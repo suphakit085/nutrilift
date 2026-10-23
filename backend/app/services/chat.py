@@ -1136,6 +1136,7 @@ def stream_chat(
     if understanding:
         if understanding.task == "clarify":
             reply = {
+                "pair_partner": PAIR_CLARIFICATION,
                 "profile": ("กรุณากรอกและบันทึกข้อมูลในหน้าโปรไฟล์ก่อนครับ "
                             "ระบบจึงจะใช้ข้อมูลครบสำหรับคำนวณเป้าหมายเฉพาะบุคคลได้"),
                 "food_quantity": "เป็นอาหารหรือผลิตภัณฑ์ใด และปริมาณที่กินกี่กรัมหรือกี่หน่วยครับ",
@@ -1820,6 +1821,19 @@ def _understanding_reply(reply: str, guard, use_rag: bool, route: str) -> Iterat
            "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag}
 
 
+PAIR_CLARIFICATION = "ต้องการกินหรือผสมอะไรคู่กับอะไรครับ กรุณาระบุทั้งสองอย่างก่อนครับ"
+#: Clarification slots the answering model resolves first. The fixed "name
+#: both items" reply was wrong on complete questions in every recorded run -
+#: comparisons, substitutions and stated pairs (TH11, TH22, TH42, VX03; the
+#: 23 Oct production test "กินเวย์ผสมนมได้ไหม"); checking quoted items moved
+#: the model to other slots instead (named_items trial, not adopted). The
+#: answer model sees the question with evidence and can answer or ask. If its
+#: answer cannot be verified, the user gets the clarification instead of an
+#: error, so the turn is never worse than the fixed reply.
+MODEL_FIRST_CLARIFICATIONS = {"pair_partner": PAIR_CLARIFICATION}
+_UNVERIFIED_ANSWER_CODES = {"answer_validation_failed", "answer_review_unavailable"}
+
+
 def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
     """Production entry: semantic interpretation -> validated state -> execution.
 
@@ -1869,7 +1883,28 @@ def stream_understood_chat(db: Session, **kwargs) -> Iterator[dict]:
                        "message": ("ยังยืนยันความต้องการหรือข้อมูลที่แก้ไขไม่ได้ครับ "
                                    "กรุณาระบุคำถามและข้อมูลที่ต้องการใช้ให้ชัดเจนอีกครั้ง")}
             return
-    for event in stream_chat(db, **kwargs, understanding=understanding):
+    fallback = None
+    executed = understanding
+    slot = understanding.missing_information
+    if understanding.task == "clarify" and slot in MODEL_FIRST_CLARIFICATIONS:
+        fallback = MODEL_FIRST_CLARIFICATIONS[slot]
+        executed = understanding.model_copy(
+            update={"task": "knowledge", "missing_information": None}
+        )
+    for event in stream_chat(db, **kwargs, understanding=executed):
+        unverified = event["type"] == "error" and event.get("code") in _UNVERIFIED_ANSWER_CODES
+        if fallback and unverified:
+            guard = guardrails.combine(
+                guardrails.check(kwargs["user_message"]),
+                guardrails.check_history(history, lookback=None),
+            )
+            event = {"type": "done", "text": fallback, "citations": [], "retrieved": [],
+                     "tool_calls": [], "usage": event.get("usage") or {},
+                     "safety_flags": guard.as_json(), "model": "rule:missing_information",
+                     "prompt_version": prompts.PROMPT_VERSION,
+                     "use_rag": kwargs.get("use_rag", True),
+                     "answer_validation": event.get("answer_validation")}
+            yield {"type": "delta", "text": fallback}
         if event["type"] in ("done", "error"):
             event["request_understanding"] = {
                 "version": UNDERSTANDING_VERSION, **understanding.model_dump(mode="json"),

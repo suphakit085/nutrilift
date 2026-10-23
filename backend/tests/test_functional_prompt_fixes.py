@@ -1218,3 +1218,41 @@ def test_profile_note_is_sent_only_with_profile_data():
         understanding=understood(),
     )
     assert "user_context_note" not in json.loads(calls[0]["contents"][0].parts[0].text)
+
+
+def test_unverified_pair_answer_falls_back_to_the_clarification(monkeypatch):
+    # The model-first path must never be worse than the fixed reply: when the
+    # answer cannot be verified the user is asked, not shown an error.
+    client, _ = client_for(
+        understood(task="clarify", missing_information="pair_partner").model_dump_json(),
+        "เวย์ทานคู่กับนมได้",
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: [])
+
+    def unavailable(*_, **__):
+        raise RuntimeError("review down")
+
+    monkeypatch.setattr(chat, "review_answer", unavailable)
+    events = list(chat.stream_understood_chat(
+        SimpleNamespace(commit=lambda: None), user_message="เวย์ทานคู่กับ .. !!", profile=adult(),
+    ))
+    done = events[-1]
+    assert done["type"] == "done" and done["text"] == chat.PAIR_CLARIFICATION
+    assert done["request_understanding"]["missing_information"] == "pair_partner"
+    assert not any(e["type"] == "error" for e in events)
+    assert [e["text"] for e in events if e["type"] == "delta"] == [chat.PAIR_CLARIFICATION]
+
+
+def test_other_readings_keep_their_error(monkeypatch):
+    client, _ = client_for(understood().model_dump_json(), "คำตอบ")
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: [])
+    def unavailable(*_, **__):
+        raise RuntimeError("review down")
+
+    monkeypatch.setattr(chat, "review_answer", unavailable)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="โปรตีนคืออะไร", profile=adult(),
+    )
+    assert result["type"] == "error" and result["code"] == "answer_review_unavailable"
