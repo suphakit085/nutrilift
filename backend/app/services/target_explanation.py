@@ -68,6 +68,8 @@ def explicit_target_explanation_reply(
         f"- เป้าหมายที่ใช้คำนวณ: {targets['effective_goal_label_th']}",
         f"- พลังงานเป้าหมาย: {targets['energy_target_kcal']} กิโลแคลอรี/วัน",
         f"- โปรตีน: {macros['protein_g']} กรัม/วัน",
+        f"- ไขมัน: {macros['fat_g']} กรัม/วัน",
+        f"- คาร์โบไฮเดรต: {macros['carb_g']} กรัม/วัน",
         "",
         "### วิธีคำนวณของระบบ",
     ]
@@ -113,6 +115,16 @@ def explicit_target_explanation_reply(
         f"≈ {macros['protein_g']} กรัม/วัน "
         f"ระบบเลือกค่ากลางของช่วง {_number(protein_low)}\u2013{_number(protein_high)} "
         "กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน"),
+    ]
+    # Fat and carbs reuse the calculator's own step text (same operands as
+    # the formula note under model answers), so the two never disagree.
+    steps = {m["key"]: m for m in targets.get("calculation_methods") or []}
+    lines += [
+        f"- {steps[key]['name']}: {steps[key]['equation']} ≈ {steps[key]['result']} "
+        f"{steps[key]['unit']} — {steps[key]['basis']}"
+        for key in ("fat", "carb") if key in steps
+    ]
+    lines += [
         "",
         ("ตัวคูณกิจกรรม ช่วงปรับพลังงาน และค่ากลางโปรตีนเป็นการเลือกของเครื่องคำนวณโครงการ "
         "ไม่ได้เป็นค่าที่บทความกำหนดให้คุณโดยตรง ระบบคำนวณด้วยค่าก่อนปัดเศษ "

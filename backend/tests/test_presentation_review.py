@@ -118,6 +118,20 @@ def test_protein_only_answer_also_displays_its_calculation_method():
     assert not target_methods_note("โปรตีน 1260 กรัม", targets)
 
 
+def test_shown_steps_also_show_the_steps_they_take_as_input():
+    # Seen in the 23 Oct real-question run: an answer quoting only the energy
+    # target got the energy line (TDEE times the goal adjustment) without the TDEE line.
+    targets = calc_nutrition_targets(adult(goal="cut"))
+    energy = targets["energy_target_kcal"]
+    note = target_methods_note(f"พลังงานเป้าหมาย {energy:,} กิโลแคลอรีต่อวัน", targets)
+    assert "Mifflin" in note
+    assert "ตัวคูณกิจกรรม" in note
+    carb = targets["macros"]["carb_g"]
+    note = target_methods_note(f"คาร์โบไฮเดรต {carb} กรัม", targets)
+    for name in ("Mifflin", "ตัวคูณกิจกรรม", "ปรับพลังงานตามเป้าหมาย", "โปรตีนต่อกิโลกรัม", "ไขมันต่อน้ำหนัก"):
+        assert name in note, name
+
+
 @pytest.mark.parametrize("goal", ["maintain", "bulk"])
 def test_high_bmi_recommends_user_select_cut_without_changing_saved_goal(goal):
     p = adult(weight_kg=120, height_cm=200, goal=goal)

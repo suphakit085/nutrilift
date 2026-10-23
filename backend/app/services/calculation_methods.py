@@ -5,6 +5,14 @@ from __future__ import annotations
 
 import re
 
+#: Which calculator steps each step's equation takes as input.
+STEP_INPUTS = {
+    "tdee": ("bmr",),
+    "energy": ("tdee",),
+    "fat": ("energy",),
+    "carb": ("energy", "protein", "fat"),
+}
+
 
 def target_methods_note(answer: str, targets: dict | None) -> str:
     """Attach provenance when an answer quotes a calculated profile value."""
@@ -22,8 +30,14 @@ def target_methods_note(answer: str, targets: dict | None) -> str:
         if (re.search(labels[method["key"]], plain, re.I)
                 and re.search(r"(?<![\d.])" + re.escape(value) + r"(?![\d.])", plain)):
             selected.add(method["key"])
-    if selected & {"energy", "tdee"}:
-        selected.add("bmr")
+    # Every shown step's inputs are shown too, so no line uses a number the
+    # reader cannot trace (e.g. the energy step multiplies the TDEE).
+    pending = list(selected)
+    while pending:
+        for needed in STEP_INPUTS.get(pending.pop(), ()):
+            if needed not in selected:
+                selected.add(needed)
+                pending.append(needed)
     return methods_note([m for m in targets["calculation_methods"] if m["key"] in selected])
 
 

@@ -259,3 +259,15 @@ def test_model_mixed_paragraph_is_cleaned_in_stream_and_saved_turn(monkeypatch):
     assert "[S1]" in done["text"] and "[S2]" not in done["text"]
     assert done["citations"] == [{"label": "S1"}]
     assert messages(session, "assistant")[0].citations == done["citations"]
+
+
+def test_explanation_also_shows_fat_and_carb_targets_and_their_steps():
+    # 23 Oct real-question run (TH09, YT04): the user asked how to work out
+    # carbs or how to fill the rest of the energy, and got only energy and protein.
+    targets = calc_nutrition_targets(adult(goal="bulk"))
+    reply = explicit_target_explanation_reply(QUESTION, targets)
+    macros = targets["macros"]
+    assert f"- ไขมัน: {macros['fat_g']} กรัม/วัน" in reply
+    assert f"- คาร์โบไฮเดรต: {macros['carb_g']} กรัม/วัน" in reply
+    assert "พลังงานที่เหลือหลังหักโปรตีนและไขมัน" in reply
+    assert "floor พลังงาน" in reply
