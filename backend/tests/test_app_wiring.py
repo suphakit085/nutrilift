@@ -25,6 +25,8 @@ def test_retry_after_is_exposed_cross_origin():
     assert response.headers["access-control-allow-origin"] == origin
     exposed = response.headers.get("access-control-expose-headers", "")
     assert "retry-after" in exposed.lower()
+    # The profile gate's 409 is read by header, like consent.
+    assert "x-profile-required" in exposed.lower()
 
 
 def test_startup_runs_the_production_secret_check(monkeypatch):

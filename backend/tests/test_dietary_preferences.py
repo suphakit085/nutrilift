@@ -330,3 +330,18 @@ def test_missing_profile_ownership_and_bad_input_never_write_profile(account_app
     )
     assert save(state, headers, identifier, ["bad\nvalue"]).status_code == 422
     assert state.client.get(f"/conversations/{identifier}/dietary-preferences").status_code == 401
+
+
+def test_chat_requires_a_saved_profile_before_any_model_call(account_app, monkeypatch):
+    state = account_app
+    headers, identifier = setup(state, with_profile=False)
+    monkeypatch.setattr(chat, "get_client", lambda: pytest.fail("no model call without a profile"))
+    response = state.client.post(
+        f"/conversations/{identifier}/chat", headers=headers, json={"message": "โปรตีนควรกินเท่าไร"}
+    )
+    assert response.status_code == 409
+    assert response.headers["X-Profile-Required"] == "1"
+    assert "โปรไฟล์" in response.json()["detail"]
+    assert (
+        state.client.get(f"/conversations/{identifier}", headers=headers).json()["messages"] == []
+    )

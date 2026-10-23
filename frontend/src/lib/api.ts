@@ -88,6 +88,14 @@ function handleEmailVerificationRequired(response: Response): void {
   }
 }
 
+/** A 409 carrying X-Profile-Required: chat needs a saved profile first. */
+function handleProfileRequired(response: Response): void {
+  if (response.status !== 409 || !response.headers.get("X-Profile-Required")) return;
+  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/profile")) {
+    window.location.assign(new URL("/profile", window.location.origin).href);
+  }
+}
+
 function handleConsentRequired(response: Response): void {
   if (response.status !== 403 || !response.headers.get("X-Consent-Required")) return;
   if (typeof window !== "undefined" && !window.location.pathname.startsWith("/consent")) {
@@ -182,6 +190,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     handleUnauthorized(path, response.status);
     handleEmailVerificationRequired(response);
     handleConsentRequired(response);
+    handleProfileRequired(response);
     let detail = `เกิดข้อผิดพลาด (${response.status})`;
     try {
       detail = errorDetail(await response.json(), detail);
@@ -591,6 +600,7 @@ export function streamChat(
         handleUnauthorized(path, response.status);
         handleEmailVerificationRequired(response);
         handleConsentRequired(response);
+        handleProfileRequired(response);
         // The server explains rate limits and quota exhaustion in `detail`;
         // showing only the status code would leave the user with no idea how
         // long to wait or what went wrong.

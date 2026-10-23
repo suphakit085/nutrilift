@@ -48,7 +48,14 @@ app.add_middleware(
     # user to the consent screen. The frontend is a different origin, so without
     # listing it here the browser hides it and the client is left guessing from
     # the Thai message text.
-    expose_headers=["Retry-After", "X-Consent-Required", "X-Email-Verification-Required"],
+    # X-Profile-Required travels with a 409 when chat is used before a profile
+    # is saved, for the same reason.
+    expose_headers=[
+        "Retry-After",
+        "X-Consent-Required",
+        "X-Email-Verification-Required",
+        "X-Profile-Required",
+    ],
 )
 
 app.include_router(auth.router)

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   api,
+  ApiError,
   getToken,
   setToken,
   streamChat,
@@ -102,10 +103,18 @@ export default function ChatPage() {
       router.replace("/login");
       return;
     }
+    // Chat requires a saved profile: only a confirmed 404 routes to the form,
+    // an outage or auth error stays an error (same rule as post-auth).
     api
-      .listConversations()
-      .then(setConversations)
-      .catch((err) => setError((err as Error).message));
+      .getProfile()
+      .then(() => api.listConversations().then(setConversations))
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 404) {
+          router.replace("/profile");
+          return;
+        }
+        setError((err as Error).message);
+      });
   }, [router]);
 
   useEffect(() => {
