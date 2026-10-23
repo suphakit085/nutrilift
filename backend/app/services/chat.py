@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 import re
 import time
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import Any
 
 import httpx
@@ -473,7 +473,7 @@ def _run_food_lookup(
     user_message: str,
     pending_confirmations: list[str],
     partial_candidates_this_turn: list[str],
-    previous_user_message: str = "",
+    earlier_user_messages: Sequence[str] = (),
 ) -> dict:
     """Only return macros after the user names a suggested row in a later turn.
 
@@ -517,10 +517,11 @@ def _run_food_lookup(
         # the actual user message too, or the model has effectively confirmed
         # its own guess without ever returning a partial result.
         normalized_user = normalize_thai(user_message)
-        # Reuse only an explicit name in the immediately preceding USER turn
-        # when this turn refers back. Assistant guesses never confirm a food.
-        if re.search(r"เดิม|เมื่อกี้|อันนั้น|same|previous", normalized_user, re.I):
-            normalized_user += " " + normalize_thai(previous_user_message)
+        # A name the user typed in an earlier turn of this chat is the user's
+        # own food, so a follow-up such as "ถ้ากินครึ่งจานล่ะ" needs no second
+        # confirmation (23 Oct retest). Only user turns count: an assistant
+        # suggestion still has to be repeated by the user.
+        normalized_user += "".join(" " + normalize_thai(m) for m in earlier_user_messages)
         unseen = [
             row["name_th"]
             for row in result.get("results", [])
@@ -1334,13 +1335,15 @@ def stream_chat(
         # guard_instructions / safety_flags as the text rules.
         guard = guardrails.combine(guard, guardrails.check_profile(profile, targets))
 
+    # Formula notes already shown in this chat are not appended again.
+    shown_notes = [t.get("content", "") for t in history or [] if t.get("role") == "assistant"]
     if guardrails.personalization_allowed(guard) and not guard.flags:
         profile_reply = (
             explicit_profile_summary_reply(user_message, profile, targets, menu_context_note)
             if profile is not None and targets is not None else None
         )
         if profile_reply:
-            profile_reply += target_methods_note(profile_reply, targets)
+            profile_reply += target_methods_note(profile_reply, targets, shown_notes)
             yield {"type": "delta", "text": profile_reply}
             yield {
                 "type": "done", "text": profile_reply, "citations": [], "retrieved": citations,
@@ -1355,7 +1358,7 @@ def stream_chat(
             history=history,
         )
         if split_reply:
-            split_reply += target_methods_note(split_reply, targets)
+            split_reply += target_methods_note(split_reply, targets, shown_notes)
             yield {"type": "delta", "text": split_reply}
             yield {
                 "type": "done", "text": split_reply, "citations": [], "retrieved": citations,
@@ -1590,7 +1593,7 @@ def stream_chat(
                         )]))
                         yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ", "wait_s": 0}
                         continue
-                    answer += target_methods_note(answer, targets)
+                    answer += target_methods_note(answer, targets, shown_notes)
                     text_parts.append(answer)
                     yield {"type": "delta", "text": answer}
                 elif not food_lookup_unverified:
@@ -1622,12 +1625,9 @@ def stream_chat(
                         user_message=user_message,
                         pending_confirmations=pending_food_confirmations or [],
                         partial_candidates_this_turn=partial_candidates_this_turn,
-                        previous_user_message=next(
-                            (
-                                t.get("content", "")
-                                for t in reversed(history or []) if t.get("role") == "user"
-                            ), ""
-                        ),
+                        earlier_user_messages=[
+                            t.get("content", "") for t in history or [] if t.get("role") == "user"
+                        ],
                     )
                 else:
                     result = _execute_tool(db, profile, call.name, args, guard)
@@ -1745,7 +1745,7 @@ def stream_chat(
             return
         if answer_text and not verified_menu_results:
             answer_text = without_target_citations(answer_text, targets)
-            answer_text += target_methods_note(answer_text, targets)
+            answer_text += target_methods_note(answer_text, targets, shown_notes)
         if answer_text:
             yield {"type": "delta", "text": answer_text}
     else:
