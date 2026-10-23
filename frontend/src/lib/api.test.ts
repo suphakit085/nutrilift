@@ -409,3 +409,24 @@ test("logout network and service failures do not fall back to local logout", asy
     await assert.rejects(api.logout(), /เชื่อมต่อระบบไม่สำเร็จ/);
   } finally { globalThis.fetch = previous; }
 });
+
+test("a chat 409 with X-Profile-Required sends the user to the profile form", async () => {
+  const original = globalThis.fetch;
+  const assigned: string[] = [];
+  const g = globalThis as unknown as { window?: unknown };
+  const previousWindow = g.window;
+  g.window = { location: { pathname: "/chat", origin: "http://app.test", assign: (url: string) => assigned.push(url) } };
+  globalThis.fetch = (async () => new Response(JSON.stringify({ detail: "กรุณากรอกและบันทึกโปรไฟล์ก่อนเริ่มแชตครับ" }), {
+    status: 409, headers: { "Content-Type": "application/json", "X-Profile-Required": "1" },
+  })) as typeof fetch;
+  try {
+    const message = await new Promise<string>((resolve, reject) => {
+      streamChat("c1", "สวัสดี", { onDone: () => reject(new Error("must not finish")), onError: resolve });
+    });
+    assert.equal(message, "กรุณากรอกและบันทึกโปรไฟล์ก่อนเริ่มแชตครับ");
+    assert.deepEqual(assigned, ["http://app.test/profile"]);
+  } finally {
+    globalThis.fetch = original;
+    g.window = previousWindow;
+  }
+});

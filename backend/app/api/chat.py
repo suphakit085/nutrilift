@@ -13,7 +13,14 @@ from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
-from app.api.deps import DB_SESSION, get_consented_user, profile_to_input, rate_limit_chat
+from app.api.deps import (
+    DB_SESSION,
+    PROFILE_REQUIRED_DETAIL,
+    PROFILE_REQUIRED_HEADER,
+    get_consented_user,
+    profile_to_input,
+    rate_limit_chat,
+)
 from app.api.schemas import ChatRequest, ConversationDetail, ConversationOut, DietaryPreferencesIn
 from app.core.config import settings
 from app.db.models import Conversation, Message, Profile, User
@@ -368,6 +375,12 @@ def chat(
     """
     conversation = _owned_conversation(db, user, conversation_id)
     profile = profile_to_input(db.get(Profile, user.id))
+    if profile is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            PROFILE_REQUIRED_DETAIL,
+            headers={PROFILE_REQUIRED_HEADER: "1"},
+        )
 
     history = [
         {"role": m.role, "content": m.content}

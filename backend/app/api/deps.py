@@ -95,6 +95,12 @@ def get_verified_user(user: User = Depends(get_current_user)) -> User:
 CONSENT_REQUIRED_HEADER = "X-Consent-Required"
 CONSENT_REQUIRED_DETAIL = "ต้องยินยอมให้เก็บและใช้ข้อมูลฉบับล่าสุดก่อนใช้งานต่อ"
 
+#: Chat needs a saved profile (owner decision, 23 Oct 2026): answers are
+#: personalised and screened against it. Sent with a 409 so the client can
+#: route to the profile form without matching Thai text.
+PROFILE_REQUIRED_HEADER = "X-Profile-Required"
+PROFILE_REQUIRED_DETAIL = "กรุณากรอกและบันทึกโปรไฟล์ก่อนเริ่มแชตครับ"
+
 
 def consent_is_current(user: User) -> bool:
     """Whether this account has agreed to the notice in force right now.
