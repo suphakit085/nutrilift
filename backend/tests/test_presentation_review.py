@@ -101,7 +101,7 @@ def test_original_prompt_keeps_profile_and_guards_in_both_evaluation_modes():
         assert "พลังงานจากเครื่องมือ 2277 kcal" in built
         assert "ข้อจำกัดความปลอดภัยของคำถามปัจจุบัน" in built
         assert ("[S1] หลักฐานทดสอบ" in built) == use_rag
-    assert prompts.PROMPT_VERSION == "v1.20.4"
+    assert prompts.PROMPT_VERSION == "v1.20.3"
 
 
 @pytest.mark.parametrize("message", ["ผม BMI 40 ขอ bulk", "BMI: 15.9 จัดเมนูให้หน่อย"])
