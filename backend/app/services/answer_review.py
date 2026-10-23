@@ -68,12 +68,13 @@ kind (classify by the STRONGEST claim anywhere in the unit; if any part is resea
 - general_fact: only a definition of what something is. Benefits, effects, comparisons, evidence limitations and study populations are never general_fact.
 - advice: a practical, cautious, nonnumeric suggestion not presented as a study finding.
 - evidence_gap: says the sources do not cover something or evidence is limited.
-- personal: a value from the user's own profile or calculator.
+- personal: a value from the user's own profile or calculator (see user_profile and calculated_targets).
 - framing: introduction, heading, transition, invitation or disclaimer.
 names_source: true when the unit attributes its content to a named study, review, organization, year or guideline, or presents its content as research-, evidence- or study-backed (including saying what most evidence studied), even inside an introduction.
 support: ids of paragraphs that EXPLICITLY state this unit's claims, including the same population, scope, comparison and direction. Topic overlap is not support. A paragraph that is silent about something never supports a claim that it is allowed, safe, equal or not better. A general principle does not support a specific pairing, timing or tracking method. Use [] when no paragraph states it. Do not choose paragraphs to match the draft's labels; judge the text.
 issues: only other material defects: invented user facts or names, an excluded action performed (dose, calculation, menu), wrong goal, ignored output format, a personal plan after a medical concern, garbled language that changes meaning, or an unsupported numeric/safety claim. Reasons in Thai. Do not report harmless wording variation, correct technical terms or a brief relevant invitation. Unless request.evidence_only is true, cautious practical instructions (check the label, weigh food, track training) need no source and are not defects.
 The typed interpretation can be wrong: check it against the original question, especially exclusions and missing information.
+user_profile and calculated_targets, when present, are trusted program data the user saved and the project calculator computed. Values matching them are personal values, not invented user facts. Pointing the user to the app's own profile, targets, calculator or food diary is allowed.
 """
 
 
@@ -267,7 +268,7 @@ Return only the EvidenceClaimCheck JSON schema with exactly one entry per senten
 Judge every sentence on its own words; neighbouring sentences do not change its type.
 claims_evidence_backing: true when the sentence itself says or implies that something has, is supported by or is backed by research, studies, reviews, guidelines or evidence (including inside an introduction that ends with "as follows"). Otherwise false.
 states_outcome: true when the sentence states what something achieves, causes or ensures for the body, weight, muscle, health or performance, including inside a purpose clause ("so that the weight gained is muscle"). Measuring, checking or recording something, or a reason to consult a professional, is not an outcome. Otherwise false.
-- instruction: tells the reader what to do (check the food label, train consistently, weigh food, consult a professional). An instruction stays instruction even when practical and specific.
+- instruction: tells the reader what to do (check the food label, train consistently, weigh food, consult a professional, or use this app's own profile, goal setting, calculator or food diary). An instruction stays instruction even when practical and specific.
 - definition: says what something is or where it comes from, with no effect, benefit or comparison.
 - coverage_statement: says the sources/knowledge base do not cover something, or that evidence is limited or unclear.
 - framing: heading, introduction, transition or politeness with no factual claim.
@@ -331,6 +332,7 @@ def _review_once(
     draft: str,
     passages: list[dict],
     understanding: RequestUnderstanding,
+    user_context: dict | None = None,
 ):
     units = draft_units(draft)
     if not units:
@@ -351,6 +353,10 @@ def _review_once(
         "request": understanding.model_dump(mode="json"),
         "draft_units": [{k: v for k, v in u.items() if k != "raw"} for u in units],
         "source_paragraphs": paragraphs,
+        # The generator already sees the saved profile and calculator targets;
+        # without them the review cannot tell a personal target from an
+        # invented one.
+        **{k: v for k, v in (user_context or {}).items() if v},
     }
     review, usage = _generate_json(
         client, model=model, system=REVIEW_SYSTEM, payload=payload, schema=EvidenceReview

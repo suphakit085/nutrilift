@@ -1547,6 +1547,10 @@ def stream_chat(
                                 client, model=chosen_model, question=user_message,
                                 draft=answer, passages=[p.as_dict() for p in passages],
                                 understanding=understanding,
+                                user_context={
+                                    "user_profile": _profile_summary_th(profile),
+                                    "calculated_targets": targets_summary,
+                                },
                             )
                         except Exception as exc:
                             logger.warning("semantic answer review failed: %s", type(exc).__name__)
