@@ -68,13 +68,12 @@ kind (classify by the STRONGEST claim anywhere in the unit; if any part is resea
 - general_fact: only a definition of what something is. Benefits, effects, comparisons, evidence limitations and study populations are never general_fact.
 - advice: a practical, cautious, nonnumeric suggestion not presented as a study finding.
 - evidence_gap: says the sources do not cover something or evidence is limited.
-- personal: a value from the user's own profile or calculator (see user_profile and calculated_targets).
+- personal: a value from the user's own profile or calculator.
 - framing: introduction, heading, transition, invitation or disclaimer.
 names_source: true when the unit attributes its content to a named study, review, organization, year or guideline, or presents its content as research-, evidence- or study-backed (including saying what most evidence studied), even inside an introduction.
 support: ids of paragraphs that EXPLICITLY state this unit's claims, including the same population, scope, comparison and direction. Topic overlap is not support. A paragraph that is silent about something never supports a claim that it is allowed, safe, equal or not better. A general principle does not support a specific pairing, timing or tracking method. Use [] when no paragraph states it. Do not choose paragraphs to match the draft's labels; judge the text.
 issues: only other material defects: invented user facts or names, an excluded action performed (dose, calculation, menu), wrong goal, ignored output format, a personal plan after a medical concern, garbled language that changes meaning, or an unsupported numeric/safety claim. Reasons in Thai. Do not report harmless wording variation, correct technical terms or a brief relevant invitation. Unless request.evidence_only is true, cautious practical instructions (check the label, weigh food, track training) need no source and are not defects.
 The typed interpretation can be wrong: check it against the original question, especially exclusions and missing information.
-user_profile and calculated_targets, when present, are trusted program data the user saved and the project calculator computed. Values matching them are personal values, not invented user facts. Pointing the user to the app's own profile, targets, calculator or food diary is allowed.
 """
 
 
@@ -272,7 +271,7 @@ states_outcome: true when the sentence states what something achieves, causes or
 - definition: says what something is or where it comes from, with no effect, benefit or comparison.
 - coverage_statement: says the sources/knowledge base do not cover something, or that evidence is limited or unclear.
 - framing: heading, introduction, transition or politeness with no factual claim.
-- permission_or_safety: says something can be taken, combined or used, is safe, has no contraindication or danger, or is allowed.
+- permission_or_safety: says a food, drink, supplement, diet or exercise practice can be taken, combined or used, is safe, has no contraindication or danger, or is allowed. Saying the user can use a feature of this app is an instruction, not a permission.
 - evidence_or_effect: presents something as found or supported by research, studies, reviews or "evidence"; or states an effect, benefit, risk or comparison of a food, supplement or diet.
 Choose permission_or_safety or evidence_or_effect only when the sentence itself asserts such a claim.
 """
@@ -353,11 +352,21 @@ def _review_once(
         "request": understanding.model_dump(mode="json"),
         "draft_units": [{k: v for k, v in u.items() if k != "raw"} for u in units],
         "source_paragraphs": paragraphs,
-        # The generator already sees the saved profile and calculator targets;
-        # without them the review cannot tell a personal target from an
-        # invented one.
-        **{k: v for k, v in (user_context or {}).items() if v},
     }
+    # The generator already sees the saved profile and calculator targets;
+    # without them the review cannot tell a personal target from an invented
+    # one. The explanation travels only with the data, so reviews without a
+    # profile use exactly the same instructions as before.
+    context = {k: v for k, v in (user_context or {}).items() if v}
+    if context:
+        payload.update(context)
+        payload["user_context_note"] = (
+            "user_profile and calculated_targets are trusted data the user saved and the "
+            "project calculator computed. Values matching them are personal values, not "
+            "invented user facts. Research ranges quoted from sources are not personal "
+            "calculations. Pointing the user to the app's own profile, targets, calculator "
+            "or food diary is allowed."
+        )
     review, usage = _generate_json(
         client, model=model, system=REVIEW_SYSTEM, payload=payload, schema=EvidenceReview
     )

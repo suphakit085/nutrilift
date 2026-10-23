@@ -1181,3 +1181,16 @@ def test_chat_passes_profile_and_targets_to_the_review(monkeypatch):
     assert result["type"] == "done"
     assert "90" in seen["user_context"]["user_profile"]
     assert seen["user_context"]["calculated_targets"]
+
+
+def test_profile_note_is_sent_only_with_profile_data():
+    client, calls = client_for(ledger("framing"))
+    review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="สวัสดี",
+        passages=[],
+        understanding=understood(),
+    )
+    assert "user_context_note" not in json.loads(calls[0]["contents"][0].parts[0].text)
