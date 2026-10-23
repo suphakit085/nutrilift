@@ -153,3 +153,34 @@ def test_formula_note_already_shown_in_the_chat_is_not_repeated():
     # A value whose steps were not shown yet still gets its note.
     energy = targets["energy_target_kcal"]
     assert "Mifflin" in target_methods_note(f"พลังงาน {energy} kcal", targets, earlier)
+
+
+def test_food_values_lose_card_labels_but_research_lines_keep_theirs():
+    from app.services.answer_validation import without_food_citations
+
+    rows = [{"results": [{"name_th": "ข้าวมันไก่", "serving_g": 320,
+                          "kcal": 701, "protein_g": 17.2, "carb_g": 89.6, "fat_g": 30.4}]}]
+    answer = ("พลังงาน: 701 กิโลแคลอรี [S1]\n"
+              "ครึ่งจานประมาณ 350.5 กิโลแคลอรี [S1]\n"
+              "ผู้ฝึกควรได้โปรตีน 1.6 กรัม/กก./วัน [S2]")
+    out = without_food_citations(answer, rows)
+    assert "701 กิโลแคลอรี [S1]" not in out and "350.5 กิโลแคลอรี [S1]" not in out
+    assert "1.6 กรัม/กก./วัน [S2]" in out
+    assert without_food_citations(answer, []) == answer
+
+
+def test_followup_with_no_hits_searches_again_with_the_previous_user_turn(monkeypatch):
+    from types import SimpleNamespace
+
+    from app.services import chat
+    from tests.test_functional_prompt_fixes import client_for
+
+    queries = []
+    monkeypatch.setattr(chat.retrieval, "search", lambda db, q, **kw: queries.append(q) or [])
+    client, _ = client_for("คำตอบ")
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    history = [{"role": "user", "content": "ครีเอทีนกินยังไง"},
+               {"role": "assistant", "content": "กินวันละ 3-5 กรัม"}]
+    chat.collect_answer(SimpleNamespace(commit=lambda: None),
+                        user_message="แล้วต้องโหลดไหมครับ", history=history)
+    assert queries == ["แล้วต้องโหลดไหมครับ", "ครีเอทีนกินยังไง\nแล้วต้องโหลดไหมครับ"]
