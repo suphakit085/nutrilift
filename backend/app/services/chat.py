@@ -1558,6 +1558,15 @@ def stream_chat(
                         evidence_ledger = verdict.ledger
                         issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
                                   for i in verdict.issues]
+                        if not issues:
+                            # Labels the review found on non-claim sentences
+                            # (instructions, coverage notes) that their sources
+                            # do not state are removed rather than shown.
+                            for raw, edited in verdict.label_edits:
+                                # Only an unambiguous position is edited; an
+                                # untouched label is safer than a wrong one.
+                                if answer.count(raw) == 1:
+                                    answer = answer.replace(raw, edited)
                     if issues:
                         answer_validation_issues.extend(issues)
                         if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:

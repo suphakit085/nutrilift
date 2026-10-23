@@ -261,7 +261,7 @@ def test_transport_timeout_does_not_request_more_user_data(monkeypatch):
 def test_evidence_review_receives_program_units_and_numbered_paragraphs():
     client, calls = client_for(
         ledger("research", support={0: ["S1.1"]}),
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
+        claim_with("evidence_or_effect"),
     )
     verdict, _ = review_answer(
         client,
@@ -326,7 +326,7 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
         ensure_ascii=False,
     )
     claim = (
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":%s,"type":"evidence_or_effect"}]}'
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":%s,"states_outcome":false,"type":"evidence_or_effect"}]}'
         % ("true" if names_source else "false")
     )
     client, _ = client_for(review, claim)
@@ -347,9 +347,7 @@ def test_ledger_rejects_unsupported_or_unlabelled_evidence(
     [("advice", PASSAGES), ("evidence_gap", PASSAGES), ("framing", PASSAGES), ("research", [])],
 )
 def test_ledger_accepts_unlabelled_non_evidence_and_sourceless_principles(kind, passages):
-    not_a_claim = (
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
-    )
+    not_a_claim = claim_with("instruction")
     client, _ = client_for(ledger(kind), not_a_claim)
     verdict, _ = review_answer(
         client,
@@ -611,9 +609,24 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
     claims = json.dumps(
         {
             "sentences": [
-                {"sentence": 0, "claims_evidence_backing": False, "type": "framing"},
-                {"sentence": 1, "claims_evidence_backing": False, "type": "permission_or_safety"},
-                {"sentence": 2, "claims_evidence_backing": False, "type": "framing"},
+                {
+                    "sentence": 0,
+                    "claims_evidence_backing": False,
+                    "states_outcome": False,
+                    "type": "framing",
+                },
+                {
+                    "sentence": 1,
+                    "claims_evidence_backing": False,
+                    "states_outcome": False,
+                    "type": "permission_or_safety",
+                },
+                {
+                    "sentence": 2,
+                    "claims_evidence_backing": False,
+                    "states_outcome": False,
+                    "type": "framing",
+                },
             ]
         }
     )
@@ -629,19 +642,30 @@ def test_json_numbers_and_booleans_are_reviewed_as_claims():
     assert not verdict.accepted and verdict.issues[0].fragment == "safe_for_kidney: true"
 
 
-def test_ledger_citing_a_nonexistent_paragraph_is_retried_then_fails(monkeypatch):
-    monkeypatch.setattr("app.services.answer_review.time.sleep", lambda _: None)
-    client, calls = client_for(ledger("research", support={0: ["S1.1", "S9.4"]}))
-    with pytest.raises(ValueError):
-        review_answer(
-            client,
-            model="test",
-            question="q",
-            draft="ข้อความ [S1]",
-            passages=PASSAGES,
-            understanding=understood(),
-        )
-    assert len(calls) == 2
+def test_support_ids_are_normalised_and_nonexistent_ones_never_count():
+    from app.services.answer_review import normalize_support
+
+    paragraphs = [
+        {"id": "S1.1", "text": "ก"},
+        {"id": "S1.2", "text": "ข"},
+        {"id": "S2.1", "text": "ค"},
+    ]
+    assert normalize_support(["S1-2", "[S2.1]", "S1", "s1.2", "S9.4", "S1.7", "x"], paragraphs) == (
+        ["S1.2", "S2.1", "S1"],
+        ["S9.4", "S1.7", "x"],
+    )
+    claim = claim_with("evidence_or_effect")
+    client, calls = client_for(ledger("research", support={0: ["S9.4"]}), claim)
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="ข้อความ [S1]",
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and len(calls) == 2  # no retry, no crash
+    assert verdict.ledger[0]["invalid_support"] == ["S9.4"]
 
 
 @pytest.mark.parametrize(
@@ -675,7 +699,7 @@ def test_exempted_unit_that_is_an_evidence_claim_is_rejected(support, category):
     draft = "หลักฐานส่วนใหญ่รองรับเวย์"  # PT20: ledger called this a general fact
     client, calls = client_for(
         ledger("general_fact", support={0: support}),
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
+        claim_with("evidence_or_effect"),
     )
     verdict, _ = review_answer(
         client,
@@ -732,7 +756,7 @@ def test_framing_unit_with_an_evidence_claim_is_checked():
     draft = "เวย์เป็นอาหารเสริมที่มีหลักฐานรองรับเด่นชัด"
     client, calls = client_for(
         ledger("framing"),
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
+        claim_with("evidence_or_effect"),
     )
     verdict, _ = review_answer(
         client,
@@ -748,8 +772,8 @@ def test_framing_unit_with_an_evidence_claim_is_checked():
 @pytest.mark.parametrize(
     "answer",
     [
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"type":"evidence_or_effect"}]}',
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"states_outcome":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"states_outcome":false,"type":"evidence_or_effect"}]}',
+        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"states_outcome":false,"type":"instruction"},{"sentence":0,"claims_evidence_backing":false,"states_outcome":false,"type":"instruction"}]}',
         '{"sentences":[]}',
     ],
 )
@@ -776,7 +800,7 @@ def test_cited_permission_must_be_stated_by_its_own_paragraph(stated, accepted):
     draft = "เวย์กินคู่กับนมได้ตามความสะดวก [S3]"  # VX03: permission from a silent source
     client, calls = client_for(
         ledger("advice", support={0: ["S3.1"]}),
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"permission_or_safety"}]}',
+        claim_with("permission_or_safety"),
         json.dumps({"pairs": [{"pair": 0, "stated": stated}]}),
     )
     verdict, _ = review_answer(
@@ -799,7 +823,7 @@ def test_cited_permission_must_be_stated_by_its_own_paragraph(stated, accepted):
 def test_cited_non_permission_claim_skips_the_permission_check():
     client, calls = client_for(
         ledger("research", support={0: ["S3.1"]}),
-        '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}',
+        claim_with("instruction"),
     )
     verdict, _ = review_answer(
         client,
@@ -820,7 +844,7 @@ def test_ledger_research_label_on_a_practical_tip_does_not_reject_it():
         "research",
         issues=[{"unit": 0, "category": "unsupported_fact", "reason": "ไม่มีในแหล่ง"}],
     )
-    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
+    claim = claim_with("instruction")
     client, _ = client_for(review, claim)
     verdict, _ = review_answer(
         client,
@@ -839,7 +863,7 @@ def test_numeric_instruction_keeps_the_ledger_unsupported_note():
         "advice",
         issues=[{"unit": 0, "category": "unsupported_fact", "reason": "ตัวเลขไม่มีในแหล่ง"}],
     )
-    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":false,"type":"instruction"}]}'
+    claim = claim_with("instruction")
     client, _ = client_for(review, claim)
     verdict, _ = review_answer(
         client,
@@ -854,7 +878,7 @@ def test_numeric_instruction_keeps_the_ledger_unsupported_note():
 
 def test_evidence_backing_in_an_introduction_is_rejected_even_when_typed_framing():
     draft = "ครีเอทีนและเวย์เป็นอาหารเสริมที่มีหลักฐานรองรับเด่นชัด ดังนี้ครับ"
-    claim = '{"sentences":[{"sentence":0,"claims_evidence_backing":true,"type":"framing"}]}'
+    claim = claim_with("framing", backing=True)
     client, _ = client_for(ledger("framing"), claim)
     verdict, _ = review_answer(
         client,
@@ -865,3 +889,207 @@ def test_evidence_backing_in_an_introduction_is_rejected_even_when_typed_framing
         understanding=understood(),
     )
     assert not verdict.accepted and verdict.issues[0].category == "unsupported_fact"
+
+
+def claim_json(*types_):
+    return json.dumps(
+        {
+            "sentences": [
+                {
+                    "sentence": i,
+                    "claims_evidence_backing": False,
+                    "states_outcome": False,
+                    "type": t,
+                }
+                for i, t in enumerate(types_)
+            ]
+        }
+    )
+
+
+def test_coverage_note_with_labels_is_accepted_and_its_labels_removed():
+    cover = "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1, S2]"
+    client, _ = client_for(ledger("evidence_gap"), claim_json("coverage_statement"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=cover,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted
+    assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+
+
+def test_instruction_keeps_only_labels_its_sources_state():
+    tip = "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S1, S2]"
+    client, _ = client_for(ledger("advice", support={0: ["S2.1"]}), claim_json("instruction"))
+    verdict, _ = review_answer(
+        client, model="test", question="q", draft=tip, passages=PASSAGES, understanding=understood()
+    )
+    assert verdict.accepted
+    assert verdict.label_edits == [[tip, "ผู้มีโรคไตควรให้ผู้รักษากำหนดอาหาร [S2]"]]
+
+
+def test_claim_with_an_unsupported_label_is_still_rejected():
+    claim = "เวย์ช่วยเพิ่มกล้ามเนื้อ [S1, S2]"
+    client, _ = client_for(
+        ledger("research", support={0: ["S2.1"]}), claim_json("evidence_or_effect")
+    )
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=claim,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and not verdict.label_edits
+
+
+def test_chat_shows_the_answer_with_surplus_labels_removed(monkeypatch):
+    draft = "เลือกโปรตีนตามปริมาณรวม [S1]\n\nข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1, S2]"
+    passages = [
+        chat.retrieval.Passage(**p)
+        for p in [
+            {
+                "label": "S1",
+                "score": 0.9,
+                "chunk_id": "c1",
+                "document_id": "d1",
+                "document_slug": "a",
+                "title": "t",
+                "heading": "h",
+                "content": "เลือกโปรตีนตามปริมาณรวม",
+                "source_refs": [],
+            },
+            {
+                "label": "S2",
+                "score": 0.8,
+                "chunk_id": "c2",
+                "document_id": "d2",
+                "document_slug": "b",
+                "title": "t",
+                "heading": "h",
+                "content": "อื่น",
+                "source_refs": [],
+            },
+        ]
+    ]
+    client, _ = client_for(
+        understood().model_dump_json(),
+        draft,
+        ledger("advice", "evidence_gap", support={0: ["S1.1"]}),
+        claim_json("instruction", "coverage_statement"),
+    )
+    monkeypatch.setattr(chat, "get_client", lambda: client)
+    monkeypatch.setattr(chat.retrieval, "search", lambda *_, **__: passages)
+    result = chat.collect_understood_answer(
+        SimpleNamespace(commit=lambda: None), user_message="เลือกโปรตีนยังไง"
+    )
+    assert result["type"] == "done"
+    assert result["text"].endswith("ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้")
+    assert [c["label"] for c in result["citations"]] == ["S1"]
+
+
+def test_label_standing_alone_joins_the_previous_sentence():
+    units = draft_units("ก ข [S1] [S3]\n[S4]\nค")
+    assert [(u["text"], u["labels"]) for u in units] == [
+        ("ก ข [S1] [S3] [S4]", ["S1", "S3", "S4"]),
+        ("ค", []),
+    ]
+
+
+def test_labelled_coverage_note_is_not_rejected_by_a_ledger_unsupported_note():
+    cover = "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้ [S1]"
+    review = ledger(
+        "evidence_gap",
+        issues=[{"unit": 0, "category": "unsupported_fact", "reason": "แหล่งไม่ได้บอกว่าไม่ครอบคลุม"}],
+    )
+    client, _ = client_for(review, claim_json("coverage_statement"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=cover,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted and verdict.label_edits == [[cover, "ข้อมูลอ้างอิงยังไม่ครอบคลุมเรื่องนี้"]]
+
+
+def test_labels_are_not_removed_when_the_ledger_calls_the_sentence_research():
+    risky = "เวย์กินคู่กับนมได้ [S1]"  # claim check mistyped it as an instruction
+    client, _ = client_for(ledger("research"), claim_json("instruction"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=risky,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert not verdict.accepted and not verdict.label_edits
+
+
+def claim_with(type_, *, outcome=False, backing=False):
+    return json.dumps(
+        {
+            "sentences": [
+                {
+                    "sentence": 0,
+                    "claims_evidence_backing": backing,
+                    "states_outcome": outcome,
+                    "type": type_,
+                }
+            ]
+        }
+    )
+
+
+@pytest.mark.parametrize(("stated", "accepted"), [(False, False), (True, True)])
+def test_cited_instruction_stating_an_outcome_is_checked_against_its_source(stated, accepted):
+    # PT10-r2: "track weight with training so the weight gained is muscle [S2]",
+    # where S2 is protein evidence.
+    tip = "บันทึกน้ำหนักร่วมกับการฝึกเพื่อให้มั่นใจว่าน้ำหนักที่เพิ่มมาจากกล้ามเนื้อ [S2]"
+    client, calls = client_for(
+        ledger("advice", support={0: ["S2.1"]}),
+        claim_with("instruction", outcome=True),
+        json.dumps({"pairs": [{"pair": 0, "stated": stated}]}),
+    )
+    verdict, _ = review_answer(
+        client, model="test", question="q", draft=tip, passages=PASSAGES, understanding=understood()
+    )
+    assert verdict.accepted is accepted and not verdict.label_edits and len(calls) == 3
+    assert json.loads(calls[2]["contents"][0].parts[0].text)["pairs"][0]["evidence"] == [
+        "ปริมาณโปรตีนรวมต่อวัน"
+    ]
+
+
+def test_cited_instruction_without_an_outcome_skips_the_conclusion_check():
+    client, calls = client_for(ledger("advice", support={0: ["S2.1"]}), claim_with("instruction"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft="ตรวจฉลากอาหารก่อนเลือกซื้อ [S2]",
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted and len(calls) == 2
+
+
+def test_coverage_note_loses_labels_even_when_the_ledger_calls_it_research():
+    cover = "ข้อมูลอ้างอิงที่ระบุไว้ไม่ได้กล่าวถึงเรื่องนี้ [S1, S2]"  # TH02-r2
+    client, _ = client_for(ledger("research"), claim_with("coverage_statement"))
+    verdict, _ = review_answer(
+        client,
+        model="test",
+        question="q",
+        draft=cover,
+        passages=PASSAGES,
+        understanding=understood(),
+    )
+    assert verdict.accepted
+    assert verdict.label_edits == [[cover, "ข้อมูลอ้างอิงที่ระบุไว้ไม่ได้กล่าวถึงเรื่องนี้"]]
