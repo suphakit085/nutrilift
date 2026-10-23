@@ -16,6 +16,8 @@ async(page)=>{
     const request=route.request(),url=new URL(request.url());
     const json=(status,body)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(body),headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization,content-type','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS'}});
     if(request.method()==='OPTIONS')return json(200,{});
+    // Chat requires a saved profile; the fixture account has one.
+    if(url.pathname==='/profile'&&request.method()==='GET')return json(200,{sex:'male',birth_year:2000,birth_month:1,height_cm:175,weight_kg:70,body_fat_pct:null,activity_level:'moderate',training_days:3,goal:'maintain',restrictions:[]});
     if(url.pathname==='/conversations'&&request.method()==='GET')return json(200,[conversation]);
     if(url.pathname==='/conversations/'+conversation.id)return json(200,{...conversation,messages:[
       {id:'fixture-user',role:'user',content:'ขอแสดงตัวอย่างเมนู',created_at:conversation.created_at},
