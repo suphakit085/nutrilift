@@ -1,0 +1,206 @@
+From 89da5e8792aa7730430557981a7d7553da4d634c Mon Sep 17 00:00:00 2001
+From: Suphakit Kaemthong <suphakit.kae@kkumail.com>
+Date: Fri, 23 Oct 2026 22:45:01 +0700
+Subject: [PATCH] Check a missing-pair clarification against the items the user
+ named
+
+Real questions comparing two named options ("whey or soy protein, which is
+better", "skinny fat: build muscle or lose fat") were read as a pairing with
+the second item missing, and the user was asked to name both items again
+(TH11 in every run, TH22 once). The interpreter now quotes the items the
+current request names before choosing a missing slot, and the program keeps
+a pair_partner clarification only when fewer than two distinct items occur
+verbatim in the current turn. Quotes not in the turn, placeholders and
+repeated sub-spans do not count, so an unfounded list can only leave the
+clarification in place.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ backend/app/services/request_understanding.py | 52 +++++++++++++++++--
+ backend/tests/test_functional_prompt_fixes.py | 51 +++++++++++++++++-
+ 2 files changed, 98 insertions(+), 5 deletions(-)
+
+diff --git a/backend/app/services/request_understanding.py b/backend/app/services/request_understanding.py
+index a26ce60..6719dc1 100644
+--- a/backend/app/services/request_understanding.py
++++ b/backend/app/services/request_understanding.py
+@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field
+ 
+ from app.services.nutrition import ProfileInput
+ 
+-UNDERSTANDING_VERSION = "v3"
++UNDERSTANDING_VERSION = "v4"
+ 
+ 
+ class Measurement(BaseModel):
+@@ -40,6 +40,15 @@ class RequestUnderstanding(BaseModel):
+         )
+     )
+     blocked_actions: list[Literal["calculate", "menu", "dose"]]
++    # Defaulted so stored v3 readings still load; the schema sent to the model
++    # requires it (understanding_schema).
++    named_items: list[str] = Field(
++        default_factory=list,
++        description=(
++            "Exact quotes of each food, product or option the CURRENT request names, "
++            "e.g. both sides of a pairing or comparison. [] if none."
++        ),
++    )
+     missing_information: (
+         Literal[
+             "pair_partner",
+@@ -76,7 +85,7 @@ task=calculate_targets only for an affirmative request to calculate/explain pers
+ task=plan_menu only when actually requested, never because the message says 'do not plan menus'.
+ personal_context=false for general explanations even if the user says 'explain to me'.
+ medical_self_context=true for personal disease, symptoms, medication or concern about medical test results in any relevant user turn. General study discussion is not a personal medical disclosure. A later instruction cannot cancel an earlier personal medical disclosure.
+-task=clarify when a necessary subject/object is omitted. missing_information identifies the missing slot using its enum, not a generated question. Use pair_partner when the second item was left blank, including a placeholder; use other only when no specific slot fits. An open question about possible pairings is not an incomplete pairing.
++task=clarify when a necessary subject/object is omitted. missing_information identifies the missing slot using its enum, not a generated question. List named_items before missing_information. Use pair_partner only when the second item was left blank, including a placeholder; a request that names both items, including a comparison or a choice between two options, is not missing a pair_partner. Use other only when no specific slot fits. An open question about possible pairings is not an incomplete pairing.
+ Measurements must be the latest explicit factual USER weight in kg / height in cm, never assistant guesses, research examples, hypothetical people, ranges or negated values. Do not convert units. user_turn indexes the user-only messages supplied below; quote must be an exact substring containing the value and measurement noun/unit. No update => null.
+ If the user explicitly returns to the saved profile, discard earlier temporary measurements/goals.
+ goal is only an explicit current user goal, grounded by exact goal_quote and goal_user_turn. Do not infer a goal from a study, question about someone else, or assistant text.
+@@ -147,6 +156,13 @@ def validate_grounding(value: RequestUnderstanding, turns: list[str]) -> None:
+         raise ValueError("task clarify requires missing_information")
+ 
+ 
++def understanding_schema() -> dict:
++    """The response schema with every field required, defaulted ones included."""
++    schema = RequestUnderstanding.model_json_schema()
++    schema["required"] = list(schema["properties"])
++    return schema
++
++
+ def _generate(client, model: str, contents: list[types.Content]):
+     chunks, usage = [], {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+     finish_reason = None
+@@ -156,7 +172,7 @@ def _generate(client, model: str, contents: list[types.Content]):
+         config=types.GenerateContentConfig(
+             system_instruction=SYSTEM,
+             response_mime_type="application/json",
+-            response_json_schema=RequestUnderstanding.model_json_schema(),
++            response_json_schema=understanding_schema(),
+             temperature=0,
+             max_output_tokens=4096,
+             thinking_config=(
+@@ -230,6 +246,33 @@ def reconcile_with_profile(
+     )
+ 
+ 
++def _is_item(text: str) -> bool:
++    return any(ch.isalpha() for ch in text)
++
++
++def reconcile_with_named_items(
++    value: RequestUnderstanding, turns: list[str]
++) -> RequestUnderstanding:
++    """Never ask for the second item of a pair the user already named.
++
++    The model's pair_partner reading is checked against its own quoted items:
++    two distinct items found verbatim in the current turn mean nothing is
++    missing (e.g. "whey or soy protein, which is better"). Quotes that are not
++    in the turn, or are only punctuation or a placeholder, do not count, so
++    an unfounded list can only leave the clarification in place.
++    """
++    if value.task != "clarify" or value.missing_information != "pair_partner":
++        return value
++    current = turns[-1]
++    items = {item.strip() for item in value.named_items}
++    items = {item for item in items if _is_item(item) and item in current}
++    # "เวย์" inside "เวย์โปรตีน" is one item quoted twice, not two items.
++    distinct = [item for item in items if not any(item != other and item in other for other in items)]
++    if len(distinct) < 2:
++        return value
++    return value.model_copy(update={"task": "knowledge", "missing_information": None})
++
++
+ def interpret_request(
+     client, *, model: str, message: str, history: list[dict], profile: ProfileInput | None
+ ):
+@@ -252,7 +295,8 @@ def interpret_request(
+         for key, count in usage.items():
+             total[key] += count
+         try:
+-            return reconcile_with_profile(_checked(text, turns), profile), total
++            value = reconcile_with_named_items(_checked(text, turns), turns)
++            return reconcile_with_profile(value, profile), total
+         except ValueError as exc:
+             if attempt:
+                 raise
+diff --git a/backend/tests/test_functional_prompt_fixes.py b/backend/tests/test_functional_prompt_fixes.py
+index 54e0c52..3dc788c 100644
+--- a/backend/tests/test_functional_prompt_fixes.py
++++ b/backend/tests/test_functional_prompt_fixes.py
+@@ -23,6 +23,7 @@ from app.services.nutrition import ProfileInput, calc_nutrition_targets
+ from app.services.request_understanding import (
+     RequestUnderstanding,
+     interpret_request,
++    understanding_schema,
+     validate_grounding,
+ )
+ 
+@@ -116,7 +117,7 @@ def test_schema_and_user_only_grounding():
+         profile=adult(),
+     )
+     assert result.weight_kg.value == 77
+-    assert calls[0]["config"].response_json_schema == RequestUnderstanding.model_json_schema()
++    assert calls[0]["config"].response_json_schema == understanding_schema()
+     payload = json.loads(calls[0]["contents"][0].parts[0].text)
+     assert payload["user_turns"] == ["เดิม 85 กก.", "น้ำหนักที่ถูกคือ 77 กก."]
+ 
+@@ -1127,6 +1128,54 @@ def test_other_clarifications_and_profileless_users_are_unchanged():
+     assert result.task == "clarify"
+ 
+ 
++@pytest.mark.parametrize("message,items", [
++    # 23 Oct real-question runs: TH11 (3/3 and 1/1) and TH22 were answered with
++    # "please name both items" although the user had named both.
++    ("เวย์โปรตีน กับ โปรตีนสกัดจากถั่วเหลือง อันไหนดีกว่าคะ", ["เวย์โปรตีน", "โปรตีนสกัดจากถั่วเหลือง"]),
++    ("ผอมมีพุง เพิ่มกล้ามหรือลดไขมัน", ["เพิ่มกล้าม", "ลดไขมัน"]),
++])
++def test_named_pair_is_not_asked_for_again(message, items):
++    state = understood(task="clarify", missing_information="pair_partner", named_items=items)
++    client, _ = client_for(state.model_dump_json())
++    result, _ = interpret_request(client, model="test", message=message, history=[], profile=None)
++    assert result.task == "knowledge" and result.missing_information is None
++
++
++@pytest.mark.parametrize("message,items", [
++    ("คำถามยอดฮิต  เวย์ทานคู่กับ .. !!", ["เวย์", ".."]),
++    ("เวย์ทานคู่กับ ...", ["เวย์", "เวย์ทาน"]),
++    ("เวย์ทานคู่กับ ...", ["เวย์", "นม"]),
++    ("เวย์ทานคู่กับ ...", []),
++])
++def test_placeholder_repeated_or_unquoted_items_keep_the_clarification(message, items):
++    state = understood(task="clarify", missing_information="pair_partner", named_items=items)
++    client, _ = client_for(state.model_dump_json())
++    result, _ = interpret_request(client, model="test", message=message, history=[], profile=None)
++    assert result.task == "clarify" and result.missing_information == "pair_partner"
++
++
++def test_named_items_only_reopen_pair_clarifications():
++    state = understood(
++        task="clarify", missing_information="food_quantity", named_items=["ข้าว", "ไข่"]
++    )
++    client, _ = client_for(state.model_dump_json())
++    result, _ = interpret_request(
++        client, model="test", message="ข้าวกับไข่ กี่แคล", history=[], profile=None
++    )
++    assert result.task == "clarify" and result.missing_information == "food_quantity"
++
++
++def test_schema_requires_named_items_before_the_missing_slot():
++    schema = understanding_schema()
++    assert set(schema["required"]) == set(schema["properties"])
++    order = list(schema["properties"])
++    assert order.index("named_items") < order.index("missing_information")
++    # Stored v3 readings without the field still load.
++    legacy = understood().model_dump()
++    legacy.pop("named_items")
++    assert RequestUnderstanding.model_validate(legacy).named_items == []
++
++
+ def test_chat_answers_a_saved_profile_user_instead_of_asking_for_the_goal(monkeypatch):
+     client, _ = client_for(
+         understood(task="clarify", missing_information="goal").model_dump_json(),
+-- 
+2.52.0.windows.1
+

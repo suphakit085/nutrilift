@@ -1,0 +1,182 @@
+{
+ "rule": "Choose the core subset that gets repeats 2-3 (owner asked to cut the run to ~100 results).\n\nRules (fixed before applying; use only question content/category, never any result or verdict):\n1. Eligible = items whose frozen expectation is NOT tagged 'vague' (vague title-only questions allow\n   several acceptable replies, so they measure consistency poorly). Vague items keep their repeat-1 result.\n2. Topic category: Pantip items use the category from the 21 Oct CSV; YouTube/Dek-D items are mapped\n   by content below (mapping written before selection).\n3. 20 slots: every category gets 1, the rest are split by largest remainder in proportion to the number\n   of eligible items per category.\n4. Within a category, order eligible items with random.Random(20261023) and take the first k.",
+ "slots": 20,
+ "eligible_count": 50,
+ "excluded_vague": [
+  "TH12",
+  "TH17",
+  "TH18",
+  "TH23",
+  "TH24",
+  "TH30",
+  "TH35",
+  "TH38",
+  "TH41",
+  "TH47",
+  "TH48"
+ ],
+ "per_category": {
+  "ขอบเขตทางการแพทย์": {
+   "eligible": [
+    "TH43",
+    "TH44",
+    "TH45",
+    "TH46",
+    "YT08",
+    "YT09"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH43",
+    "TH46"
+   ]
+  },
+  "ข้อจำกัดอาหาร": {
+   "eligible": [
+    "TH11",
+    "TH13",
+    "TH32",
+    "TH33"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH11",
+    "TH33"
+   ]
+  },
+  "ครีเอทีน": {
+   "eligible": [
+    "TH01",
+    "TH02"
+   ],
+   "k": 1,
+   "chosen": [
+    "TH02"
+   ]
+  },
+  "คาร์โบไฮเดรต": {
+   "eligible": [
+    "TH04",
+    "TH49",
+    "TH50",
+    "YT05"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH50",
+    "TH49"
+   ]
+  },
+  "คำนวณและเป้าหมาย": {
+   "eligible": [
+    "TH09",
+    "TH10",
+    "TH21",
+    "TH22",
+    "TH25",
+    "TH36",
+    "YT03",
+    "YT04",
+    "YT06"
+   ],
+   "k": 3,
+   "chosen": [
+    "TH09",
+    "TH10",
+    "YT06"
+   ]
+  },
+  "น้ำหนักและไขมัน": {
+   "eligible": [
+    "DD01",
+    "DD02",
+    "TH14",
+    "TH15",
+    "TH16",
+    "TH19",
+    "TH20",
+    "TH37"
+   ],
+   "k": 3,
+   "chosen": [
+    "TH20",
+    "TH14",
+    "TH19"
+   ]
+  },
+  "อาหารเสริม": {
+   "eligible": [
+    "TH31",
+    "TH39",
+    "TH42"
+   ],
+   "k": 1,
+   "chosen": [
+    "TH42"
+   ]
+  },
+  "อาหารและงบประมาณ": {
+   "eligible": [
+    "TH07",
+    "TH34",
+    "TH40",
+    "YT01"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH40",
+    "YT01"
+   ]
+  },
+  "เวลาอาหารและวันพัก": {
+   "eligible": [
+    "TH26",
+    "TH27",
+    "TH29",
+    "YT02"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH26",
+    "TH29"
+   ]
+  },
+  "โปรตีน": {
+   "eligible": [
+    "TH03",
+    "TH05",
+    "TH06",
+    "TH08",
+    "TH28",
+    "YT07"
+   ],
+   "k": 2,
+   "chosen": [
+    "TH05",
+    "TH08"
+   ]
+  }
+ },
+ "core_ids": [
+  "TH02",
+  "TH05",
+  "TH08",
+  "TH09",
+  "TH10",
+  "TH11",
+  "TH14",
+  "TH19",
+  "TH20",
+  "TH26",
+  "TH29",
+  "TH33",
+  "TH40",
+  "TH42",
+  "TH43",
+  "TH46",
+  "TH49",
+  "TH50",
+  "YT01",
+  "YT06"
+ ]
+}
