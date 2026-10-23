@@ -29,6 +29,9 @@ eval/reports/*
 # and *_expert_key.csv must never be committed: it maps the blinded A/B columns
 # back to rag/norag, so publishing it would destroy the blinding.
 !eval/reports/*.md
+# The real-question prompt test (23 Oct 2026): verdicts, the owner/expert review
+# sheet and the answers they judge (~1.4 MB); raw per-call logs stay out.
+!eval/reports/real-questions-4fca71e/
 # Source documents and anything derived from them belong to their publishers
 # (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
 knowledge/sources/*

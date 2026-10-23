@@ -1,0 +1,79 @@
+{"id": "TH01", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["creatine"]}
+{"id": "TH02", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ครีเอทีน (Creatine)"]}
+{"id": "TH03", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": "profile", "named": []}
+{"id": "TH04", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH05", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH06", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH07", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH08", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["โปรตีนเวย์"]}
+{"id": "TH09", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": "profile", "named": []}
+{"id": "TH10", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": null, "named": []}
+{"id": "TH11", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "other", "named": ["เวย์โปรตีน", "โปรตีนสกัดจากถั่วเหลือง"]}
+{"id": "TH12", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "other", "named": []}
+{"id": "TH13", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "other", "named": ["โปรตีนถั่วเหลืองยี่ห้อไหนดี"]}
+{"id": "TH14", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH15", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH16", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH17", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH18", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": null, "named": []}
+{"id": "TH19", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH20", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH21", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ลัดเลียงศ", "ศริทระมัน"]}
+{"id": "TH22", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เพิ่มกล้าม", "ลดไขมัน"]}
+{"id": "TH23", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH24", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH25", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH26", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เเวย้ยีลังนอน", "เเวย้ยัลงนอน", "เเวย้ยัลงนอน"]}
+{"id": "TH27", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH28", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH29", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์(คอนเซนเทรต)"]}
+{"id": "TH30", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เวย์"]}
+{"id": "TH31", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["WHEY", "CREATINE", "BCAA"]}
+{"id": "TH32", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH33", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": null, "named": []}
+{"id": "TH34", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": "budget", "named": []}
+{"id": "TH35", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH36", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH37", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH38", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH39", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": "other", "named": []}
+{"id": "TH40", "rep": 1, "worktree": "pair-grounding", "task": "plan_menu", "missing": null, "named": []}
+{"id": "TH41", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH42", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH43", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["BUN", "HDL", "LDL"]}
+{"id": "TH44", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH45", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["Whey Protein Isolate"]}
+{"id": "TH46", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH47", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH48", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "TH49", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": "profile", "named": ["แป้ง"]}
+{"id": "TH50", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "YT01", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ขนมปัง", "นม"]}
+{"id": "YT02", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "YT03", "rep": 1, "worktree": "pair-grounding", "task": "calculate_targets", "missing": null, "named": []}
+{"id": "YT04", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "other", "named": ["คาร์โบไฮเดรต", "ไขมัน"]}
+{"id": "YT05", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "YT06", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "YT07", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "YT08", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์"]}
+{"id": "YT09", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "DD01", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": []}
+{"id": "DD02", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": "goal", "named": []}
+{"id": "P01", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เวย์"]}
+{"id": "P01", "rep": 2, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เวย์"]}
+{"id": "P01", "rep": 3, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เวย์"]}
+{"id": "P02", "rep": 1, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["ครีเอทีน"]}
+{"id": "P02", "rep": 2, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["ครีเอทีน"]}
+{"id": "P02", "rep": 3, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["ครีเอทีน"]}
+{"id": "P03", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์"]}
+{"id": "P03", "rep": 2, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เเวย้ย"]}
+{"id": "P03", "rep": 3, "worktree": "pair-grounding", "task": "clarify", "missing": "pair_partner", "named": ["เวย์"]}
+{"id": "P04", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ข้าวกล้อง", "ข้าวขาว"]}
+{"id": "P04", "rep": 2, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ข้าวกล้อง", "ข้าวขาว"]}
+{"id": "P04", "rep": 3, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ข้าวกล้อง", "ข้าวขาว"]}
+{"id": "P05", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": "pair_partner", "named": ["قا", "اك"]}
+{"id": "P05", "rep": 2, "worktree": "pair-grounding", "task": "clarify", "missing": "other", "named": ["ไข่", "อกไก่"]}
+{"id": "P05", "rep": 3, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["ไข่", "อกไก่"]}
+{"id": "P06", "rep": 1, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์", "นม"]}
+{"id": "P06", "rep": 2, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์", "นม"]}
+{"id": "P06", "rep": 3, "worktree": "pair-grounding", "task": "knowledge", "missing": null, "named": ["เวย์", "นม"]}
