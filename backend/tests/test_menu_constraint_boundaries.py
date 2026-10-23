@@ -137,3 +137,29 @@ def test_details_do_not_clear_saved_or_user_allergies_and_assistant_cannot_add_t
     assert set(p.restrictions) == {"วีแกน", "แพ้นมวัว"}
     fresh, _ = conversation_profile(profile, [], "ขอเมนูพร้อมยอดรวม")
     assert fresh == profile
+
+
+@pytest.mark.parametrize("message", [
+    # 23 Oct retest: this planned three meals with no snack.
+    "ขอเพิ่มมื้อเสริมและเก็บมื้อหลักเดิม",
+    "เพิ่มของว่างให้หน่อย",
+    "ขอมื้อเสริมด้วย",
+])
+def test_snack_request_without_a_number_adds_one_occasion(message):
+    from app.services.menu_context import menu_planning_options
+
+    assert menu_planning_options([], message)["meal_count"] == 4
+    after_three = [{"role": "user", "content": "จัดเมนู 3 มื้อ"}]
+    assert menu_planning_options(after_three, message)["meal_count"] == 4
+
+
+@pytest.mark.parametrize("message,count,allow", [
+    ("เพิ่มมื้อเสริมได้", None, True),  # permission: the planner decides
+    ("ไม่เอามื้อเสริม", 3, False),
+    ("ไม่ต้องเพิ่มมื้อเสริม", 3, False),
+])
+def test_snack_permission_and_refusal_keep_their_meaning(message, count, allow):
+    from app.services.menu_context import menu_planning_options
+
+    options = menu_planning_options([], message)
+    assert options["meal_count"] == count and options["allow_extra_meals"] is allow
