@@ -1256,3 +1256,11 @@ def test_other_readings_keep_their_error(monkeypatch):
         SimpleNamespace(commit=lambda: None), user_message="โปรตีนคืออะไร", profile=adult(),
     )
     assert result["type"] == "error" and result["code"] == "answer_review_unavailable"
+
+
+def test_interpreter_prompt_defines_every_task():
+    # lookup_food was the only task without a definition (24 Oct probe).
+    from app.services.request_understanding import SYSTEM
+
+    for task in ("calculate_targets", "plan_menu", "lookup_food", "clarify"):
+        assert f"task={task}" in SYSTEM, task
