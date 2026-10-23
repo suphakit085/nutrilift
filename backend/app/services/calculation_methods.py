@@ -14,8 +14,15 @@ STEP_INPUTS = {
 }
 
 
-def target_methods_note(answer: str, targets: dict | None) -> str:
-    """Attach provenance when an answer quotes a calculated profile value."""
+def target_methods_note(
+    answer: str, targets: dict | None, shown: list[str] | tuple[str, ...] = (),
+) -> str:
+    """Attach provenance when an answer quotes a calculated profile value.
+
+    ``shown`` holds earlier assistant messages of this chat. A note whose every
+    formula line is already there is not repeated: the 23 Oct retest saw the
+    whole-day formula block appended again to a per-meal protein answer.
+    """
     if not targets or not targets.get("calculation_methods"):
         return ""
     plain = answer.replace(",", "")
@@ -38,7 +45,11 @@ def target_methods_note(answer: str, targets: dict | None) -> str:
             if needed not in selected:
                 selected.add(needed)
                 pending.append(needed)
-    return methods_note([m for m in targets["calculation_methods"] if m["key"] in selected])
+    note = methods_note([m for m in targets["calculation_methods"] if m["key"] in selected])
+    lines = [line for line in note.splitlines() if line.startswith("- ")]
+    if lines and any(all(line in earlier for line in lines) for earlier in shown):
+        return ""
+    return note
 
 
 def methods_for_targets(targets: dict) -> list[dict]:

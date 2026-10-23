@@ -140,3 +140,16 @@ def test_high_bmi_recommends_user_select_cut_without_changing_saved_goal(goal):
     assert p.goal == goal and result["inputs"]["goal"] == goal
     assert result["effective_goal"] == "maintain"
     assert calc_nutrition_targets(replace(p, goal="cut"))["goal_recommendation"] is None
+
+
+def test_formula_note_already_shown_in_the_chat_is_not_repeated():
+    targets = calc_nutrition_targets(adult())
+    protein = targets["macros"]["protein_g"]
+    first = target_methods_note(f"เป้าโปรตีน {protein} กรัมต่อวัน", targets)
+    assert first
+    earlier = [f"เป้าโปรตีน {protein} กรัมต่อวัน{first}"]
+    # Same value again (e.g. a per-meal follow-up quoting the daily total).
+    assert target_methods_note(f"รวมวันละ {protein} กรัม", targets, earlier) == ""
+    # A value whose steps were not shown yet still gets its note.
+    energy = targets["energy_target_kcal"]
+    assert "Mifflin" in target_methods_note(f"พลังงาน {energy} kcal", targets, earlier)
