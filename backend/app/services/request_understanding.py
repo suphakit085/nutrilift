@@ -231,6 +231,33 @@ def reconcile_with_profile(
     )
 
 
+def _without_ungrounded_goal(
+    text: str, turns: list[str], exc: ValueError
+) -> RequestUnderstanding | None:
+    """Drop only a chat goal whose quote is still not in the user's text.
+
+    In the 23 Oct run the model wrote goal_quote in another script or garbled
+    Thai ("ลดความอะวัน") even after the correction, and the whole reading
+    failed (TH19-r3, TH49-r2) although every other field was valid. Without
+    the goal the saved profile goal applies. Ungrounded measurements and
+    exclusion phrases still fail closed: dropping them could skip a weight
+    screen or ignore something the user excluded.
+    """
+    if not str(exc).startswith("goal_quote:"):
+        return None
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    data.update(goal=None, goal_quote=None, goal_user_turn=None)
+    try:
+        return _checked(json.dumps(data, ensure_ascii=False), turns)
+    except ValueError:
+        return None
+
+
 def interpret_request(
     client, *, model: str, message: str, history: list[dict], profile: ProfileInput | None
 ):
@@ -256,7 +283,10 @@ def interpret_request(
             return reconcile_with_profile(_checked(text, turns), profile), total
         except ValueError as exc:
             if attempt:
-                raise
+                without_goal = _without_ungrounded_goal(text, turns, exc)
+                if without_goal is None:
+                    raise
+                return reconcile_with_profile(without_goal, profile), total
             contents += [
                 types.Content(role="model", parts=[types.Part.from_text(text=text)]),
                 types.Content(
