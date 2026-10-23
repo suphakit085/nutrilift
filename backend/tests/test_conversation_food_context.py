@@ -80,14 +80,14 @@ def test_prior_explicit_food_name_unlocks_followup_but_not_model_suggestion(monk
         "pending_confirmations": [],
         "partial_candidates_this_turn": [],
     }
-    assert chat._run_food_lookup(None, "ข้าวสวย", previous_user_message="ข้าวสวยครึ่งหน่วย", **common)[
+    assert chat._run_food_lookup(None, "ข้าวสวย", earlier_user_messages=["ข้าวสวยครึ่งหน่วย"], **common)[
         "found"
     ]
-    assert not chat._run_food_lookup(None, "ข้าวสวย", previous_user_message="ข้าวอะไรดี", **common)[
+    assert not chat._run_food_lookup(None, "ข้าวสวย", earlier_user_messages=["ข้าวอะไรดี"], **common)[
         "found"
     ]
     common["pending_confirmations"] = ["ข้าวสวย"]
-    assert not chat._run_food_lookup(None, "ข้าวสวย", previous_user_message="ข้าวสวย", **common)[
+    assert not chat._run_food_lookup(None, "ข้าวสวย", earlier_user_messages=["ข้าวสวย"], **common)[
         "found"
     ]
 
@@ -189,3 +189,21 @@ def test_actual_menu_tool_plans_without_supplements(monkeypatch, count):
     assert all(not excluded_by(item, ["ไม่ใช้อาหารเสริม"])
                for meal in plan["meals"] for item in meal["items"])
     validate_day_plan(plan, foods)
+
+
+def test_food_named_in_any_earlier_user_turn_answers_a_portion_followup(monkeypatch):
+    # 23 Oct retest: "ข้าวมันไก่ 1 จานกี่แคลอรี่" then "ถ้ากินครึ่งจานล่ะ" asked the
+    # user to confirm the food name again.
+    monkeypatch.setattr(
+        chat, "lookup_food", lambda *_: {"found": True, "results": [{"name_th": "ข้าวมันไก่"}]}
+    )
+    common = {"pending_confirmations": [], "partial_candidates_this_turn": []}
+    earlier = ["ข้าวมันไก่ 1 จานกี่แคลอรี่", "แล้วโปรตีนล่ะ"]
+    assert chat._run_food_lookup(
+        None, "ข้าวมันไก่", user_message="ถ้ากินครึ่งจานล่ะ", earlier_user_messages=earlier, **common
+    )["found"]
+    # A name only the assistant mentioned still needs the user to say it.
+    assert not chat._run_food_lookup(
+        None, "ข้าวมันไก่", user_message="ถ้ากินครึ่งจานล่ะ",
+        earlier_user_messages=["ขอเมนูกลางวันหน่อย"], **common,
+    )["found"]
