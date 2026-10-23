@@ -73,7 +73,7 @@ Do not answer the nutrition question, calculate targets, infer missing facts, or
 Resolve meaning across paraphrases, misspellings, negation, conjunctions, corrections and goal changes.
 First list every exclusion phrase in exclusion_phrases, then derive blocked_actions from them. blocked_actions are activities the CURRENT user explicitly excludes: calculate (personal targets), menu (meal plans), dose (amount/dosage/how much to take). A later affirmative request can supersede an earlier exclusion.
 task=calculate_targets only for an affirmative request to calculate/explain personal daily targets, including a correction followed by recalculate. Not for general research, dose questions, meal splitting or hypothetical people.
-task=plan_menu only when actually requested, never because the message says 'do not plan menus'.
+task=plan_menu only when a meal plan or menu is actually requested, never because the message says 'do not plan menus'. Asking how much protein or energy each meal gets, or dividing a daily amount across meals, is not plan_menu even after a menu was shown.
 task=lookup_food only to report calories or nutrients of a specific food or dish the user names, including a portion of a food the user named earlier. A request to suggest, list or choose foods is not lookup_food.
 personal_context=false for general explanations even if the user says 'explain to me'.
 medical_self_context=true for personal disease, symptoms, medication or concern about medical test results in any relevant user turn. General study discussion is not a personal medical disclosure. A later instruction cannot cancel an earlier personal medical disclosure.
