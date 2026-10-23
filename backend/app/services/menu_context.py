@@ -184,6 +184,12 @@ def menu_planning_options(history: list[dict], user_message: str) -> dict:
                 count = 3
         elif re.search(r"(?:เพิ่ม|มี|จัด|เอา|ขอ).{0,15}มื้อ(?:เสริม|ว่าง).{0,8}(?:ได้|ตามเหมาะสม)", text):
             allow, suggest = True, True
+        elif not explicit_count and re.search(r"(?:เพิ่ม|ขอ|เอา|จัด).{0,15}มื้อ(?:เสริม|ว่าง)", text):
+            # A snack request without a number adds one occasion, the same rule
+            # as "เพิ่ม 1 มื้อ": "ขอเพิ่มมื้อเสริมและเก็บมื้อหลักเดิม" planned
+            # three meals with no snack (23 Oct retest). The permission form
+            # above ("...ได้") still leaves the count to the planner.
+            count, allow = min((count or 3) + 1, 6), False
     return {"meal_count": count, "allow_extra_meals": allow,
             "suggest_extra_meals": suggest}
 
