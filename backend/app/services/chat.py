@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
-from app.services.answer_review import review_answer
+from app.services.answer_review import apply_label_edits, review_answer
 from app.services.answer_validation import (
     answer_issues,
     repair_instruction,
@@ -1548,6 +1548,8 @@ def stream_chat(
                                 draft=answer, passages=[p.as_dict() for p in passages],
                                 understanding=understanding,
                             )
+                            if verdict.accepted:
+                                answer = apply_label_edits(answer, verdict)
                         except Exception as exc:
                             logger.warning("semantic answer review failed: %s", type(exc).__name__)
                             yield {"type": "error", "code": "answer_review_unavailable",
@@ -1558,15 +1560,6 @@ def stream_chat(
                         evidence_ledger = verdict.ledger
                         issues = [f"{i.category}: {i.reason} (ข้อความ: {i.fragment})"
                                   for i in verdict.issues]
-                        if not issues:
-                            # Labels the review found on non-claim sentences
-                            # (instructions, coverage notes) that their sources
-                            # do not state are removed rather than shown.
-                            for raw, edited in verdict.label_edits:
-                                # Only an unambiguous position is edited; an
-                                # untouched label is safer than a wrong one.
-                                if answer.count(raw) == 1:
-                                    answer = answer.replace(raw, edited)
                     if issues:
                         answer_validation_issues.extend(issues)
                         if answer_repair_used or _ == MAX_TOOL_ITERATIONS - 1:
