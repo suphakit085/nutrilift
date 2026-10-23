@@ -483,3 +483,24 @@ def test_a_risk_disclosed_in_an_earlier_turn_still_refuses():
     ]
     merged = combine(check("แล้วกินโปรตีนวันละ 200 กรัมได้ไหม"), check_history(history))
     assert refusal_reply(merged) is not None
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        # Production user test 23 Oct: refused as a medical question.
+        "มื้อเย็นของเมนูนี้ได้โปรตีนกี่กรัม แล้วถ้าไม่กินแซลมอนเปลี่ยนเป็นอะไรได้บ้าง",
+        "ถ้าไม่กินแซลมอน เปลี่ยนเป็นโปรตีนอะไรได้บ้าง",
+        "กินเวย์ผสมกับอะไรได้บ้าง",
+    ],
+)
+def test_everyday_questions_with_context_phrases_are_not_medical(message):
+    assert Flag.MEDICAL not in check(message).flags
+
+
+def test_context_phrases_still_flag_after_a_symptom_in_an_earlier_turn():
+    from app.services.guardrails import check_history, combine
+
+    history = [{"role": "user", "content": "ช่วงนี้เหนื่อยง่าย ใจสั่น น้ำหนักลดเอง"}]
+    guard = combine(check("ผมเป็นอะไรครับ"), check_history(history, lookback=None))
+    assert Flag.MEDICAL in guard.flags
