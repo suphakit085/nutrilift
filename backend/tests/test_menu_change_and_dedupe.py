@@ -26,6 +26,8 @@ def reading(change, **changes):
 def test_snack_without_a_number_is_grounded():
     change = {"kind": "add_meals", "added_meals": None, "quote": "มื้อว่างตอนบ่ายเพิ่มอีกมื้อ"}
     assert _checked(reading(change), ["จัดเมนู", SNACK]).menu_change.kind == "add_meals"
+    implied = {"kind": "add_meals", "added_meals": 1, "quote": "มื้อว่างตอนบ่ายเพิ่มอีกมื้อ"}
+    assert _checked(reading(implied), ["จัดเมนู", SNACK]).menu_change.added_meals == 1
 
 
 def test_ungrounded_menu_change_is_dropped():

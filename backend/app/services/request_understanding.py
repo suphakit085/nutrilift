@@ -290,7 +290,10 @@ def _checked(text: str, turns: list[str]) -> RequestUnderstanding:
 def _grounded_menu_change(value: MenuChange, turns: list[str]) -> bool:
     if value.quote not in turns[-1]:
         return False
-    return value.added_meals is None or value.added_meals in _counts_in(value.quote)
+    counts = _counts_in(value.quote)
+    # "เพิ่มอีกมื้อ" names no number: one added meal is what it states (25 Oct
+    # probe N1 dropped a correct reading for want of a digit).
+    return value.added_meals is None or value.added_meals in (counts or {1})
 
 
 _THAI_COUNTS = {"หนึ่ง": 1, "สอง": 2, "สาม": 3, "สี่": 4, "ห้า": 5,
