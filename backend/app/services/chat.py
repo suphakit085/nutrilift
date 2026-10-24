@@ -44,7 +44,12 @@ from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, plan_day_menu
-from app.services.menu_changes import main_meal_change_note, previous_menu_call, shown_in
+from app.services.menu_changes import (
+    apply_menu_change,
+    main_meal_change_note,
+    previous_menu_call,
+    shown_in,
+)
 from app.services.menu_context import (
     conversation_profile,
     conversation_restrictions,
@@ -1116,6 +1121,8 @@ def _verified_menu_events(
                 guard = guardrails.combine(guard, guardrails.check_profile(effective, targets))
             args = {"variant": next_menu_variant(message, history),
                     **menu_planning_options(history, message)}
+            if understanding is not None and understanding.menu_change is not None:
+                args = apply_menu_change(args, understanding.menu_change, history)
             if requests_multiple_days(message):
                 result = {"error": "unsupported_period", "message": (
                     "ตอนนี้ระบบจัดเมนูได้ครั้งละ 1 วันครับ ยังไม่จัดแผนหลายวันให้ครบ "
@@ -1277,6 +1284,9 @@ def stream_chat(
         return
     menu_requested = (understanding.task == "plan_menu" if understanding
                       else requests_menu(user_message, operation_history))
+    if (understanding is not None and understanding.menu_change is not None
+            and previous_menu_call(operation_history) is not None):
+        menu_requested = True  # A change to the menu shown is a menu operation.
     if menu_requested:
         yield from _verified_menu_events(
             db, user_message, profile, operation_history, guard, use_rag, understanding,

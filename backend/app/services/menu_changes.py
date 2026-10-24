@@ -70,3 +70,25 @@ def main_meal_change_note(previous: dict, current: dict) -> str | None:
             + (f" เกินเป้า {over:.0f} kcal" if over > 0 else "")
         )
     return "\n".join(lines)
+
+
+def apply_menu_change(args: dict, change, history: list[dict]) -> dict:
+    """Menu arguments from a grounded menu_change reading instead of keywords.
+
+    "อยากได้มื้อว่างตอนบ่ายเพิ่มอีกมื้อ" matched the "อีก" (another) keyword and
+    produced a different three-meal set with no snack (25 Oct live test). The
+    interpreter now says whether the user adds meals to the menu shown or asks
+    for another set; counts come from the user's own words.
+    """
+    previous = previous_menu_call(history)
+    previous_args = previous[0] if previous else {}
+    try:
+        variant = int(previous_args.get("variant", 0) or 0)
+    except (TypeError, ValueError):
+        variant = 0
+    if change.kind == "another_set":
+        return {**args, "variant": (variant + 1) % 1000} if previous else args
+    base = previous_args.get("meal_count") or 3
+    return {**args, "variant": variant,
+            "meal_count": min(int(base) + (change.added_meals or 1), 6),
+            "allow_extra_meals": False}
