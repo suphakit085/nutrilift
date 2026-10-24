@@ -17,6 +17,10 @@ rows = list(csv.DictReader(SRC.open(encoding="utf-8-sig")))
 BASE = {r["ผลลัพธ์"]: r for r in csv.DictReader(Path(sys.argv[3]).open(encoding="utf-8-sig"))} if len(sys.argv) > 3 else {}
 BASE_NAME = sys.argv[4] if len(sys.argv) > 4 else ""
 RUN_NAME = sys.argv[5] if len(sys.argv) > 5 else "main 4fca71e (23 ต.ค. 2569) ก่อนการแก้ #32–#46"
+# Optional scope/system classification of failed results: FAILURE_TYPES=path/to/failure-types.json
+import json, os  # noqa: E401
+KIND = json.loads(Path(os.environ["FAILURE_TYPES"]).read_text(encoding="utf8"))["types"] if os.environ.get("FAILURE_TYPES") else {}
+KIND_LABEL = {"scope": ("ขอบเขตงาน", "DDEBF7"), "system": ("ข้อบกพร่องระบบ", "F8CBAD")}
 
 FONT = "Tahoma"
 f = lambda **k: Font(name=FONT, size=10, **k)
@@ -55,6 +59,7 @@ COLS = [
     ("คำตอบจริงของแชตบอต", "คำตอบจริง", 95, False),
     ("ผล AI", None, 12, False),
     ("ประเภทที่ไม่ผ่าน", None, 16, False),
+    *([("ประเภท: ขอบเขตงาน / ข้อบกพร่องระบบ", None, 16, False), ("เหตุผลของประเภท", None, 30, False)] if KIND else []),
     ("เหตุผล AI", "เหตุผล AI", 34, False),
     *([("ผล AI รอบก่อนแก้", None, 12, False), ("ประเภทที่ไม่ผ่าน รอบก่อนแก้", None, 16, False)] if BASE else []),
     ("ผลตรวจผู้จัดทำ", "ผลตรวจผู้จัดทำ", 13, True),
@@ -157,6 +162,17 @@ for col, letter in [(c, get_column_letter(c)) for c in range(2, len(heads) + 1)]
     guide.cell(total, col, f"=SUM({letter}{start + 1}:{letter}{total - 1})").font = f(bold=True)
 for col in range(1, len(heads) + 1):
     guide.cell(total, col).border = BOX
+if KIND:
+    k = LETTER["ประเภท: ขอบเขตงาน / ข้อบกพร่องระบบ"]
+    row0 = total + 2
+    guide.cell(row0, 1, "ผลที่ไม่ผ่าน แยกตามประเภท (AI แบ่ง รอผู้ตรวจยืนยัน)").font = f(bold=True)
+    for i, (label, _) in enumerate(KIND_LABEL.values(), start=row0 + 1):
+        guide.cell(i, 1, label).font = f()
+        guide.cell(i, 2, f'=COUNTIF(ตรวจ!${k}$2:${k}${n},"{label}")').font = f()
+        for col in (1, 2):
+            guide.cell(i, col).border = BOX
+    guide.cell(row0 + 1, 3, "คลังความรู้หรือฐานข้อมูลไม่ครอบคลุม ระบบจึงตอบเลี่ยงแทนการแต่ง").font = f()
+    guide.cell(row0 + 2, 3, "ระบบตอบผิด ไม่ตรง หรือไม่ครบ ในเรื่องที่มีข้อมูลรองรับ").font = f()
 
 # --- Sheet 2: review grid ---------------------------------------------------
 ws = wb.create_sheet("ตรวจ")
@@ -178,6 +194,12 @@ for r, row in enumerate(rows, start=2):
             value = ai
         elif head == "ประเภทที่ไม่ผ่าน":
             value = FAIL_TYPE[row["ประเภทที่ไม่ผ่าน"]]
+        elif head == "ประเภท: ขอบเขตงาน / ข้อบกพร่องระบบ":
+            kind = KIND.get(row["ผลลัพธ์"])
+            value = KIND_LABEL[kind[0]][0] if kind else ""
+        elif head == "เหตุผลของประเภท":
+            kind = KIND.get(row["ผลลัพธ์"])
+            value = kind[1] if kind else ""
         elif head == "ผล AI รอบก่อนแก้":
             value = AI_LABEL[base["ผล AI เบื้องต้น"]][0] if base else "ไม่มี"
         elif head == "ประเภทที่ไม่ผ่าน รอบก่อนแก้":
@@ -196,6 +218,9 @@ for r, row in enumerate(rows, start=2):
             cell.fill = INPUT
         if head == "ผล AI":
             cell.fill = fill(ai_color)
+            cell.font = f(bold=True)
+        if head == "ประเภท: ขอบเขตงาน / ข้อบกพร่องระบบ" and KIND.get(row["ผลลัพธ์"]):
+            cell.fill = fill(KIND_LABEL[KIND[row["ผลลัพธ์"]][0]][1])
             cell.font = f(bold=True)
         if head == "ผล AI รอบก่อนแก้" and base:
             cell.fill = fill(AI_LABEL[base["ผล AI เบื้องต้น"]][1])
