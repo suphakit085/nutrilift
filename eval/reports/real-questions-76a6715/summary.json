@@ -1,0 +1,189 @@
+{
+ "planned_results": 101,
+ "extra_results_not_counted": [],
+ "counts": {
+  "fail": 28,
+  "pass": 63,
+  "pass_by_policy": 10
+ },
+ "fail_categories": {
+  "factual_error": 1,
+  "missing_key_point": 20,
+  "not_answered": 1,
+  "validation_block": 6
+ },
+ "repeat1_all61": {
+  "fail": 15,
+  "pass": 40,
+  "pass_by_policy": 6
+ },
+ "repeat1_by_platform": {
+  "Dek-D board": {
+   "fail": 1,
+   "pass": 1
+  },
+  "Pantip": {
+   "pass": 34,
+   "fail": 12,
+   "pass_by_policy": 4
+  },
+  "YouTube comment": {
+   "fail": 2,
+   "pass": 5,
+   "pass_by_policy": 2
+  }
+ },
+ "core20_all_three_pass": [
+  "TH02",
+  "TH05",
+  "TH09",
+  "TH10",
+  "TH11",
+  "TH19",
+  "TH20",
+  "TH26",
+  "TH40",
+  "TH43",
+  "TH46",
+  "TH49"
+ ],
+ "core20_no_pass": [
+  "TH29",
+  "YT01"
+ ],
+ "core20_mixed": [
+  "TH08",
+  "TH14",
+  "TH33",
+  "TH42",
+  "TH50",
+  "YT06"
+ ],
+ "core20_detail": {
+  "TH02": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH05": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH08": [
+   "pass",
+   "fail",
+   "fail"
+  ],
+  "TH09": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH10": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH11": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH14": [
+   "pass",
+   "fail",
+   "fail"
+  ],
+  "TH19": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH20": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH26": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH29": [
+   "fail",
+   "fail",
+   "fail"
+  ],
+  "TH33": [
+   "pass",
+   "fail",
+   "pass"
+  ],
+  "TH40": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH42": [
+   "fail",
+   "pass",
+   "fail"
+  ],
+  "TH43": [
+   "pass_by_policy",
+   "pass_by_policy",
+   "pass_by_policy"
+  ],
+  "TH46": [
+   "pass_by_policy",
+   "pass_by_policy",
+   "pass_by_policy"
+  ],
+  "TH49": [
+   "pass",
+   "pass",
+   "pass"
+  ],
+  "TH50": [
+   "fail",
+   "pass",
+   "fail"
+  ],
+  "YT01": [
+   "fail",
+   "fail",
+   "fail"
+  ],
+  "YT06": [
+   "pass",
+   "fail",
+   "fail"
+  ]
+ },
+ "latency_seconds_excluding_pacer_all": {
+  "n": 101,
+  "median": 8.1,
+  "p90": 22.4,
+  "max": 43.6
+ },
+ "latency_seconds_model_answers": {
+  "n": 68,
+  "median": 9.5,
+  "p90": 22.5,
+  "max": 43.6
+ },
+ "first_text_seconds_model_answers": {
+  "n": 68,
+  "median": 9.5,
+  "p90": 22.5,
+  "max": 43.6
+ },
+ "model_calls_per_question": {
+  "n": 101,
+  "median": 5,
+  "p90": 9,
+  "max": 12
+ },
+ "note": "Latency = wall time of stream_understood_chat minus the harness pacer waits (12.5 s for results 1-15, 6.0 s after the key change); local runner to Gemini, not web latency."
+}

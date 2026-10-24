@@ -32,6 +32,8 @@ eval/reports/*
 # The real-question prompt test (23 Oct 2026): verdicts, the owner/expert review
 # sheet and the answers they judge (~1.4 MB); raw per-call logs stay out.
 !eval/reports/real-questions-4fca71e/
+# Rerun of the same 61 questions on the deployed code (24 Oct 2026).
+!eval/reports/real-questions-76a6715/
 # Source documents and anything derived from them belong to their publishers
 # (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
 knowledge/sources/*
