@@ -67,7 +67,7 @@ from app.services.nutrition import (
 from app.services.personal_context import missing_personal_context_reply
 from app.services.profile_reply import explicit_profile_summary_reply
 from app.services.protein_facts import explicit_single_meal_absorption_reply
-from app.services.protein_split import equal_protein_split_reply
+from app.services.protein_split import equal_protein_split_reply, target_split_reply
 from app.services.request_understanding import (
     UNDERSTANDING_VERSION,
     RequestUnderstanding,
@@ -1243,6 +1243,12 @@ def stream_chat(
     # links are scoped in the reply, not fabricated as retrieved S passages.
     target_requested = (understanding.task == "calculate_targets" if understanding
                         else requests_target_explanation(user_message))
+    meal_split = understanding.meal_split if understanding else None
+    if meal_split is not None:
+        # "แล้วถ้ากิน 4 มื้อ มื้อละกี่กรัม" after a target answer was read as
+        # calculate_targets in 2 of 3 runs and got the whole-day block again
+        # (24 Oct). A grounded per-meal reading takes the division route below.
+        target_requested = False
     if target_requested and guardrails.personalization_allowed(guard):
         effective_profile, context_note = conversation_profile(
             profile, operation_history, user_message, understanding,
@@ -1433,6 +1439,13 @@ def stream_chat(
             user_message, daily_protein_g=(targets or {}).get("macros", {}).get("protein_g"),
             history=history,
         )
+        split_model = "rule:protein_split"
+        meal_split = understanding.meal_split if understanding else None
+        if split_reply is None and meal_split is not None:
+            split_reply = target_split_reply(
+                targets, meal_split.meal_count, meal_split.nutrient, meal_split.stated_total,
+            )
+            split_model = "rule:target_split"
         if split_reply:
             split_reply += target_methods_note(split_reply, targets, shown_notes)
             yield {"type": "delta", "text": split_reply}
@@ -1440,7 +1453,7 @@ def stream_chat(
                 "type": "done", "text": split_reply, "citations": [], "retrieved": citations,
                 "tool_calls": [],
                 "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
-                "safety_flags": guard.as_json(), "model": "rule:protein_split",
+                "safety_flags": guard.as_json(), "model": split_model,
                 "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
             }
             return

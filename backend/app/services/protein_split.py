@@ -131,3 +131,39 @@ def equal_protein_split_reply(
         f"แบ่งโปรตีนรวม {_display(total)} กรัมต่อวันเป็น {meals} มื้อเท่า ๆ กัน: "
         f"{_display(total)} ÷ {meals} = **{approximate}{_display(rounded)} กรัมต่อมื้อ** ครับ"
     )
+
+
+#: nutrient -> (Thai name, unit, key in the calculator payload)
+_TARGET_PARTS = {
+    "protein": ("โปรตีน", "กรัม", lambda t: t["macros"]["protein_g"]),
+    "carbohydrate": ("คาร์โบไฮเดรต", "กรัม", lambda t: t["macros"]["carb_g"]),
+    "fat": ("ไขมัน", "กรัม", lambda t: t["macros"]["fat_g"]),
+    "energy": ("พลังงาน", "กิโลแคลอรี", lambda t: t["energy_target_kcal"]),
+}
+
+
+def target_split_reply(
+    targets: dict | None, meal_count: int, nutrient: str, stated_total: float | None = None,
+) -> str | None:
+    """Divide a daily amount equally across the meals asked for.
+
+    The interpreter supplies only grounded numbers from the user's words: the
+    meal count, the nutrient and, when the user states one, their own daily
+    total (24 Oct probe: "ผมกินโปรตีนวันละ 150 กรัม แบ่ง 5 มื้อ" must divide
+    150, not the calculator's 117). Otherwise the calculator target is used.
+    """
+    name, unit, value_of = _TARGET_PARTS[nutrient]
+    if stated_total is not None:
+        total, lead = Decimal(str(stated_total)), f"{name}วันละ"
+    elif targets is not None:
+        total, lead = Decimal(str(value_of(targets))), f"เป้า{name}ของคุณวันละ"
+    else:
+        return None
+    exact = total / meal_count
+    rounded = exact.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
+    approximate = "ประมาณ " if rounded != exact else ""
+    return (
+        f"{lead} {_display(total)} {unit} แบ่งเป็น {meal_count} มื้อเท่า ๆ กัน: "
+        f"{_display(total)} ÷ {meal_count} = "
+        f"**{approximate}{_display(rounded)} {unit}ต่อมื้อ** ครับ"
+    )
