@@ -1441,8 +1441,10 @@ def stream_chat(
         )
         split_model = "rule:protein_split"
         meal_split = understanding.meal_split if understanding else None
-        if split_reply is None and meal_split is not None and targets is not None:
-            split_reply = target_split_reply(targets, meal_split.meal_count, meal_split.nutrient)
+        if split_reply is None and meal_split is not None:
+            split_reply = target_split_reply(
+                targets, meal_split.meal_count, meal_split.nutrient, meal_split.stated_total,
+            )
             split_model = "rule:target_split"
         if split_reply:
             split_reply += target_methods_note(split_reply, targets, shown_notes)

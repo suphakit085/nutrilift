@@ -142,18 +142,28 @@ _TARGET_PARTS = {
 }
 
 
-def target_split_reply(targets: dict, meal_count: int, nutrient: str) -> str:
-    """Divide the calculator's own daily target equally across the meals asked for.
+def target_split_reply(
+    targets: dict | None, meal_count: int, nutrient: str, stated_total: float | None = None,
+) -> str | None:
+    """Divide a daily amount equally across the meals asked for.
 
-    The interpreter supplies only the meal count and nutrient (grounded in the
-    user's words); the daily amount always comes from the calculator.
+    The interpreter supplies only grounded numbers from the user's words: the
+    meal count, the nutrient and, when the user states one, their own daily
+    total (24 Oct probe: "ผมกินโปรตีนวันละ 150 กรัม แบ่ง 5 มื้อ" must divide
+    150, not the calculator's 117). Otherwise the calculator target is used.
     """
     name, unit, value_of = _TARGET_PARTS[nutrient]
-    total = Decimal(str(value_of(targets)))
+    if stated_total is not None:
+        total, lead = Decimal(str(stated_total)), f"{name}วันละ"
+    elif targets is not None:
+        total, lead = Decimal(str(value_of(targets))), f"เป้า{name}ของคุณวันละ"
+    else:
+        return None
     exact = total / meal_count
     rounded = exact.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
     approximate = "ประมาณ " if rounded != exact else ""
     return (
-        f"เป้า{name}ของคุณวันละ {_display(total)} {unit} ถ้าแบ่งเป็น {meal_count} มื้อเท่า ๆ กัน: "
-        f"{_display(total)} ÷ {meal_count} = **{approximate}{_display(rounded)} {unit}ต่อมื้อ** ครับ"
+        f"{lead} {_display(total)} {unit} แบ่งเป็น {meal_count} มื้อเท่า ๆ กัน: "
+        f"{_display(total)} ÷ {meal_count} = "
+        f"**{approximate}{_display(rounded)} {unit}ต่อมื้อ** ครับ"
     )

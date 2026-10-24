@@ -81,3 +81,22 @@ def test_split_reading_beats_the_target_explanation(monkeypatch):
 def test_without_split_the_target_explanation_is_unchanged(monkeypatch):
     result, _ = _answer(monkeypatch, reading(None, task="calculate_targets", personal_context=True))
     assert result["model"] == "rule:target_explanation"
+
+
+def test_stated_total_is_divided_instead_of_the_target():
+    # 24 Oct probe M4-r2: the user's own 150 g must not become the 117 g target.
+    turn = "ผมกินโปรตีนวันละ 150 กรัม แบ่ง 5 มื้อ มื้อละกี่กรัม"
+    value = _checked(reading(split(meal_count=5, user_turn=0, quote="5 มื้อ", stated_total=150,
+                                   total_quote="150 กรัม")), [turn])
+    reply = target_split_reply(calc_nutrition_targets(adult()), 5, "protein",
+                               value.meal_split.stated_total)
+    assert "150 ÷ 5 = **30 กรัมต่อมื้อ**" in reply
+
+
+def test_ungrounded_stated_total_drops_the_split():
+    turn = "ผมกินโปรตีนวันละ 150 กรัม แบ่ง 5 มื้อ มื้อละกี่กรัม"
+    for bad in ({"stated_total": 120, "total_quote": "150 กรัม"},
+                {"stated_total": 150, "total_quote": None},
+                {"stated_total": None, "total_quote": "150 กรัม"}):
+        value = _checked(reading(split(meal_count=5, user_turn=0, quote="5 มื้อ", **bad)), [turn])
+        assert value.meal_split is None
