@@ -54,13 +54,14 @@ def main_meal_change_note(previous: dict, current: dict) -> str | None:
                 changes.append(f"{label}: เพิ่ม{name} {portion}")
     if not changes:
         return None
-    lines = [
-        "มื้อหลักเปลี่ยนจากเมนูก่อนหน้า เพราะระบบจัดปริมาณทั้งวันใหม่ให้รวมแล้วยังอยู่ในเป้า:",
-        *("- " + change for change in changes),
-    ]
     added = [m for m in current.get("meals") or []
              if m.get("kind") == "supplemental"
              and m["label_th"] not in {p["label_th"] for p in previous.get("meals") or []}]
+    lines = [
+        "มื้อหลักเปลี่ยนจากเมนูก่อนหน้า"
+        + (" เพราะระบบจัดปริมาณทั้งวันใหม่ให้รวมแล้วยังอยู่ในเป้า:" if added else ":"),
+        *("- " + change for change in changes),
+    ]
     if added:
         kept = previous["totals"]["kcal"] + sum(m["kcal"] for m in added)
         over = kept - current["targets"]["kcal"]

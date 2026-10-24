@@ -100,3 +100,15 @@ def test_no_note_when_the_rebuilt_menu_is_not_the_one_shown(monkeypatch):
     ))
     done = next(e for e in events if e["type"] == "done")
     assert "มื้อหลักเปลี่ยน" not in done["text"]
+
+
+def test_another_menu_set_gives_no_note(monkeypatch):
+    plans = iter([deepcopy(AFTER), deepcopy(BEFORE)])
+    monkeypatch.setattr(chat, "_run_menu_tool", lambda *a, **k: next(plans))
+    monkeypatch.setattr(chat, "_append_menu_data_notes", lambda text, results: text)
+    events = list(chat._verified_menu_events(
+        SimpleNamespace(commit=lambda: None), "ขอเมนูอีกชุด", adult(), HISTORY,
+        chat.guardrails.GuardResult(flags=[], matched={}), True,
+    ))
+    done = next(e for e in events if e["type"] == "done")
+    assert "มื้อหลักเปลี่ยน" not in done["text"]

@@ -1028,13 +1028,15 @@ def _dietary_question_events(
 
 def _main_meal_change(
     db: Session, profile: ProfileInput | None, history: list[dict],
-    guard: guardrails.GuardResult, current: dict,
+    guard: guardrails.GuardResult, current: dict, current_args: dict,
 ) -> str | None:
     """Compare with the previous menu of this chat, rebuilt from its own arguments."""
     previous = previous_menu_call(history)
     if previous is None:
         return None
     args, shown = previous
+    if args.get("variant", 0) != current_args.get("variant", 0):
+        return None  # A different set was asked for; its items are meant to differ.
     try:
         rebuilt = _run_menu_tool(db, profile, args, guard)
     except Exception:
@@ -1089,7 +1091,7 @@ def _verified_menu_events(
             else:
                 result = _run_menu_tool(db, effective, args, guard)
             if result.get("meals"):
-                change = _main_meal_change(db, effective, history, guard, result)
+                change = _main_meal_change(db, effective, history, guard, result, args)
                 note = "\n".join(n for n in [change, note] if n)
                 if note:
                     result["conversation_note"] = note
