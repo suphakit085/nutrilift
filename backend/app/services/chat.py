@@ -39,6 +39,7 @@ from app.services.creatine_facts import creatine_necessity_reply
 from app.services.dietary_preferences import CLARIFY_TOOL, DIETARY_VALUES, nut_clarification
 from app.services.food_portions import verified_food_portion_reply
 from app.services.food_preparation import food_preparation
+from app.services.food_suggestions import suggest_foods, suggestion_reply
 from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
@@ -1049,6 +1050,43 @@ def _main_meal_change(
     return main_meal_change_note(rebuilt, current)
 
 
+def _food_suggestion_events(
+    db: Session, suggestion, profile: ProfileInput | None, history: list[dict],
+    message: str, guard: guardrails.GuardResult, use_rag: bool,
+) -> Iterator[dict]:
+    """List foods from the food database; values are never model-written."""
+    saved = conversation_restrictions(
+        profile, [*history, {"role": "user", "content": message}],
+    ) if profile is not None else []
+    if nut_clarification(saved):
+        yield from _dietary_question_events(saved, guard, use_rag)
+        return
+    request_only = [r for r in suggestion.exclude if r not in saved]
+    restrictions = [*saved, *request_only]
+    unknown = [r for r in restrictions if r not in DIETARY_VALUES]
+    if unknown:
+        answer = ("ยังคัดอาหารตามข้อจำกัดนี้จากฐานข้อมูลไม่ได้ครับ: "
+                  + ", ".join(r.removeprefix("ข้อจำกัดที่ยังไม่รองรับ:").strip() for r in unknown))
+        items = []
+    else:
+        items = suggest_foods(all_foods(db), suggestion.focus, restrictions, suggestion.count)
+        answer = suggestion_reply(items, suggestion.focus, suggestion.count, restrictions,
+                                  request_only)
+    _release_connection(db)
+    args = {"focus": suggestion.focus, "count": suggestion.count, "restrictions": restrictions}
+    status = "success" if items else "error"
+    yield {"type": "sources", "sources": [], "retrieval_status": "not_required"}
+    yield {"type": "tool", "name": "suggest_foods", "args": args, "status": status}
+    yield {"type": "delta", "text": answer}
+    yield {
+        "type": "done", "text": answer, "citations": [], "retrieved": [],
+        "tool_calls": [{"name": "suggest_foods", "arguments": args, "status": status}],
+        "usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+        "safety_flags": guard.as_json(), "model": "rule:food_suggestion",
+        "prompt_version": prompts.PROMPT_VERSION, "use_rag": use_rag,
+    }
+
+
 def _verified_menu_events(
     db: Session, message: str, profile: ProfileInput | None,
     history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
@@ -1231,6 +1269,12 @@ def stream_chat(
         if nut_clarification(restrictions):
             yield from _dietary_question_events(restrictions, guard, use_rag)
             return
+    suggestion = understanding.food_suggestion if understanding else None
+    if suggestion is not None:
+        yield from _food_suggestion_events(
+            db, suggestion, profile, operation_history, user_message, guard, use_rag,
+        )
+        return
     menu_requested = (understanding.task == "plan_menu" if understanding
                       else requests_menu(user_message, operation_history))
     if menu_requested:
