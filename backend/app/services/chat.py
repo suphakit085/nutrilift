@@ -43,6 +43,7 @@ from app.services.foods import all_foods, explicit_food_names, lookup_food
 from app.services.llm import get_client, retry_delay_seconds
 from app.services.macro_math import explicit_macro_energy_reply
 from app.services.meal_plan import MealPlanError, plan_day_menu
+from app.services.menu_changes import main_meal_change_note, previous_menu_call, shown_in
 from app.services.menu_context import (
     conversation_profile,
     conversation_restrictions,
@@ -1025,6 +1026,27 @@ def _dietary_question_events(
     }
 
 
+def _main_meal_change(
+    db: Session, profile: ProfileInput | None, history: list[dict],
+    guard: guardrails.GuardResult, current: dict,
+) -> str | None:
+    """Compare with the previous menu of this chat, rebuilt from its own arguments."""
+    previous = previous_menu_call(history)
+    if previous is None:
+        return None
+    args, shown = previous
+    try:
+        rebuilt = _run_menu_tool(db, profile, args, guard)
+    except Exception:
+        logger.warning("previous menu could not be rebuilt for comparison")
+        return None
+    if not rebuilt.get("meals") or not shown_in(rebuilt, shown):
+        # Profile or restrictions changed since: the rebuilt plan is not the
+        # one the user saw, so no item-level claim is made.
+        return None
+    return main_meal_change_note(rebuilt, current)
+
+
 def _verified_menu_events(
     db: Session, message: str, profile: ProfileInput | None,
     history: list[dict], guard: guardrails.GuardResult, use_rag: bool,
@@ -1067,6 +1089,8 @@ def _verified_menu_events(
             else:
                 result = _run_menu_tool(db, effective, args, guard)
             if result.get("meals"):
+                change = _main_meal_change(db, effective, history, guard, result)
+                note = "\n".join(n for n in [change, note] if n)
                 if note:
                     result["conversation_note"] = note
                 if re.search("งบ|ราคา|บาท", "\n".join([
