@@ -235,6 +235,11 @@ def _checked(text: str, turns: list[str]) -> RequestUnderstanding:
         # Optional routing hint: an ungrounded one is dropped, never fatal,
         # so the request still runs on the normal route.
         value = value.model_copy(update={"meal_split": None})
+    if value.meal_split is not None and value.task == "clarify":
+        # The count (and any stated total) is grounded and the daily target
+        # comes from the calculator, so nothing is missing (24 Oct probe M5-r2
+        # got "please specify" for a per-meal question).
+        value = value.model_copy(update={"task": "knowledge", "missing_information": None})
     return value
 
 

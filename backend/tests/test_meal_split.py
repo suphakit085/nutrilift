@@ -100,3 +100,9 @@ def test_ungrounded_stated_total_drops_the_split():
                 {"stated_total": None, "total_quote": "150 กรัม"}):
         value = _checked(reading(split(meal_count=5, user_turn=0, quote="5 มื้อ", **bad)), [turn])
         assert value.meal_split is None
+
+
+def test_grounded_split_overrides_a_clarification():
+    value = _checked(reading(split(), task="clarify", missing_information="other"),
+                     [TARGET_TURN, FOLLOW_UP])
+    assert value.task == "knowledge" and value.missing_information is None
