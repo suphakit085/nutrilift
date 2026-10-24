@@ -34,6 +34,8 @@ eval/reports/*
 !eval/reports/real-questions-4fca71e/
 # Rerun of the same 61 questions on the deployed code (24 Oct 2026).
 !eval/reports/real-questions-76a6715/
+# Final rerun on the deployed code (25 Oct 2026).
+!eval/reports/real-questions-c0201c3/
 # Source documents and anything derived from them belong to their publishers
 # (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
 knowledge/sources/*
