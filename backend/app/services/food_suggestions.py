@@ -63,6 +63,13 @@ def _base_name(food: dict) -> str:
     return (food.get("name_th") or "").split(",")[0].strip()
 
 
+def _record(food: dict) -> str:
+    """One composition record listed under two names is one food: 'ข้าวเจ้า, สุก'
+    (100 g) and 'ข้าวสวย' (120 g) share ASEAN-FCD MYA14 and filled two places
+    in a four-item list (25 Oct live test)."""
+    return str(food.get("source") or "") or _base_name(food)
+
+
 def suggest_foods(
     foods: list[dict], focus: str, restrictions: list[str], count: int | None = None,
 ) -> list[dict]:
@@ -77,10 +84,12 @@ def suggest_foods(
     # meat, fish, eggs, plant proteins and dairy instead of five fish.
     by_category: dict[str, list[dict]] = {}
     names: set[str] = set()
+    records: set[str] = set()
     for food in candidates:
-        base = _base_name(food)
-        if base not in names:
+        base, record = _base_name(food), _record(food)
+        if base not in names and record not in records:
             names.add(base)
+            records.add(record)
             by_category.setdefault(food.get("category") or "", []).append(food)
     chosen: list[dict] = []
     while len(chosen) < wanted and any(by_category.values()):
