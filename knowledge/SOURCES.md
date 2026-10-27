@@ -249,6 +249,33 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
   (<30 kcal/kg FFM) ต่อเนื่อง ซึ่งเชื่อมกับ EA/RED-S ในการ์ด `energy-balance-cut-bulk` พอดี
   → การ์ด `body-fat-by-sex` (ใช้ร่วมกับ ACSM 2016 หัวข้อ Body composition และ Helms 2014 ที่มีอยู่แล้ว)
 
+## 3d. คลังความรู้ชุดที่ 1 (27-28 ต.ค. 2569): หัวข้อจากคำถามจริงที่ยังตอบไม่ได้
+
+ผู้จัดทำขอให้เพิ่มคลังความรู้เมื่อ 27 ต.ค. 2569 การ์ด 11 ใบในชุดนี้ AI เขียนและตรวจกับต้นฉบับ (`review_status: ai_reviewed_pending_independent_review`) ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ
+ไฟล์ต้นฉบับโหลดผ่าน Europe PMC REST API (`/fullTextXML`) ยกเว้นที่ระบุ
+
+- [x] Jäger R, et al. ISSN Position Stand: protein and exercise. *JISSN* 2017;14:20. PMC5477153 ✅
+  → `whey-types`, `pre-sleep-protein-casein`, `whey-vs-whole-food`, `bcaa`, `protein-higher-body-weight`, `budget-protein-thai`, `weight-gain-underweight`, `sports-drinks-hydration`
+- [x] Kerksick CM, et al. ISSN position stand: nutrient timing. *JISSN* 2017;14:33. PMC5596471 ✅ → `whey-vs-whole-food`, `carbs-for-lifting`, `sports-drinks-hydration`
+- [x] Aragon AA, et al. ISSN position stand: diets and body composition. *JISSN* 2017;14:16. PMC5470183 ✅ → `keto-low-carb-training`, `carbs-for-lifting`, `protein-higher-body-weight`, `weight-gain-underweight`
+- [x] Hoffman JR, Falvo MJ. Protein - Which is Best? *J Sports Sci Med* 2004;3(3):118-130. PMC3905294 (อ่านจากหน้าเว็บวารสาร jssm.org เพราะ Europe PMC ไม่มี full text XML) ✅ → `whey-types`
+- [x] Snijders T, et al. The Impact of Pre-sleep Protein Ingestion... *Front Nutr* 2019;6:17. PMC6415027 ✅ → `pre-sleep-protein-casein`
+- [x] Wolfe RR. Branched-chain amino acids and muscle protein synthesis in humans: myth or reality? *JISSN* 2017;14:30. PMC5568273 ✅ → `bcaa`
+- [x] Jackman SR, et al. Branched-Chain Amino Acid Ingestion Stimulates Muscle Myofibrillar Protein Synthesis... *Front Physiol* 2017;8:390. PMC5461297 ✅ → `bcaa`
+- [x] Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation. *JISSN* 2014;11:20. PMC4033492 ✅ → `protein-higher-body-weight`
+- [x] Leidy HJ, et al. The role of protein in weight loss and maintenance. *Am J Clin Nutr* 2015;101(6):1320S-1329S. **ตรวจจาก abstract เท่านั้น** (ฉบับเต็มต้องสมัครสมาชิก) → `protein-higher-body-weight`
+- [x] Harvey KL, Holcomb LE, Kolwicz SC. Ketogenic Diets and Exercise Performance. *Nutrients* 2019;11(10):2296. PMC6835497 ✅ → `keto-low-carb-training`
+- [x] Iraki J, et al. Nutrition Recommendations for Bodybuilders in the Off-Season. *Sports* 2019;7(7):154. PMC6680710 ✅ → `keto-low-carb-training`, `carbs-for-lifting`, `weight-gain-underweight`
+- [x] Harris JA, Benedict FG. A Biometric Study of Human Basal Metabolism. *PNAS* 1918;4(12):370-373. **ตรวจเฉพาะข้อมูลบรรณานุกรม** → `bmr-tdee-equations`
+- [x] Mifflin MD, St Jeor ST, et al. A new predictive equation for resting energy expenditure... *Am J Clin Nutr* 1990;51(2):241-247. **ตรวจจาก abstract** → `bmr-tdee-equations`
+- [x] O'Neill JER, Corish CA, Horner K. Accuracy of Resting Metabolic Rate Prediction Equations in Athletes. *Sports Med* 2023;53(12):2373-2398. PMC10687135 ✅ → `bmr-tdee-equations`
+- [x] Tang M, et al. Metabolic adaptation fluctuates with different prediction equations. *Front Nutr* 2025;12:1543263. PMC12425712 ✅ (ใช้เฉพาะรูปสมการ Katch-McArdle) → `bmr-tdee-equations`
+- [x] FAO/WHO/UNU. Human energy requirements. FAO Food and Nutrition Technical Report Series 1, 2004. บทที่ 5 (หน้าเว็บ fao.org) ✅ → `bmr-tdee-equations`
+- [x] Orrù S, et al. Role of Functional Beverages on Sport Performance and Recovery. *Nutrients* 2018;10(10):1470. PMC6213308 ✅ → `sports-drinks-hydration`
+  ⚠️ บทความนี้มีข้อความว่า BIA เป็น gold standard ของการประเมินน้ำในร่างกาย ซึ่งไม่ถูกต้อง การ์ดจึงไม่ใช้ส่วนนั้น
+- [x] WHO NLiS. Malnutrition in women: thinness, underweight, overweight, obesity (เข้าถึง 27 ต.ค. 2569) ✅ → `weight-gain-underweight`
+- [x] ค่าอาหารจาก ASEAN FCD 2014, Thai FCD online v3 และ USDA FDC SR Legacy (รหัสรายการอยู่ใน `sources` ของการ์ด) → `budget-protein-thai`
+
 ---
 
 ## รายการการ์ดที่วางแผนไว้ (เป้าหมาย 60+ ใบ)
