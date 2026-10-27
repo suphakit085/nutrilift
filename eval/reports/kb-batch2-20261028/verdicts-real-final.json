@@ -1,0 +1,1439 @@
+{
+ "reviewer": "Claude (AI), preliminary",
+ "round2": {
+  "DD01-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH05-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH05-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH05-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld; no batch-2 card in retrieval (variance)"
+   ]
+  },
+  "TH08-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH08-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH08-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH13-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "no brands; label, price per gram, FDA number"
+   ]
+  },
+  "TH14-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "adaptation, estimation error, weekly average"
+   ]
+  },
+  "TH14-r2": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "thin: TDEE estimate, tracking"
+   ]
+  },
+  "TH14-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, TDEE overestimate, water, 2-4 weeks"
+   ]
+  },
+  "TH15-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "hedges; targets and tracking only, no causes; one diet-breaks chunk retrieved but not used (variance)"
+   ]
+  },
+  "TH16-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH17-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calls the >=75 class \"PDCAAS\" where the card says DIAAS (minor mislabel)"
+   ]
+  },
+  "TH19-r1": {
+   "live": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "tracking only, no causes (live result was also a fail)"
+   ]
+  },
+  "TH19-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, adaptation, water; does not push eating less"
+   ]
+  },
+  "TH19-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, unnoticed intake, adaptation"
+   ]
+  },
+  "TH20-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "tracking and training only, no causes; one diet-breaks chunk at rank 5"
+   ]
+  },
+  "TH20-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "tracking and targets only, no causes; one diet-breaks chunk at rank 5"
+   ]
+  },
+  "TH20-r3": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "portion-estimation error, weekly average, protein and training (live result was a fail)"
+   ]
+  },
+  "TH21-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH25-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "borderline after trimming: beginners and heavier people, with training"
+   ]
+  },
+  "TH26-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH26-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH26-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld"
+   ]
+  },
+  "TH27-r1": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH38-r1": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "general cut guidance but never says the plan was not received (live result was also a fail)"
+   ]
+  },
+  "TH41-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH47-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH49-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH49-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH49-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ]
+  },
+  "YT02-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "same 117 g on rest days, not 60 g"
+   ]
+  },
+  "YT07-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ]
+  }
+ },
+ "final": {
+  "DD01-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH02-r1": {
+   "live": [
+    "service",
+    null
+   ],
+   "branch": [
+    "service",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH02-r2": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "food sources, small amounts, hard to reach 3-5 g from food"
+   ],
+   "round": 1
+  },
+  "TH02-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "hedges; no food sources listed. No batch-2 card retrieved (variance)"
+   ],
+   "round": 1
+  },
+  "TH04-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH05-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH05-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH05-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld; no batch-2 card in retrieval (variance)"
+   ],
+   "round": 2
+  },
+  "TH07-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH08-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH08-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH08-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH09-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH09-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH09-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH10-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH10-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH10-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH13-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "no brands; label, price per gram, FDA number"
+   ],
+   "round": 2
+  },
+  "TH14-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH14-r2": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, water, adaptation; adds an unsourced \"several kg\" for daily water swings (minor)"
+   ],
+   "round": 3
+  },
+  "TH14-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH15-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH16-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH17-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calls the >=75 class \"PDCAAS\" where the card says DIAAS (minor mislabel)"
+   ],
+   "round": 2
+  },
+  "TH18-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH19-r1": {
+   "live": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, unnoticed activity drop, water (live result was a validation block)"
+   ],
+   "round": 3
+  },
+  "TH19-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "thin: adaptation and tracking"
+   ],
+   "round": 3
+  },
+  "TH19-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r3": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH21-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH22-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH25-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH26-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH26-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH26-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld"
+   ],
+   "round": 2
+  },
+  "TH27-r1": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH32-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH33-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH33-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH33-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH34-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH35-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "asks what the user wants to know"
+   ],
+   "round": 1
+  },
+  "TH37-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH38-r1": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "general cut guidance but never says the plan was not received (live result was also a fail)"
+   ],
+   "round": 2
+  },
+  "TH40-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH40-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calculator route"
+   ],
+   "round": 1
+  },
+  "TH40-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH41-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH42-r1": {
+   "live": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route with invented restriction (interpreter)"
+   ],
+   "round": 1
+  },
+  "TH42-r2": {
+   "live": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route (interpreter)"
+   ],
+   "round": 1
+  },
+  "TH42-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH43-r1": {
+   "live": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH43-r2": {
+   "live": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH43-r3": {
+   "live": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH44-r1": {
+   "live": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH45-r1": {
+   "live": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "TH47-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH48-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH49-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH49-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH49-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 2
+  },
+  "YT01-r1": {
+   "live": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "calculator route; never says bread and milk alone are not enough (interpreter)"
+   ],
+   "round": 1
+  },
+  "YT01-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT01-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT02-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "same 117 g on rest days, not 60 g"
+   ],
+   "round": 2
+  },
+  "YT03-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "YT04-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 1
+  },
+  "YT05-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT06-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT06-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT06-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT07-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to live"
+   ],
+   "round": 2
+  }
+ },
+ "round3": {
+  "TH14-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH14-r2": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, water, adaptation; adds an unsourced \"several kg\" for daily water swings (minor)"
+   ],
+   "round": 3
+  },
+  "TH14-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH15-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH16-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH19-r1": {
+   "live": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "estimation error, unnoticed activity drop, water (live result was a validation block)"
+   ],
+   "round": 3
+  },
+  "TH19-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "thin: adaptation and tracking"
+   ],
+   "round": 3
+  },
+  "TH19-r3": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r2": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH20-r3": {
+   "live": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH25-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  },
+  "TH47-r1": {
+   "live": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 3
+  }
+ }
+}

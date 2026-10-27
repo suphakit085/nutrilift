@@ -276,6 +276,28 @@ PMC บล็อกการโหลดอัตโนมัติ — ช่�
 - [x] WHO NLiS. Malnutrition in women: thinness, underweight, overweight, obesity (เข้าถึง 27 ต.ค. 2569) ✅ → `weight-gain-underweight`
 - [x] ค่าอาหารจาก ASEAN FCD 2014, Thai FCD online v3 และ USDA FDC SR Legacy (รหัสรายการอยู่ใน `sources` ของการ์ด) → `budget-protein-thai`
 
+## 3e. คลังความรู้ชุดที่ 2 (28 ต.ค. 2569): หัวข้อที่คนเล่นเวทถามบ่อย
+
+การ์ด 8 ใบในชุดนี้ AI เขียนและตรวจกับต้นฉบับ (`ai_reviewed_pending_independent_review`) ยังไม่ผ่านการตรวจโดยผู้เชี่ยวชาญ
+
+- [x] Kerksick CM, et al. ISSN position stand: nutrient timing. *JISSN* 2017;14:33. PMC5596471 ✅ → `pre-workout-meal`, `meal-frequency`
+- [x] Peos JJ, et al. Intermittent Dieting: Theoretical Considerations for the Athlete. *Sports* 2019;7(1):22. PMC6359485 ✅ → `diet-breaks-refeeds`
+- [x] Byrne NM, et al. the MATADOR study. *Int J Obes* 2018;42(2):129-138. PMC5803575 ✅ → `diet-breaks-refeeds`
+- [x] Campbell BI, et al. Intermittent Energy Restriction Attenuates the Loss of Fat Free Mass in Resistance Trained Individuals. *J Funct Morphol Kinesiol* 2020;5(1):19. PMC7739314 ✅ → `diet-breaks-refeeds`
+  ⚠️ มีบทวิจารณ์ Peos J, et al. 2020;5(4):85 (PMC7739336) ชี้ว่าความต่างจริงมีเฉพาะ dry FFM การ์ดอ้างทั้งสองฉบับ
+- [x] Parr EB, et al. Alcohol ingestion impairs maximal post-exercise rates of myofibrillar protein synthesis... *PLoS One* 2014;9(2):e88384. PMC3922864 ✅ → `alcohol-training`
+- [x] FAO. Food energy - methods of analysis and conversion factors. FAO Food and Nutrition Paper 77, 2003 (หน้าเว็บ fao.org บทที่ 3-4) ✅ → `alcohol-training`, `sugar-sweeteners`
+- [x] Nedeltcheva AV, et al. Insufficient sleep undermines dietary efforts to reduce adiposity. *Ann Intern Med* 2010;153(7):435-441. PMC2951287 (อ่านจากหน้า PMC) ✅ → `sleep-body-composition`
+- [x] Watson NF, et al. Recommended Amount of Sleep for a Healthy Adult (AASM/SRS). *Sleep* 2015;38(6):843-844. PMC4434546 (อ่านจากหน้า PMC) ✅ → `sleep-body-composition`
+- [x] Iraki J, et al. *Sports* 2019;7(7):154 และ Helms ER, et al. *JISSN* 2014;11:20 (มีอยู่แล้วในหัวข้อ 3d) → `dietary-fat`
+- [x] WHO. Healthy diet. Fact sheet (เข้าถึง 28 ต.ค. 2569) ✅ → `dietary-fat`, `sugar-sweeteners`
+- [x] WHO. WHO updates guidelines on fats and carbohydrates. 17 July 2023 ✅ → `dietary-fat`
+- [x] WHO. WHO advises not to use non-sugar sweeteners for weight control. 15 May 2023 ✅ → `sugar-sweeteners`
+- [x] La Bounty PM, et al. ISSN position stand: meal frequency. *JISSN* 2011;8:4. PMC3070624 ✅ → `meal-frequency`
+- [x] Jäger R, et al. ISSN Position Stand: protein and exercise. *JISSN* 2017;14:20 (มีอยู่แล้ว) → `protein-quality`
+- [x] Herreman L, et al. ...digestible indispensable amino acid score. *Food Sci Nutr* 2020;8(10):5379-5391. PMC7590266 ✅ → `protein-quality`
+- [x] Moughan PJ, Lim WXJ. Digestible indispensable amino acid score (DIAAS): 10 years on. *Front Nutr* 2024;11:1389719. PMC11252030 ✅ → `protein-quality`
+
 ---
 
 ## รายการการ์ดที่วางแผนไว้ (เป้าหมาย 60+ ใบ)

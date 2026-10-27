@@ -38,6 +38,7 @@ eval/reports/*
 !eval/reports/real-questions-c0201c3/
 # Knowledge-base batch 1 (28 Oct 2026): criteria, run log, AI verdicts, scripts; raw answers stay out.
 !eval/reports/kb-batch1-20261028/
+!eval/reports/kb-batch2-20261028/
 # Source documents and anything derived from them belong to their publishers
 # (INMU, กรมอนามัย, journals). Fetch them locally; do not redistribute here.
 knowledge/sources/*

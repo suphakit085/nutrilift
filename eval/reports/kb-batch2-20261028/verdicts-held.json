@@ -1,0 +1,103 @@
+{
+ "reviewer": "Claude (AI), preliminary",
+ "verdicts": {
+  "K01": {
+   "question": "ก่อนเล่นเวทควรกินอะไร กินก่อนกี่ชั่วโมง",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 2
+  },
+  "K02": {
+   "question": "เล่นเวทตอนเช้าตอนท้องว่างได้ไหม หรือควรกินอะไรก่อน",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K03": {
+   "question": "cheat meal ช่วยให้ลดไขมันดีขึ้นจริงไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 3,
+   "note": "round 1 overstated the refeed finding; round 3 answer does not"
+  },
+  "K04": {
+   "question": "diet break คืออะไร ควรทำไหมตอนลดไขมัน",
+   "main": "pass",
+   "branch": "pass",
+   "branch_round": 3
+  },
+  "K05": {
+   "question": "ดื่มเหล้าเบียร์หลังเล่นเวทมีผลกับกล้ามไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K06": {
+   "question": "ลดไขมันอยู่ กินเบียร์ได้ไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K07": {
+   "question": "นอนน้อยมีผลกับการลดไขมันไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 2
+  },
+  "K08": {
+   "question": "นอนกี่ชั่วโมงดีสำหรับคนเล่นเวท",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 2
+  },
+  "K09": {
+   "question": "ไขมันควรกินวันละเท่าไหร่",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K10": {
+   "question": "ไขมันอิ่มตัวควรจำกัดไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K11": {
+   "question": "น้ำตาลควรกินไม่เกินวันละเท่าไหร่",
+   "main": "pass",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K12": {
+   "question": "ใช้น้ำตาลเทียมแทนน้ำตาลช่วยลดน้ำหนักไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 1
+  },
+  "K13": {
+   "question": "กินวันละ 6 มื้อช่วยเร่งเผาผลาญจริงไหม",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 2
+  },
+  "K14": {
+   "question": "กินมื้อดึกแล้วอ้วนจริงไหม",
+   "main": "pass",
+   "branch": "pass",
+   "branch_round": 2
+  },
+  "K15": {
+   "question": "โปรตีนสมบูรณ์คืออะไร DIAAS คืออะไร",
+   "main": "fail",
+   "branch": "pass",
+   "branch_round": 2,
+   "note": "round 1 called DIAAS < 75 \"low quality\"; round 2 uses \"no quality claim\""
+  },
+  "K16": {
+   "question": "โปรตีนพืชคุณภาพสู้โปรตีนสัตว์ได้ไหม",
+   "main": "pass",
+   "branch": "pass",
+   "branch_round": 2
+  }
+ }
+}
