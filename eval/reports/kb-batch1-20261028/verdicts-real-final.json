@@ -1,0 +1,1734 @@
+{
+ "reviewer": "Claude (AI), preliminary; owner and expert review pending",
+ "round2": {
+  "TH03-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH05-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH05-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH05-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH06-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH07-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH08-r1": {
+   "baseline": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: whey does not build muscle by itself; resistance training + total protein + energy; ISSN synergy; 1.4-2.0 g/kg"
+   ]
+  },
+  "TH08-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (same points)"
+   ]
+  },
+  "TH08-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (same points)"
+   ]
+  },
+  "TH10-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH10-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH10-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH11-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH11-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "adds \"soy has no lactose\" (not in a card, true)"
+   ]
+  },
+  "TH11-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH12-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH17-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH21-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "recomposition: maintenance targets, protein with resistance training, track 2-4 weeks"
+   ]
+  },
+  "TH25-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "beginners, returning and higher-fat people; deficit + training + protein; harder when advanced"
+   ]
+  },
+  "TH26-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "opening sentence trimmed but both times answered"
+   ]
+  },
+  "TH26-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH26-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH27-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "only \"keep protein steady\" survives trimming; retrieval has no new card (variance / trimming)"
+   ]
+  },
+  "TH28-r1": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ]
+  },
+  "TH29-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ]
+  },
+  "TH29-r2": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ]
+  },
+  "TH29-r3": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (opens with a hedge, then lactose and energy)"
+   ]
+  },
+  "TH30-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (opens with a hedge, then water / milk / fruit, oats)"
+   ]
+  },
+  "TH32-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH33-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH33-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH33-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH34-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed, borderline: says 100 baht \"may be rather little but can work\" without price data; gives cheap foods and price-per-gram method"
+   ]
+  },
+  "TH39-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "TH42-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route, no retrieval (interpreter)"
+   ]
+  },
+  "TH42-r2": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route, no retrieval (interpreter)"
+   ]
+  },
+  "TH42-r3": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: whey, mixing, creatine, BCAA not needed"
+   ]
+  },
+  "TH44-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH45-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH46-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH46-r2": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "TH46-r3": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  },
+  "YT01-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld"
+   ]
+  },
+  "YT01-r2": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ]
+  },
+  "YT01-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "YT02-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "YT05-r1": {
+   "baseline": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ]
+  },
+  "YT07-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ]
+  },
+  "YT08-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ]
+  }
+ },
+ "final": {
+  "DD01-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "DD02-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH01-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH02-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "service",
+    null,
+    "provider 503 x2 during answer review"
+   ],
+   "round": 1
+  },
+  "TH02-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "names meat and fish, then says amounts are not covered; no \"food amounts are small\" point. creatine chunks still retrieved; bcaa chunk at rank 2 (variance, possibly crowding)"
+   ],
+   "round": 1
+  },
+  "TH02-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH03-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH04-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "carbs card: glycogen, very low carb may cut reps, protein first, carbs around training"
+   ],
+   "round": 1
+  },
+  "TH05-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH05-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH05-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH06-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH07-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH08-r1": {
+   "baseline": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: whey does not build muscle by itself; resistance training + total protein + energy; ISSN synergy; 1.4-2.0 g/kg"
+   ],
+   "round": 2
+  },
+  "TH08-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (same points)"
+   ],
+   "round": 2
+  },
+  "TH08-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (same points)"
+   ],
+   "round": 2
+  },
+  "TH09-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH09-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH09-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH10-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH10-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH10-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH11-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH11-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "adds \"soy has no lactose\" (not in a card, true)"
+   ],
+   "round": 2
+  },
+  "TH11-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH12-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH13-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "criteria now include price per gram, label and FDA number (whey-types card)"
+   ],
+   "round": 1
+  },
+  "TH14-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "thin: TDEE estimate, short-term weight vs fat, track trend"
+   ],
+   "round": 1
+  },
+  "TH14-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "only adaptation; hedges that estimation error, water and NEAT are not covered (variance)"
+   ],
+   "round": 1
+  },
+  "TH14-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH15-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH16-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH17-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH18-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH19-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld; retrieval includes weight-gain chunks twice (possible card crowding)"
+   ],
+   "round": 1
+  },
+  "TH19-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH19-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH20-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH20-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH20-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "after trimming only tracking and recovery remain; no causes, protein or training (variance / trimming)"
+   ],
+   "round": 1
+  },
+  "TH21-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "recomposition: maintenance targets, protein with resistance training, track 2-4 weeks"
+   ],
+   "round": 2
+  },
+  "TH22-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "borderline: answers the question (build muscle with training, protein 1.6-2.2, start at maintenance, small surplus later) but leans on the underweight card"
+   ],
+   "round": 1
+  },
+  "TH23-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH24-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH25-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "beginners, returning and higher-fat people; deficit + training + protein; harder when advanced"
+   ],
+   "round": 2
+  },
+  "TH26-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "opening sentence trimmed but both times answered"
+   ],
+   "round": 2
+  },
+  "TH26-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH26-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH27-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "only \"keep protein steady\" survives trimming; retrieval has no new card (variance / trimming)"
+   ],
+   "round": 2
+  },
+  "TH28-r1": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 2
+  },
+  "TH29-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 2
+  },
+  "TH29-r2": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 2
+  },
+  "TH29-r3": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (opens with a hedge, then lactose and energy)"
+   ],
+   "round": 2
+  },
+  "TH30-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed (opens with a hedge, then water / milk / fruit, oats)"
+   ],
+   "round": 2
+  },
+  "TH31-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: whey = protein source, creatine evidence, BCAA unnecessary with enough protein, can combine (no creatine dose)"
+   ],
+   "round": 1
+  },
+  "TH32-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH33-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH33-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH33-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH34-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed, borderline: says 100 baht \"may be rather little but can work\" without price data; gives cheap foods and price-per-gram method"
+   ],
+   "round": 2
+  },
+  "TH35-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH36-r1": {
+   "baseline": [
+    "fail",
+    "factual_error"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: Harris-Benedict 1918, Mifflin 1990 (498), Katch-McArdle, PAL. The model added full first names \"James Arthur Harris\" and \"Francis Gano Benedict\" that are NOT in the card (initials only). They match the historical record, so not a factual error, but the claim checker let unsupported names through"
+   ],
+   "round": 1
+  },
+  "TH37-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calculator route as before"
+   ],
+   "round": 1
+  },
+  "TH39-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "TH40-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH40-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH40-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH41-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH42-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route, no retrieval (interpreter)"
+   ],
+   "round": 2
+  },
+  "TH42-r2": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "fail",
+    "not_answered",
+    "food-suggestion route, no retrieval (interpreter)"
+   ],
+   "round": 2
+  },
+  "TH42-r3": {
+   "baseline": [
+    "fail",
+    "not_answered"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: whey, mixing, creatine, BCAA not needed"
+   ],
+   "round": 2
+  },
+  "TH43-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH43-r2": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH43-r3": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "TH44-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH45-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH46-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH46-r2": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH46-r3": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  },
+  "TH47-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH48-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "improved: water, milk, protein drinks, sports drinks, label"
+   ],
+   "round": 1
+  },
+  "TH49-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH49-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calculator route (same output judged pass for r1 in c0201c3)"
+   ],
+   "round": 1
+  },
+  "TH49-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calculator route"
+   ],
+   "round": 1
+  },
+  "TH50-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: low-moderate cardio, high intensity may suffer, strength mostly unchanged, hypertrophy may be blunted"
+   ],
+   "round": 1
+  },
+  "TH50-r2": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "TH50-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 1
+  },
+  "YT01-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "fail",
+    "validation_block",
+    "whole answer withheld"
+   ],
+   "round": 2
+  },
+  "YT01-r2": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 2
+  },
+  "YT01-r3": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "YT02-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "YT03-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "calculator route"
+   ],
+   "round": 1
+  },
+  "YT04-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 1
+  },
+  "YT05-r1": {
+   "baseline": [
+    "fail",
+    "validation_block"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 2
+  },
+  "YT06-r1": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed: multiplying high body weight overestimates; LBM, 1.2-1.6 g/kg, target weight"
+   ],
+   "round": 1
+  },
+  "YT06-r2": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 1
+  },
+  "YT06-r3": {
+   "baseline": [
+    "fail",
+    "missing_key_point"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "fixed"
+   ],
+   "round": 1
+  },
+  "YT07-r1": {
+   "baseline": [
+    "pass",
+    null
+   ],
+   "branch": [
+    "pass",
+    null,
+    ""
+   ],
+   "round": 2
+  },
+  "YT08-r1": {
+   "baseline": [
+    "pass_by_policy",
+    null
+   ],
+   "branch": [
+    "pass_by_policy",
+    null,
+    "identical answer to c0201c3 (rule route, no retrieval)"
+   ],
+   "round": 2
+  }
+ }
+}

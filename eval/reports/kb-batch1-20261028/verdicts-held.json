@@ -1,0 +1,271 @@
+{
+ "reviewer": "Claude (AI), preliminary; owner and expert review pending",
+ "reviewed_utc": "2026-10-27T17:50Z",
+ "rules": "pass = key points from CRITERIA.md covered and nothing forbidden; service = provider 503 (counted separately, not a quality verdict); untestable = guard fired on both arms by design",
+ "verdicts": {
+  "H01": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "no protein percentages; the 'worth paying more?' heading has no content after review trimming"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "WPC ~70-80% vs WPI >90%, lactose and fat, choose by tolerance and price per gram, daily total first"
+   ]
+  },
+  "H02": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "hedges that documents do not cover hydrolysate"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "faster amino-acid rise in some studies, 8-week study equal gains, not shown superior"
+   ]
+  },
+  "H03": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "says no direct data; never states that daily energy decides fat gain"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "daily energy decides, count the snack's energy, no blunting of overnight fat use, optional; slightly generalises the casein finding to protein"
+   ]
+  },
+  "H04": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "difference section empty after trimming"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "slow vs fast digestion, whey higher acute MPS, 30-40 g casein before sleep, optional"
+   ]
+  },
+  "H05": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "only says rely on meals; does not say what whey lacks"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "not a complete meal: carbohydrate, fibre, micronutrients, satiety; occasional replacement fine"
+   ]
+  },
+  "H06": {
+   "main": [
+    "fail",
+    "validation_block",
+    "whole answer withheld (answer_validation_failed)"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "water = powder only (cutting), milk adds protein, carbohydrate, fat and energy (gaining)"
+   ]
+  },
+  "H07": {
+   "main": [
+    "pass",
+    null,
+    "not necessary, needs other EAAs"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "not needed with enough protein; 20 g whey has ~4.8 g BCAA; BCAA alone limited"
+   ]
+  },
+  "H08": {
+   "main": [
+    "pass",
+    null,
+    "whey complete protein, BCAA evidence limited"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "whey has all EAAs; Jackman ~50% smaller response; whey or food preferred"
+   ]
+  },
+  "H09": {
+   "main": [
+    "untestable",
+    null,
+    "BMI >= 40 referral guard (profile 170 cm + stated 120 kg)"
+   ],
+   "branch": [
+    "untestable",
+    null,
+    "same guard"
+   ]
+  },
+  "H10": {
+   "main": [
+    "pass",
+    null,
+    "FFM = weight minus fat mass, example, 2.3-3.1 g/kg FFM with scope note"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "formula, 120 kg / 35% example, estimate error"
+   ]
+  },
+  "H11": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "no strength, power or hypertrophy evidence; generic advice"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "6-12 week studies: strength mostly unchanged, lean mass or hypertrophy may suffer; not supported for muscle gain. First sentence has a muddled 'because' clause"
+   ]
+  },
+  "H12": {
+   "main": [
+    "fail",
+    "not_answered",
+    "no carbohydrate limit given"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "~50 g/day or ~10% energy (ISSN 2017)"
+   ]
+  },
+  "H13": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "only the 8-12 g/kg high-volume figure, with caveat; no usual range"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "4-7 / 5-6 g/kg proposals, >=3-5 g/kg, protein and fat first; attributes the 4-7 and 5-6 proposals to Iraki rather than to the sources Iraki cites (minor)"
+   ]
+  },
+  "H14": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "hedges; no statement that gains remain possible"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "possible with surplus and protein; carbohydrate not essential but supports training"
+   ]
+  },
+  "H15": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "no comparison or history for Harris-Benedict"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "1918 Harris and Benedict, Mifflin 1990 498 adults, O'Neill 2023 no single best. Says Harris-Benedict 'usually' overestimates by 5%, while the card gives that only for Mifflin's sample (minor overgeneralisation)"
+   ]
+  },
+  "H16": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "explains BMR x factor but not where the factors come from"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "FAO/WHO/UNU PAL bands, estimates, adjust by weight trend"
+   ]
+  },
+  "H17": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "deterministic food-suggestion route; ignores budget and price data"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "identical deterministic route; card not retrieved (routing, not card content)"
+   ]
+  },
+  "H18": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "hedges that values are not in the documents"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "retry after provider 503 (first attempt archived in service-failures-held): tofu 12.9 g vs egg 13.2 g per 100 g, energy, boiled egg per piece, soft tofu caveat"
+   ]
+  },
+  "H19": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "target-calculator route: surplus numbers only, no food or snack guidance"
+   ],
+   "branch": [
+    "fail",
+    "missing_key_point",
+    "identical target-calculator route; card not retrieved (routing)"
+   ]
+  },
+  "H20": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "hedges: no data on gainers"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "retry after provider 503 (first attempt archived): gainer not necessary, food first, convenience only"
+   ]
+  },
+  "H21": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "says no data; talks about daily water need"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "water enough for ~1 h; carbohydrate matters beyond ~70 min"
+   ]
+  },
+  "H22": {
+   "main": [
+    "fail",
+    "missing_key_point",
+    "no recovery, glycogen or rehydration evidence"
+   ],
+   "branch": [
+    "pass",
+    null,
+    "ISSN 2017 milk: recovery, glycogen, hydration, positive protein balance"
+   ]
+  }
+ }
+}

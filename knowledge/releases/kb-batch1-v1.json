@@ -1,0 +1,61 @@
+{
+  "version": "kb-batch1-v1",
+  "created": "2026-10-28",
+  "requested_by": "project owner, 27 Oct 2026: expand the knowledge base for maximum coverage",
+  "cards": [
+    {
+      "card": "bcaa",
+      "utf8_lf_sha256": "ee7c0ac7a64f997673a8a0e4355e0e5e7f1fa5f3d5c55729f5db5b4a544466fc"
+    },
+    {
+      "card": "bmr-tdee-equations",
+      "utf8_lf_sha256": "5449e60edb4f8142ffc5b558ebee4179fe2d309eefdea8d19aa01d32f1da11a5"
+    },
+    {
+      "card": "budget-protein-thai",
+      "utf8_lf_sha256": "2db5c4d7c87f76f45a86ceec050426612020f40ba7ca6fca2eb72b1a14ae2418"
+    },
+    {
+      "card": "carbs-for-lifting",
+      "utf8_lf_sha256": "9fba9b397a0a8c6beabb18785e7430c23c352b796e8e588b4d447be58eef5463"
+    },
+    {
+      "card": "keto-low-carb-training",
+      "utf8_lf_sha256": "551af2ff9cedc67c1498ddbaf3894f83e2a074b825c7b6d8b5260148fe656f6a"
+    },
+    {
+      "card": "pre-sleep-protein-casein",
+      "utf8_lf_sha256": "0f7ac122545e92a0b4f449f24da8a1e1328327731f47bcb0fc14dddbb32f2076"
+    },
+    {
+      "card": "protein-higher-body-weight",
+      "utf8_lf_sha256": "b8d6270d7ce1380cae25edac39335625fe2ab853aea2a661183cd51f5093be5f"
+    },
+    {
+      "card": "sports-drinks-hydration",
+      "utf8_lf_sha256": "9f466d6b5c67addc5f44f295e3dc2465878852c5c6fc08c294786f56df1c5af1"
+    },
+    {
+      "card": "weight-gain-underweight",
+      "utf8_lf_sha256": "23e03c9db94f4b425a4f9ce8f862332b9954c3ec9778cb1bb13cb4446dfc7380"
+    },
+    {
+      "card": "whey-types",
+      "utf8_lf_sha256": "0521f78b165bc543b334c8791afd65abb819a5588783fb9ce6f7d7d421c9faa3"
+    },
+    {
+      "card": "whey-vs-whole-food",
+      "utf8_lf_sha256": "c7fa1e7aa99bfb66326d50eadf53d547f3f1518637453d1126458765939f429f"
+    }
+  ],
+  "review_status": "ai_reviewed_pending_independent_review",
+  "clinical_approval": false,
+  "evaluation": {
+    "report": "eval/reports/kb-batch1-20261028/README.md",
+    "assessment": "Preliminary AI review (Claude); owner and expert review pending",
+    "real_questions_whole_set": "91/101 pass (c0201c3 baseline 81/101)",
+    "held_out_ai_written": "19/21 pass (main 3/21)",
+    "retrieval_C2": "failed: 112/125 labelled hits (main 119); 3 true displacements after re-labelling 5 items that now retrieve the covering new card"
+  },
+  "deploy_note": "Deploying the backend does not load cards. Run `python -m ingest` from backend/ against the production DATABASE_URL after merge."
+}
