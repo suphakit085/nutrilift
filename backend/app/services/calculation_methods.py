@@ -121,6 +121,16 @@ def methods_for_targets(targets: dict) -> list[dict]:
         },
         {
             "key": "fat",
+            "name": "ไขมัน 25% ของพลังงานเป้าหมาย",
+            "equation": f"{f(d['energy_target_unrounded_kcal'])} × 0.25 ÷ 9",
+            "result": targets["macros"]["fat_g"],
+            "unit": "กรัม/วัน",
+            "basis": ("BMI ตั้งแต่ 30 จึงคิดไขมันจากสัดส่วนพลังงานแทนน้ำหนักตัวทั้งหมด "
+                      "25% อยู่ในช่วงที่ WHO แนะนำ (อย่างน้อย 15% ไม่เกินราว 30%) "
+                      "ค่า 25% เป็นกติกาโครงการ"),
+            "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+        } if targets["macros"].get("fat_basis") == "high_bmi" else {
+            "key": "fat",
             "name": "ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน",
             "equation": (f"max({f(weight)} × 0.9, "
                          f"{f(d['energy_target_unrounded_kcal'])} × 0.20 ÷ 9)"),
