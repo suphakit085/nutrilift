@@ -93,3 +93,9 @@ real questions, with score difference 0. Gate passed.
 - **C1, C2:** pass (C2 with the relabelling recorded before generation).
 - **Decision:** all frozen criteria pass after round 3. Proceed to PR and merge, per the owner's request to
   measure before merge.
+
+## Live check (28 Oct)
+
+- Ingested from `c865467` to production: 45 documents, 97 chunks, no null embeddings.
+- Five questions on www.nutrilift.xyz in fresh chats with the owner's account (K05, K13, TH20, K11, TH45):
+  four pass and TH45 is refused by the medical policy as before. Details in README.md.
