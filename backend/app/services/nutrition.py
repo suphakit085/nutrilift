@@ -75,6 +75,18 @@ PROTEIN_G_PER_KG: dict[str, tuple[float, float]] = {
     "bulk": (1.6, 2.0),
 }
 
+#: Protein g per kg bodyweight from BMI 30 (BULK_REVIEW_BMI), any goal. The
+#: per-goal ranges above come from studies of mostly lean trained people, and
+#: multiplying a high body weight by them overshoots: 120 kg x 2.0 = 240 g/day,
+#: the example the protein-higher-body-weight card warns about. Leidy 2015 is
+#: the one range on that card drawn from people with overweight or obesity.
+HIGH_BMI_PROTEIN_G_PER_KG: tuple[float, float] = (1.2, 1.6)
+HIGH_BMI_PROTEIN_REFERENCE = (
+    "Leidy HJ, et al. Am J Clin Nutr. 2015;101(6):1320S-1329S "
+    "(โปรตีน 1.2-1.6 g/kg ในงานลดน้ำหนักของผู้มีน้ำหนักเกิน)"
+)
+HIGH_BMI_PROTEIN_URL = "https://doi.org/10.3945/ajcn.114.084038"
+
 #: Fat g per kg bodyweight, as (low, high).
 FAT_G_PER_KG: tuple[float, float] = (0.8, 1.0)
 
@@ -245,7 +257,11 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     kcal_target = (kcal_low + kcal_high) / 2
 
     # --- protein ---
-    p_low_per_kg, p_high_per_kg = PROTEIN_G_PER_KG[effective_goal]
+    protein_basis = "high_bmi" if bmi_value >= BULK_REVIEW_BMI else "goal"
+    p_low_per_kg, p_high_per_kg = (
+        HIGH_BMI_PROTEIN_G_PER_KG if protein_basis == "high_bmi"
+        else PROTEIN_G_PER_KG[effective_goal]
+    )
     protein_g = profile.weight_kg * ((p_low_per_kg + p_high_per_kg) / 2)
     protein_kcal = protein_g * KCAL_PER_G_PROTEIN
 
@@ -349,6 +365,7 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
         "macros": {
             "protein_g": round(protein_g),
             "protein_g_per_kg_range": [p_low_per_kg, p_high_per_kg],
+            "protein_basis": protein_basis,
             "protein_kcal": round(protein_kcal),
             "fat_g": round(fat_g),
             "fat_g_per_kg_range": [f_low_per_kg, f_high_per_kg],
@@ -381,6 +398,7 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
         },
         "references": [
             bmr_reference,
+            *([HIGH_BMI_PROTEIN_REFERENCE] if protein_basis == "high_bmi" else []),
             (
                 "Jager R, et al. ISSN Position Stand: Protein and Exercise. JISSN. 2017;14:20 "
                 "(โปรตีน 1.4-2.0 g/kg สำหรับผู้ฝึกแรงต้าน)"

@@ -252,3 +252,49 @@ def test_summary_carries_warnings_and_effective_goal():
 def test_summary_has_no_warning_line_when_clean():
     s = summarize_targets_th(calc_nutrition_targets(make_profile()))
     assert "คำเตือน" not in s
+
+
+# --------------------------------------------------------------------------
+# Protein at BMI 30 and above (protein-higher-body-weight card)
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("goal", ["cut", "maintain", "bulk"])
+def test_high_bmi_protein_uses_leidy_range(goal):
+    # 120 kg / 180 cm: BMI 37.0. The card's example: 120 x 2.0 = 240 g overshoots.
+    # 120 x 1.4 (midpoint of 1.2-1.6) = 168 g, whatever the goal.
+    t = calc_nutrition_targets(make_profile(weight_kg=120.0, height_cm=180.0, goal=goal))
+    assert t["macros"]["protein_g"] == 168
+    assert t["macros"]["protein_g_per_kg_range"] == [1.2, 1.6]
+    assert t["macros"]["protein_basis"] == "high_bmi"
+    assert any(r.startswith("Leidy HJ") for r in t["references"])
+    step = next(m for m in t["calculation_methods"] if m["key"] == "protein")
+    assert step["equation"] == "120 \u00d7 1.4"
+    assert step["source_url"] == "https://doi.org/10.3945/ajcn.114.084038"
+
+
+def test_bmi_just_below_30_keeps_goal_range():
+    # 91 kg / 175 cm: BMI 29.7, cut -> 91 x 2.0 = 182 g.
+    t = calc_nutrition_targets(make_profile(weight_kg=91.0, goal="cut"))
+    assert t["macros"]["protein_basis"] == "goal"
+    assert t["macros"]["protein_g"] == 182
+    assert not any(r.startswith("Leidy HJ") for r in t["references"])
+
+
+def test_bmi_exactly_30_switches():
+    # 91.875 kg / 175 cm = BMI 30.0 -> 91.875 x 1.4 = 128.6 g.
+    t = calc_nutrition_targets(make_profile(weight_kg=91.875, goal="cut"))
+    assert t["macros"]["protein_basis"] == "high_bmi"
+    assert t["macros"]["protein_g"] == 129
+
+
+def test_high_bmi_explanation_names_leidy_range():
+    from app.services.target_explanation import explicit_target_explanation_reply
+
+    t = calc_nutrition_targets(make_profile(weight_kg=120.0, height_cm=180.0, goal="cut"))
+    reply = explicit_target_explanation_reply("ขอสูตร", t, requested=True)
+    assert "120 \u00d7 1.4 ≈ 168 กรัม/วัน" in reply
+    assert "1.2\u20131.6" in reply and "Leidy" in reply
+
+    normal = calc_nutrition_targets(make_profile(goal="cut"))
+    assert "Leidy" not in explicit_target_explanation_reply("ขอสูตร", normal, requested=True)
