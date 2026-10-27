@@ -1,0 +1,50 @@
+{
+  "version": "kb-batch2-v1",
+  "created": "2026-10-28",
+  "requested_by": "project owner, 28 Oct 2026: start batch 2, measure as before merge",
+  "cards": [
+    {
+      "card": "pre-workout-meal",
+      "utf8_lf_sha256": "4581234ee5a7dd65a98885c44db7c787bd43beb6243b9624330f10ffd77b91fa"
+    },
+    {
+      "card": "diet-breaks-refeeds",
+      "utf8_lf_sha256": "deefc420fa1cbc7f7f8bc3b0ee26ec3e13806d850cfeff9c2b07698f258f3ffb"
+    },
+    {
+      "card": "alcohol-training",
+      "utf8_lf_sha256": "8a53cf5f6e59398c85dcb536f0f07b4bd46392165df0936f8886afbc9f512501"
+    },
+    {
+      "card": "sleep-body-composition",
+      "utf8_lf_sha256": "fa0d95dfdf1134f06206b574e3a144899cdccfe480161b959ce24cae1415a63a"
+    },
+    {
+      "card": "dietary-fat",
+      "utf8_lf_sha256": "1540bf6be3053d08f026c5674a385602d18ca63f8ebc005dd8774858331ba55b"
+    },
+    {
+      "card": "sugar-sweeteners",
+      "utf8_lf_sha256": "747b1c536a3ab375492055d2046eb129d2fd2ac1fbd06182a040f5a5e507d0a2"
+    },
+    {
+      "card": "meal-frequency",
+      "utf8_lf_sha256": "0ef75fdf771f973b1df78ed3543e59c13b3b4b14ccfa731e12049204530273f2"
+    },
+    {
+      "card": "protein-quality",
+      "utf8_lf_sha256": "1a9a79c81131b31743f4239d740a4528f50f748da1f61d2709814484ab25f5a4"
+    }
+  ],
+  "review_status": "ai_reviewed_pending_independent_review",
+  "clinical_approval": false,
+  "evaluation": {
+    "report": "eval/reports/kb-batch2-20261028/README.md",
+    "assessment": "Preliminary AI review (Claude); owner and expert review pending",
+    "real_questions_changed": "67/75 pass vs live 65/75 (round 3)",
+    "held_out_ai_written": "16/16 vs main 4/16",
+    "retrieval": "C1 2/15 both arms; C2 passes after relabelling recorded before generation",
+    "rounds": 3
+  },
+  "deploy_note": "Deploying the backend does not load cards. Run `python -m ingest` from backend/ against the production DATABASE_URL after merge."
+}
