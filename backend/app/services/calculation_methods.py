@@ -13,6 +13,18 @@ STEP_INPUTS = {
     "carb": ("energy", "protein", "fat"),
 }
 
+#: Why the protein step used its per-kg rate (nutrition.calc_nutrition_targets).
+PROTEIN_BASIS = {
+    "goal": "เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล",
+    "high_bmi": ("BMI ตั้งแต่ 30 จึงใช้ค่ากลางของช่วง 1.2-1.6 กรัม/กก. จากงานลดน้ำหนักในผู้มีน้ำหนักเกิน "
+                 "(Leidy 2015) แทนช่วงของคนทั่วไป เพราะน้ำหนักส่วนหนึ่งเป็นไขมัน "
+                 "เป็นกติกาโครงการ ไม่ใช่ใบสั่งเฉพาะบุคคล"),
+}
+PROTEIN_SOURCE = {
+    "goal": "https://doi.org/10.1186/s12970-017-0177-8",
+    "high_bmi": "https://doi.org/10.3945/ajcn.114.084038",
+}
+
 
 def target_methods_note(
     answer: str, targets: dict | None, shown: list[str] | tuple[str, ...] = (),
@@ -104,8 +116,8 @@ def methods_for_targets(targets: dict) -> list[dict]:
             "equation": f"{f(weight)} × {f(d['protein_g_per_kg'])}",
             "result": targets["macros"]["protein_g"],
             "unit": "กรัม/วัน",
-            "basis": "เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล",
-            "source_url": "https://doi.org/10.1186/s12970-017-0177-8",
+            "basis": PROTEIN_BASIS[targets["macros"].get("protein_basis", "goal")],
+            "source_url": PROTEIN_SOURCE[targets["macros"].get("protein_basis", "goal")],
         },
         {
             "key": "fat",

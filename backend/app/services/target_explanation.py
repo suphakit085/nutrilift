@@ -10,6 +10,7 @@ from app.services.thai_text import normalize_thai
 
 MIFFLIN_URL = "https://pubmed.ncbi.nlm.nih.gov/2305711/"
 ISSN_PROTEIN_URL = "https://link.springer.com/article/10.1186/s12970-017-0177-8"
+LEIDY_PROTEIN_URL = "https://doi.org/10.3945/ajcn.114.084038"
 KATCH_METHOD_URL = "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1543263/full"
 
 
@@ -103,6 +104,7 @@ def explicit_target_explanation_reply(
     adj_low, adj_high = targets["energy_adjustment_pct"]
     midpoint = details["energy_adjustment_fraction"] * 100
     protein_low, protein_high = macros["protein_g_per_kg_range"]
+    high_bmi = macros.get("protein_basis") == "high_bmi"
     lines += [
         "",
         (f"- TDEE = BMR \u00d7 ตัวคูณกิจกรรม {_number(details['activity_factor'])} "
@@ -114,7 +116,9 @@ def explicit_target_explanation_reply(
         (f"- โปรตีน = {weight} \u00d7 {_number(details['protein_g_per_kg'])} "
         f"≈ {macros['protein_g']} กรัม/วัน "
         f"ระบบเลือกค่ากลางของช่วง {_number(protein_low)}\u2013{_number(protein_high)} "
-        "กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน"),
+        "กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน"
+        + (" เพราะ BMI ตั้งแต่ 30 ระบบจึงใช้ช่วงจากงานในผู้มีน้ำหนักเกินแทนช่วงของคนทั่วไป"
+           if high_bmi else "")),
     ]
     # Fat and carbs reuse the calculator's own step text (same operands as
     # the formula note under model answers), so the two never disagree.
@@ -131,6 +135,11 @@ def explicit_target_explanation_reply(
         "จึงอาจต่างเล็กน้อยหากนำ BMR หรือ TDEE ที่แสดงไปคูณซ้ำ"),
         "",
         "### หลักฐานเรื่องโปรตีน",
+        *([(f"[Leidy และคณะ (2015)]({LEIDY_PROTEIN_URL}) "
+            "สรุปว่าอาหารโปรตีน 1.2\u20131.6 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน "
+            "สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้นในงานลดน้ำหนักของผู้มีน้ำหนักเกิน "
+            "ระบบใช้ช่วงนี้เมื่อ BMI ตั้งแต่ 30 เพราะการคูณน้ำหนักตัวทั้งหมดด้วยช่วงของคนทั่วไป"
+            "อาจได้ค่าสูงเกินจำเป็น ไม่มีวิธีเดียวที่เป็นมาตรฐานสากล"), ""] if high_bmi else []),
         (f"[ISSN: Jäger และคณะ (2017)]({ISSN_PROTEIN_URL}) "
         "เสนอช่วงโปรตีนรวม 1.4\u20132.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน "
         "สำหรับผู้ใหญ่สุขภาพดีที่ออกกำลังกายส่วนใหญ่ "
