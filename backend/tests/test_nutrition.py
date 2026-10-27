@@ -298,3 +298,27 @@ def test_high_bmi_explanation_names_leidy_range():
 
     normal = calc_nutrition_targets(make_profile(goal="cut"))
     assert "Leidy" not in explicit_target_explanation_reply("ขอสูตร", normal, requested=True)
+
+
+@pytest.mark.parametrize("goal", ["cut", "maintain", "bulk"])
+def test_high_bmi_fat_is_a_quarter_of_energy(goal):
+    # 120 kg / 180 cm: BMI 37.0. Was 120 x 0.9 = 108 g whatever the energy.
+    t = calc_nutrition_targets(make_profile(weight_kg=120.0, height_cm=180.0, goal=goal))
+    kcal = t["calculation_details"]["energy_target_unrounded_kcal"]
+    assert t["macros"]["fat_basis"] == "high_bmi"
+    assert t["calculation_details"]["fat_unrounded_g"] == pytest.approx(kcal * 0.25 / 9)
+    assert t["macros"]["fat_g"] < 108
+    step = next(m for m in t["calculation_methods"] if m["key"] == "fat")
+    assert step["equation"].endswith("0.25 ÷ 9")
+    assert any(r.startswith("WHO. Healthy diet") for r in t["references"])
+    macro_kcal = (4 * t["calculation_details"]["protein_unrounded_g"]
+                  + 9 * t["calculation_details"]["fat_unrounded_g"]
+                  + 4 * t["calculation_details"]["carb_unrounded_g"])
+    assert macro_kcal == pytest.approx(kcal)
+
+
+def test_bmi_below_30_fat_unchanged():
+    # 91 kg / 175 cm: BMI 29.7 -> 91 x 0.9 = 81.9 g, above the 20% floor.
+    t = calc_nutrition_targets(make_profile(weight_kg=91.0, goal="cut"))
+    assert t["macros"]["fat_basis"] == "goal"
+    assert t["macros"]["fat_g"] == 82

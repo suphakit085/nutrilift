@@ -90,6 +90,17 @@ HIGH_BMI_PROTEIN_URL = "https://doi.org/10.3945/ajcn.114.084038"
 #: Fat g per kg bodyweight, as (low, high).
 FAT_G_PER_KG: tuple[float, float] = (0.8, 1.0)
 
+#: Fat as a share of energy from BMI 30, any goal. Like protein, g/kg of total
+#: weight overshoots there: 120 kg x 0.9 = 108 g/day. The dietary-fat card gives
+#: fat as a share of energy (WHO: at least 15% and at most about 30%; Iraki
+#: 2019: 20-35%), so the calculator takes 25%, between the project's 20% floor
+#: and WHO's 30% ceiling. The 25% itself is a project choice.
+HIGH_BMI_FAT_ENERGY_SHARE = 0.25
+HIGH_BMI_FAT_REFERENCE = (
+    "WHO. Healthy diet. Fact sheet; WHO 2023 guidelines on fats "
+    "(ไขมันอย่างน้อย 15% และไม่เกินราว 30% ของพลังงาน)"
+)
+
 #: Project calculator floor; Helms 2014 also discusses 15-20% in some
 #: contest-preparation contexts. This is not a universal literature minimum.
 MIN_FAT_ENERGY_SHARE = 0.20
@@ -265,12 +276,17 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
     protein_g = profile.weight_kg * ((p_low_per_kg + p_high_per_kg) / 2)
     protein_kcal = protein_g * KCAL_PER_G_PROTEIN
 
-    # --- fat: g/kg, but never below MIN_FAT_ENERGY_SHARE of energy ---
+    # --- fat: g/kg, but never below MIN_FAT_ENERGY_SHARE of energy; from BMI
+    # 30 a fixed share of energy instead (HIGH_BMI_FAT_ENERGY_SHARE) ---
     f_low_per_kg, f_high_per_kg = FAT_G_PER_KG
-    fat_g = profile.weight_kg * ((f_low_per_kg + f_high_per_kg) / 2)
-    min_fat_g = (kcal_target * MIN_FAT_ENERGY_SHARE) / KCAL_PER_G_FAT
-    fat_floor_applied = fat_g < min_fat_g
-    fat_g = max(fat_g, min_fat_g)
+    if protein_basis == "high_bmi":
+        fat_g = kcal_target * HIGH_BMI_FAT_ENERGY_SHARE / KCAL_PER_G_FAT
+        fat_floor_applied = False
+    else:
+        fat_g = profile.weight_kg * ((f_low_per_kg + f_high_per_kg) / 2)
+        min_fat_g = (kcal_target * MIN_FAT_ENERGY_SHARE) / KCAL_PER_G_FAT
+        fat_floor_applied = fat_g < min_fat_g
+        fat_g = max(fat_g, min_fat_g)
     fat_kcal = fat_g * KCAL_PER_G_FAT
 
     # --- carbohydrate: whatever energy is left ---
@@ -369,6 +385,7 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
             "protein_kcal": round(protein_kcal),
             "fat_g": round(fat_g),
             "fat_g_per_kg_range": [f_low_per_kg, f_high_per_kg],
+            "fat_basis": protein_basis,
             "fat_kcal": round(fat_kcal),
             "carb_g": round(carb_g),
             "carb_kcal": round(carb_kcal),
@@ -398,7 +415,8 @@ def calc_nutrition_targets(profile: ProfileInput) -> dict:
         },
         "references": [
             bmr_reference,
-            *([HIGH_BMI_PROTEIN_REFERENCE] if protein_basis == "high_bmi" else []),
+            *([HIGH_BMI_PROTEIN_REFERENCE, HIGH_BMI_FAT_REFERENCE]
+              if protein_basis == "high_bmi" else []),
             (
                 "Jager R, et al. ISSN Position Stand: Protein and Exercise. JISSN. 2017;14:20 "
                 "(โปรตีน 1.4-2.0 g/kg สำหรับผู้ฝึกแรงต้าน)"

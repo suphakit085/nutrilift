@@ -74,13 +74,26 @@ def test_birth_month_is_required_and_bounded() -> None:
 
 
 def test_vanishing_carbohydrate_is_flagged() -> None:
+    # BMI 29.8 still takes protein and fat per kg of total weight.
     heavy = ProfileInput(
-        sex="female", birth_year=1990, birth_month=1, height_cm=160, weight_kg=90,
+        sex="female", birth_year=1990, birth_month=1, height_cm=150, weight_kg=67,
         activity_level="sedentary", goal="cut",
     )
     result = calc_nutrition_targets(heavy)
     assert result["macros"]["carb_g"] < MIN_CARB_G
     assert any("คาร์โบไฮเดรต" in w and "ต่ำมาก" in w for w in result["warnings"])
+
+
+def test_high_bmi_split_no_longer_squeezes_out_carbohydrate() -> None:
+    # The original case (BMI 35.2): per-kg protein and fat left almost no
+    # carbohydrate. From BMI 30 both scale differently, so carbs stay above the line.
+    heavy = ProfileInput(
+        sex="female", birth_year=1990, birth_month=1, height_cm=160, weight_kg=90,
+        activity_level="sedentary", goal="cut",
+    )
+    result = calc_nutrition_targets(heavy)
+    assert result["macros"]["carb_g"] >= MIN_CARB_G
+    assert not any("ต่ำมาก" in w for w in result["warnings"])
 
 
 def test_ordinary_profile_has_no_carb_warning() -> None:
