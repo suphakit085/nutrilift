@@ -295,7 +295,7 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-muted">ข้อมูลหน้าเว็บทบทวนวันที่ 20 ต.ค. 2569 · ผลประเมินด้านล่างระบุวันที่และชุดข้อมูลแยกจากจำนวนข้อมูลในระบบ</p>
+          <p className="mt-4 text-xs leading-relaxed text-muted">ข้อมูลหน้าเว็บทบทวนวันที่ 20 ต.ค. 2569 · ผลประเมินด้านล่างระบุวันที่และชุดข้อมูลแยกจากจำนวนข้อมูลในระบบ และวัดตอนคลังความรู้มี {evidence.evaluatedKnowledgeCardCount} การ์ด ยังไม่ได้วัดใหม่หลังเพิ่มเป็น {evidence.knowledgeCardCount} การ์ด</p>
         </section>
 
         {/* ---------- 01 evidence ---------- */}
@@ -313,6 +313,8 @@ export default function LandingPage() {
               <p className="mt-5 text-[15px] leading-[1.8] text-band-soft/80">
                 คำตอบที่บันทึกวันที่ 7 ต.ค. 2569 จากคำถาม 135 ข้อ เปรียบเทียบแบบใช้และไม่ใช้ฐานความรู้
                 รวม 270 คำตอบ ประเมินตามเกณฑ์ 0–2 คะแนน
+                ตอนนั้นคลังความรู้มี {evidence.evaluatedKnowledgeCardCount} การ์ด
+                (ปัจจุบัน {evidence.knowledgeCardCount} การ์ด ยังไม่ได้วัดใหม่)
               </p>
               <p className="mt-4 text-xs leading-relaxed text-band-soft/80">
                 ใช้ AI ช่วยประเมินเบื้องต้น เอกสารผลประเมินฉบับ 19 ต.ค. 2569 ได้รับการตรวจสอบโดยผู้จัดทำและอาจารย์ที่ปรึกษาแล้ว
@@ -391,7 +393,7 @@ export default function LandingPage() {
                 85 คู่ที่มีคะแนนครบทั้งสองแบบจากหลักฐานที่ตรวจได้ อีก 50 คู่ไม่รวมในตัวชี้วัดนี้ ไม่ถือว่าผ่านโดยอัตโนมัติ
               </p>
               <div className="mt-7 border-t border-white/15 pt-5 text-[13px] leading-[1.8] text-band-soft/80">
-                <p className="font-semibold text-white">ผลค้นคืน · คำตอบชุด 7 ต.ค. 2569</p>
+                <p className="font-semibold text-white">ผลค้นคืน · คำตอบชุด 7 ต.ค. 2569 · คลังความรู้ {evidence.evaluatedKnowledgeCardCount} การ์ด</p>
                 <p>พบการ์ดที่เกี่ยวข้องใน 6 อันดับแรก <span className="stat-figure font-semibold text-accent-loud">{evidence.retrieval.hits}/{evidence.retrieval.eligible} ({evidence.retrieval.hitAt6.toFixed(2)}%)</span> · MRR <span className="stat-figure">{evidence.retrieval.mrr.toFixed(4)}</span></p>
                 <p className="mt-2 text-xs text-band-soft/60">เฉลยค้นคืนส่วนนี้ทบทวนด้วย AI วันที่ 20 ต.ค. 2569 และยังรอการยืนยันเพิ่มเติมโดยผู้จัดทำ แยกจากการตรวจเอกสารคะแนนคำตอบข้างต้น รวมกรณีที่ระบบจำกัดคำตอบก่อนค้นคืนไว้ในจำนวนทั้งหมดแล้ว</p>
               </div>
