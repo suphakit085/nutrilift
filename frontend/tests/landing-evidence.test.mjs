@@ -25,6 +25,9 @@ test('published score means use their paired numerators, denominator and current
 test('published corpus counts and protein example retain the current source units',()=>{
   const cards=readdirSync(new URL('../../knowledge/cards/',import.meta.url)).filter(n=>n.endsWith('.md')&&!n.startsWith('_'));
   assert.equal(evidence.knowledgeCardCount,cards.length);
+  // Scores on the page were measured on an older, smaller corpus; the page must say so.
+  assert.equal(evidence.evaluatedKnowledgeCardCount,26);
+  assert.ok(evidence.evaluatedKnowledgeCardCount<=evidence.knowledgeCardCount);
   const card=read('../../knowledge/cards/protein-requirement.md');
   const front=card.split('---')[1];
   assert.equal((front.match(/^- /gm)||[]).length,5);
@@ -37,4 +40,6 @@ test('published corpus counts and protein example retain the current source unit
   assert.ok(!page.includes('อ้างแหล่งที่ไม่มีจริง'));
   assert.ok(page.includes('85 คู่ที่มีคะแนนครบ'));
   assert.ok(page.includes('เฉลยค้นคืนส่วนนี้ทบทวนด้วย AI'));
+  assert.equal(page.split('evidence.evaluatedKnowledgeCardCount').length-1,3);
+  assert.ok(page.includes('ยังไม่ได้วัดใหม่'));
 });
