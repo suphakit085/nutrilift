@@ -22,6 +22,8 @@ const REFERENCES = [
   { label: "Mifflin MD, St Jeor ST, et al. Am J Clin Nutr. 1990;51(2):241–247", href: "https://doi.org/10.1093/ajcn/51.2.241" },
   { label: "Jäger R, et al. ISSN Position Stand: Protein and Exercise. JISSN. 2017;14:20", href: "https://doi.org/10.1186/s12970-017-0177-8" },
   { label: "Iraki J, et al. Nutrition Recommendations for Bodybuilders in the Off-Season. 2019;7(7):154", href: "https://doi.org/10.3390/sports7070154" },
+  { label: "Leidy HJ, et al. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S–1329S", href: "https://doi.org/10.3945/ajcn.114.084038" },
+  { label: "World Health Organization. Healthy diet. Fact sheet", href: "https://www.who.int/news-room/fact-sheets/detail/healthy-diet" },
 ] as const;
 
 /** Fixed-age calculator example, rechecked against the current function on
@@ -434,6 +436,7 @@ export default function LandingPage() {
               <Macro label="ไขมัน" grams={CALC.fat.grams} note={CALC.fat.note} bar="bg-macro-fat" />
             </div>
             <p className="mt-5 text-xs leading-relaxed text-muted">ตัวอย่างกำหนดอายุคงที่ 24 ปี · ไขมันขั้นต่ำ 20% เป็นกติกาเครื่องคำนวณของโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล · ปัดตัวเลขเพื่อแสดงผล</p>
+            <p className="mt-2 text-xs leading-relaxed text-muted">ถ้า BMI ตั้งแต่ 30 ระบบคิดโปรตีนจากค่ากลางของช่วง 1.2–1.6 g/กก. (Leidy 2015) และไขมัน 25% ของพลังงาน (อยู่ในช่วงที่ WHO แนะนำ) แทนการคูณน้ำหนักตัวทั้งหมดด้วยช่วงของคนทั่วไป ค่า 25% เป็นกติกาโครงการ</p>
           </div>
         </section>
 
