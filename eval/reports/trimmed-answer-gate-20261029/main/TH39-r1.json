@@ -1,0 +1,400 @@
+{
+ "id": "TH39",
+ "question": "แนะนำเวย์สำหรับคนผอมๆหน่อยครับ หลายยี่ห้อเหลือเกิน (เวย์ทีคุ้มค่ากับราคา)",
+ "history": [],
+ "attempts": 1,
+ "seconds": 31.0,
+ "model_calls": 7,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:\n\n* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]\n* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]\n* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]\n* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]\n* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]\n\nสำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3] สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+ "citations": [
+  "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+  "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "citation: แหล่ง S4 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S3 (ข้อความ: สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมความสะดวกเพื่อให้ได้โปรตีนรวมถึงเป้าหมายเท่านั้น [S3] , [S4])"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:",
+    "labels": [],
+    "raw": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.4"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.5"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.7"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 6,
+    "text": "สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3]",
+    "labels": [
+     "S3"
+    ],
+    "raw": "สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S3.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 7,
+    "text": "สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+    "labels": [
+     "S3"
+    ],
+    "raw": "สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S3.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:\n\n* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]\n* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]\n* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]\n* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]\n* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]\n\nสำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3] สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เลือกเวย์อย่างไรให้คุ้มโดยไม่ยึดยี่ห้อ",
+    "document_slug": "whey-types",
+    "score": 0.7237,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6995,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เลือกเวย์อย่างไรให้คุ้มโดยไม่ยึดยี่ห้อ",
+    "document_slug": "whey-types",
+    "score": 0.7237,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7079,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6995,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6821,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6696,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เวย์คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต ต่างกันอย่างไร",
+    "document_slug": "whey-types",
+    "score": 0.6827,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 27057,
+   "output_tokens": 2253,
+   "total_tokens": 29310
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "citation: แหล่ง S4 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S3 (ข้อความ: สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมความสะดวกเพื่อให้ได้โปรตีนรวมถึงเป้าหมายเท่านั้น [S3] , [S4])"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:",
+     "labels": [],
+     "raw": "การเลือกเวย์โปรตีนที่คุ้มค่าราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาได้จากเกณฑ์เหล่านี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **โปรตีนต่อช้อน:** ให้ดูกรัมโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภคบนฉลาก [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุก หารด้วย (กรัมโปรตีนต่อช้อนคูณจำนวนช้อนต่อกระปุก) [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.4"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ชนิดของเวย์:** หากคุณไม่ได้ไวต่อแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนที่ถูกกว่า แต่ถ้าต้องการแลคโตสและไขมันน้อย เวย์ไอโซเลตจะเหมาะกว่า [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.5"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ส่วนผสมอื่น:** ตรวจสอบน้ำตาลหรือส่วนผสมที่ไม่จำเป็น [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ความปลอดภัย:** ตรวจสอบเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อช่วยยืนยันการกำกับดูแลผลิตภัณฑ์ [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.7"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 6,
+     "text": "สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3]",
+     "labels": [
+      "S3"
+     ],
+     "raw": "สำหรับคนผอมที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้อ เวย์โปรตีนเป็นเพียงแหล่งโปรตีนเสริมที่ช่วยให้ได้โปรตีนรวมถึงเป้าหมายได้สะดวกขึ้นเท่านั้น [S3]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S3.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 7,
+     "text": "สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+     "labels": [
+      "S3"
+     ],
+     "raw": "สิ่งสำคัญคือการฝึกแรงต้านร่วมกับการได้รับพลังงานและโปรตีนรวมต่อวันให้เพียงพอ [S3]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S3.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

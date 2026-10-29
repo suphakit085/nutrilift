@@ -1,0 +1,324 @@
+{
+ "id": "TH29",
+ "question": "มีใครกินเวย์(คอนเซนเทรต)ก่อนนอนมั้ยครับ มีผลเสียอะไรมั้ย",
+ "history": [],
+ "attempts": 1,
+ "seconds": 30.3,
+ "model_calls": 7,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1] \n\nสำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:\n- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]\n- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1] \n\nอย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1] และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+ "citations": [
+  "กินโปรตีนหรือเวย์ก่อนนอน และเคซีนต่างจากเวย์อย่างไร"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "citation: แหล่ง S3 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสหรือน้ำตาลนมหลงเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจมีอาการไม่สบายท้องได้ [S1, S3])"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "สำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:",
+    "labels": [],
+    "raw": "สำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 4,
+    "text": "อย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "อย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "coverage_statement",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 5,
+    "text": "และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1] \n\nสำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:\n- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]\n- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1] \n\nอย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1] และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "กินโปรตีนหรือเวย์ก่อนนอน และเคซีนต่างจากเวย์อย่างไร",
+    "heading": "กินเวย์หรือโปรตีนก่อนนอนทำให้อ้วนไหม มีผลเสียไหม",
+    "document_slug": "pre-sleep-protein-casein",
+    "score": 0.7982,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Snijders T, Trommelen J, Kouw IWK, et al. The Impact of Pre-sleep Protein Ingestion on the Skeletal Muscle Adaptive Response to Exercise in Humans: An Update. Front Nutr. 2019;6:17. doi:10.3389/fnut.2019.00017"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "กินโปรตีนหรือเวย์ก่อนนอน และเคซีนต่างจากเวย์อย่างไร",
+    "heading": "กินเวย์หรือโปรตีนก่อนนอนทำให้อ้วนไหม มีผลเสียไหม",
+    "document_slug": "pre-sleep-protein-casein",
+    "score": 0.7982,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Snijders T, Trommelen J, Kouw IWK, et al. The Impact of Pre-sleep Protein Ingestion on the Skeletal Muscle Adaptive Response to Exercise in Humans: An Update. Front Nutr. 2019;6:17. doi:10.3389/fnut.2019.00017"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "กินโปรตีนหรือเวย์ก่อนนอน และเคซีนต่างจากเวย์อย่างไร",
+    "heading": "เคซีนกับเวย์ต่างกันอย่างไร และกินโปรตีนก่อนนอนช่วยไหม",
+    "document_slug": "pre-sleep-protein-casein",
+    "score": 0.7546,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Snijders T, Trommelen J, Kouw IWK, et al. The Impact of Pre-sleep Protein Ingestion on the Skeletal Muscle Adaptive Response to Exercise in Humans: An Update. Front Nutr. 2019;6:17. doi:10.3389/fnut.2019.00017"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เวย์คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต ต่างกันอย่างไร",
+    "document_slug": "whey-types",
+    "score": 0.7033,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เลือกเวย์อย่างไรให้คุ้มโดยไม่ยึดยี่ห้อ",
+    "document_slug": "whey-types",
+    "score": 0.7024,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7088,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7045,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 26128,
+   "output_tokens": 1566,
+   "total_tokens": 27694
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "citation: แหล่ง S3 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสหรือน้ำตาลนมหลงเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจมีอาการไม่สบายท้องได้ [S1, S3])"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "โปรตีนปริมาณพอเหมาะก่อนนอนไม่ได้ทำให้อ้วน เพราะเวลาที่กิน ไขมันจะเพิ่มหรือลดขึ้นกับพลังงานรวมทั้งวัน [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "สำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:",
+     "labels": [],
+     "raw": "สำหรับผลเสียของการกินเวย์คอนเซนเทรตก่อนนอน:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **ปัญหาทางเดินอาหาร:** เวย์คอนเซนเทรตยังมีแลคโตสเหลืออยู่บ้าง ดังนั้นคนที่ย่อยแลคโตสได้ไม่ดีอาจไม่สบายท้องได้ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **ผลเสียในคนทั่วไป:** ข้อมูลจากสมาคมโภชนาการการกีฬานานาชาติ (ISSN) และงานวิจัยระบุว่า ไม่พบผลเสียเฉพาะของการกินเวย์ก่อนนอนในคนสุขภาพดี [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 4,
+     "text": "อย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "อย่างไรก็ตาม งานวิจัยส่วนใหญ่นิยมใช้โปรตีนเคซีนก่อนนอนมากกว่าเพราะย่อยช้า ข้อมูลของการใช้เวย์ก่อนนอนจึงมีน้อยกว่า [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "coverage_statement",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 5,
+     "text": "และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "และพลังงานของมื้อก่อนนอนนี้จะต้องถูกนับรวมในเป้าหมายพลังงานรวมทั้งวันของคุณด้วย [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

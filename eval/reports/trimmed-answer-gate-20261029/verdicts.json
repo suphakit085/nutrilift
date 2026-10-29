@@ -1,0 +1,290 @@
+{
+ "main/TH01-r1": {
+  "code": "38cd17",
+  "verdict": "pass"
+ },
+ "branch/TH01-r2": {
+  "code": "5e43f4",
+  "verdict": "pass"
+ },
+ "branch/TH01-r3": {
+  "code": "93c2bf",
+  "verdict": "pass"
+ },
+ "main/TH01-r3": {
+  "code": "56e876",
+  "verdict": "pass"
+ },
+ "main/TH01-r2": {
+  "code": "12bc37",
+  "verdict": "pass"
+ },
+ "branch/TH01-r1": {
+  "code": "518c7e",
+  "verdict": "pass"
+ },
+ "branch/TH16-r2": {
+  "code": "acaaf0",
+  "verdict": "pass"
+ },
+ "branch/TH16-r1": {
+  "code": "f2f8df",
+  "verdict": "pass"
+ },
+ "main/TH16-r1": {
+  "code": "2c4dea",
+  "verdict": "pass"
+ },
+ "main/TH16-r2": {
+  "code": "4aa0b4",
+  "verdict": "fail"
+ },
+ "main/TH16-r3": {
+  "code": "6f79f3",
+  "verdict": "pass"
+ },
+ "branch/TH16-r3": {
+  "code": "4f7e18",
+  "verdict": "pass"
+ },
+ "main/TH19-r2": {
+  "code": "1e0ac4",
+  "verdict": "pass"
+ },
+ "main/TH19-r3": {
+  "code": "8e924e",
+  "verdict": "fail"
+ },
+ "branch/TH19-r2": {
+  "code": "b3435d",
+  "verdict": "fail"
+ },
+ "branch/TH19-r1": {
+  "code": "e03b14",
+  "verdict": "pass"
+ },
+ "main/TH19-r1": {
+  "code": "a15f62",
+  "verdict": "pass"
+ },
+ "branch/TH19-r3": {
+  "code": "66422b",
+  "verdict": "pass"
+ },
+ "branch/TH20-r1": {
+  "code": "640e05",
+  "verdict": "fail"
+ },
+ "branch/TH20-r3": {
+  "code": "d3c71e",
+  "verdict": "fail"
+ },
+ "main/TH20-r2": {
+  "code": "a9b3b4",
+  "verdict": "pass"
+ },
+ "branch/TH20-r2": {
+  "code": "3d098b",
+  "verdict": "pass"
+ },
+ "main/TH20-r3": {
+  "code": "ce5c5a",
+  "verdict": "pass"
+ },
+ "main/TH20-r1": {
+  "code": "7693e3",
+  "verdict": "pass"
+ },
+ "main/TH27-r2": {
+  "code": "4e1acd",
+  "verdict": "fail"
+ },
+ "branch/TH27-r2": {
+  "code": "a40f07",
+  "verdict": "pass"
+ },
+ "branch/TH27-r1": {
+  "code": "26d3a0",
+  "verdict": "pass"
+ },
+ "main/TH27-r1": {
+  "code": "ac342c",
+  "verdict": "pass"
+ },
+ "main/TH27-r3": {
+  "code": "e51cdf",
+  "verdict": "pass"
+ },
+ "branch/TH27-r3": {
+  "code": "31e983",
+  "verdict": "pass"
+ },
+ "branch/TH29-r2": {
+  "code": "bad793",
+  "verdict": "pass"
+ },
+ "main/TH29-r2": {
+  "code": "2bc495",
+  "verdict": "pass"
+ },
+ "main/TH29-r1": {
+  "code": "7bcfa8",
+  "verdict": "pass"
+ },
+ "main/TH29-r3": {
+  "code": "31d251",
+  "verdict": "pass"
+ },
+ "branch/TH29-r1": {
+  "code": "8989cb",
+  "verdict": "pass"
+ },
+ "branch/TH29-r3": {
+  "code": "0f476d",
+  "verdict": "pass"
+ },
+ "branch/TH37-r2": {
+  "code": "97066d",
+  "verdict": "pass"
+ },
+ "main/TH37-r3": {
+  "code": "9fef2a",
+  "verdict": "pass"
+ },
+ "main/TH37-r1": {
+  "code": "a3b6a0",
+  "verdict": "pass"
+ },
+ "main/TH37-r2": {
+  "code": "598f42",
+  "verdict": "pass"
+ },
+ "branch/TH37-r3": {
+  "code": "562a1a",
+  "verdict": "pass"
+ },
+ "branch/TH37-r1": {
+  "code": "e42527",
+  "verdict": "pass"
+ },
+ "branch/TH39-r3": {
+  "code": "6c3957",
+  "verdict": "pass"
+ },
+ "main/TH39-r3": {
+  "code": "65400c",
+  "verdict": "pass"
+ },
+ "branch/TH39-r1": {
+  "code": "3c8a8a",
+  "verdict": "pass"
+ },
+ "branch/TH39-r2": {
+  "code": "8f024c",
+  "verdict": "pass"
+ },
+ "main/TH39-r1": {
+  "code": "c44d46",
+  "verdict": "pass"
+ },
+ "main/TH39-r2": {
+  "code": "1ea233",
+  "verdict": "pass"
+ },
+ "branch/TH50-r1": {
+  "code": "3e7dcc",
+  "verdict": "pass"
+ },
+ "branch/TH50-r3": {
+  "code": "260990",
+  "verdict": "pass"
+ },
+ "branch/TH50-r2": {
+  "code": "bb5539",
+  "verdict": "pass"
+ },
+ "main/TH50-r1": {
+  "code": "e07a3a",
+  "verdict": "pass"
+ },
+ "main/TH50-r2": {
+  "code": "f44376",
+  "verdict": "pass"
+ },
+ "main/TH50-r3": {
+  "code": "0420a3",
+  "verdict": "pass"
+ },
+ "branch/W1-r1": {
+  "code": "3e59fb",
+  "verdict": "pass"
+ },
+ "branch/W1-r2": {
+  "code": "398f55",
+  "verdict": "pass"
+ },
+ "main/W1-r3": {
+  "code": "31802a",
+  "verdict": "pass"
+ },
+ "main/W1-r1": {
+  "code": "38d161",
+  "verdict": "pass"
+ },
+ "main/W1-r2": {
+  "code": "6626f9",
+  "verdict": "pass"
+ },
+ "branch/W1-r3": {
+  "code": "030be0",
+  "verdict": "pass"
+ },
+ "branch/YT01-r1": {
+  "code": "caa44e",
+  "verdict": "pass"
+ },
+ "branch/YT01-r2": {
+  "code": "c8b8ee",
+  "verdict": "pass"
+ },
+ "main/YT01-r1": {
+  "code": "4a2450",
+  "verdict": "pass"
+ },
+ "main/YT01-r3": {
+  "code": "bfe33e",
+  "verdict": "pass"
+ },
+ "branch/YT01-r3": {
+  "code": "efc466",
+  "verdict": "pass"
+ },
+ "main/YT01-r2": {
+  "code": "105522",
+  "verdict": "pass"
+ },
+ "main/YT06-r3": {
+  "code": "7d20b7",
+  "verdict": "pass"
+ },
+ "branch/YT06-r3": {
+  "code": "b46072",
+  "verdict": "pass"
+ },
+ "main/YT06-r1": {
+  "code": "332f79",
+  "verdict": "pass"
+ },
+ "main/YT06-r2": {
+  "code": "0891c9",
+  "verdict": "pass"
+ },
+ "branch/YT06-r1": {
+  "code": "161155",
+  "verdict": "pass"
+ },
+ "branch/YT06-r2": {
+  "code": "183dd7",
+  "verdict": "pass"
+ }
+}

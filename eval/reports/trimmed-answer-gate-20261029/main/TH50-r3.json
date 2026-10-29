@@ -1,0 +1,359 @@
+{
+ "id": "TH50",
+ "question": "Keto diet เหมาะกับการออกกำลังกายแบบไหน",
+ "history": [],
+ "attempts": 1,
+ "seconds": 20.3,
+ "model_calls": 4,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1] นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]\n\nอย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]:\n- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]\n- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1] Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]\n- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]\n\nทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+ "citations": [
+  "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย",
+  "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 1,
+    "text": "นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S2.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "อย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "อย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 4,
+    "text": "- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 5,
+    "text": "Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 6,
+    "text": "- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 7,
+    "text": "ทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "ทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1] นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]\n\nอย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]:\n- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]\n- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1] Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]\n- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]\n\nทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย",
+    "heading": "คีโตกับการเล่นเวทและการออกกำลังกายแบบต่าง ๆ",
+    "document_slug": "keto-low-carb-training",
+    "score": 0.771,
+    "source_refs": [
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Harvey KL, Holcomb LE, Kolwicz SC. Ketogenic Diets and Exercise Performance. Nutrients. 2019;11(10):2296. doi:10.3390/nu11102296",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย",
+    "heading": "คีโตคืออะไร ช่วยลดไขมันได้ดีกว่าไหม",
+    "document_slug": "keto-low-carb-training",
+    "score": 0.7318,
+    "source_refs": [
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Harvey KL, Holcomb LE, Kolwicz SC. Ketogenic Diets and Exercise Performance. Nutrients. 2019;11(10):2296. doi:10.3390/nu11102296",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย",
+    "heading": "คีโตกับการเล่นเวทและการออกกำลังกายแบบต่าง ๆ",
+    "document_slug": "keto-low-carb-training",
+    "score": 0.771,
+    "source_refs": [
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Harvey KL, Holcomb LE, Kolwicz SC. Ketogenic Diets and Exercise Performance. Nutrients. 2019;11(10):2296. doi:10.3390/nu11102296",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คีโต (ketogenic diet) และอาหารคาร์บต่ำกับการเล่นเวทและออกกำลังกาย",
+    "heading": "คีโตคืออะไร ช่วยลดไขมันได้ดีกว่าไหม",
+    "document_slug": "keto-low-carb-training",
+    "score": 0.7318,
+    "source_refs": [
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Harvey KL, Holcomb LE, Kolwicz SC. Ketogenic Diets and Exercise Performance. Nutrients. 2019;11(10):2296. doi:10.3390/nu11102296",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 10025,
+   "output_tokens": 1012,
+   "total_tokens": 11037
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "อาหารคีโตเจนิก (Ketogenic diet) เหมาะกับการออกกำลังกายแบบคาร์ดิโอความหนักต่ำถึงปานกลาง เช่น การเดินเร็วหรือการวิ่งเหยาะ ๆ ที่ความหนักประมาณ 60% ของความสามารถสูงสุด ซึ่งมีงานบางชิ้นพบว่าช่วยลดน้ำหนักและไขมันได้ดีในช่วง 3-12 สัปดาห์ [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 1,
+     "text": "นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "นอกจากนี้ จุดเด่นของคีโตในบางกรณีคือช่วยควบคุมความอยากอาหาร ทำให้กินพลังงานลดลงได้เองโดยไม่ต้องจำกัดพลังงาน [S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S2.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "อย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "อย่างไรก็ตาม สำหรับการออกกำลังกายที่หนักและใช้เวลาสั้น เช่น เวทเทรนนิ่ง CrossFit หรือพาวเวอร์ลิฟติ้ง ซึ่งต้องใช้ไกลโคเจนในกล้ามเนื้อเป็นพลังงานสำคัญ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **ความแข็งแรงและพลัง:** งานวิจัยระยะยาว 6-12 สัปดาห์สรุปว่าความแข็งแรงและพลังส่วนใหญ่อาจไม่ต่างจากกลุ่มควบคุมอย่างมีนัยสำคัญ [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 4,
+     "text": "- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **การสร้างกล้ามเนื้อ:** หลักฐานระบุว่าคนกินคีโตอาจได้กล้ามเนื้อเพิ่มขึ้นน้อยกว่ากลุ่มที่กินไขมันปานกลางและมีคาร์โบไฮเดรตพอ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 5,
+     "text": "Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "Harvey และคณะ (2019) รวมถึง Iraki และคณะ (2019) จึงสรุปว่าหากเป้าหมายหลักคือการเพิ่มกล้ามเนื้อ หลักฐานปัจจุบันไม่สนับสนุนการกินแบบคีโต [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 6,
+     "text": "- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **สมรรถภาพความหนักสูง:** สมรรถภาพหรือความทนทานในการออกกำลังกายที่ความหนักสูงอาจแย่ลง เนื่องจากอาหารไขมันสูงทำให้ร่างกายใช้ไกลโคเจนน้อยลง [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 7,
+     "text": "ทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "ทั้งนี้ ผู้ที่มีโรคประจำตัวหรือกำลังใช้ยาควรปรึกษาแพทย์ก่อนเริ่มรับประทานอาหารแบบคีโต [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

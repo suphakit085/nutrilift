@@ -1,0 +1,398 @@
+{
+ "id": "W1",
+ "question": "ต้องกินเวย์ไหมครับ หรือกินไข่วันละ 5-6 ฟองแทนได้",
+ "history": [
+  {
+   "role": "user",
+   "content": "งบผมวันละ 150 บาท ส่วนใหญ่กินร้านตามสั่งกับเซเว่น กินอะไรได้บ้างครับ"
+  },
+  {
+   "role": "assistant",
+   "content": "อาหารโปรตีนสูงจากฐานข้อมูลอาหารของระบบ ค่าต่อ 1 หน่วยบริโภคตามฐานข้อมูล:\n1. ปลาทูน่าเนื้อขาว, ชนิดก้อน, ในน้ำแร่ (100 กรัม): 115 kcal, โปรตีน 27.9 g, คาร์บ 0.0 g, ไขมัน 0.4 g\n2. หมู, สันใน, ต้ม (100 กรัม): 153 kcal, โปรตีน 33.4 g, คาร์บ 0.0 g, ไขมัน 2.2 g\n3. ไข่ไก่, ไข่ขาว (100 กรัม): 52 kcal, โปรตีน 10.9 g, คาร์บ 1.3 g, ไขมัน 0.4 g\n4. ต้มยำกุ้ง (1 ถ้วย): 88 kcal, โปรตีน 9.3 g, คาร์บ 5.7 g, ไขมัน 2.9 g\n5. เต้าหู้ขาวแข็ง (100 กรัม): 126 kcal, โปรตีน 12.9 g, คาร์บ 0.0 g, ไขมัน 7.2 g\n\nเลือกตามสัดส่วนพลังงานจากโปรตีน โดยเลือกจากแต่ละหมวดอาหารสลับกัน ไม่รวมผลิตภัณฑ์เสริมอาหาร"
+  }
+ ],
+ "attempts": 1,
+ "seconds": 23.4,
+ "model_calls": 5,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2] \n\nการกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2] โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5] ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2] โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2] หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3] ครับ",
+ "citations": [
+  "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+  "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+  "กินโปรตีนให้ถึงด้วยงบจำกัด — แหล่งโปรตีนราคาประหยัดและวิธีเทียบความคุ้มค่า"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S2.3"
+    ],
+    "claim_type": "permission_or_safety",
+    "claims_evidence_backing": false,
+    "conclusion_stated": true
+   },
+   {
+    "unit": 1,
+    "text": "การกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "การกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S2.2",
+     "S2.3"
+    ],
+    "claim_type": "permission_or_safety",
+    "claims_evidence_backing": false,
+    "conclusion_stated": true
+   },
+   {
+    "unit": 2,
+    "text": "โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5]",
+    "kind": "general_fact",
+    "names_source": false,
+    "support": [
+     "S5.4"
+    ],
+    "claim_type": "definition",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S2.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S2.5"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3]",
+    "labels": [
+     "S3"
+    ],
+    "raw": "หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S3.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 6,
+    "text": "ครับ",
+    "labels": [],
+    "raw": "ครับ",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2] \n\nการกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2] โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5] ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2] โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2] หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3] ครับ",
+  "citations": [
+   {
+    "label": "S2",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7571,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6844,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "กินโปรตีนให้ถึงด้วยงบจำกัด — แหล่งโปรตีนราคาประหยัดและวิธีเทียบความคุ้มค่า",
+    "heading": "แหล่งโปรตีนราคาประหยัดที่หาง่ายในไทย และเต้าหู้เทียบกับไข่",
+    "document_slug": "budget-protein-thai",
+    "score": 0.6822,
+    "source_refs": [
+     "Institute of Nutrition, Mahidol University. ASEAN Food Composition Database, Electronic version 1, February 2014. ASEANFOODS Regional Centre and INFOODS Regional Database Centre. รายการ PHH003, AAH15, AAG241, AAG76, AAJ20, AAQ66, MYC83, MYA14.",
+     "Institute of Nutrition, Mahidol University. Thai Food Composition Database, Online version 3, August 2025. รายการ C48.",
+     "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, SR Legacy release. FDC ID 171478.",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7218,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7571,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6844,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "BCAA จำเป็นไหม เมื่อได้โปรตีนหรือเวย์พอแล้ว",
+    "heading": "ได้เวย์หรือโปรตีนพอแล้ว ต้องกิน BCAA เพิ่มไหม กินร่วมกับครีเอทีนได้ไหม",
+    "document_slug": "bcaa",
+    "score": 0.6915,
+    "source_refs": [
+     "Wolfe RR. Branched-chain amino acids and muscle protein synthesis in humans: myth or reality? J Int Soc Sports Nutr. 2017;14:30. doi:10.1186/s12970-017-0184-9",
+     "Jackman SR, Witard OC, Philp A, et al. Branched-Chain Amino Acid Ingestion Stimulates Muscle Myofibrillar Protein Synthesis following Resistance Exercise in Humans. Front Physiol. 2017;8:390. doi:10.3389/fphys.2017.00390",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "กินโปรตีนให้ถึงด้วยงบจำกัด — แหล่งโปรตีนราคาประหยัดและวิธีเทียบความคุ้มค่า",
+    "heading": "แหล่งโปรตีนราคาประหยัดที่หาง่ายในไทย และเต้าหู้เทียบกับไข่",
+    "document_slug": "budget-protein-thai",
+    "score": 0.6822,
+    "source_refs": [
+     "Institute of Nutrition, Mahidol University. ASEAN Food Composition Database, Electronic version 1, February 2014. ASEANFOODS Regional Centre and INFOODS Regional Database Centre. รายการ PHH003, AAH15, AAG241, AAG76, AAJ20, AAQ66, MYC83, MYA14.",
+     "Institute of Nutrition, Mahidol University. Thai Food Composition Database, Online version 3, August 2025. รายการ C48.",
+     "U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, SR Legacy release. FDC ID 171478.",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8"
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "BCAA จำเป็นไหม เมื่อได้โปรตีนหรือเวย์พอแล้ว",
+    "heading": "BCAA คืออะไร กินอย่างเดียวช่วยสร้างกล้ามได้ไหม",
+    "document_slug": "bcaa",
+    "score": 0.6632,
+    "source_refs": [
+     "Wolfe RR. Branched-chain amino acids and muscle protein synthesis in humans: myth or reality? J Int Soc Sports Nutr. 2017;14:30. doi:10.1186/s12970-017-0184-9",
+     "Jackman SR, Witard OC, Philp A, et al. Branched-Chain Amino Acid Ingestion Stimulates Muscle Myofibrillar Protein Synthesis following Resistance Exercise in Humans. Front Physiol. 2017;8:390. doi:10.3389/fphys.2017.00390",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 14392,
+   "output_tokens": 1040,
+   "total_tokens": 15432
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "คุณไม่จำเป็นต้องกินเวย์ครับ เพราะโปรตีนจากอาหารปกติสามารถทดแทนได้ [S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S2.3"
+     ],
+     "claim_type": "permission_or_safety",
+     "claims_evidence_backing": false,
+     "conclusion_stated": true
+    },
+    {
+     "unit": 1,
+     "text": "การกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "การกินไข่ไก่หรือแหล่งโปรตีนอื่น ๆ ให้ถึงปริมาณโปรตีนรวมที่ต้องการต่อวันสามารถใช้แทนเวย์ได้ครับ [S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S2.2",
+      "S2.3"
+     ],
+     "claim_type": "permission_or_safety",
+     "claims_evidence_backing": false,
+     "conclusion_stated": true
+    },
+    {
+     "unit": 2,
+     "text": "โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "โดยไข่ไก่ทั้งฟองหรือไข่ต้มถือเป็นแหล่งโปรตีนราคาประหยัดและหาได้ง่าย [S5]",
+     "kind": "general_fact",
+     "names_source": false,
+     "support": [
+      "S5.4"
+     ],
+     "claim_type": "definition",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "ทั้งนี้ การเลือกกินโปรตีนควรดูภาพรวมของโปรตีนและพลังงานทั้งวัน [S2]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S2.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "โดยสำหรับคนส่วนใหญ่ที่ออกกำลังกาย ปริมาณโปรตีนที่แนะนำคือ 1.4-2.0 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S2.5"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3]",
+     "labels": [
+      "S3"
+     ],
+     "raw": "หรือสำหรับผู้ที่ต้องการเพิ่มน้ำหนักและกล้ามเนื้ออาจอยู่ที่ประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน [S3]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S3.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 6,
+     "text": "ครับ",
+     "labels": [],
+     "raw": "ครับ",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

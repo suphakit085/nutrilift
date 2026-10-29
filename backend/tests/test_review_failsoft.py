@@ -6,6 +6,7 @@ import pytest
 
 from app.services import chat
 from app.services.answer_review import (
+    AnswerCoverage,
     AnswerReview,
     ReviewIssue,
     draft_units,
@@ -101,5 +102,55 @@ def test_excluded_action_defect_still_withholds_the_answer(monkeypatch):
     result = _run(monkeypatch, [
         verdict(DRAFT, [BAD_UNIT], category="instruction"),
         verdict(DRAFT, [BAD_UNIT], category="instruction"),
+    ])
+    assert result["type"] == "error" and result["code"] == "answer_validation_failed"
+
+
+def _coverage(monkeypatch, answers):
+    queue = list(answers)
+    calls = []
+
+    def fake(*_, **kwargs):
+        calls.append(kwargs["answer"])
+        return AnswerCoverage(answers_question=queue.pop(0), missing="ไม่ได้บอกว่าพอหรือไม่"), {}
+
+    monkeypatch.setattr(chat, "answer_coverage", fake)
+    return calls
+
+
+def test_a_trim_that_still_answers_is_shown(monkeypatch):
+    calls = _coverage(monkeypatch, [True])
+    trimmed = f"- {GOOD}"
+    result = _run(monkeypatch, [
+        verdict(DRAFT, [BAD_UNIT]), verdict(DRAFT, [BAD_UNIT]),
+        verdict(trimmed, kinds={GOOD_UNIT: "advice"}),
+    ])
+    assert result["type"] == "done" and result["text"].endswith(chat.TRIMMED_NOTE)
+    assert len(calls) == 1
+
+
+def test_a_trim_that_lost_the_answer_gets_one_more_draft(monkeypatch):
+    # 29 Oct live test: "do I need whey or will eggs do" kept one line about
+    # eggs. A trim that answers nothing is not shown; one more draft is asked.
+    _coverage(monkeypatch, [False])
+    trimmed = f"- {GOOD}"
+    result = _run(monkeypatch, [
+        verdict(DRAFT, [BAD_UNIT]), verdict(DRAFT, [BAD_UNIT]),
+        verdict(trimmed, kinds={GOOD_UNIT: "advice"}),
+        verdict(DRAFT),  # the extra draft passes review
+    ])
+    assert result["type"] == "done"
+    assert not result["text"].endswith(chat.TRIMMED_NOTE)
+    assert any(i.startswith("lost_answer:") for i in result["answer_validation"]["issues"])
+
+
+def test_a_second_lost_answer_is_withheld_not_shown(monkeypatch):
+    _coverage(monkeypatch, [False, False])
+    trimmed = f"- {GOOD}"
+    result = _run(monkeypatch, [
+        verdict(DRAFT, [BAD_UNIT]), verdict(DRAFT, [BAD_UNIT]),
+        verdict(trimmed, kinds={GOOD_UNIT: "advice"}),
+        verdict(DRAFT, [BAD_UNIT]),  # the extra draft has the same defect
+        verdict(trimmed, kinds={GOOD_UNIT: "advice"}),
     ])
     assert result["type"] == "error" and result["code"] == "answer_validation_failed"

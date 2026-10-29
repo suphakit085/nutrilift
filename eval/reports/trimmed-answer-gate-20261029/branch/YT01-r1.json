@@ -1,0 +1,524 @@
+{
+ "id": "YT01",
+ "question": "ถ้าผมกิน ขนมปังกับนม เเค่นี้พอมั้ยครับเเต่ออกกำลังกายตอนเย็นทุกวัน น้ำหนัก50+ เป็นคนผอมครับ เเต่อยากให้มีกล้ามเนื้อครับ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 42.5,
+ "model_calls": 9,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1] แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2] การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]\n\nสำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:\n- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน\n- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ) \n- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก) \n- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)\n\n*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*\n\nเพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:\n- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]\n- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1] แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]\n- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0.125) ≈ 2777 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2776.9219 × 0.20 ÷ 9) ≈ 62 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2776.9219 − 4 × 117 − 9 × 61.7094) ÷ 4) ≈ 438 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+ "citations": [
+  "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+  "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+  "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "citation: แหล่ง S3 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อเพื่อช่วยเพิ่มพลังงานและโปรตีนได้ตามที่สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) แนะนำ [S1, S3])"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2]",
+    "labels": [
+     "S1",
+     "S2"
+    ],
+    "raw": "แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.1",
+     "S2.1"
+    ],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]",
+    "labels": [
+     "S1",
+     "S4"
+    ],
+    "raw": "การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.6",
+     "S4.4"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "สำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:",
+    "labels": [],
+    "raw": "สำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน",
+    "labels": [],
+    "raw": "- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 5,
+    "text": "- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ)",
+    "labels": [],
+    "raw": "- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ)",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 6,
+    "text": "- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก)",
+    "labels": [],
+    "raw": "- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก)",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 7,
+    "text": "- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)",
+    "labels": [],
+    "raw": "- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 8,
+    "text": "*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*",
+    "labels": [],
+    "raw": "*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 9,
+    "text": "เพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:",
+    "labels": [],
+    "raw": "เพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 10,
+    "text": "- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 11,
+    "text": "- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "permission_or_safety",
+    "claims_evidence_backing": true,
+    "conclusion_stated": true
+   },
+   {
+    "unit": 12,
+    "text": "แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]",
+    "labels": [
+     "S4"
+    ],
+    "raw": "แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S4.4"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 13,
+    "text": "- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]",
+    "labels": [
+     "S2",
+     "S4"
+    ],
+    "raw": "- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S2.3",
+     "S4.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1] แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2] การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]\n\nสำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:\n- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน\n- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ) \n- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก) \n- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)\n\n*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*\n\nเพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:\n- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]\n- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1] แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]\n- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0.125) ≈ 2777 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2776.9219 × 0.20 ÷ 9) ≈ 62 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2776.9219 − 4 × 117 − 9 × 61.7094) ÷ 4) ≈ 438 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7869,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7258,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6922,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7869,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7258,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.695,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6922,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 28104,
+   "output_tokens": 3460,
+   "total_tokens": 31564
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "citation: แหล่ง S3 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อเพื่อช่วยเพิ่มพลังงานและโปรตีนได้ตามที่สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) แนะนำ [S1, S3])"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การกินขนมปังกับนมเพียงอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2]",
+     "labels": [
+      "S1",
+      "S2"
+     ],
+     "raw": "แม้คุณจะออกกำลังกายทุกวันและต้องการเพิ่มน้ำหนัก [S1, S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.1",
+      "S2.1"
+     ],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]",
+     "labels": [
+      "S1",
+      "S4"
+     ],
+     "raw": "การพึ่งพาแค่นมและขนมปังมักจะทำให้ได้โปรตีนรวมและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็นต่อการสร้างกล้ามเนื้อ อีกทั้งยังขาดสารอาหารอื่น ๆ เช่น ใยอาหาร วิตามิน และแร่ธาตุจากอาหารกลุ่มอื่น ๆ ครับ [S1, S4]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.6",
+      "S4.4"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "สำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:",
+     "labels": [],
+     "raw": "สำหรับเป้าหมายการเพิ่มกล้ามเนื้อ (Bulk) ของคุณ ระบบได้คำนวณพลังงานและสารอาหารที่เหมาะสมไว้ดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน",
+     "labels": [],
+     "raw": "- **พลังงานเป้าหมาย:** 2,777 กิโลแคลอรี/วัน",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 5,
+     "text": "- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ)",
+     "labels": [],
+     "raw": "- **โปรตีน:** 117 กรัม/วัน (แนะนำให้อยู่ในช่วง 1.6-2.2 กรัม/กิโลกรัม/วัน และกระจายกิน 3-6 มื้อ)",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 6,
+     "text": "- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก)",
+     "labels": [],
+     "raw": "- **คาร์โบไฮเดรต:** 438 กรัม/วัน (อย่างน้อยประมาณ 3-5 กรัม/กิโลกรัม/วันเพื่อรองรับการฝึก)",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 7,
+     "text": "- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)",
+     "labels": [],
+     "raw": "- **ไขมัน:** 62 กรัม/วัน (ปรับขึ้นเพื่อให้ถึงขั้นต่ำ 20% ของพลังงานรวมตามกติกาของเครื่องคำนวณ)",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 8,
+     "text": "*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*",
+     "labels": [],
+     "raw": "*คำเตือนจากระบบคำนวณ: การปรับไขมันขึ้นให้ถึงขั้นต่ำ 20% ของพลังงานรวม เป็นไปตามกติกาของเครื่องคำนวณ ไม่ใช่เกณฑ์ขั้นต่ำสากลหรือการรับรองผลด้านฮอร์โมน*",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 9,
+     "text": "เพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:",
+     "labels": [],
+     "raw": "เพื่อให้การสร้างกล้ามเนื้อมีประสิทธิภาพ คุณควรปรับการกินและการฝึกดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 10,
+     "text": "- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **เน้นอาหารหลักที่หลากหลาย:** เพิ่มแหล่งโปรตีนคุณภาพดีอื่น ๆ เช่น ไข่ เนื้อสัตว์ ปลา เต้าหู้ และนม ควบคู่ไปกับมื้อหลักที่มีข้าว แป้ง และผัก [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 11,
+     "text": "- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **ใช้นมและขนมปังเป็นของว่าง:** คุณสามารถใช้นมและขนมปังเป็นของว่างระหว่างมื้อที่มีทั้งโปรตีนคุณภาพดีและคาร์โบไฮเดรตเพื่อช่วยเพิ่มพลังงานได้ตามที่ ISSN 2017 แนะนำ [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "permission_or_safety",
+     "claims_evidence_backing": true,
+     "conclusion_stated": true
+    },
+    {
+     "unit": 12,
+     "text": "แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]",
+     "labels": [
+      "S4"
+     ],
+     "raw": "แต่ไม่ควรใช้แทนมื้ออาหารหลักทุกมื้อ [S4]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S4.4"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 13,
+     "text": "- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]",
+     "labels": [
+      "S2",
+      "S4"
+     ],
+     "raw": "- **ฝึกแรงต้านอย่างสม่ำเสมอ:** การสร้างกล้ามเนื้อเกิดขึ้นจากการฝึกแรงต้านร่วมกับการกินโปรตีนรวมและพลังงานที่พอเหมาะ [S2, S4]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S2.3",
+      "S4.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "clarify",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": "pair_partner",
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": "bulk",
+   "goal_quote": "อยากให้มีกล้ามเนื้อครับ",
+   "goal_user_turn": 0,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

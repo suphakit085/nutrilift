@@ -1,0 +1,419 @@
+{
+ "id": "TH20",
+ "question": "ออกกำลังกายมา 2 เดือนคุมอาหารก็แล้ว หุ่นไม่ลดเลย ขอคำแนะนำหน่อยค่ะ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 22.2,
+ "model_calls": 4,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ \n\nเบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:\n\n* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]\n* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4] \n* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]\n* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5] หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]\n\nหากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+ "citations": [
+  "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+  "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+  "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ",
+    "labels": [],
+    "raw": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "เบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:",
+    "labels": [],
+    "raw": "เบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S5.5"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4]",
+    "labels": [
+     "S4"
+    ],
+    "raw": "* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S4.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]",
+    "labels": [
+     "S4"
+    ],
+    "raw": "* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S4.4"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S5.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 6,
+    "text": "หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S5.5"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 7,
+    "text": "หากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "หากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.1",
+     "S1.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ \n\nเบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:\n\n* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]\n* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4] \n* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]\n* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5] หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]\n\nหากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "ข้อควรระวังและการขอคำปรึกษา",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "การลดไขมัน (cut) และอัตราการลดน้ำหนัก",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6572,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "ข้อควรระวังและการขอคำปรึกษา",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "Energy Availability (EA) และ REDs",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6499,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6511,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "การลดไขมัน (cut) และอัตราการลดน้ำหนัก",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6572,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ความเชื่อผิด ๆ เรื่องลดไขมันที่พบบ่อย — ลดเฉพาะจุด, คาร์บตอนกลางคืน, เหงื่อออกเยอะ",
+    "heading": "ลดเฉพาะจุด กินดึก และเหงื่อ",
+    "document_slug": "fat-loss-myths",
+    "score": 0.6624,
+    "source_refs": [
+     "Ramirez-Campillo R, Andrade DC, Clemente FM, Afonso J, Perez-Castilla A, Gentil P. A proposed model to test the hypothesis of exercise-induced localized fat reduction (spot reduction), including a systematic review with meta-analysis. Hum Mov. 2022;23(3):1-14.",
+     "Liu HY, Eso AA, Cook N, O'Neill HM, Albarqouni L. Meal timing and anthropometric and metabolic outcomes: a systematic review and meta-analysis. JAMA Netw Open. 2024;7(11):e2442163.",
+     "สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข. ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563. (บทแคลเซียม บทธาตุเหล็ก และบทวิตามินดี)",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16."
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 14782,
+   "output_tokens": 1164,
+   "total_tokens": 15946
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ",
+     "labels": [],
+     "raw": "เข้าใจเลยครับว่าการออกกำลังกายและคุมอาหารมา 2 เดือนแล้วหุ่นยังไม่เปลี่ยนแปลงอาจทำให้รู้สึกท้อได้ครับ",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "เบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:",
+     "labels": [],
+     "raw": "เบื้องต้นขอแนะนำแนวทางและประเด็นที่ควรตรวจสอบดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "* **ติดตามน้ำหนักและสัดส่วนจริง:** ให้ลองติดตามแนวโน้มน้ำหนักตัวจริงและวัดสัดส่วนในช่วง 2–4 สัปดาห์ก่อนตัดสินใจปรับเปลี่ยนตัวเลขพลังงาน เนื่องจากน้ำหนักที่นิ่งในระยะสั้นอาจเกิดจากความผันผวนของน้ำในร่างกาย [S5]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S5.5"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4]",
+     "labels": [
+      "S4"
+     ],
+     "raw": "* **ตรวจสอบพลังงานที่ได้รับ:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่บางครั้งพลังงานที่กินเข้าไปอาจเท่ากับพลังงานที่ใช้พอดี (ระดับรักษาน้ำหนัก) ทำให้หุ่นไม่เปลี่ยนแปลง หากต้องการลดไขมัน จำเป็นต้องสร้างภาวะขาดดุลพลังงานอย่างต่อเนื่อง [S4]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S4.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]",
+     "labels": [
+      "S4"
+     ],
+     "raw": "* **ประเมินความสม่ำเสมอ:** ตรวจสอบปริมาณอาหารจริงและการออกกำลังกายว่ามีความสม่ำเสมอมากน้อยแค่ไหน รวมถึงการได้รับโปรตีนที่เพียงพอและการฝึกแรงต้าน ซึ่งเป็นองค์ประกอบสำคัญในการรักษามวลกล้ามเนื้อขณะลดไขมัน [S4]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S4.4"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "* **การปรับตัวของร่างกาย:** การลดพลังงานและน้ำหนักลงอาจทำให้ร่างกายมีการปรับตัวด้านการใช้พลังงานได้ [S5]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S5.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 6,
+     "text": "หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "หากพบว่าน้ำหนักนิ่งสนิทเป็นเวลานาน อาจต้องประเมินปริมาณอาหารและกิจกรรมในชีวิตประจำวันใหม่อีกครั้ง [S5]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S5.5"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 7,
+     "text": "หากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "หากต้องการเน้นการลดไขมันให้ชัดเจนขึ้น คุณสามารถเปลี่ยนเป้าหมายในโปรไฟล์เป็น \"ลดไขมัน (cut)\" เพื่อให้ระบบคำนวณพลังงานที่เหมาะสมสำหรับการขาดดุลพลังงานได้ครับ หรือหากมีอาการบาดเจ็บ สมรรถภาพลดลง หรือมีความผิดปกติอื่น ๆ ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติมครับ [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.1",
+      "S1.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

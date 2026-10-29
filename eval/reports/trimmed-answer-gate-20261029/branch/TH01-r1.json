@@ -1,0 +1,276 @@
+{
+ "id": "TH01",
+ "question": "สอบถามเรื่อง creatine วิธีกินแบบโหลดVSปรกติ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 44.7,
+ "model_calls": 9,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]:\n\n*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1] การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]\n*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+ "citations": [
+  "ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: การกินครีเอทีน (Creatine) มี 2 วิธีหลักที่มีประสิทธิภาพในการเพิ่มระดับครีเอทีนในกล้ามเนื้อ ได้แก่ การโหลดและกินแบบปกติ โดยแต่ละวิธีมีแนวทางดังนี้ครับ:)"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]",
+    "kind": "framing",
+    "names_source": false,
+    "support": [
+     "S1.1"
+    ],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "permission_or_safety",
+    "claims_evidence_backing": false,
+    "conclusion_stated": true
+   },
+   {
+    "unit": 3,
+    "text": "*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.3"
+    ],
+    "claim_type": "definition",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]:\n\n*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1] การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]\n*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)",
+    "heading": "ครีเอทีนโมโนไฮเดรต",
+    "document_slug": "creatine",
+    "score": 0.7288,
+    "source_refs": [
+     "Kreider RB, Kalman DS, Antonio J, et al. International Society of Sports Nutrition position stand: safety and efficacy of creatine supplementation in exercise, sport, and medicine. J Int Soc Sports Nutr. 2017;14:18.",
+     "Antonio J, Candow DG, Forbes SC, et al. Common questions and misconceptions about creatine supplementation: what does the scientific evidence really show? J Int Soc Sports Nutr. 2021;18:13."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)",
+    "heading": "ครีเอทีนโมโนไฮเดรต",
+    "document_slug": "creatine",
+    "score": 0.7288,
+    "source_refs": [
+     "Kreider RB, Kalman DS, Antonio J, et al. International Society of Sports Nutrition position stand: safety and efficacy of creatine supplementation in exercise, sport, and medicine. J Int Soc Sports Nutr. 2017;14:18.",
+     "Antonio J, Candow DG, Forbes SC, et al. Common questions and misconceptions about creatine supplementation: what does the scientific evidence really show? J Int Soc Sports Nutr. 2021;18:13."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ความเชื่อผิด ๆ เกี่ยวกับครีเอทีน (ผมร่วง บวมน้ำ ไตพัง)",
+    "heading": "ผมร่วง น้ำหนัก และไต",
+    "document_slug": "creatine-myths",
+    "score": 0.6832,
+    "source_refs": [
+     "van der Merwe J, Brooks NE, Myburgh KH. Three weeks of creatine monohydrate supplementation affects dihydrotestosterone to testosterone ratio in college-aged rugby players. Clin J Sport Med. 2009;19(5):399-404. doi:10.1097/JSM.0b013e3181b8b52f. PMID:19741313. [ตรวจบทคัดย่อต้นฉบับ ไม่ใช่ฉบับเต็ม]",
+     "Antonio J, Candow DG, Forbes SC, et al. Common questions and misconceptions about creatine supplementation: what does the scientific evidence really show? J Int Soc Sports Nutr. 2021;18:13.",
+     "Does creatine cause hair loss? A 12-week randomized controlled trial. doi:10.1080/15502783.2025.2495229"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "BCAA จำเป็นไหม เมื่อได้โปรตีนหรือเวย์พอแล้ว",
+    "heading": "ได้เวย์หรือโปรตีนพอแล้ว ต้องกิน BCAA เพิ่มไหม กินร่วมกับครีเอทีนได้ไหม",
+    "document_slug": "bcaa",
+    "score": 0.6604,
+    "source_refs": [
+     "Wolfe RR. Branched-chain amino acids and muscle protein synthesis in humans: myth or reality? J Int Soc Sports Nutr. 2017;14:30. doi:10.1186/s12970-017-0184-9",
+     "Jackman SR, Witard OC, Philp A, et al. Branched-Chain Amino Acid Ingestion Stimulates Muscle Myofibrillar Protein Synthesis following Resistance Exercise in Humans. Front Physiol. 2017;8:390. doi:10.3389/fphys.2017.00390",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "เบต้า-อะลานีน (Beta-alanine) — ช่วยเพิ่มจำนวนครั้งที่ทำได้ยังไง",
+    "heading": "เบต้าอะลานีนช่วยอะไรและใช้ขนาดไหน",
+    "document_slug": "beta-alanine",
+    "score": 0.6372,
+    "source_refs": [
+     "Trexler ET, et al. International society of sports nutrition position stand: Beta-alanine. J Int Soc Sports Nutr. 2015;12:30."
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "ครีเอทีน โมโนไฮเดรต (Creatine Monohydrate)",
+    "heading": "ครีเอทีนโมโนไฮเดรต",
+    "document_slug": "creatine",
+    "score": 0.6926,
+    "source_refs": [
+     "Kreider RB, Kalman DS, Antonio J, et al. International Society of Sports Nutrition position stand: safety and efficacy of creatine supplementation in exercise, sport, and medicine. J Int Soc Sports Nutr. 2017;14:18.",
+     "Antonio J, Candow DG, Forbes SC, et al. Common questions and misconceptions about creatine supplementation: what does the scientific evidence really show? J Int Soc Sports Nutr. 2021;18:13."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ความเชื่อผิด ๆ เกี่ยวกับครีเอทีน (ผมร่วง บวมน้ำ ไตพัง)",
+    "heading": "ผมร่วง น้ำหนัก และไต",
+    "document_slug": "creatine-myths",
+    "score": 0.6573,
+    "source_refs": [
+     "van der Merwe J, Brooks NE, Myburgh KH. Three weeks of creatine monohydrate supplementation affects dihydrotestosterone to testosterone ratio in college-aged rugby players. Clin J Sport Med. 2009;19(5):399-404. doi:10.1097/JSM.0b013e3181b8b52f. PMID:19741313. [ตรวจบทคัดย่อต้นฉบับ ไม่ใช่ฉบับเต็ม]",
+     "Antonio J, Candow DG, Forbes SC, et al. Common questions and misconceptions about creatine supplementation: what does the scientific evidence really show? J Int Soc Sports Nutr. 2021;18:13.",
+     "Does creatine cause hair loss? A 12-week randomized controlled trial. doi:10.1080/15502783.2025.2495229"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 25436,
+   "output_tokens": 1352,
+   "total_tokens": 26788
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: การกินครีเอทีน (Creatine) มี 2 วิธีหลักที่มีประสิทธิภาพในการเพิ่มระดับครีเอทีนในกล้ามเนื้อ ได้แก่ การโหลดและกินแบบปกติ โดยแต่ละวิธีมีแนวทางดังนี้ครับ:)"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การกินครีเอทีน (Creatine) มีแนวทางหลัก 2 แบบ ดังนี้ครับ [S1]",
+     "kind": "framing",
+     "names_source": false,
+     "support": [
+      "S1.1"
+     ],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "*   **วิธีโหลด (Loading):** เป็นการกินเพื่อสะสมให้เร็วขึ้น แนวทางที่กล่าวถึงคือประมาณ 20-25 กรัมต่อวัน หรือประมาณ 0.3 กรัมต่อกิโลกรัมต่อวัน โดยคิดเป็นปริมาณรวมต่อวันแล้วแบ่งเป็นมื้อย่อย เช่น 4-5 ครั้ง ตลอดช่วง 5-7 วัน หลังจากนั้นจึงเข้าสู่ช่วงคงระดับที่ประมาณ 3-5 กรัมต่อวัน [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การโหลดนี้ไม่จำเป็นต้องทำเพื่อเพิ่มระดับสะสม [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "permission_or_safety",
+     "claims_evidence_backing": false,
+     "conclusion_stated": true
+    },
+    {
+     "unit": 3,
+     "text": "*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "*   **วิธีปกติ (Low-dose Continuous):** คือการกินขนาดต่ำต่อเนื่องประมาณ 3 กรัมต่อวัน นาน 28 วัน [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.3"
+     ],
+     "claim_type": "definition",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "creatine_loading",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

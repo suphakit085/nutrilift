@@ -1,0 +1,45 @@
+{
+ "id": "TH50",
+ "question": "Keto diet เหมาะกับการออกกำลังกายแบบไหน",
+ "history": [],
+ "attempts": 4,
+ "seconds": 27.2,
+ "model_calls": 3,
+ "runner_error": null,
+ "model": null,
+ "text": null,
+ "citations": [],
+ "tools": [],
+ "terminal_type": "error",
+ "answer_validation": null,
+ "terminal": {
+  "type": "error",
+  "message": "ตอนนี้ผู้ให้บริการจำกัดโควตาการตอบ กรุณาลองใหม่ในภายหลังนะครับ (คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)",
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  },
+  "usage": {
+   "input_tokens": 986,
+   "output_tokens": 164,
+   "total_tokens": 1150
+  }
+ }
+}

@@ -1,0 +1,435 @@
+{
+ "id": "YT06",
+ "question": "โปรตีนที่รับต่อวัน ใช้น้ำหนักตัวคูนเหรอครับ แบบนี้คนอ้วนมากๆ 100 กว่าโล ไม่กินโปรตีนเท่านักกีฬาเพาะกายเลยเหรอครับ..การคำนวณโปรตีนต่อวันไม่ใช้ LBM คำนวณเหรอครับ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 18.9,
+ "model_calls": 4,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1] \n\nทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:\n\n* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2] อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]\n* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]\n* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]\n\nทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1] และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+ "citations": [
+  "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+  "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+  "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.1",
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "ทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:",
+    "labels": [],
+    "raw": "ทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2]",
+    "labels": [
+     "S1",
+     "S2"
+    ],
+    "raw": "* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.1",
+     "S2.1",
+     "S2.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]",
+    "labels": [
+     "S1",
+     "S4"
+    ],
+    "raw": "อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.5",
+     "S4.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 4,
+    "text": "* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.4"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 5,
+    "text": "* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "definition",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 6,
+    "text": "ทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "ทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   },
+   {
+    "unit": 7,
+    "text": "และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.7"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1] \n\nทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:\n\n* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2] อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]\n* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]\n* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]\n\nทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1] และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+    "heading": "คนน้ำหนักมากหรือไขมันสูงควรคำนวณโปรตีนอย่างไร",
+    "document_slug": "protein-higher-body-weight",
+    "score": 0.803,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20. doi:10.1186/1550-2783-11-20",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Leidy HJ, Clifton PM, Astrup A, et al. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S-1329S. doi:10.3945/ajcn.114.084038 [ตรวจจาก abstract]"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+    "heading": "คำนวณมวลไร้ไขมัน (LBM) จากเปอร์เซ็นต์ไขมัน",
+    "document_slug": "protein-higher-body-weight",
+    "score": 0.7856,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20. doi:10.1186/1550-2783-11-20",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Leidy HJ, Clifton PM, Astrup A, et al. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S-1329S. doi:10.3945/ajcn.114.084038 [ตรวจจาก abstract]"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "ช่วงลดไขมันและหน่วย FFM",
+    "document_slug": "protein-requirement",
+    "score": 0.7227,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+    "heading": "คนน้ำหนักมากหรือไขมันสูงควรคำนวณโปรตีนอย่างไร",
+    "document_slug": "protein-higher-body-weight",
+    "score": 0.803,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20. doi:10.1186/1550-2783-11-20",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Leidy HJ, Clifton PM, Astrup A, et al. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S-1329S. doi:10.3945/ajcn.114.084038 [ตรวจจาก abstract]"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คำนวณโปรตีนสำหรับคนน้ำหนักมากหรือไขมันสูง — ใช้น้ำหนักตัวหรือมวลไร้ไขมัน (LBM)",
+    "heading": "คำนวณมวลไร้ไขมัน (LBM) จากเปอร์เซ็นต์ไขมัน",
+    "document_slug": "protein-higher-body-weight",
+    "score": 0.7856,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20. doi:10.1186/1550-2783-11-20",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y",
+     "Leidy HJ, Clifton PM, Astrup A, et al. The role of protein in weight loss and maintenance. Am J Clin Nutr. 2015;101(6):1320S-1329S. doi:10.3945/ajcn.114.084038 [ตรวจจาก abstract]"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "โปรตีนรวมต่อวัน",
+    "document_slug": "protein-requirement",
+    "score": 0.7301,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "ช่วงลดไขมันและหน่วย FFM",
+    "document_slug": "protein-requirement",
+    "score": 0.7227,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "ความเชื่อว่า \"กินโปรตีนเกิน 20-30 กรัมต่อมื้อเสียเปล่า\"",
+    "heading": "กรอบจัดโปรตีนต่อมื้อ",
+    "document_slug": "protein-per-meal-myth",
+    "score": 0.7163,
+    "source_refs": [
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "อาหารและความปลอดภัย",
+    "document_slug": "protein-requirement",
+    "score": 0.7058,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 11749,
+   "output_tokens": 1399,
+   "total_tokens": 13148
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การคำนวณโปรตีนต่อวันไม่จำเป็นต้องใช้น้ำหนักตัวรวมเสมอไปครับ โดยเฉพาะกับคนที่มีน้ำหนักมากหรือมีไขมันสูง เพราะการใช้น้ำหนักตัวจริงทั้งหมดคูณกับตัวเลขช่วงบนอาจทำให้ได้ปริมาณโปรตีนที่สูงเกินความจำเป็น เนื่องจากน้ำหนักส่วนใหญ่คือไขมันไม่ใช่กล้ามเนื้อ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.1",
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "ทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:",
+     "labels": [],
+     "raw": "ทางเลือกและแนวทางที่ใช้กันมีดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2]",
+     "labels": [
+      "S1",
+      "S2"
+     ],
+     "raw": "* **การใช้มวลไร้ไขมัน (LBM):** สำหรับผู้ที่ต้องการความแม่นยำ สามารถคำนวณมวลไร้ไขมันจากเปอร์เซ็นต์ไขมัน ($LBM = น้ำหนักตัว \\times (1 - เปอร์เซ็นต์ไขมัน \\div 100$) แล้วนำค่า LBM ไปคูณกับช่วงกรัมต่อกิโลกรัม LBM ที่เลือก [S1, S2]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.1",
+      "S2.1",
+      "S2.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]",
+     "labels": [
+      "S1",
+      "S4"
+     ],
+     "raw": "อย่างไรก็ตาม ช่วง 2.3-3.1 กรัม/กก. LBM/วัน มาจากนักกีฬาที่ฝึกแรงต้านและมีไขมันต่ำระหว่างลดพลังงาน (Helms 2014; ISSN diets 2017) จึงไม่ใช่ค่ามาตรฐานสำหรับคนน้ำหนักมากทั่วไป [S1, S4]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.5",
+      "S4.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 4,
+     "text": "* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ช่วงจากงานลดน้ำหนักในคนน้ำหนักเกิน:** Leidy และคณะ (2015) สรุปว่าการกินโปรตีน 1.2-1.6 กรัม/กก./วัน และอย่างน้อยราว 25-30 กรัมต่อมื้อ สัมพันธ์กับการคุมความอยากอาหารและน้ำหนักที่ดีขึ้น โดยผลระยะยาวขึ้นอยู่กับการทำได้ต่อเนื่อง [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.4"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 5,
+     "text": "* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **แนวทางอื่น ๆ:** บางคนอาจเลือกใช้น้ำหนักเป้าหมายแทนน้ำหนักปัจจุบัน แต่ก็เป็นเพียงแนวปฏิบัติ ไม่ใช่ข้อสรุปตายตัวจากแหล่งข้อมูล [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "definition",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 6,
+     "text": "ทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "ทั้งนี้ สมาคมโภชนาการการกีฬานานาชาติ (ISSN 2017) ระบุว่าความต้องการโปรตีนขึ้นอยู่กับหลายปัจจัย รวมถึงองค์ประกอบร่างกาย [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    },
+    {
+     "unit": 7,
+     "text": "และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "และสำหรับคนที่มี BMI สูงมากหรือมีโรคประจำตัว ควรปรึกษาแพทย์หรือนักกำหนดอาหารเพื่อตั้งเป้ารายบุคคลครับ [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.7"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

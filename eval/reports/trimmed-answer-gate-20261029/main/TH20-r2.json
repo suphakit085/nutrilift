@@ -1,0 +1,343 @@
+{
+ "id": "TH20",
+ "question": "ออกกำลังกายมา 2 เดือนคุมอาหารก็แล้ว หุ่นไม่ลดเลย ขอคำแนะนำหน่อยค่ะ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 25.1,
+ "model_calls": 4,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5] \n\nสำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**\n\nคำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:\n- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้\n- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น\n- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ\n\nหากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0) ≈ 2468 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2468.375 × 0.20 ÷ 9) ≈ 58 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2468.375 − 4 × 117 − 9 × 58.5) ÷ 4) ≈ 368 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+ "citations": [
+  "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+  "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S5.5"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "สำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**",
+    "labels": [],
+    "raw": "สำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 2,
+    "text": "คำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:",
+    "labels": [],
+    "raw": "คำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้",
+    "labels": [],
+    "raw": "- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้",
+    "kind": "advice",
+    "names_source": false,
+    "support": [],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น",
+    "labels": [],
+    "raw": "- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น",
+    "kind": "advice",
+    "names_source": false,
+    "support": [],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ",
+    "labels": [],
+    "raw": "- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ",
+    "kind": "advice",
+    "names_source": false,
+    "support": [],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 6,
+    "text": "หากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "หากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.1"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5] \n\nสำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**\n\nคำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:\n- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้\n- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น\n- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ\n\nหากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0) ≈ 2468 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2468.375 × 0.20 ÷ 9) ≈ 58 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2468.375 − 4 × 117 − 9 × 58.5) ÷ 4) ≈ 368 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "ข้อควรระวังและการขอคำปรึกษา",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6572,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "ข้อควรระวังและการขอคำปรึกษา",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "Energy Availability (EA) และ REDs",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6499,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6511,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "การลดไขมัน (cut) และอัตราการลดน้ำหนัก",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6521,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6572,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ความเชื่อผิด ๆ เรื่องลดไขมันที่พบบ่อย — ลดเฉพาะจุด, คาร์บตอนกลางคืน, เหงื่อออกเยอะ",
+    "heading": "ลดเฉพาะจุด กินดึก และเหงื่อ",
+    "document_slug": "fat-loss-myths",
+    "score": 0.6624,
+    "source_refs": [
+     "Ramirez-Campillo R, Andrade DC, Clemente FM, Afonso J, Perez-Castilla A, Gentil P. A proposed model to test the hypothesis of exercise-induced localized fat reduction (spot reduction), including a systematic review with meta-analysis. Hum Mov. 2022;23(3):1-14.",
+     "Liu HY, Eso AA, Cook N, O'Neill HM, Albarqouni L. Meal timing and anthropometric and metabolic outcomes: a systematic review and meta-analysis. JAMA Netw Open. 2024;7(11):e2442163.",
+     "สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข. ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563. (บทแคลเซียม บทธาตุเหล็ก และบทวิตามินดี)",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16."
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 14775,
+   "output_tokens": 1051,
+   "total_tokens": 15826
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "การที่น้ำหนักหรือสัดส่วนไม่ลดลงหลังออกกำลังกายและคุมอาหารมา 2 เดือน อาจเกิดจากปัจจัยเรื่องความคลาดเคลื่อนในการคำนวณพลังงานที่กิน, การกักเก็บน้ำในร่างกาย, หรือการปรับตัวของระบบเผาผลาญครับ [S5]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S5.5"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "สำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**",
+     "labels": [],
+     "raw": "สำหรับเป้าหมายการรักษาน้ำหนักของคุณ พลังงานเป้าหมายที่เหมาะสมคือ **2,468 กิโลแคลอรีต่อวัน** โดยแบ่งเป็นสารอาหารหลักคือ **โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม และไขมัน 58 กรัมต่อวัน**",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 2,
+     "text": "คำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:",
+     "labels": [],
+     "raw": "คำแนะนำเพิ่มเติมเพื่อปรับแนวทางมีดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้",
+     "labels": [],
+     "raw": "- **ติดตามแนวโน้มน้ำหนักจริง:** แนะนำให้ชั่งน้ำหนักและสังเกตแนวโน้มต่อเนื่องเป็นเวลา 2-4 สัปดาห์ แทนที่จะดูตัวเลขจากตราชั่งในแต่ละวัน เนื่องจากความเครียด การนอนหลับ หรือปริมาณโซเดียมอาจทำให้น้ำหนักผันผวนจากน้ำในร่างกายได้",
+     "kind": "advice",
+     "names_source": false,
+     "support": [],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น",
+     "labels": [],
+     "raw": "- **ทบทวนปริมาณอาหารที่กินจริง:** แม้จะรู้สึกว่าคุมอาหารแล้ว แต่ความคลาดเคลื่อนจากการกะปริมาณด้วยตาเปล่าอาจทำให้ได้รับพลังงานมากกว่าที่คิด แนะนำให้ลองบันทึกและชั่งตวงอาหารให้แม่นยำขึ้น",
+     "kind": "advice",
+     "names_source": false,
+     "support": [],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ",
+     "labels": [],
+     "raw": "- **ประเมินการฝึกและการฟื้นตัว:** ตรวจสอบว่ามีการฝึกแรงต้านอย่างสม่ำเสมอและพักผ่อนเพียงพอหรือไม่ หากคุณต้องการเร่งผลลัพธ์ให้ชัดเจนขึ้น เช่น ต้องการลดไขมันโดยเฉพาะ สามารถเปลี่ยนเป้าหมายในโปรไฟล์เพื่อให้ระบบคำนวณพลังงานใหม่อีกครั้งได้ครับ",
+     "kind": "advice",
+     "names_source": false,
+     "support": [],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 6,
+     "text": "หากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "หากเริ่มมีอาการฟื้นตัวช้า บาดเจ็บถี่ หรืออ่อนเพลียมาก ควรให้แพทย์หรือนักกำหนดอาหารช่วยประเมินเพิ่มเติม [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.1"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

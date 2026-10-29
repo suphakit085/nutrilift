@@ -1,0 +1,342 @@
+{
+ "id": "TH27",
+ "question": "วันที่ไม่เล่นเวท(วันพัก) ต้องกินโปรตีน ยังไงดีครับ ^_^",
+ "history": [],
+ "attempts": 1,
+ "seconds": 28.3,
+ "model_calls": 5,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ  \n\nแนวทางปฏิบัติในวันพักมีดังนี้ครับ:\n* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]\n* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3] \n* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]\n\nหากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+ "citations": [
+  "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+  "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+  "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 0,
+  "issues": [],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ",
+    "labels": [],
+    "raw": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   },
+   {
+    "unit": 1,
+    "text": "แนวทางปฏิบัติในวันพักมีดังนี้ครับ:",
+    "labels": [],
+    "raw": "แนวทางปฏิบัติในวันพักมีดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3]",
+    "labels": [
+     "S3"
+    ],
+    "raw": "* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S3.2"
+    ],
+    "claim_type": "permission_or_safety",
+    "claims_evidence_backing": false,
+    "conclusion_stated": true
+   },
+   {
+    "unit": 4,
+    "text": "* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]",
+    "labels": [
+     "S2"
+    ],
+    "raw": "* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S2.2"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "หากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!",
+    "labels": [],
+    "raw": "หากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ  \n\nแนวทางปฏิบัติในวันพักมีดังนี้ครับ:\n* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]\n* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3] \n* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]\n\nหากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "โปรตีนรวมต่อวัน",
+    "document_slug": "protein-requirement",
+    "score": 0.704,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "อาหารและความปลอดภัย",
+    "document_slug": "protein-requirement",
+    "score": 0.7093,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "โปรตีนแต่ละมื้อ",
+    "document_slug": "protein-requirement",
+    "score": 0.7003,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "โปรตีนรวมต่อวัน",
+    "document_slug": "protein-requirement",
+    "score": 0.704,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "อาหารและความปลอดภัย",
+    "document_slug": "protein-requirement",
+    "score": 0.7093,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ปริมาณโปรตีนที่ควรได้รับสำหรับผู้ฝึกเวทเทรนนิ่ง",
+    "heading": "โปรตีนแต่ละมื้อ",
+    "document_slug": "protein-requirement",
+    "score": 0.7003,
+    "source_refs": [
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+     "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33."
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "จำนวนมื้อต่อวัน (กินวันละกี่มื้อ) และการกินมื้อดึก",
+    "heading": "กินวันละกี่มื้อดี กิน 6 มื้อเร่งเผาผลาญไหม และกินมื้อดึกทำให้อ้วนไหม",
+    "document_slug": "meal-frequency",
+    "score": 0.6786,
+    "source_refs": [
+     "La Bounty PM, Campbell BI, Wilson J, et al. International Society of Sports Nutrition position stand: meal frequency. J Int Soc Sports Nutr. 2011;8:4. doi:10.1186/1550-2783-8-4",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "ความเชื่อว่า \"กินโปรตีนเกิน 20-30 กรัมต่อมื้อเสียเปล่า\"",
+    "heading": "กรอบจัดโปรตีนต่อมื้อ",
+    "document_slug": "protein-per-meal-myth",
+    "score": 0.6957,
+    "source_refs": [
+     "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+     "Jager R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "มื้ออาหารก่อนเล่นเวท — กินอะไร คาร์บและโปรตีนก่อนฝึกกี่ชั่วโมง",
+    "heading": "อาหารมื้อก่อนเล่นเวทควรมีอะไร และกินก่อนกี่ชั่วโมง",
+    "document_slug": "pre-workout-meal",
+    "score": 0.6782,
+    "source_refs": [
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 13034,
+   "output_tokens": 913,
+   "total_tokens": 13947
+  },
+  "finish_reasons": [
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 0,
+   "issues": [],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ",
+     "labels": [],
+     "raw": "ในวันพักที่ไม่เล่นเวท คุณยังคงควรกินโปรตีนรวมต่อวันให้ถึงเป้าหมาย 117 กรัมต่อวันอย่างสม่ำเสมอ เพื่อสนับสนุนการซ่อมแซมและรักษามวลกล้ามเนื้อ",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    },
+    {
+     "unit": 1,
+     "text": "แนวทางปฏิบัติในวันพักมีดังนี้ครับ:",
+     "labels": [],
+     "raw": "แนวทางปฏิบัติในวันพักมีดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ปริมาณรวมต่อวัน:** คงเป้าหมายโปรตีนรวมให้เท่ากับวันที่ฝึก เพื่อรักษาความสมบูรณ์ของกล้ามเนื้ออย่างต่อเนื่อง [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3]",
+     "labels": [
+      "S3"
+     ],
+     "raw": "* **การกระจายมื้ออาหาร:** สามารถแบ่งโปรตีนออกเป็นมื้อ ๆ ตามความสะดวกและความชอบของคุณ โดยเน้นโปรตีนคุณภาพดีประมาณ 20–40 กรัม หรือราว 0.25–0.40 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อมื้อ [S3]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S3.2"
+     ],
+     "claim_type": "permission_or_safety",
+     "claims_evidence_backing": false,
+     "conclusion_stated": true
+    },
+    {
+     "unit": 4,
+     "text": "* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]",
+     "labels": [
+      "S2"
+     ],
+     "raw": "* **แหล่งโปรตีน:** เลือกกินอาหารหรือโปรตีนเสริมตามความสะดวกและข้อจำกัดของคุณ โดยดูปริมาณสารอาหารจากฐานข้อมูลอาหารของระบบ [S2]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S2.2"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "หากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!",
+     "labels": [],
+     "raw": "หากคุณต้องการตัวอย่างเมนูอาหารในหนึ่งวันเพื่อให้กินโปรตีนได้ตามเป้าหมาย สามารถบอกผมได้เลยนะครับ!",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}
