@@ -1,0 +1,19 @@
+{
+ "id": "T7",
+ "question": "ไข่กับอกไก่ อันไหนดีกว่ากันสำหรับสร้างกล้าม",
+ "history": [],
+ "attempts": 4,
+ "seconds": 16.0,
+ "model_calls": 1,
+ "runner_error": null,
+ "model": null,
+ "text": null,
+ "citations": [],
+ "tools": [],
+ "terminal_type": "error",
+ "terminal": {
+  "type": "error",
+  "code": "request_understanding_unavailable",
+  "message": "เกิดข้อผิดพลาดในการสร้างคำตอบ ลองส่งคำถามอีกครั้งนะครับ หากยังไม่ได้กรุณาแจ้งผู้ดูแลระบบ"
+ }
+}

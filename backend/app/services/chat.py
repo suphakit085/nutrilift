@@ -1277,7 +1277,7 @@ def stream_chat(
             yield from _dietary_question_events(restrictions, guard, use_rag)
             return
     suggestion = understanding.food_suggestion if understanding else None
-    if suggestion is not None:
+    if suggestion is not None and suggestion.listable:
         yield from _food_suggestion_events(
             db, suggestion, profile, operation_history, user_message, guard, use_rag,
         )

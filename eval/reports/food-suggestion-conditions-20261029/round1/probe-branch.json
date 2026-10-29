@@ -1,0 +1,1142 @@
+{
+ "T1-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "งบผมวันละ 150 บาท",
+    "ส่วนใหญ่กินร้านตามสั่งกับเซเว่น"
+   ]
+  }
+ },
+ "T2-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "dishes_to_order"
+   ],
+   "unsupported_quotes": [
+    "สั่งเมนูไหนดีครับ",
+    "งบมื้อละ 50 บาท"
+   ]
+  }
+ },
+ "T3-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T4-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T5-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "เซเว่น"
+   ]
+  }
+ },
+ "T6-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget"
+   ],
+   "unsupported_quotes": [
+    "ประหยัด"
+   ]
+  }
+ },
+ "T7-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": "bulk",
+  "goal_quote": "สำหรับสร้างกล้าม",
+  "goal_user_turn": 0,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "yes_no_or_comparison"
+   ],
+   "unsupported_quotes": [
+    "อันไหนดีกว่ากัน"
+   ]
+  }
+ },
+ "K1-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K2-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 3,
+   "count_quote": "3",
+   "exclude": [
+    "แพ้นมวัว"
+   ],
+   "exclude_quotes": [
+    "ไม่มีนม"
+   ],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K3-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K4-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 5,
+   "count_quote": "5",
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K5-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K6-r1": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": 4,
+   "count_quote": "4 อย่าง",
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "T1-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "งบผมวันละ 150 บาท",
+    "ร้านตามสั่งกับเซเว่น"
+   ]
+  }
+ },
+ "T2-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "dishes_to_order"
+   ],
+   "unsupported_quotes": [
+    "เมนูไหนดี",
+    "งบมื้อละ 50 บาท"
+   ]
+  }
+ },
+ "T3-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T4-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T5-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "เซเว่น"
+   ]
+  }
+ },
+ "T6-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget"
+   ],
+   "unsupported_quotes": [
+    "ประหยัด"
+   ]
+  }
+ },
+ "T7-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "yes_no_or_comparison"
+   ],
+   "unsupported_quotes": [
+    "อันไหนดีกว่ากัน"
+   ]
+  }
+ },
+ "K1-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "หาง่าย"
+   ]
+  }
+ },
+ "K2-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 3,
+   "count_quote": "3 อย่าง",
+   "exclude": [
+    "แพ้นมวัว"
+   ],
+   "exclude_quotes": [
+    "ไม่มีนม"
+   ],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K3-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K4-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 5,
+   "count_quote": "5",
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "other"
+   ],
+   "unsupported_quotes": [
+    "ไม่เอาหมู"
+   ]
+  }
+ },
+ "K5-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K6-r2": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": 4,
+   "count_quote": "4",
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "T1-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "งบผมวันละ 150 บาท",
+    "ร้านตามสั่งกับเซเว่น"
+   ]
+  }
+ },
+ "T2-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget",
+    "dishes_to_order"
+   ],
+   "unsupported_quotes": [
+    "เมนูไหนดี",
+    "งบมื้อละ 50 บาท"
+   ]
+  }
+ },
+ "T3-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T4-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": null
+ },
+ "T5-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "shop_or_place"
+   ],
+   "unsupported_quotes": [
+    "เซเว่น"
+   ]
+  }
+ },
+ "T6-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "budget"
+   ],
+   "unsupported_quotes": [
+    "ประหยัด"
+   ]
+  }
+ },
+ "T7-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [
+    "yes_no_or_comparison"
+   ],
+   "unsupported_quotes": [
+    "อันไหนดีกว่ากัน"
+   ]
+  }
+ },
+ "K1-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K2-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 3,
+   "count_quote": "3 อย่าง",
+   "exclude": [
+    "แพ้นมวัว"
+   ],
+   "exclude_quotes": [
+    "ไม่มีนม"
+   ],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K3-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K4-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": 5,
+   "count_quote": "5",
+   "exclude": [
+    "ไม่กินเนื้อวัว"
+   ],
+   "exclude_quotes": [
+    "ไม่เอาหมู"
+   ],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K5-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "protein",
+   "count": null,
+   "count_quote": null,
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ },
+ "K6-r3": {
+  "task": "knowledge",
+  "personal_context": false,
+  "medical_self_context": false,
+  "exclusion_phrases": [],
+  "blocked_actions": [],
+  "missing_information": null,
+  "weight_kg": null,
+  "height_cm": null,
+  "goal": null,
+  "goal_quote": null,
+  "goal_user_turn": null,
+  "output_format": "text",
+  "bullet_count": null,
+  "topic": "other",
+  "evidence_only": false,
+  "meal_split": null,
+  "menu_change": null,
+  "food_suggestion": {
+   "focus": "carbohydrate",
+   "count": 4,
+   "count_quote": "4 อย่าง",
+   "exclude": [],
+   "exclude_quotes": [],
+   "unsupported_conditions": [],
+   "unsupported_quotes": []
+  }
+ }
+}

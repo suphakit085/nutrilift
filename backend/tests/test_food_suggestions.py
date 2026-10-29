@@ -102,3 +102,42 @@ def test_without_suggestion_the_menu_route_is_unchanged(monkeypatch):
     monkeypatch.setattr(chat, "_run_menu_tool", lambda *a, **k: {"error": "x", "message": "เมนู"})
     result, _ = _answer(monkeypatch, reading(None, task="plan_menu"), "ช่วยจัดเมนู 1 วัน")
     assert result["model"] == "rule:verified_menu"
+
+
+BUDGET = "งบผมวันละ 150 บาท ส่วนใหญ่กินร้านตามสั่งกับเซเว่น กินอะไรได้บ้างครับ"
+
+
+def test_unsupported_conditions_must_quote_the_current_turn():
+    kept = _checked(reading(suggestion(unsupported_conditions=["budget", "shop_or_place"],
+                                       unsupported_quotes=["งบผมวันละ 150 บาท", "ร้านตามสั่งกับเซเว่น"])),
+                    [BUDGET])
+    assert kept.food_suggestion.unsupported_conditions == ["budget", "shop_or_place"]
+    assert not kept.food_suggestion.listable
+    for bad in (
+        suggestion(unsupported_conditions=["budget"], unsupported_quotes=[]),
+        suggestion(unsupported_conditions=["budget"], unsupported_quotes=["งบ 300 บาท"]),
+    ):
+        assert _checked(reading(bad), [BUDGET]).food_suggestion is None
+    # A quote from an earlier turn does not ground a condition of this turn.
+    earlier = suggestion(unsupported_conditions=["budget"], unsupported_quotes=["งบผมวันละ 150 บาท"])
+    assert _checked(reading(earlier), [BUDGET, "แนะนำอาหารโปรตีนสูง"]).food_suggestion is None
+
+
+def test_a_conditioned_request_skips_the_fixed_list(monkeypatch):
+    # 29 Oct role-play: budget, shop and "whey or eggs" turns all got the same
+    # five foods because only focus/count/exclude reached the list.
+    listed = []
+    monkeypatch.setattr(chat, "_food_suggestion_events",
+                        lambda *a, **k: listed.append(1) or iter(()))
+    state = reading(suggestion(unsupported_conditions=["budget"],
+                               unsupported_quotes=["งบผมวันละ 150 บาท"]))
+    _result, calls = _answer(monkeypatch, state, BUDGET)
+    assert not listed
+    assert len(calls) > 1  # the turn went on to a generated answer
+
+
+def test_a_plain_request_still_gets_the_list(monkeypatch):
+    result, _ = _answer(monkeypatch, reading(suggestion(unsupported_conditions=[],
+                                                        unsupported_quotes=[])),
+                        "แนะนำอาหารโปรตีนสูงที่หาง่ายหน่อย")
+    assert result["model"] == "rule:food_suggestion"
