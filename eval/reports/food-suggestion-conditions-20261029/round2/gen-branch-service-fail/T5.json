@@ -1,0 +1,19 @@
+{
+ "id": "T5",
+ "question": "เซเว่นมีอะไรกินแล้วได้โปรตีนเยอะบ้างครับ",
+ "history": [],
+ "attempts": 4,
+ "seconds": 16.0,
+ "model_calls": 1,
+ "runner_error": null,
+ "model": null,
+ "text": null,
+ "citations": [],
+ "tools": [],
+ "terminal_type": "error",
+ "terminal": {
+  "type": "error",
+  "code": "request_understanding_unavailable",
+  "message": "เกิดข้อผิดพลาดในการสร้างคำตอบ ลองส่งคำถามอีกครั้งนะครับ หากยังไม่ได้กรุณาแจ้งผู้ดูแลระบบ"
+ }
+}
