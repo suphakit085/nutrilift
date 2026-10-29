@@ -1,0 +1,340 @@
+{
+ "id": "TH39",
+ "question": "แนะนำเวย์สำหรับคนผอมๆหน่อยครับ หลายยี่ห้อเหลือเกิน (เวย์ทีคุ้มค่ากับราคา)",
+ "history": [],
+ "attempts": 1,
+ "seconds": 30.3,
+ "model_calls": 7,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ\n\n* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]\n* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]\n* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]\n* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]\n\nทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+ "citations": [
+  "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "citation: แหล่ง S6 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: * **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส (น้ำตาลนม) เวย์โปรตีนคอนเซนเทรต (WPC) มักจะมีราคาต่อกรัมโปรตีนที่คุ้มค่ากว่า [S1] , [S6])"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ [S1]",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false,
+    "labels_removed": [
+     "S1"
+    ]
+   },
+   {
+    "unit": 1,
+    "text": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.4"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.5"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.3",
+     "S1.6"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.7"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 5,
+    "text": "ทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "ทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+    "kind": "research",
+    "names_source": true,
+    "support": [
+     "S1.8"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": true
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ\n\n* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]\n* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]\n* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]\n* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]\n\nทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เลือกเวย์อย่างไรให้คุ้มโดยไม่ยึดยี่ห้อ",
+    "document_slug": "whey-types",
+    "score": 0.7237,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เลือกเวย์อย่างไรให้คุ้มโดยไม่ยึดยี่ห้อ",
+    "document_slug": "whey-types",
+    "score": 0.7237,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.7079,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6995,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6821,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6696,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "ชนิดของเวย์โปรตีน — คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต และวิธีเลือกจากฉลาก",
+    "heading": "เวย์คอนเซนเทรต ไอโซเลต ไฮโดรไลเซต ต่างกันอย่างไร",
+    "document_slug": "whey-types",
+    "score": 0.6827,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Hoffman JR, Falvo MJ. Protein - Which is Best? J Sports Sci Med. 2004;3(3):118-130."
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 26889,
+   "output_tokens": 1871,
+   "total_tokens": 28760
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "citation: แหล่ง S6 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: * **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส (น้ำตาลนม) เวย์โปรตีนคอนเซนเทรต (WPC) มักจะมีราคาต่อกรัมโปรตีนที่คุ้มค่ากว่า [S1] , [S6])"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การเลือกเวย์โปรตีนที่คุ้มค่ากับราคาโดยไม่ยึดติดกับยี่ห้อ สามารถพิจารณาจากเกณฑ์หลักบนฉลากได้ดังนี้ครับ [S1]",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false,
+     "labels_removed": [
+      "S1"
+     ]
+    },
+    {
+     "unit": 1,
+     "text": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ราคาต่อโปรตีน 1 กรัม:** คำนวณจากราคาทั้งกระปุกหารด้วยผลคูณของกรัมโปรตีนต่อช้อนและจำนวนช้อนต่อกระปุก เพื่อดูว่าเงินที่จ่ายไปได้เนื้อโปรตีนกลับมามากแค่ไหน [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.4"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ชนิดของเวย์:** หากคุณไม่ได้มีปัญหาการย่อยแลคโตส เวย์คอนเซนเทรตมักมีราคาต่อโปรตีนถูกกว่า [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.5"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **โปรตีนต่อช้อนและส่วนผสม:** ตรวจสอบปริมาณโปรตีนและพลังงานต่อหนึ่งหน่วยบริโภค รวมถึงส่วนผสมอื่น ๆ เช่น น้ำตาล [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.3",
+      "S1.6"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "* **ความน่าเชื่อถือ:** ผลิตภัณฑ์ควรมีเลขทะเบียน อย. และการรับรองจากหน่วยงานภายนอกเพื่อยืนยันการกำกับดูแล [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.7"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 5,
+     "text": "ทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "ทั้งนี้ เวย์ทุกชนิดเป็นโปรตีนนมคุณภาพสูงที่มีกรดอะมิโนจำเป็นครบถ้วน และ ISSN 2017 ให้ความสำคัญกับปริมาณโปรตีนรวมที่ได้รับต่อวันเป็นหลัก ชนิดของเวย์จึงเป็นเรื่องรองลงมา [S1]",
+     "kind": "research",
+     "names_source": true,
+     "support": [
+      "S1.8"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": true
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

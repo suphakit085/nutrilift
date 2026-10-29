@@ -1,0 +1,272 @@
+{
+ "id": "TH16",
+ "question": "ออกกำลังกาย กินสารอาหารครบมาเกือบสองเดือน แต่น้ำหนักไม่ลดเพราะอะไรคะ?",
+ "history": [],
+ "attempts": 1,
+ "seconds": 32.4,
+ "model_calls": 7,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5] นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ \n\nแนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5] หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+ "citations": [
+  "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **การคลาดเคลื่อนในการประเมินพลังงาน:** การคำนวณพลังงานที่กินเข้าไปหรือพลังงานที่ใช้ไปในชีวิตประจำวันและการออกกำลังกายอาจมีความคลาดเคลื่อน ทำให้ในความเป็นจริงอาจไม่ได้อยู่ในภาวะขาดดุลพลังงาน (Caloric Deficit) ตามที่เข้าใจ)",
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **การเปลี่ยนแปลงขององค์ประกอบร่างกาย:** ในช่วงเริ่มต้นออกกำลังกายแรงต้านร่วมกับการคุมอาหาร มวลกล้ามเนื้ออาจเพิ่มขึ้นในขณะที่ไขมันลดลง ทำให้ตัวเลขบนตาชั่งไม่ลดลงอย่างที่คาดหวัง)",
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **ความผันผวนของน้ำในร่างกาย:** ปัจจัยอย่างความเครียด การนอนหลับ หรือปริมาณโซเดียมในอาหาร สามารถทำให้ร่างกายกักเก็บน้ำเพิ่มขึ้นชั่วคราว ซึ่งบังตัวเลขน้ำหนักจริงบนตาชั่งได้)"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S5.2"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ",
+    "labels": [],
+    "raw": "นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ",
+    "kind": "evidence_gap",
+    "names_source": false,
+    "support": [],
+    "claim_type": "coverage_statement",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "แนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5]",
+    "labels": [
+     "S5"
+    ],
+    "raw": "แนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S5.5"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+    "labels": [],
+    "raw": "หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5] นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ \n\nแนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5] หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+  "citations": [
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6592,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "Energy Availability (EA) และ REDs",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6353,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6316,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ความเชื่อผิด ๆ เรื่องลดไขมันที่พบบ่อย — ลดเฉพาะจุด, คาร์บตอนกลางคืน, เหงื่อออกเยอะ",
+    "heading": "ลดเฉพาะจุด กินดึก และเหงื่อ",
+    "document_slug": "fat-loss-myths",
+    "score": 0.6483,
+    "source_refs": [
+     "Ramirez-Campillo R, Andrade DC, Clemente FM, Afonso J, Perez-Castilla A, Gentil P. A proposed model to test the hypothesis of exercise-induced localized fat reduction (spot reduction), including a systematic review with meta-analysis. Hum Mov. 2022;23(3):1-14.",
+     "Liu HY, Eso AA, Cook N, O'Neill HM, Albarqouni L. Meal timing and anthropometric and metabolic outcomes: a systematic review and meta-analysis. JAMA Netw Open. 2024;7(11):e2442163.",
+     "สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข. ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563. (บทแคลเซียม บทธาตุเหล็ก และบทวิตามินดี)",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16."
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "Diet break, refeed และ cheat meal — การพักกินระดับรักษาน้ำหนักแบบวางแผน",
+    "heading": "Diet break และ refeed คืออะไร ต่างจาก cheat meal อย่างไร และงานวิจัยพบอะไร",
+    "document_slug": "diet-breaks-refeeds",
+    "score": 0.6316,
+    "source_refs": [
+     "Peos JJ, Norton LE, Helms ER, Galpin AJ, Fournier P. Intermittent Dieting: Theoretical Considerations for the Athlete. Sports (Basel). 2019;7(1):22. doi:10.3390/sports7010022",
+     "Byrne NM, Sainsbury A, King NA, Hills AP, Wood RE. Intermittent energy restriction improves weight loss efficiency in obese men: the MATADOR study. Int J Obes (Lond). 2018;42(2):129-138. doi:10.1038/ijo.2017.206",
+     "Campbell BI, Aguilar D, Colenso-Semple LM, et al. Intermittent Energy Restriction Attenuates the Loss of Fat Free Mass in Resistance Trained Individuals. A Randomized Controlled Trial. J Funct Morphol Kinesiol. 2020;5(1):19. doi:10.3390/jfmk5010019",
+     "Peos J, Brown AW, Vorland CJ, Allison DB, Sainsbury A. Contrary to the Conclusions Stated in the Paper, Only Dry Fat-Free Mass Was Different between Groups upon Weight Loss in Resistance-Trained Individuals. J Funct Morphol Kinesiol. 2020;5(4):85. doi:10.3390/jfmk5040085"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6592,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "สัดส่วนสารอาหารและรูปแบบอาหาร",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6221,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 26858,
+   "output_tokens": 1628,
+   "total_tokens": 28486
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **การคลาดเคลื่อนในการประเมินพลังงาน:** การคำนวณพลังงานที่กินเข้าไปหรือพลังงานที่ใช้ไปในชีวิตประจำวันและการออกกำลังกายอาจมีความคลาดเคลื่อน ทำให้ในความเป็นจริงอาจไม่ได้อยู่ในภาวะขาดดุลพลังงาน (Caloric Deficit) ตามที่เข้าใจ)",
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **การเปลี่ยนแปลงขององค์ประกอบร่างกาย:** ในช่วงเริ่มต้นออกกำลังกายแรงต้านร่วมกับการคุมอาหาร มวลกล้ามเนื้ออาจเพิ่มขึ้นในขณะที่ไขมันลดลง ทำให้ตัวเลขบนตาชั่งไม่ลดลงอย่างที่คาดหวัง)",
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **ความผันผวนของน้ำในร่างกาย:** ปัจจัยอย่างความเครียด การนอนหลับ หรือปริมาณโซเดียมในอาหาร สามารถทำให้ร่างกายกักเก็บน้ำเพิ่มขึ้นชั่วคราว ซึ่งบังตัวเลขน้ำหนักจริงบนตาชั่งได้)"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "น้ำหนักไม่ลดแม้จะออกกำลังกายและควบคุมอาหารมาเกือบ 2 เดือน อาจเกี่ยวข้องกับการปรับตัวของระบบเผาผลาญเมื่อลดพลังงานและน้ำหนัก ซึ่งสัมพันธ์กับการเปลี่ยนแปลงการใช้พลังงานและฮอร์โมนที่อาจทำให้ช่วงที่ขาดดุลพลังงานลดลง [S5]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S5.2"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ",
+     "labels": [],
+     "raw": "นอกจากนี้ ฐานข้อมูลที่ให้มายังไม่มีข้อมูลรายละเอียดเชิงลึกเกี่ยวกับความคลาดเคลื่อนในการประเมินสารอาหาร การเพิ่มขึ้นของมวลกล้ามเนื้อ หรือความผันผวนของน้ำในร่างกายจากความเครียดและการนอนหลับ",
+     "kind": "evidence_gap",
+     "names_source": false,
+     "support": [],
+     "claim_type": "coverage_statement",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "แนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5]",
+     "labels": [
+      "S5"
+     ],
+     "raw": "แนวทางเบื้องต้นคือให้ติดตามแนวโน้มน้ำหนัก ปริมาณอาหารจริง รวมถึงกิจกรรมและการฟื้นตัวก่อนปรับเป้าหมายพลังงาน และไม่ควรตัดอาหารซ้ำ ๆ จากการชั่งน้ำหนักเพียงวันเดียว [S5]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S5.5"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+     "labels": [],
+     "raw": "หากคุณต้องการให้คำนวณพลังงานเป้าหมายหรือสารอาหารหลักใหม่ สามารถแจ้งน้ำหนัก ส่วนสูง และระดับกิจกรรมปัจจุบันของคุณมาได้ครับ",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": false,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

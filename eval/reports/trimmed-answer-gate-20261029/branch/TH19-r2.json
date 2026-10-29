@@ -1,0 +1,224 @@
+{
+ "id": "TH19",
+ "question": "กินน้อย แต่น้ำหนักไม่ลดT^T",
+ "history": [],
+ "attempts": 1,
+ "seconds": 51.6,
+ "model_calls": 13,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด\n\nสำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0) ≈ 2468 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2468.375 × 0.20 ÷ 9) ≈ 58 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2468.375 − 4 × 117 − 9 × 58.5) ÷ 4) ≈ 368 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+ "citations": [],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **กิจกรรมระหว่างวันลดลง:** เมื่อกินน้อยลงโดยไม่รู้ตัว ร่างกายอาจลดการขยับตัวหรือกิจกรรมย่อยโดยอัตโนมัติ (NEAT) ทำให้พลังงานที่ใช้เผาผลาญในแต่ละวันลดลงตามไปด้วย)",
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **ความผันผวนของน้ำในร่างกาย:** ความเครียด การนอนหลับ หรือปริมาณโซเดียมและคาร์โบไฮเดรตในแต่ละวัน สามารถทำให้น้ำในร่างกายค้างและบังน้ำหนักตัวจริงบนตาชั่งได้)",
+   "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: การที่กินน้อยแต่น้ำหนักไม่ลด อาจเกิดจากการประเมินพลังงานที่กินจริงคลาดเคลื่อน หรือการคำนวณพลังงานที่ร่างกายต้องการในแต่ละวันไม่ตรงกับความเป็นจริง)",
+   "lost_answer: สาเหตุที่กินน้อยแต่น้ำหนักไม่ลดและวิธีแก้ไข"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด [S1, S2, S3, S4, S5, S6]",
+    "labels": [
+     "S1",
+     "S2",
+     "S3",
+     "S4",
+     "S5",
+     "S6"
+    ],
+    "raw": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด [S1, S2, S3, S4, S5, S6]",
+    "kind": "evidence_gap",
+    "names_source": false,
+    "support": [],
+    "claim_type": "coverage_statement",
+    "claims_evidence_backing": false,
+    "labels_removed": [
+     "S1",
+     "S2",
+     "S3",
+     "S4",
+     "S5",
+     "S6"
+    ]
+   },
+   {
+    "unit": 1,
+    "text": "สำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ",
+    "labels": [],
+    "raw": "สำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ",
+    "kind": "personal",
+    "names_source": false,
+    "support": []
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด\n\nสำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ\n\n### สูตรที่ใช้กับเป้าหมายนี้\n- [Mifflin-St Jeor](https://pubmed.ncbi.nlm.nih.gov/2305711/): 10 × 65 + 6.25 × 170 − 5 × 25 + (5) ≈ 1592 kcal/วัน — ไม่มีข้อมูลเปอร์เซ็นต์ไขมัน จึงใช้สมการที่อาศัยเพศ อายุ น้ำหนัก และส่วนสูง\n- BMR × ตัวคูณกิจกรรม: 1592.5 × 1.55 ≈ 2468 kcal/วัน — ตัวคูณกิจกรรมตามระดับที่เลือก เป็นค่าประมาณตามกติกาเครื่องคำนวณ ไม่ใช่ผลวัดการใช้พลังงาน\n- ปรับพลังงานตามเป้าหมายที่อนุญาต: 2468.375 × (1 + 0) ≈ 2468 kcal/วัน — กติกาโครงการ: ใช้ค่ากลางช่วงปรับพลังงาน และใช้เป้าหมายที่ผ่านการคัดกรองแล้ว\n- [น้ำหนักตัว × โปรตีนต่อกิโลกรัม](https://doi.org/10.1186/s12970-017-0177-8): 65 × 1.8 ≈ 117 กรัม/วัน — เลือกอัตราตามเป้าหมายด้วยกติกาโครงการ ช่วงหลักฐานทั่วไปไม่ใช่ใบสั่งเฉพาะบุคคล\n- ค่าสูงกว่าระหว่างไขมันต่อน้ำหนักกับ floor พลังงาน: max(65 × 0.9, 2468.375 × 0.20 ÷ 9) ≈ 58 กรัม/วัน — 0.9 กรัม/กก. และ floor 20% เป็นกติกาโครงการ ไม่ใช่เกณฑ์ขั้นต่ำสากล\n- พลังงานที่เหลือหลังหักโปรตีนและไขมัน: max(0, (2468.375 − 4 × 117 − 9 × 58.5) ÷ 4) ≈ 368 กรัม/วัน — ใช้ 4 kcal/กรัมโปรตีนและคาร์บ และ 9 kcal/กรัมไขมัน คำนวณด้วยค่าก่อนปัด\nใช้ค่าก่อนปัดในการคำนวณ และปัดเฉพาะตัวเลขที่แสดง ผลเป็นค่าประมาณ ไม่ใช่แผนรักษาโรค",
+  "citations": [],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "ความเชื่อผิด ๆ เรื่องลดไขมันที่พบบ่อย — ลดเฉพาะจุด, คาร์บตอนกลางคืน, เหงื่อออกเยอะ",
+    "heading": "ลดเฉพาะจุด กินดึก และเหงื่อ",
+    "document_slug": "fat-loss-myths",
+    "score": 0.6643,
+    "source_refs": [
+     "Ramirez-Campillo R, Andrade DC, Clemente FM, Afonso J, Perez-Castilla A, Gentil P. A proposed model to test the hypothesis of exercise-induced localized fat reduction (spot reduction), including a systematic review with meta-analysis. Hum Mov. 2022;23(3):1-14.",
+     "Liu HY, Eso AA, Cook N, O'Neill HM, Albarqouni L. Meal timing and anthropometric and metabolic outcomes: a systematic review and meta-analysis. JAMA Netw Open. 2024;7(11):e2442163.",
+     "สำนักโภชนาการ กรมอนามัย กระทรวงสาธารณสุข. ปริมาณสารอาหารอ้างอิงที่ควรได้รับประจำวันสำหรับคนไทย พ.ศ. 2563. (บทแคลเซียม บทธาตุเหล็ก และบทวิตามินดี)",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16."
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "จำนวนมื้อต่อวัน (กินวันละกี่มื้อ) และการกินมื้อดึก",
+    "heading": "กินวันละกี่มื้อดี กิน 6 มื้อเร่งเผาผลาญไหม และกินมื้อดึกทำให้อ้วนไหม",
+    "document_slug": "meal-frequency",
+    "score": 0.6531,
+    "source_refs": [
+     "La Bounty PM, Campbell BI, Wilson J, et al. International Society of Sports Nutrition position stand: meal frequency. J Int Soc Sports Nutr. 2011;8:4. doi:10.1186/1550-2783-8-4",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6728,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.6402,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S5",
+    "title": "การปรับตัวของระบบเผาผลาญเมื่อลดน้ำหนัก (metabolic adaptation)",
+    "heading": "การปรับตัวช่วงลดน้ำหนัก",
+    "document_slug": "metabolic-adaptation",
+    "score": 0.6606,
+    "source_refs": [
+     "Trexler ET, Smith-Ryan AE, Norton LE. Metabolic adaptation to weight loss: implications for the athlete. J Int Soc Sports Nutr. 2014;11:7."
+    ]
+   },
+   {
+    "label": "S6",
+    "title": "สมดุลพลังงาน การลดไขมัน (cut) และการเพิ่มกล้ามเนื้อ (bulk)",
+    "heading": "Energy Availability (EA) และ REDs",
+    "document_slug": "energy-balance-cut-bulk",
+    "score": 0.6626,
+    "source_refs": [
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154.",
+     "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+     "Mifflin MD, St Jeor ST, Hill LA, et al. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247. [ตรวจจาก abstract]",
+     "Thomas DT, Erdman KA, Burke LM. Nutrition and Athletic Performance. Med Sci Sports Exerc. 2016;48(3):543-568. [ตรวจผลกระทบต่อการ์ดจากฉบับผู้จัดพิมพ์ร่วม Revised December 2016; ยังเข้าไม่ถึงเนื้อหา MSSE erratum 2017 โดยตรง]",
+     "Mountjoy M, Ackerman KE, Bailey DM, et al. 2023 International Olympic Committee's (IOC) consensus statement on Relative Energy Deficiency in Sport (REDs). Br J Sports Med. 2023;57:1073-1097. doi:10.1136/bjsports-2023-106994. [อ่านฉบับออนไลน์ที่ดาวน์โหลด 1 ต.ค. 2569; มี correction 2024]"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 48911,
+   "output_tokens": 1874,
+   "total_tokens": 50785
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **กิจกรรมระหว่างวันลดลง:** เมื่อกินน้อยลงโดยไม่รู้ตัว ร่างกายอาจลดการขยับตัวหรือกิจกรรมย่อยโดยอัตโนมัติ (NEAT) ทำให้พลังงานที่ใช้เผาผลาญในแต่ละวันลดลงตามไปด้วย)",
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: * **ความผันผวนของน้ำในร่างกาย:** ความเครียด การนอนหลับ หรือปริมาณโซเดียมและคาร์โบไฮเดรตในแต่ละวัน สามารถทำให้น้ำในร่างกายค้างและบังน้ำหนักตัวจริงบนตาชั่งได้)",
+    "unsupported_fact: ข้อกล่าวนี้อ้างหลักฐานหรือผลลัพธ์ที่แหล่งที่มีไม่ได้ระบุ ให้ตัดออกหรือบอกว่าแหล่งที่มีไม่ครอบคลุม (ข้อความ: การที่กินน้อยแต่น้ำหนักไม่ลด อาจเกิดจากการประเมินพลังงานที่กินจริงคลาดเคลื่อน หรือการคำนวณพลังงานที่ร่างกายต้องการในแต่ละวันไม่ตรงกับความเป็นจริง)",
+    "lost_answer: สาเหตุที่กินน้อยแต่น้ำหนักไม่ลดและวิธีแก้ไข"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด [S1, S2, S3, S4, S5, S6]",
+     "labels": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6"
+     ],
+     "raw": "ข้อมูลอ้างอิงที่มีอยู่ยังไม่ครอบคลุมรายละเอียดเชิงลึกในประเด็นสาเหตุที่กินน้อยแต่น้ำหนักไม่ลด [S1, S2, S3, S4, S5, S6]",
+     "kind": "evidence_gap",
+     "names_source": false,
+     "support": [],
+     "claim_type": "coverage_statement",
+     "claims_evidence_backing": false,
+     "labels_removed": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6"
+     ]
+    },
+    {
+     "unit": 1,
+     "text": "สำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ",
+     "labels": [],
+     "raw": "สำหรับเป้าหมายปัจจุบันของคุณคือการรักษาน้ำหนัก พลังงานเป้าหมายที่คำนวณจากโปรไฟล์ของคุณคือ **2468 กิโลแคลอรีต่อวัน** (โปรตีน 117 กรัม, คาร์โบไฮเดรต 368 กรัม, ไขมัน 58 กรัม) แนวปฏิบัติคือให้ติดตามแนวโน้มน้ำหนักตัวจริงอย่างต่อเนื่องร่วมกับการฝึกแรงต้านและรับประทานโปรตีนให้เพียงพอ  หากคุณต้องการปรับเปลี่ยนเป้าหมายเป็นลดไขมันหรือเพิ่มกล้ามเนื้อ สามารถแจ้งเพื่อปรับโปรไฟล์และคำนวณตัวเลขใหม่ได้ครับ",
+     "kind": "personal",
+     "names_source": false,
+     "support": []
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "knowledge",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": null,
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": null,
+   "goal_quote": null,
+   "goal_user_turn": null,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}

@@ -18,6 +18,7 @@ import logging
 import re
 import time
 from collections.abc import Iterator, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -27,7 +28,12 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.services import guardrails, prompts, retrieval
-from app.services.answer_review import has_answer_content, review_answer, trim_unverified
+from app.services.answer_review import (
+    answer_coverage,
+    has_answer_content,
+    review_answer,
+    trim_unverified,
+)
 from app.services.answer_validation import (
     answer_issues,
     repair_instruction,
@@ -396,6 +402,24 @@ def _run_menu_tool(
 TRIMMED_NOTE = "ตัดข้อความบางส่วนที่ยังยืนยันกับแหล่งข้อมูลไม่ได้ออกจากคำตอบนี้แล้วครับ"
 
 
+@dataclass(frozen=True)
+class LostAnswer:
+    """A trim that passed review but left no answer to the question."""
+
+    missing: str
+    removed: list[str]
+
+
+def lost_answer_instruction(issues: list[str], lost: LostAnswer) -> str:
+    return (
+        repair_instruction(issues)
+        + "\nประโยคที่ตอบคำถามหลักยืนยันกับแหล่งข้อมูลไม่ได้และถูกตัดออก ทำให้คำตอบไม่ได้ตอบสิ่งที่ถาม"
+        + (f" ({lost.missing})" if lost.missing else "")
+        + " ให้ตอบคำถามหลักตรง ๆ โดยใช้เฉพาะสิ่งที่แหล่งข้อมูลระบุ "
+        "ถ้าแหล่งข้อมูลไม่ได้ตอบเรื่องนี้ให้บอกตรง ๆ ว่าแหล่งข้อมูลไม่ครอบคลุม แล้วให้คำแนะนำปฏิบัติที่ระมัดระวัง"
+    )
+
+
 def _keep_verified_part(
     client, model, question, answer, verdict, passages, understanding, use_rag, usage_total,
     user_context,
@@ -431,6 +455,16 @@ def _keep_verified_part(
     for raw, edited in recheck.label_edits:
         if text.count(raw) == 1:
             text = text.replace(raw, edited)
+    try:
+        coverage, more = answer_coverage(client, model=model, question=question, answer=text)
+    except Exception as exc:
+        # The check only narrows what is shown; without it the trim stands.
+        logger.warning("trimmed answer coverage check failed: %s", type(exc).__name__)
+    else:
+        for key, value in more.items():
+            usage_total[key] += value
+        if not coverage.answers_question:
+            return LostAnswer(coverage.missing, removed)
     return f"{text}\n\n{TRIMMED_NOTE}", removed
 
 
@@ -1581,6 +1615,7 @@ def stream_chat(
     usage_total = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
     finish_reasons: list[str] = []
     answer_repair_used = False
+    lost_answer_repair_used = False
     answer_validation_issues: list[str] = []
     evidence_ledger: list[dict] = []
 
@@ -1729,6 +1764,21 @@ def stream_chat(
                                 {"user_profile": _profile_summary_th(profile),
                                  "calculated_targets": targets_summary},
                             )
+                        if isinstance(kept, LostAnswer):
+                            answer_validation_issues.append("lost_answer: " + kept.missing)
+                            if not lost_answer_repair_used and _ < MAX_TOOL_ITERATIONS - 1:
+                                # One more draft that must answer the question
+                                # from the sources, instead of a trim that
+                                # does not answer it at all.
+                                lost_answer_repair_used = True
+                                retry_text = lost_answer_instruction(issues, kept)
+                                contents.append(types.Content(role="user", parts=[
+                                    types.Part.from_text(text=retry_text),
+                                ]))
+                                yield {"type": "retry", "message": "กำลังปรับคำตอบให้ตรงคำถามครับ",
+                                       "wait_s": 0}
+                                continue
+                            kept = None
                         if kept is not None:
                             answer, removed = kept
                             answer_validation_issues.append(

@@ -1,0 +1,20 @@
+{
+ "id": "TH27",
+ "question": "วันที่ไม่เล่นเวท(วันพัก) ต้องกินโปรตีน ยังไงดีครับ ^_^",
+ "history": [],
+ "attempts": 4,
+ "seconds": 20.8,
+ "model_calls": 2,
+ "runner_error": null,
+ "model": null,
+ "text": null,
+ "citations": [],
+ "tools": [],
+ "terminal_type": "error",
+ "answer_validation": null,
+ "terminal": {
+  "type": "error",
+  "code": "request_understanding_unavailable",
+  "message": "ตอนนี้ผู้ให้บริการจำกัดโควตาการตอบ กรุณาลองใหม่ในภายหลังนะครับ (คำถามของคุณยังอยู่ ไม่ได้หายไปไหน)"
+ }
+}

@@ -1,0 +1,298 @@
+{
+ "id": "YT01",
+ "question": "ถ้าผมกิน ขนมปังกับนม เเค่นี้พอมั้ยครับเเต่ออกกำลังกายตอนเย็นทุกวัน น้ำหนัก50+ เป็นคนผอมครับ เเต่อยากให้มีกล้ามเนื้อครับ",
+ "history": [],
+ "attempts": 1,
+ "seconds": 42.8,
+ "model_calls": 9,
+ "runner_error": null,
+ "model": "gemini-3.5-flash-lite",
+ "text": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1] แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:\n\n- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]\n- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1], [S4]\n- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+ "citations": [
+  "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+  "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร"
+ ],
+ "tools": [],
+ "terminal_type": "done",
+ "answer_validation": {
+  "repairs": 1,
+  "issues": [
+   "citation: แหล่ง S2 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเกินดุลอย่างต่อเนื่องสำหรับการสร้างกล้ามเนื้อ [S1] , [S2])"
+  ],
+  "evidence_ledger": [
+   {
+    "unit": 0,
+    "text": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 1,
+    "text": "แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:",
+    "labels": [],
+    "raw": "แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:",
+    "kind": "framing",
+    "names_source": false,
+    "support": [],
+    "claim_type": "framing",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 2,
+    "text": "- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.2",
+     "S1.6"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 3,
+    "text": "- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1] , [S4]",
+    "labels": [
+     "S1",
+     "S4"
+    ],
+    "raw": "- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1] , [S4]",
+    "kind": "research",
+    "names_source": false,
+    "support": [
+     "S1.6",
+     "S4.4"
+    ],
+    "claim_type": "evidence_or_effect",
+    "claims_evidence_backing": false
+   },
+   {
+    "unit": 4,
+    "text": "- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+    "labels": [
+     "S1"
+    ],
+    "raw": "- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+    "kind": "advice",
+    "names_source": false,
+    "support": [
+     "S1.6"
+    ],
+    "claim_type": "instruction",
+    "claims_evidence_backing": false,
+    "conclusion_stated": true
+   }
+  ]
+ },
+ "terminal": {
+  "type": "done",
+  "text": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1] แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:\n\n- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]\n- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1], [S4]\n- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+  "citations": [
+   {
+    "label": "S1",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7869,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6922,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "retrieved": [
+   {
+    "label": "S1",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมกินอะไรเพื่อเพิ่มน้ำหนัก ขนมปังกับนมพอไหม เกนเนอร์จำเป็นไหม",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7869,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S2",
+    "title": "คนผอมอยากเพิ่มน้ำหนักและกล้ามเนื้อ — กินอย่างไร เกนเนอร์จำเป็นไหม",
+    "heading": "คนผอมน้ำหนักต่ำกว่าเกณฑ์ อยากเพิ่มน้ำหนัก (bulk) ต้องกินเกินแค่ไหน",
+    "document_slug": "weight-gain-underweight",
+    "score": 0.7258,
+    "source_refs": [
+     "World Health Organization. Nutrition Landscape Information System (NLiS): Malnutrition in women - thinness, underweight, overweight, obesity. https://www.who.int/data/nutrition/nlis/info/malnutrition-in-women (เข้าถึง 27 ตุลาคม 2569)",
+     "Iraki J, Fitschen P, Espinar S, Helms E. Nutrition Recommendations for Bodybuilders in the Off-Season: A Narrative Review. Sports (Basel). 2019;7(7):154. doi:10.3390/sports7070154",
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Aragon AA, Schoenfeld BJ, Wildman R, et al. International society of sports nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16. doi:10.1186/s12970-017-0174-y"
+    ]
+   },
+   {
+    "label": "S3",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ควรทานคู่กับอะไร ผสมนมหรือน้ำ ต้องกินคาร์บคู่ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.695,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   },
+   {
+    "label": "S4",
+    "title": "ใช้เวย์แทนอาหารหลักหรือแทนอกไก่ได้ไหม และควรผสมกับอะไร",
+    "heading": "เวย์ช่วยสร้างกล้ามได้จริงไหม ใช้แทนอกไก่หรือแทนมื้ออาหารได้ไหม",
+    "document_slug": "whey-vs-whole-food",
+    "score": 0.6922,
+    "source_refs": [
+     "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition Position Stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20. doi:10.1186/s12970-017-0177-8",
+     "Kerksick CM, Arent S, Schoenfeld BJ, et al. International society of sports nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33. doi:10.1186/s12970-017-0189-4"
+    ]
+   }
+  ],
+  "tool_calls": [],
+  "usage": {
+   "input_tokens": 26204,
+   "output_tokens": 1682,
+   "total_tokens": 27886
+  },
+  "finish_reasons": [
+   "STOP",
+   "STOP"
+  ],
+  "safety_flags": [],
+  "model": "gemini-3.5-flash-lite",
+  "prompt_version": "v1.20.3",
+  "use_rag": true,
+  "answer_validation": {
+   "repairs": 1,
+   "issues": [
+    "citation: แหล่ง S2 ไม่ได้ระบุข้อความนี้โดยตรง ห้ามติดป้ายที่ไม่รองรับ ข้อความที่รองรับอยู่ใน S1 (ข้อความ: - **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเกินดุลอย่างต่อเนื่องสำหรับการสร้างกล้ามเนื้อ [S1] , [S2])"
+   ],
+   "evidence_ledger": [
+    {
+     "unit": 0,
+     "text": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "การกินขนมปังกับนมอย่างเดียวไม่เพียงพอสำหรับการสร้างกล้ามเนื้อครับ [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 1,
+     "text": "แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:",
+     "labels": [],
+     "raw": "แม้ว่าคุณจะออกกำลังกายสม่ำเสมอและต้องการเพิ่มน้ำหนัก แต่การพึ่งพาแค่อาหารสองอย่างนี้มักจะทำให้ได้พลังงานและสารอาหารไม่ครบถ้วน โดยมีรายละเอียดดังนี้ครับ:",
+     "kind": "framing",
+     "names_source": false,
+     "support": [],
+     "claim_type": "framing",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 2,
+     "text": "- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **โปรตีนไม่เพียงพอต่อการสร้างกล้ามเนื้อ:** การสร้างกล้ามเนื้อและเพิ่มน้ำหนักต้องการโปรตีนรวมประมาณ 1.6-2.2 กรัมต่อน้ำหนักตัว 1 กิโลกรัมต่อวัน ซึ่งการดื่มนมและกินขนมปังอย่างเดียวมักจะทำให้ได้ปริมาณโปรตีนและพลังงานรวมไม่ถึงเป้าหมายที่จำเป็น [S1]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.2",
+      "S1.6"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 3,
+     "text": "- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1] , [S4]",
+     "labels": [
+      "S1",
+      "S4"
+     ],
+     "raw": "- **ขาดสารอาหารอื่นที่จำเป็น:** ขนมปังกับนมไม่มีใยอาหาร วิตามิน และแร่ธาตุที่ครบถ้วนเหมือนกับอาหารหลักกลุ่มเนื้อสัตว์ ไข่ ผัก และผลไม้ [S1] , [S4]",
+     "kind": "research",
+     "names_source": false,
+     "support": [
+      "S1.6",
+      "S4.4"
+     ],
+     "claim_type": "evidence_or_effect",
+     "claims_evidence_backing": false
+    },
+    {
+     "unit": 4,
+     "text": "- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+     "labels": [
+      "S1"
+     ],
+     "raw": "- **แนวทางที่เหมาะสม:** ควรเพิ่มอาหารที่มีโปรตีนคุณภาพดี เช่น ไข่ เนื้อสัตว์ ปลา หรือเต้าหู้ ร่วมกับมื้อหลักที่มีข้าวหรือแป้งและผัก เพื่อให้ร่างกายได้รับสารอาหารและพลังงานเพียงพอ [S1]",
+     "kind": "advice",
+     "names_source": false,
+     "support": [
+      "S1.6"
+     ],
+     "claim_type": "instruction",
+     "claims_evidence_backing": false,
+     "conclusion_stated": true
+    }
+   ]
+  },
+  "request_understanding": {
+   "version": "v3",
+   "task": "clarify",
+   "personal_context": true,
+   "medical_self_context": false,
+   "exclusion_phrases": [],
+   "blocked_actions": [],
+   "missing_information": "pair_partner",
+   "weight_kg": null,
+   "height_cm": null,
+   "goal": "bulk",
+   "goal_quote": "อยากให้มีกล้ามเนื้อครับ",
+   "goal_user_turn": 0,
+   "output_format": "text",
+   "bullet_count": null,
+   "topic": "other",
+   "evidence_only": false,
+   "meal_split": null,
+   "menu_change": null,
+   "food_suggestion": null
+  }
+ }
+}
